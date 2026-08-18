@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Features\Assets\AssetService;
+use App\Features\Assets\Enums\AssetSlot;
+use App\Features\Assets\Models\Asset;
 use App\Filament\Pages\Branding;
 use App\Services\ImageUploadService;
-use App\Services\SettingService;
+use App\Support\Branding as BrandingSupport;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -19,16 +21,17 @@ use Intervention\Image\ImageManager;
 use Throwable;
 
 /**
- * Generates 32/64/180px derivatives of an uploaded square logo and records
- * their URLs in `branding.logo_32_url`, `branding.logo_64_url` and
- * `branding.logo_180_url`. Dispatched from the logo autosave path in
- * {@see Branding::persistAutosavedField()}.
+ * Generates 32/64/180px derivatives of an uploaded square logo and stores them
+ * as `branding` assets under `logo-32`, `logo-64` and `logo-180`. Dispatched
+ * from the logo autosave path in {@see Branding::persistAutosavedField()}.
  *
  * Fails soft when neither GD nor Imagick is installed — `intervention/image`
  * only *suggests* those extensions and this app requires neither, so a throw
  * here would retry three times per upload and fill the failed_jobs table.
- * The derivative keys are cleared at the start of every run so a failed or
- * partial re-upload can never leave stale URLs pointing at the previous logo.
+ * The derivative assets are deleted at the start of every run so a failed or
+ * partial re-upload can never leave a stale derivative of the previous logo —
+ * `Branding::favicon()` falls back to the bundled icon, which is correct, where
+ * a stale row would show the old brand.
  */
 class GenerateBrandingSizes implements ShouldQueue
 {
@@ -41,33 +44,43 @@ class GenerateBrandingSizes implements ShouldQueue
     private const array SIZES = [32, 64, 180];
 
     /**
-     * @param string $diskPath path of the uploaded logo, relative to the
-     *                         `filesystems.public_files` disk (e.g. `branding/logo.png`)
+     * @param string $assetId id of the stored `branding`/`logo` asset
      */
-    public function __construct(public string $diskPath) {}
+    public function __construct(public string $assetId) {}
 
     public function handle(): void
     {
-        $settings = app(SettingService::class);
+        $assets = app(AssetService::class);
 
         foreach (self::SIZES as $size) {
-            $settings->store("branding.logo_{$size}_url", '');
+            $assets->find(AssetSlot::BRANDING, $this->key($size))?->delete();
         }
 
-        $disk = Storage::disk(config('filesystems.public_files'));
-        $extension = strtolower(pathinfo($this->diskPath, PATHINFO_EXTENSION));
+        $source = Asset::query()->find($this->assetId);
+
+        // The logo was replaced or deleted between the upload and this run.
+        // Nothing to derive from, and the cleared derivatives above are already
+        // the right end state — but say so, because a silent return here looks
+        // identical to a job that never ran.
+        if ($source === null) {
+            Log::warning("GenerateBrandingSizes: source asset [{$this->assetId}] no longer exists, skipping.");
+
+            return;
+        }
+
+        $extension = $source->type->extensionFor($source->content_type) ?? '';
 
         // An SVG needs no derivatives -- it is resolution-independent, so the
         // same file serves as favicon, switcher icon and full-size logo. It
         // also CANNOT be rasterised here: GD decodes binary image formats and
         // throws NotReadableException("Unable to init from given binary data")
         // on `<svg ...`, which is what every SVG logo upload used to fail with.
-        // Point the size keys at the original instead of erroring.
+        // Copy the original into each size slot instead of erroring.
         if ($extension === 'svg') {
-            $url = $disk->url($this->diskPath);
+            $contents = (string) Storage::disk($source->diskName())->get($source->path);
 
             foreach (self::SIZES as $size) {
-                $settings->store("branding.logo_{$size}_url", $url);
+                $assets->storeContents($contents, AssetSlot::BRANDING, $this->key($size), isPublic: true);
             }
 
             return;
@@ -108,22 +121,23 @@ class GenerateBrandingSizes implements ShouldQueue
         // already cleared, so bailing here leaves exactly the empty state the
         // class contract describes.
         try {
-            $this->writeDerivatives($manager, $disk, $format, $settings);
+            $this->writeDerivatives($manager, $source, $format, $assets);
         } catch (Throwable $throwable) {
             Log::warning('GenerateBrandingSizes: could not generate logo derivatives: '.$throwable->getMessage());
         }
     }
 
-    /**
-     * @param Filesystem $disk the `filesystems.public_files` disk
-     */
-    private function writeDerivatives(ImageManager $manager, Filesystem $disk, string $format, SettingService $settings): void
+    /** Asset key for a derivative — `logo-32`, `logo-64`, `logo-180`. */
+    private function key(int $size): string
     {
-        $source = $disk->get($this->diskPath);
+        return BrandingSupport::KEY_LOGO.'-'.$size;
+    }
+
+    private function writeDerivatives(ImageManager $manager, Asset $sourceAsset, string $format, AssetService $assets): void
+    {
+        $source = (string) Storage::disk($sourceAsset->diskName())->get($sourceAsset->path);
 
         foreach (self::SIZES as $size) {
-            $path = "branding/logo-{$size}.{$format}";
-
             // fit(), not resize(): resize($size, $size) forces both dimensions
             // and STRETCHES a non-square source. The upload UI offers a 1:1
             // crop but the admin can decline it, and nothing constrains an
@@ -132,16 +146,10 @@ class GenerateBrandingSizes implements ShouldQueue
             // then scales -- correct for any source aspect.
             $encoded = (string) $manager->make($source)->fit($size, $size)->encode($format, ImageUploadService::WEBP_QUALITY);
 
-            $disk->put($path, $encoded);
-
-            // Explicit, matching ImageUploadService::store(). `public_files` can
-            // point at S3/R2 (config/filesystems.php), where a bare put() takes
-            // the disk default and the derivative URLs would 403 while the
-            // original logo renders. rescue() because a local disk has no
-            // per-object visibility to set.
-            rescue(fn () => $disk->setVisibility($path, 'public'), report: false);
-
-            $settings->store("branding.logo_{$size}_url", $disk->url($path));
+            // Public like the logo they derive from: the 32px one is the
+            // favicon, which the login screen requests before anyone is
+            // logged in.
+            $assets->storeContents($encoded, AssetSlot::BRANDING, $this->key($size), isPublic: true);
         }
     }
 }

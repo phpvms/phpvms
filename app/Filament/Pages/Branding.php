@@ -6,6 +6,9 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Assets\AssetService;
+use App\Features\Assets\Enums\AssetSlot;
+use App\Features\Assets\Models\Asset;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Concerns\ReversePrimaryButtons;
@@ -112,22 +115,45 @@ class Branding extends Page
     {
         // Keyed on autosaveKeys(); an unlisted key means the two have drifted,
         // and failing loudly beats an UnhandledMatchError from a bare match.
-        $settingKey = match ($key) {
-            'logo'      => 'branding.logo_url',
-            'logo_dark' => 'branding.logo_dark_url',
-            'banner'    => 'branding.banner_url',
-            default     => throw new InvalidArgumentException("No branding setting is mapped to the autosaved field [{$key}]."),
+        $assetKey = match ($key) {
+            'logo'      => BrandingSupport::KEY_LOGO,
+            'logo_dark' => BrandingSupport::KEY_LOGO_DARK,
+            'banner'    => BrandingSupport::KEY_BANNER,
+            default     => throw new InvalidArgumentException("No branding asset is mapped to the autosaved field [{$key}]."),
         };
-        $path = is_string($value) ? $value : null;
 
-        $url = filled($path)
-            ? Storage::disk(config('filesystems.public_files'))->url($path)
-            : '';
+        $assets = app(AssetService::class);
+        $staged = is_string($value) ? $value : null;
 
-        app(SettingService::class)->store($settingKey, $url);
+        // Clearing the field removes the asset, which removes its file — the
+        // row and the bytes are one thing.
+        if (blank($staged)) {
+            $assets->find(AssetSlot::BRANDING, $assetKey)?->delete();
 
-        if ($key === 'logo' && filled($path)) {
-            GenerateBrandingSizes::dispatch($path);
+            return;
+        }
+
+        $disk = Storage::disk(Asset::STAGING_DISK);
+
+        // The upload landed in a staging directory rather than at its final
+        // path: ImageUploadService does the WebP conversion and the SVG
+        // sanitising on the way in, and AssetService owns where an asset's
+        // bytes actually live. Staging on the private disk means an unreviewed
+        // upload is never publicly reachable, even briefly.
+        $asset = $assets->storeContents(
+            (string) $disk->get($staged),
+            AssetSlot::BRANDING,
+            $assetKey,
+            userId: auth()->id(),
+            // Site branding renders on the login screen, so it has to survive a
+            // logged-out request.
+            isPublic: true,
+        );
+
+        $disk->delete($staged);
+
+        if ($key === 'logo') {
+            GenerateBrandingSizes::dispatch($asset->id);
         }
     }
 
@@ -374,15 +400,15 @@ class Branding extends Page
     }
 
     /**
-     * Drag-and-drop upload for the logo/banner. Not bound to the setting
-     * key directly -- the field only ever holds a freshly dropped file, and
-     * {@see persistAutosavedField()} converts the stored disk path to a URL
-     * before writing it to the setting. The current image is rendered by a
-     * separate {@see Image} component reading {@see BrandingSupport}
-     * directly, so the drop zone never needs to hydrate the existing file.
+     * Drag-and-drop upload for the logo/banner. Not bound to the asset
+     * directly -- the field only ever holds a freshly dropped file, and
+     * {@see persistAutosavedField()} moves it into the `branding` slot. The
+     * current image is rendered by a separate {@see Image} component reading
+     * {@see BrandingSupport} directly, so the drop zone never needs to hydrate
+     * the existing file.
      *
-     * Deterministic filename ("logo.png") so a re-upload overwrites in
-     * place and the URL never changes.
+     * Deterministic staging filename ("logo.webp") so an abandoned upload is
+     * overwritten by the next one rather than accumulating.
      */
     private function upload(string $key): FileUpload
     {
@@ -415,9 +441,11 @@ class Branding extends Page
                 ->imageAspectRatio('1:1')
                 ->automaticallyOpenImageEditorForAspectRatio())
             ->previewable(false)
-            ->disk(config('filesystems.public_files'))
-            ->directory('branding')
-            ->visibility('public')
+            // Staging only. persistAutosavedField() moves the file into an
+            // asset row and deletes it from here; the private disk keeps an
+            // upload out of reach in between.
+            ->disk(Asset::STAGING_DISK)
+            ->directory(Asset::PATH_PREFIX.'/staging')
             ->getUploadedFileNameForStorageUsing(
                 fn (TemporaryUploadedFile $file): string => $key.'.'.strtolower($file->getClientOriginalExtension())
             )

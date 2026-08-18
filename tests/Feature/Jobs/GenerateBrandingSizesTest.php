@@ -2,63 +2,68 @@
 
 declare(strict_types=1);
 
+use App\Features\Assets\AssetService;
+use App\Features\Assets\Enums\AssetSlot;
+use App\Features\Assets\Models\Asset;
 use App\Jobs\GenerateBrandingSizes;
-use App\Models\Setting;
 use App\Services\ImageUploadService;
-use Illuminate\Http\UploadedFile;
+use App\Support\Branding;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-function derivativeSettingValue(int $size): ?string
+function derivative(int $size): ?Asset
 {
-    return Setting::where('id', Setting::formatKey("branding.logo_{$size}_url"))->value('value');
-}
-
-function putFakeLogo(string $path = 'branding/logo.png'): string
-{
-    Storage::disk(config('filesystems.public_files'))->putFileAs(
-        'branding',
-        UploadedFile::fake()->image('logo.png', 256, 256),
-        basename($path),
-    );
-
-    return $path;
+    return app(AssetService::class)->find(AssetSlot::BRANDING, Branding::KEY_LOGO.'-'.$size);
 }
 
 /**
- * A real, solid-colour PNG (UploadedFile::fake()->image() produces
- * visually-empty placeholders that resize to identical bytes regardless of
- * colour, so re-upload tests need genuinely different source pixels).
+ * A real, solid-colour PNG stored as the `logo` asset. A placeholder image will
+ * not do: {@see UploadedFile::fake()} produces visually-empty images that
+ * resize to identical bytes regardless of colour, so a re-upload test could not
+ * tell a regenerated derivative from a stale one.
  */
-function putSolidLogo(string $path, int $red): void
+function putLogoAsset(int $red = 255): Asset
 {
     $image = imagecreatetruecolor(256, 256);
     imagefill($image, 0, 0, imagecolorallocate($image, $red, 0, 0));
     ob_start();
     imagepng($image);
-    $bytes = ob_get_clean();
+    $bytes = (string) ob_get_clean();
     imagedestroy($image);
 
-    Storage::disk(config('filesystems.public_files'))->put($path, $bytes);
+    return app(AssetService::class)->storeContents($bytes, AssetSlot::BRANDING, Branding::KEY_LOGO, isPublic: true);
 }
 
-it('writes three derivative files and three setting keys', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-    $path = putFakeLogo();
+beforeEach(function (): void {
+    fakeAssetDisks();
+});
 
-    new GenerateBrandingSizes($path)->handle();
+/** Branding assets are public, so their bytes live on the public disk. */
+function assetDisk(Asset $asset)
+{
+    return Storage::disk($asset->diskName());
+}
 
-    $disk = Storage::disk(config('filesystems.public_files'));
+it('writes three derivative assets', function (): void {
+    $logo = putLogoAsset();
+
+    new GenerateBrandingSizes($logo->id)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        $disk->assertExists("branding/logo-{$size}.webp");
-        expect(derivativeSettingValue($size))->not->toBeEmpty();
+        $asset = derivative($size);
+
+        expect($asset)->not->toBeNull()
+            ->and($asset->content_type)->toBe('image/webp')
+            // Public, because the 32px one is the favicon the login screen asks
+            // for before anyone has logged in.
+            ->and($asset->is_public)->toBeTrue();
+
+        assetDisk($asset)->assertExists($asset->path);
     }
 });
 
-it('fails soft and leaves the derivative keys empty when no image extension is available', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-    $path = putFakeLogo();
+it('fails soft and writes no derivatives when no image extension is available', function (): void {
+    $logo = putLogoAsset();
 
     Log::shouldReceive('warning')->once()->with(Mockery::pattern('/no image extension/i'));
 
@@ -69,38 +74,29 @@ it('fails soft and leaves the derivative keys empty when no image extension is a
     $service->shouldReceive('rasterDriver')->andReturn(null);
     app()->instance(ImageUploadService::class, $service);
 
-    new GenerateBrandingSizes($path)->handle();
-
-    $disk = Storage::disk(config('filesystems.public_files'));
+    new GenerateBrandingSizes($logo->id)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        $disk->assertMissing("branding/logo-{$size}.webp");
-        expect(derivativeSettingValue($size))->toBe('');
+        expect(derivative($size))->toBeNull();
     }
 });
 
-it('regenerates the derivative files and keeps the setting keys filled on re-upload', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-    $disk = Storage::disk(config('filesystems.public_files'));
-    $path = 'branding/logo.png';
-    putSolidLogo($path, red: 255);
+it('regenerates the derivatives on re-upload', function (): void {
+    $logo = putLogoAsset(red: 255);
 
-    new GenerateBrandingSizes($path)->handle();
-    $firstBytes = $disk->get('branding/logo-64.webp');
-    $firstUrl = derivativeSettingValue(64);
+    new GenerateBrandingSizes($logo->id)->handle();
+    $firstBytes = assetDisk(derivative(64))->get(derivative(64)->path);
 
-    // Re-upload: different image bytes land at the same deterministic path.
-    putSolidLogo($path, red: 0);
+    // Re-upload: different pixels, same (slot, key), so the same asset row.
+    $logo = putLogoAsset(red: 0);
 
-    new GenerateBrandingSizes($path)->handle();
+    new GenerateBrandingSizes($logo->id)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        $disk->assertExists("branding/logo-{$size}.webp");
-        expect(derivativeSettingValue($size))->not->toBeEmpty();
+        expect(derivative($size))->not->toBeNull();
     }
 
-    expect($disk->get('branding/logo-64.webp'))->not->toBe($firstBytes)
-        ->and(derivativeSettingValue(64))->toBe($firstUrl);
+    expect(assetDisk(derivative(64))->get(derivative(64)->path))->not->toBe($firstBytes);
 });
 
 /**
@@ -110,10 +106,6 @@ it('regenerates the derivative files and keeps the setting keys filled on re-upl
  * fit($s, $s) crops to the best-fitting square first.
  */
 it('produces square derivatives from a non-square source', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-
-    $disk = Storage::disk(config('filesystems.public_files'));
-
     // 400x100, blue everywhere except a green band in the leftmost 50px.
     // fit() takes the best-fitting square from the CENTRE (x 150-250), so the
     // green never survives. resize() would squash the full width into the
@@ -125,23 +117,23 @@ it('produces square derivatives from a non-square source', function (): void {
     imagefilledrectangle($wide, 0, 0, 49, 99, imagecolorallocate($wide, 0, 200, 0));
     ob_start();
     imagepng($wide);
-    $bytes = ob_get_clean();
+    $bytes = (string) ob_get_clean();
     imagedestroy($wide);
 
-    $disk->put('branding/logo.png', $bytes);
+    $logo = app(AssetService::class)->storeContents($bytes, AssetSlot::BRANDING, Branding::KEY_LOGO, isPublic: true);
 
-    new GenerateBrandingSizes('branding/logo.png')->handle();
+    new GenerateBrandingSizes($logo->id)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        $webp = $disk->get("branding/logo-{$size}.webp");
+        $webp = (string) assetDisk(derivative($size))->get(derivative($size)->path);
         $info = getimagesizefromstring($webp);
 
         expect($info[0])->toBe($size)
             ->and($info[1])->toBe($size);
 
-        $derivative = imagecreatefromstring($webp);
-        $topLeft = imagecolorsforindex($derivative, imagecolorat($derivative, 1, 1));
-        imagedestroy($derivative);
+        $image = imagecreatefromstring($webp);
+        $topLeft = imagecolorsforindex($image, imagecolorat($image, 1, 1));
+        imagedestroy($image);
 
         // Blue-dominant means the centre crop won; green-dominant means the
         // source was stretched instead of cropped.
@@ -155,22 +147,19 @@ it('produces square derivatives from a non-square source', function (): void {
  * It also does not need to be: one resolution-independent file serves every
  * size. Every SVG logo upload used to land in failed_jobs because of this.
  */
-it('points every size at the original for an SVG logo instead of failing', function (): void {
-    Storage::fake(config('filesystems.public_files'));
+it('copies the original into every size for an SVG logo instead of failing', function (): void {
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
+    $logo = app(AssetService::class)->storeContents($svg, AssetSlot::BRANDING, Branding::KEY_LOGO, isPublic: true);
 
-    $disk = Storage::disk(config('filesystems.public_files'));
-    $disk->put('branding/logo.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>');
-
-    new GenerateBrandingSizes('branding/logo.svg')->handle();
-
-    $expected = $disk->url('branding/logo.svg');
+    new GenerateBrandingSizes($logo->id)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        expect(derivativeSettingValue($size))->toBe($expected);
-    }
+        $asset = derivative($size);
 
-    // No raster derivatives were written.
-    expect($disk->exists('branding/logo-32.svg'))->toBeFalse();
+        expect($asset)->not->toBeNull()
+            ->and($asset->content_type)->toBe('image/svg+xml')
+            ->and(assetDisk($asset)->get($asset->path))->toBe($svg);
+    }
 });
 
 /**
@@ -180,22 +169,17 @@ it('points every size at the original for an SVG logo instead of failing', funct
  * the encode format does.
  */
 it('still writes derivatives in the source format when webp is unavailable', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-
-    $disk = Storage::disk(config('filesystems.public_files'));
-    putSolidLogo('branding/logo.png', 40);
+    $logo = putLogoAsset(40);
 
     $service = Mockery::mock(ImageUploadService::class)->makePartial();
     $service->shouldReceive('webpDriver')->andReturn(null);
     $service->shouldReceive('rasterDriver')->andReturn('gd');
     app()->instance(ImageUploadService::class, $service);
 
-    new GenerateBrandingSizes('branding/logo.png')->handle();
+    new GenerateBrandingSizes($logo->id)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        expect($disk->exists("branding/logo-{$size}.png"))->toBeTrue()
-            ->and($disk->exists("branding/logo-{$size}.webp"))->toBeFalse()
-            ->and(derivativeSettingValue($size))->toEndWith('.png');
+        expect(derivative($size)?->content_type)->toBe('image/png');
     }
 });
 
@@ -207,10 +191,7 @@ it('still writes derivatives in the source format when webp is unavailable', fun
  * soft. Format and encoder must come from the same driver.
  */
 it('encodes with the same driver that chose the format', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-
-    $disk = Storage::disk(config('filesystems.public_files'));
-    putSolidLogo('branding/logo.png', 90);
+    $logo = putLogoAsset(90);
 
     // GD loaded but WebP-incapable; Imagick can do WebP.
     $service = Mockery::mock(ImageUploadService::class)->makePartial();
@@ -218,32 +199,50 @@ it('encodes with the same driver that chose the format', function (): void {
     $service->shouldReceive('rasterDriver')->andReturn('gd');
     app()->instance(ImageUploadService::class, $service);
 
-    new GenerateBrandingSizes('branding/logo.png')->handle();
+    new GenerateBrandingSizes($logo->id)->handle();
 
     // webp was chosen, so the imagick driver must have done the encoding.
     foreach ([32, 64, 180] as $size) {
-        expect($disk->exists("branding/logo-{$size}.webp"))->toBeTrue()
-            ->and(derivativeSettingValue($size))->toEndWith('.webp');
+        expect(derivative($size)?->content_type)->toBe('image/webp');
+    }
+})->skip(
+    !extension_loaded('imagick'),
+    // The mock names imagick as the WebP driver, so the job really does
+    // construct an Imagick ImageManager and intervention throws
+    // NotSupportedException without the extension. Nothing about the job under
+    // test can make this pass on a build that has no imagick.
+    'requires the imagick extension',
+);
+
+/**
+ * The fail-soft contract covers the whole derivative path, not just a missing
+ * GD/Imagick. A source deleted between the upload and the queue run would
+ * otherwise throw out of handle() and retry into failed_jobs over what is a
+ * favicon.
+ */
+it('fails soft and writes no derivatives when the source asset is gone', function (): void {
+    Log::shouldReceive('warning')->once()->with(Mockery::pattern('/no longer exists/i'));
+
+    new GenerateBrandingSizes('never-stored-id')->handle();
+
+    foreach ([32, 64, 180] as $size) {
+        expect(derivative($size))->toBeNull();
     }
 });
 
 /**
- * The fail-soft contract covers the whole derivative path, not just a missing
- * GD/Imagick. A source that vanished between the upload and the queue run
- * would otherwise throw out of handle() and retry into failed_jobs over what
- * is a favicon.
+ * The row can survive while its file does not. That path has to warn and stop,
+ * not throw.
  */
-it('fails soft and leaves the derivative keys empty when the source file is gone', function (): void {
-    Storage::fake(config('filesystems.public_files'));
+it('fails soft when the source row survives but its file is gone', function (): void {
+    $logo = putLogoAsset();
+    assetDisk($logo)->delete($logo->path);
 
     Log::shouldReceive('warning')->once()->with(Mockery::pattern('/could not generate logo derivatives/i'));
 
-    new GenerateBrandingSizes('branding/never-uploaded.png')->handle();
-
-    $disk = Storage::disk(config('filesystems.public_files'));
+    new GenerateBrandingSizes($logo->id)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        $disk->assertMissing("branding/logo-{$size}.webp");
-        expect(derivativeSettingValue($size))->toBe('');
+        expect(derivative($size))->toBeNull();
     }
 });

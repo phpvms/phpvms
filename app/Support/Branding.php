@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Features\Assets\Enums\AssetSlot;
+use App\Features\Assets\Models\Asset;
+use App\Jobs\GenerateBrandingSizes;
 use Filament\Support\Colors\Color;
 
 /**
@@ -12,8 +15,11 @@ use Filament\Support\Colors\Color;
  * hardcoded prior to this class existing, so an install with nothing
  * configured renders unchanged.
  *
- * Holds no state: every accessor reads through the `setting()` helper on
- * every call rather than memoizing. It is bound as a container singleton
+ * Images resolve from the `assets` table (slot `branding`); the name and brand
+ * colour are still settings, because a name and a colour are not files.
+ *
+ * Holds no state: every accessor reads through `setting()` or a (slot, key)
+ * lookup on every call rather than memoizing. It is bound as a container singleton
  * (`AppServiceProvider`) purely for convenient reuse of one instance, not for
  * caching — if this class ever gains a memo, that memo must be added to
  * `config/octane.php`'s `flush` array, the same way `SettingService` is.
@@ -22,6 +28,35 @@ final class Branding
 {
     /** Fallback brand colour: the phpVMS blue. */
     private const string DEFAULT_BRAND_COLOR = '#067ec1';
+
+    /**
+     * Asset keys in the `branding` slot. Fixed names, not admin-chosen: this
+     * class and the ACARS client both look them up by name, so they are part of
+     * the contract rather than data. The derivatives are `logo-32`, `logo-64`
+     * and `logo-180`, written by {@see GenerateBrandingSizes}.
+     */
+    public const string KEY_LOGO = 'logo';
+
+    public const string KEY_LOGO_DARK = 'logo-dark';
+
+    public const string KEY_BANNER = 'banner';
+
+    /**
+     * URL of a `branding` asset, or null when the install has not uploaded one.
+     *
+     * One indexed lookup on (slot, key) per call, deliberately not memoized —
+     * see the class docblock. Every accessor below terminates in a bundled
+     * asset when this returns null, so an install with an empty `assets` table
+     * renders exactly as it does today.
+     */
+    private function url(string $key): ?string
+    {
+        return Asset::query()
+            ->slot(AssetSlot::BRANDING)
+            ->where('key', $key)
+            ->first()
+            ?->url();
+    }
 
     /**
      * Airline display name. Falls back to `config('app.name')` when
@@ -43,12 +78,12 @@ final class Branding
         $default = asset('assets/img/logo_blue.svg');
 
         if ($size === null) {
-            return setting('branding.logo_url', '') ?: $default;
+            return $this->url(self::KEY_LOGO) ?? $default;
         }
 
-        return setting("branding.logo_{$size}_url", '')
-            ?: setting('branding.logo_url', '')
-            ?: $default;
+        return $this->url(self::KEY_LOGO.'-'.$size)
+            ?? $this->url(self::KEY_LOGO)
+            ?? $default;
     }
 
     /**
@@ -59,7 +94,7 @@ final class Branding
      */
     public function hasLogo(): bool
     {
-        return setting('branding.logo_url', '') !== '';
+        return $this->url(self::KEY_LOGO) !== null;
     }
 
     /**
@@ -68,7 +103,7 @@ final class Branding
      */
     public function logoDark(): string
     {
-        return setting('branding.logo_dark_url', '') ?: $this->logo();
+        return $this->url(self::KEY_LOGO_DARK) ?? $this->logo();
     }
 
     /**
@@ -76,7 +111,7 @@ final class Branding
      */
     public function hasDarkLogo(): bool
     {
-        return setting('branding.logo_dark_url', '') !== '';
+        return $this->url(self::KEY_LOGO_DARK) !== null;
     }
 
     /**
@@ -86,7 +121,7 @@ final class Branding
      */
     public function favicon(): string
     {
-        return setting('branding.logo_32_url', '') ?: asset('assets/img/favicon.png');
+        return $this->url(self::KEY_LOGO.'-32') ?? asset('assets/img/favicon.png');
     }
 
     /**
@@ -94,7 +129,7 @@ final class Branding
      */
     public function banner(): ?string
     {
-        return setting('branding.banner_url', '') ?: null;
+        return $this->url(self::KEY_BANNER);
     }
 
     /**

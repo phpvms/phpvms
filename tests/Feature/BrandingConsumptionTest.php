@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Middleware\UpdatePending;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Branding;
 use Filament\Facades\Filament;
 use Filament\Support\Colors\Color;
 use Igaster\LaravelTheme\Facades\Theme;
@@ -30,13 +31,14 @@ function actAsAdmin(): User
 
 beforeEach(function (): void {
     $this->withoutMiddleware(UpdatePending::class);
+    fakeAssetDisks();
 });
 
 describe('admin panel, with branding configured', function (): void {
     beforeEach(function (): void {
         updateSetting('general.site_name', 'Acme Air');
-        updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
-        updateSetting('branding.logo_32_url', 'https://cdn.example.com/logo-32.png');
+        $this->logo = createBrandingAsset(Branding::KEY_LOGO);
+        $this->favicon = createBrandingAsset(Branding::KEY_LOGO.'-32');
 
         actingAs(actAsAdmin());
     });
@@ -45,7 +47,7 @@ describe('admin panel, with branding configured', function (): void {
         Filament::setCurrentPanel('admin');
         $panel = Filament::getPanel('admin');
 
-        expect($panel->getFavicon())->toBe('https://cdn.example.com/logo-32.png')
+        expect($panel->getFavicon())->toBe($this->favicon->url())
             ->and((string) $panel->getBrandName())->toBe('Acme Air');
     });
 
@@ -53,7 +55,7 @@ describe('admin panel, with branding configured', function (): void {
         get('/admin')
             ->assertOk()
             ->assertSee('Acme Air')
-            ->assertSee('https://cdn.example.com/logo.png', escape: false);
+            ->assertSee($this->logo->url(), escape: false);
     });
 });
 
@@ -86,7 +88,7 @@ describe('admin panel, with nothing configured', function (): void {
 });
 
 it('renders a single img tag when no dark logo is set', function (): void {
-    updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+    createBrandingAsset(Branding::KEY_LOGO);
 
     Filament::setCurrentPanel('admin');
 
@@ -94,23 +96,23 @@ it('renders a single img tag when no dark logo is set', function (): void {
 });
 
 it('renders two img tags with dark-mode variant classes when a dark logo is set', function (): void {
-    updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
-    updateSetting('branding.logo_dark_url', 'https://cdn.example.com/logo-dark.png');
+    $logo = createBrandingAsset(Branding::KEY_LOGO);
+    $dark = createBrandingAsset(Branding::KEY_LOGO_DARK);
 
     Filament::setCurrentPanel('admin');
 
     $html = view('filament.shared.brand')->render();
 
     expect(substr_count($html, '<img'))->toBe(2)
-        ->and($html)->toContain('https://cdn.example.com/logo.png')
-        ->and($html)->toContain('https://cdn.example.com/logo-dark.png')
+        ->and($html)->toContain($logo->url())
+        ->and($html)->toContain($dark->url())
         ->and($html)->toContain('dark:hidden')
         ->and($html)->toContain('dark:block');
 });
 
 it('leaves the system panel showing phpVMS branding regardless of airline settings', function (): void {
     updateSetting('general.site_name', 'Acme Air');
-    updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+    $logo = createBrandingAsset(Branding::KEY_LOGO);
 
     Filament::setCurrentPanel('system');
 
@@ -118,7 +120,7 @@ it('leaves the system panel showing phpVMS branding regardless of airline settin
         ->toContain('phpvms')
         ->toContain(asset('assets/img/logo_blue.svg'))
         ->not->toContain('Acme Air')
-        ->not->toContain('https://cdn.example.com/logo.png');
+        ->not->toContain($logo->url());
 });
 
 describe('frontend (seven theme), with branding configured', function (): void {
@@ -128,36 +130,34 @@ describe('frontend (seven theme), with branding configured', function (): void {
         Theme::set('seven');
         updateSetting('general.theme', 'seven');
         updateSetting('general.site_name', 'Acme Air');
-        updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
-        updateSetting('branding.banner_url', 'https://cdn.example.com/banner.png');
+        $this->logo = createBrandingAsset(Branding::KEY_LOGO);
+        $this->banner = createBrandingAsset(Branding::KEY_BANNER);
     });
 
     it('resolves favicon, logo and site name through Branding', function (): void {
         $this->followingRedirects()->get('/livemap')
             ->assertOk()
             ->assertSee('Acme Air')
-            ->assertSee('https://cdn.example.com/logo.png', escape: false);
+            ->assertSee($this->logo->url(), escape: false);
     });
 
     it('replaces the navbar logo with the uploaded one', function (): void {
         $this->followingRedirects()->get('/livemap')
             ->assertOk()
-            ->assertSee('https://cdn.example.com/logo.png', escape: false)
+            ->assertSee($this->logo->url(), escape: false)
             ->assertDontSee(public_asset('/assets/img/logo_blue_bg.svg'), escape: false);
     });
 
+    // Still load-bearing after the move to assets: a public asset's URL comes
+    // from Storage::url(), which on the local public disk is a relative
+    // `/storage/...` path. og:image has to be absolute, so the theme's url()
+    // wrapping is what makes this correct.
     it('emits an absolute og:image tag', function (): void {
-        $this->followingRedirects()->get('/livemap')
-            ->assertOk()
-            ->assertSee('<meta property="og:image" content="https://cdn.example.com/banner.png" />', escape: false);
-    });
-
-    it('makes a relative banner path absolute, as Storage::url() returns on the local public disk', function (): void {
-        updateSetting('branding.banner_url', '/storage/branding/banner.png');
+        expect($this->banner->url())->toStartWith('/storage/');
 
         $this->followingRedirects()->get('/livemap')
             ->assertOk()
-            ->assertSee('<meta property="og:image" content="'.url('/storage/branding/banner.png').'" />', escape: false);
+            ->assertSee('<meta property="og:image" content="'.url($this->banner->url()).'" />', escape: false);
     });
 });
 

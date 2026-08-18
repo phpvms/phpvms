@@ -55,6 +55,7 @@ describe('with no settings rows at all', function (): void {
 describe('with the branding rows seeded but empty', function (): void {
     beforeEach(function (): void {
         brandingMigrationForBrandingTest()->up();
+        fakeAssetDisks();
     });
 
     it('falls back to the bundled assets and app config', function (): void {
@@ -67,18 +68,18 @@ describe('with the branding rows seeded but empty', function (): void {
             ->and($branding->brandColor())->toBe('#067ec1');
     });
 
-    it('returns the setting value once one is set', function (): void {
+    it('returns the stored value once one is set', function (): void {
         setBrandingSetting('general.site_name', 'Acme Air');
         setBrandingSetting('branding.brand_color', '#ff0000');
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
-        setBrandingSetting('branding.banner_url', 'https://cdn.example.com/banner.png');
+        $logo = createBrandingAsset(Branding::KEY_LOGO);
+        $banner = createBrandingAsset(Branding::KEY_BANNER);
 
         $branding = app(Branding::class);
 
         expect($branding->name())->toBe('Acme Air')
             ->and($branding->brandColor())->toBe('#ff0000')
-            ->and($branding->logo())->toBe('https://cdn.example.com/logo.png')
-            ->and($branding->banner())->toBe('https://cdn.example.com/banner.png');
+            ->and($branding->logo())->toBe($logo->url())
+            ->and($branding->banner())->toBe($banner->url());
     });
 
     it('hasLogo is false until a logo has been uploaded', function (): void {
@@ -86,50 +87,52 @@ describe('with the branding rows seeded but empty', function (): void {
     });
 
     it('hasLogo is true once a logo has been uploaded', function (): void {
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+        createBrandingAsset(Branding::KEY_LOGO);
 
         expect(app(Branding::class)->hasLogo())->toBeTrue();
     });
 
-    it('sized logo falls back to the original when the derivative is empty', function (): void {
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+    it('sized logo falls back to the original when the derivative is missing', function (): void {
+        $logo = createBrandingAsset(Branding::KEY_LOGO);
 
-        expect(app(Branding::class)->logo(64))->toBe('https://cdn.example.com/logo.png');
+        expect(app(Branding::class)->logo(64))->toBe($logo->url());
     });
 
     it('sized logo prefers the derivative over the original', function (): void {
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
-        setBrandingSetting('branding.logo_64_url', 'https://cdn.example.com/logo-64.png');
+        $logo = createBrandingAsset(Branding::KEY_LOGO);
+        $derivative = createBrandingAsset(Branding::KEY_LOGO.'-64');
 
-        expect(app(Branding::class)->logo(64))->toBe('https://cdn.example.com/logo-64.png');
+        expect(app(Branding::class)->logo(64))->toBe($derivative->url())
+            ->and(app(Branding::class)->logo(64))->not->toBe($logo->url());
     });
 
     it('favicon never falls back to the full-size original', function (): void {
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+        $logo = createBrandingAsset(Branding::KEY_LOGO);
 
-        // logo_32_url is deliberately left empty.
+        // The logo-32 derivative is deliberately absent.
         expect(app(Branding::class)->favicon())->toBe(asset('assets/img/favicon.png'))
-            ->and(app(Branding::class)->favicon())->not->toBe('https://cdn.example.com/logo.png');
+            ->and(app(Branding::class)->favicon())->not->toBe($logo->url());
     });
 
     it('favicon uses the 32px derivative when present', function (): void {
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
-        setBrandingSetting('branding.logo_32_url', 'https://cdn.example.com/logo-32.png');
+        createBrandingAsset(Branding::KEY_LOGO);
+        $favicon = createBrandingAsset(Branding::KEY_LOGO.'-32');
 
-        expect(app(Branding::class)->favicon())->toBe('https://cdn.example.com/logo-32.png');
+        expect(app(Branding::class)->favicon())->toBe($favicon->url());
     });
 
     it('logoDark falls back to the light logo when unset', function (): void {
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+        $logo = createBrandingAsset(Branding::KEY_LOGO);
 
-        expect(app(Branding::class)->logoDark())->toBe('https://cdn.example.com/logo.png');
+        expect(app(Branding::class)->logoDark())->toBe($logo->url());
     });
 
     it('logoDark returns the dark logo once one is set', function (): void {
-        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
-        setBrandingSetting('branding.logo_dark_url', 'https://cdn.example.com/logo-dark.png');
+        $logo = createBrandingAsset(Branding::KEY_LOGO);
+        $dark = createBrandingAsset(Branding::KEY_LOGO_DARK);
 
-        expect(app(Branding::class)->logoDark())->toBe('https://cdn.example.com/logo-dark.png');
+        expect(app(Branding::class)->logoDark())->toBe($dark->url())
+            ->and(app(Branding::class)->logoDark())->not->toBe($logo->url());
     });
 
     it('hasDarkLogo is false until a dark logo has been uploaded', function (): void {
@@ -137,7 +140,7 @@ describe('with the branding rows seeded but empty', function (): void {
     });
 
     it('hasDarkLogo is true once a dark logo has been uploaded', function (): void {
-        setBrandingSetting('branding.logo_dark_url', 'https://cdn.example.com/logo-dark.png');
+        createBrandingAsset(Branding::KEY_LOGO_DARK);
 
         expect(app(Branding::class)->hasDarkLogo())->toBeTrue();
     });

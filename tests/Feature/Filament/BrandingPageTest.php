@@ -3,13 +3,16 @@
 declare(strict_types=1);
 
 use App\Enums\NavigationGroup;
+use App\Features\Assets\AssetService;
+use App\Features\Assets\Enums\AssetSlot;
+use App\Features\Assets\Models\Asset;
 use App\Filament\Pages\Branding;
 use App\Jobs\GenerateBrandingSizes;
 use App\Models\Permission;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\ImageUploadService;
-use App\Services\SettingService;
+use App\Support\Branding as BrandingSupport;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
@@ -19,7 +22,14 @@ use Livewire\Livewire;
 
 beforeEach(function (): void {
     Filament::setCurrentPanel('admin');
+    // Every upload here lands on the asset disk, staging included.
+    fakeAssetDisks();
 });
+
+function brandingAsset(string $key): ?Asset
+{
+    return app(AssetService::class)->find(AssetSlot::BRANDING, $key);
+}
 
 function brandingUser(string ...$permissions): User
 {
@@ -94,19 +104,42 @@ it('rejects an invalid hex colour and writes nothing', function (): void {
 });
 
 it('autosaves the logo upload without calling save', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
 
     Livewire::test(Branding::class)
         ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
         ->assertDispatched('autosaved');
 
-    $url = Setting::where('id', Setting::formatKey('branding.logo_url'))->value('value');
+    $asset = brandingAsset(BrandingSupport::KEY_LOGO);
 
-    expect($url)->not->toBeEmpty()
-        ->and($url)->toEndWith('.webp')
+    expect($asset)->not->toBeNull()
+        ->and($asset->content_type)->toBe('image/webp')
+        // Branding renders on the login screen, so it has to be reachable
+        // without a session.
+        ->and($asset->is_public)->toBeTrue()
         ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
+
+    // The staging copy is not left behind on the disk.
+    expect(Storage::disk(Asset::STAGING_DISK)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
+});
+
+/**
+ * Clearing the field removes the asset outright rather than leaving a row
+ * pointing at nothing. The bytes and the row are one thing.
+ */
+it('deletes the asset when the upload is cleared', function (): void {
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    $component = Livewire::test(Branding::class)
+        ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64));
+
+    $stored = brandingAsset(BrandingSupport::KEY_LOGO);
+    expect($stored)->not->toBeNull();
+
+    $component->set('data.logo');
+
+    expect(brandingAsset(BrandingSupport::KEY_LOGO))->toBeNull();
+    Storage::disk($stored->diskName())->assertMissing($stored->path);
 });
 
 /**
@@ -122,8 +155,6 @@ it('autosaves the logo upload without calling save', function (): void {
  * stored file would still end in .webp.
  */
 it('stores the original file unconverted when no webp driver is available', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-
     $mock = Mockery::mock(ImageUploadService::class)->makePartial();
     $mock->shouldReceive('webpDriver')->andReturn(null);
     app()->instance(ImageUploadService::class, $mock);
@@ -134,14 +165,10 @@ it('stores the original file unconverted when no webp driver is available', func
         ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
         ->assertDispatched('autosaved');
 
-    $url = Setting::where('id', Setting::formatKey('branding.logo_url'))->value('value');
-
-    expect($url)->not->toBeEmpty()
-        ->and($url)->toEndWith('.png');
+    expect(brandingAsset(BrandingSupport::KEY_LOGO)?->content_type)->toBe('image/png');
 });
 
 it('dispatches GenerateBrandingSizes when the logo is autosaved', function (): void {
-    Storage::fake(config('filesystems.public_files'));
     Queue::fake();
 
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
@@ -150,26 +177,26 @@ it('dispatches GenerateBrandingSizes when the logo is autosaved', function (): v
         ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
         ->assertDispatched('autosaved');
 
-    Queue::assertPushed(GenerateBrandingSizes::class, fn (GenerateBrandingSizes $job): bool => $job->diskPath === 'branding/logo.webp');
+    $asset = brandingAsset(BrandingSupport::KEY_LOGO);
+
+    Queue::assertPushed(
+        GenerateBrandingSizes::class,
+        fn (GenerateBrandingSizes $job): bool => $job->assetId === $asset->id,
+    );
 });
 
 it('autosaves the dark logo upload without calling save', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
 
     Livewire::test(Branding::class)
         ->set('data.logo_dark', UploadedFile::fake()->image('logo-dark.png', 64, 64))
         ->assertDispatched('autosaved');
 
-    $url = Setting::where('id', Setting::formatKey('branding.logo_dark_url'))->value('value');
-
-    expect($url)->not->toBeEmpty()
+    expect(brandingAsset(BrandingSupport::KEY_LOGO_DARK))->not->toBeNull()
         ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
 });
 
 it('does not dispatch GenerateBrandingSizes when the dark logo is autosaved', function (): void {
-    Storage::fake(config('filesystems.public_files'));
     Queue::fake();
 
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
@@ -182,7 +209,6 @@ it('does not dispatch GenerateBrandingSizes when the dark logo is autosaved', fu
 });
 
 it('does not dispatch GenerateBrandingSizes when the banner is autosaved', function (): void {
-    Storage::fake(config('filesystems.public_files'));
     Queue::fake();
 
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
@@ -274,19 +300,22 @@ it('enables a 1:1 image editor on both logo uploads but not the banner', functio
  * Uploading a logo silently destroyed the banner and dark logo.
  */
 it('does not wipe the other uploads when one is autosaved', function (): void {
-    Storage::fake(config('filesystems.public_files'));
-
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
 
-    $settings = app(SettingService::class);
-    $settings->store('branding.banner_url', 'https://example.test/storage/branding/banner.webp');
-    $settings->store('branding.logo_dark_url', 'https://example.test/storage/branding/logo_dark.webp');
+    $banner = createBrandingAsset(BrandingSupport::KEY_BANNER);
+    $dark = createBrandingAsset(BrandingSupport::KEY_LOGO_DARK);
 
     Livewire::test(Branding::class)
         ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
         ->assertDispatched('autosaved');
 
-    expect(Setting::find('branding_banner_url')->value)->toBe('https://example.test/storage/branding/banner.webp')
-        ->and(Setting::find('branding_logo_dark_url')->value)->toBe('https://example.test/storage/branding/logo_dark.webp')
-        ->and(Setting::find('branding_logo_url')->value)->not->toBeEmpty();
+    // Now that a blank field DELETES its asset, an untouched field being
+    // persisted would destroy a file rather than blank a string -- so this is
+    // load-bearing in a way it was not before.
+    expect(brandingAsset(BrandingSupport::KEY_BANNER)?->id)->toBe($banner->id)
+        ->and(brandingAsset(BrandingSupport::KEY_LOGO_DARK)?->id)->toBe($dark->id)
+        ->and(brandingAsset(BrandingSupport::KEY_LOGO))->not->toBeNull();
+
+    Storage::disk($banner->diskName())->assertExists($banner->path);
+    Storage::disk($dark->diskName())->assertExists($dark->path);
 });

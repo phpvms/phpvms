@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Airlines\Schemas;
 
+use App\Features\Assets\AssetService;
+use App\Features\Assets\Enums\AssetSlot;
+use App\Features\Assets\Models\Asset;
 use App\Filament\Concerns\AutosavesFields;
 use App\Models\Airline;
 use App\Services\ImageUploadService;
@@ -105,12 +108,13 @@ class AirlineForm
             // The preview lives in the other column of this card, so the drop
             // zone stays a drop zone.
             ->previewable(false)
-            ->disk(config('filesystems.public_files'))
-            ->directory(Airline::LOGO_DIRECTORY)
-            ->visibility('public')
-            // Name the file after the airline so replacing a logo overwrites it
-            // in place and the URL never changes -- logo_hash is what tells a
-            // client the image behind that URL is new. A record that has not
+            // Staging only. persistLogo() moves the file into an `airline-logo`
+            // asset and deletes it from here; the private disk keeps an
+            // unreviewed upload out of reach in between.
+            ->disk(Asset::STAGING_DISK)
+            ->directory(Asset::PATH_PREFIX.'/staging')
+            // Deterministic staging name, so an abandoned upload is overwritten
+            // by the next one rather than accumulating. A record that has not
             // been created yet has no id to use, so it falls back to a ULID.
             ->getUploadedFileNameForStorageUsing(
                 fn (TemporaryUploadedFile $file, ?Airline $record): string => ($record->id ?? Str::ulid()).'.'.strtolower($file->getClientOriginalExtension())
@@ -165,38 +169,60 @@ class AirlineForm
      */
     private static function previewUrl(mixed $state, ?Airline $record): ?string
     {
-        $logo = Arr::first(Arr::wrap($state));
+        $staged = Arr::first(Arr::wrap($state));
 
-        if (!is_string($logo) || blank($logo)) {
+        // A freshly dropped file is still in staging on the private disk, which
+        // has no URL. The saved asset is the only thing that renders, so fall
+        // through to it and let the autosave swap the preview a moment later.
+        if (!is_string($staged) || blank($staged)) {
             return $record?->logo_url;
         }
 
-        return Airline::resolveLogoUrl($logo);
+        return $record?->refresh()->logo_url;
     }
 
     /**
-     * Write the logo straight to the record so an upload does not wait on the
-     * form being submitted. Skipped when the value has not actually changed.
-     * Called from EditAirline's persistAutosavedField (the trait notifies).
+     * Store the dropped logo as the airline's `airline-logo` asset, so an upload
+     * does not wait on the form being submitted. Called from EditAirline's
+     * persistAutosavedField (the trait notifies).
      */
-    public static function persistLogo(?Airline $record, ?string $logo): void
+    public static function persistLogo(?Airline $record, ?string $staged): void
     {
-        $logo = blank($logo) ? null : $logo;
-
-        if (!$record instanceof Airline || !$record->exists || $logo === $record->logo) {
+        if (!$record instanceof Airline || !$record->exists) {
             return;
         }
 
-        $previous = $record->logo;
+        $assets = app(AssetService::class);
 
-        // logo_hash is stamped by the model whenever logo is set.
-        $record->update(['logo' => $logo]);
+        // Clearing the field removes the mark outright — the row and its file
+        // are one thing. The external-URL column is left alone; it is a
+        // different way of having a logo, not this one.
+        if (blank($staged)) {
+            $assets->find(AssetSlot::AIRLINE_LOGO, $record->icao)?->delete();
+            $record->unsetRelation('logoAsset');
 
-        // Drop the file that was just replaced. Deterministic naming means a
-        // re-upload of the same type overwrites in place, so only a changed
-        // path (or a cleared logo) can leave an orphan behind.
-        if (filled($previous) && str_starts_with((string) $previous, Airline::LOGO_DIRECTORY.'/')) {
-            Storage::disk(config('filesystems.public_files'))->delete($previous);
+            return;
         }
+
+        $disk = Storage::disk(Asset::STAGING_DISK);
+
+        // ImageUploadService has already converted to WebP and sanitised any
+        // SVG on the way into staging; AssetService decides where it lives.
+        $assets->storeContents(
+            (string) $disk->get($staged),
+            AssetSlot::AIRLINE_LOGO,
+            $record->icao,
+            name: $record->icao,
+            userId: auth()->id(),
+            // Airline marks render on public flight pages, so they are fetched
+            // without a session.
+            isPublic: true,
+        );
+
+        $disk->delete($staged);
+
+        // The relation was resolved before the asset existed; drop the memo so
+        // the preview reads the new one rather than the miss.
+        $record->unsetRelation('logoAsset');
     }
 }
