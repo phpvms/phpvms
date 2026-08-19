@@ -1,10 +1,11 @@
 <?php
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
 use App\Models\Airline;
+use App\Models\Asset;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -62,15 +63,28 @@ return new class() extends Migration
                     // Never fail the upgrade over one logo. An unsupported file
                     // leaves that airline's column untouched, so it still
                     // renders through the legacy fallback.
+                    //
+                    // The SAVEPOINT is load-bearing: on Postgres a failed
+                    // statement aborts the whole transaction, and catching the
+                    // PHP exception does not clear that — every later statement
+                    // dies with 25P02 until a rollback. DB::transaction() nested
+                    // inside an open transaction issues SAVEPOINT / ROLLBACK TO
+                    // SAVEPOINT, which is what lets `continue` actually continue.
                     try {
-                        $assets->adopt(
+                        DB::transaction(fn () => $assets->adopt(
                             (string) $airline->logo,
-                            AssetSlot::AIRLINE_LOGO,
+                            Asset::SLOT_AIRLINE_LOGO,
                             (string) $airline->icao,
                             name: (string) $airline->icao,
                             isPublic: true,
-                        );
-                    } catch (Throwable) {
+                        ));
+                    } catch (Throwable $e) {
+                        Log::warning('airline_logos_to_assets: could not adopt airline logo', [
+                            'airline' => $airline->icao,
+                            'logo'    => $airline->logo,
+                            'error'   => $e->getMessage(),
+                        ]);
+
                         continue;
                     }
 
@@ -92,7 +106,7 @@ return new class() extends Migration
             return;
         }
 
-        $logos = DB::table('assets')->where('slot', AssetSlot::AIRLINE_LOGO->value)->get();
+        $logos = DB::table('assets')->where('slot', Asset::SLOT_AIRLINE_LOGO)->get();
 
         foreach ($logos as $asset) {
             DB::table('airlines')->where('icao', $asset->key)->update(['logo' => $asset->path]);
@@ -101,6 +115,6 @@ return new class() extends Migration
         // Deleted through the query builder ON PURPOSE, so Asset's `deleted`
         // hook does not fire and delete the very files the column now points
         // at again. The rows go; the files stay exactly where they always were.
-        DB::table('assets')->where('slot', AssetSlot::AIRLINE_LOGO->value)->delete();
+        DB::table('assets')->where('slot', Asset::SLOT_AIRLINE_LOGO)->delete();
     }
 };

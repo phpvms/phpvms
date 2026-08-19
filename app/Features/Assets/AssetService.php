@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Assets;
 
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Enums\AssetType;
-use App\Features\Assets\Models\Asset;
+use App\Models\Asset;
 use finfo;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -29,25 +27,30 @@ class AssetService
      * through, and defaults closed. Site branding needs it open — it renders on
      * the login screen — while sounds and paintkits do not.
      *
-     * The uploader chooses only slot, key and the bytes. The content type is
-     * sniffed from the file itself rather than trusted from the request:
-     * UploadedFile::getClientMimeType() is attacker-supplied, so a caller could
-     * otherwise register a script as an image and have it replayed with a
-     * Content-Type that makes a browser run it.
+     * The uploader chooses slot, key and the bytes. The content type is NOT
+     * taken from the request: UploadedFile::getClientMimeType() is
+     * attacker-supplied, so trusting it would let a caller register a script as
+     * an image and have it replayed with a Content-Type a browser executes.
      *
-     * @throws InvalidArgumentException when the file's real content type is not
-     *                                  one this slot's kind accepts
+     * By default the type is sniffed from the bytes. `$type` lets a caller name
+     * the kind instead, for the text formats sniffing cannot see; sniffing then
+     * acts as a veto rather than the source of truth. Either way the stored
+     * content type comes from the AssetTypes registry. See resolveKind().
+     *
+     * @throws InvalidArgumentException when nothing accepts the bytes, or they
+     *                                  contradict a declared `$type`
      */
     public function store(
         UploadedFile $file,
-        AssetSlot $slot,
+        string $slot,
         string $key,
         string $source = Asset::SOURCE_CORE,
         ?string $name = null,
         ?int $userId = null,
         bool $isPublic = false,
+        ?string $type = null,
     ): Asset {
-        return $this->storeContents($file->get(), $slot, $key, $source, $name, $userId, $isPublic);
+        return $this->storeContents($file->get(), $slot, $key, $source, $name, $userId, $isPublic, $type);
     }
 
     /**
@@ -59,29 +62,23 @@ class AssetService
      */
     public function storeContents(
         string $contents,
-        AssetSlot $slot,
+        string $slot,
         string $key,
         string $source = Asset::SOURCE_CORE,
         ?string $name = null,
         ?int $userId = null,
         bool $isPublic = false,
+        ?string $type = null,
     ): Asset {
-        $contentType = (string) new finfo(FILEINFO_MIME_TYPE)->buffer($contents);
-        $type = AssetType::forContentType($contentType);
+        $slot = $this->validSlot($slot);
+        [$type, $extension, $contentType] = $this->resolveKind($contents, $type);
 
-        if (!$type instanceof AssetType) {
-            throw new InvalidArgumentException(
-                "Unsupported asset content type [{$contentType}]."
-            );
-        }
-
-        $extension = $type->extensionFor($contentType);
         $existing = Asset::query()->slot($slot)->where('key', $key)->first();
 
         // Path is keyed on a fresh unique id rather than on {slot}/{key}, so a
         // replacement never overwrites the bytes a consumer may still be
         // fetching, and two assets can never contend for one path.
-        $path = Asset::PATH_PREFIX.'/'.$slot->value.'/'.uniqid('', true).'.'.$extension;
+        $path = Asset::PATH_PREFIX.'/'.$slot.'/'.uniqid('', true).'.'.$extension;
         $disk = Storage::disk(Asset::diskFor($isPublic));
 
         $disk->put($path, $contents);
@@ -126,7 +123,7 @@ class AssetService
      */
     public function adopt(
         string $path,
-        AssetSlot $slot,
+        string $slot,
         string $key,
         string $source = Asset::SOURCE_CORE,
         ?string $name = null,
@@ -138,15 +135,10 @@ class AssetService
             throw new InvalidArgumentException("No file to adopt at [{$path}].");
         }
 
+        $slot = $this->validSlot($slot);
         $contents = (string) $disk->get($path);
         $contentType = (string) new finfo(FILEINFO_MIME_TYPE)->buffer($contents);
-        $type = AssetType::forContentType($contentType);
-
-        if (!$type instanceof AssetType) {
-            throw new InvalidArgumentException(
-                "Unsupported asset content type [{$contentType}]."
-            );
-        }
+        [$type] = $this->kindFor($contentType);
 
         return $this->write(Asset::query()->slot($slot)->where('key', $key)->first(), [
             'key'          => $key,
@@ -160,6 +152,107 @@ class AssetService
             'last_update'  => $this->stamp($contents),
             'size'         => strlen($contents),
         ]);
+    }
+
+    /**
+     * A slot is a free vocabulary — modules declare their own — but not a free
+     * string. It becomes a directory name and a URL segment downstream, so the
+     * format is what stands in for the closed list that used to guard this: no
+     * separators, no traversal, no surprises in a path.
+     *
+     * @throws InvalidArgumentException on anything outside [a-z0-9-]
+     */
+    private function validSlot(string $slot): string
+    {
+        if (preg_match('/^[a-z][a-z0-9-]*$/', $slot) !== 1) {
+            throw new InvalidArgumentException(
+                "Invalid asset slot [{$slot}]: expected lowercase letters, digits and hyphens."
+            );
+        }
+
+        return $slot;
+    }
+
+    /**
+     * The kind and extension for sniffed bytes.
+     *
+     * Rejects rather than guesses when nothing accepts the content type: a
+     * wrong extension is a file the consumer cannot serve correctly, and a kind
+     * nobody registered is a file nothing knows how to use.
+     *
+     * @return array{0: string, 1: string}
+     *
+     * @throws InvalidArgumentException when no registered kind accepts it
+     */
+    /**
+     * Decide the kind, extension and stored content type for some bytes.
+     *
+     * Two routes, because sniffing cannot see every format:
+     *
+     * - **Nothing declared** — sniff and let the bytes name themselves. Right
+     *   for images and audio, where the magic bytes are unambiguous, and it
+     *   stays the default so the common path cannot be talked into anything.
+     * - **A kind declared** — the caller says what it is storing, for the text
+     *   formats sniffing reads as `text/plain` (a stylesheet always, a script
+     *   often). Sniffing is not skipped: it is demoted to a veto. If the bytes
+     *   sniff to a kind we recognise and it is not the declared one, the store
+     *   is refused, so a PNG cannot be filed as a stylesheet. The stored
+     *   content type comes from the registry either way, never from the caller.
+     *
+     * @return array{0: string, 1: string, 2: string} [type, extension, content type]
+     *
+     * @throws InvalidArgumentException when nothing accepts the bytes, the
+     *                                  declared kind is unknown, or the bytes
+     *                                  contradict the declared kind
+     */
+    private function resolveKind(string $contents, ?string $declaredType): array
+    {
+        $sniffed = (string) new finfo(FILEINFO_MIME_TYPE)->buffer($contents);
+
+        if ($declaredType === null) {
+            [$type, $extension] = $this->kindFor($sniffed);
+
+            return [$type, $extension, $sniffed];
+        }
+
+        $types = app(AssetTypes::class);
+        $canonical = $types->canonicalFor($declaredType);
+
+        if ($canonical === null) {
+            throw new InvalidArgumentException(
+                "No asset type [{$declaredType}] is registered."
+            );
+        }
+
+        // The veto. An unrecognised sniff (text/plain, and everything else we
+        // do not register) says nothing either way and is allowed through —
+        // that is the whole reason this route exists. A sniff we DO recognise
+        // is authoritative, and disagreeing with the declaration means the
+        // caller is wrong about its own bytes.
+        $sniffedType = $types->typeFor($sniffed);
+
+        if ($sniffedType !== null && $sniffedType !== $declaredType) {
+            throw new InvalidArgumentException(
+                "Asset declared as [{$declaredType}] but its bytes are [{$sniffed}]."
+            );
+        }
+
+        return [$declaredType, $canonical[1], $canonical[0]];
+    }
+
+    private function kindFor(string $contentType): array
+    {
+        $types = app(AssetTypes::class);
+        $type = $types->typeFor($contentType);
+        $extension = $types->extensionFor($contentType);
+
+        if ($type === null || $extension === null) {
+            throw new InvalidArgumentException(
+                "Unsupported asset content type [{$contentType}]."
+            );
+        }
+
+        return [$type, $extension];
     }
 
     /**
@@ -211,18 +304,18 @@ class AssetService
     /**
      * @return Collection<int, Asset>
      */
-    public function list(?AssetSlot $slot = null, ?AssetType $type = null, ?string $source = null): Collection
+    public function list(?string $slot = null, ?string $type = null, ?string $source = null): Collection
     {
         return Asset::query()
-            ->when($slot instanceof AssetSlot, fn ($q) => $q->slot($slot))
-            ->when($type instanceof AssetType, fn ($q) => $q->type($type))
+            ->when($slot !== null, fn ($q) => $q->slot($slot))
+            ->when($type !== null, fn ($q) => $q->type($type))
             ->when($source !== null, fn ($q) => $q->source($source))
             ->orderBy('slot')
             ->orderBy('key')
             ->get();
     }
 
-    public function find(AssetSlot $slot, string $key): ?Asset
+    public function find(string $slot, string $key): ?Asset
     {
         return Asset::query()->slot($slot)->where('key', $key)->first();
     }

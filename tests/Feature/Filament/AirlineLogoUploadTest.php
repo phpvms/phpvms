@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
 use App\Filament\Resources\Airlines\Pages\EditAirline;
 use App\Http\Middleware\UpdatePending;
 use App\Models\Airline;
+use App\Models\Asset;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +27,7 @@ function airlineWithoutLogo(): Airline
 
 function airlineLogo(Airline $airline): ?Asset
 {
-    return app(AssetService::class)->find(AssetSlot::AIRLINE_LOGO, $airline->icao);
+    return app(AssetService::class)->find(Asset::SLOT_AIRLINE_LOGO, $airline->icao);
 }
 
 /**
@@ -59,7 +58,7 @@ it('converts an uploaded PNG logo to webp and stores it as an asset', function (
         ->and($airline->logo_hash)->toBe($asset->last_update);
 
     // Staging does not keep a copy.
-    expect(Storage::disk(Asset::STAGING_DISK)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
+    expect(Storage::disk(Asset::PRIVATE_DISK)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
 });
 
 /**
@@ -199,7 +198,7 @@ it('eager-loads logo assets without a query per airline', function (): void {
 
         app(AssetService::class)->storeContents(
             ASSET_TEST_PNG."\x00".$icao,
-            AssetSlot::AIRLINE_LOGO,
+            Asset::SLOT_AIRLINE_LOGO,
             $airline->icao,
             isPublic: true,
         );

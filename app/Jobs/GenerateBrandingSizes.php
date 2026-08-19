@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
+use App\Features\Assets\AssetTypes;
 use App\Filament\Pages\Branding;
+use App\Models\Asset;
 use App\Services\ImageUploadService;
 use App\Support\Branding as BrandingSupport;
 use Illuminate\Bus\Queueable;
@@ -21,17 +20,19 @@ use Intervention\Image\ImageManager;
 use Throwable;
 
 /**
- * Generates 32/64/180px derivatives of an uploaded square logo and stores them
- * as `branding` assets under `logo-32`, `logo-64` and `logo-180`. Dispatched
- * from the logo autosave path in {@see Branding::persistAutosavedField()}.
+ * Generates one derivative of an uploaded square logo per
+ * {@see BrandingSupport::LOGO_SIZES}, stored as a `branding` asset under
+ * {@see BrandingSupport::logoKey()} — `logo-32`, `logo-64`, `logo-180`.
+ * Dispatched from the logo autosave path in
+ * {@see Branding::persistAutosavedField()}.
  *
  * Fails soft when neither GD nor Imagick is installed — `intervention/image`
  * only *suggests* those extensions and this app requires neither, so a throw
  * here would retry three times per upload and fill the failed_jobs table.
  * The derivative assets are deleted at the start of every run so a failed or
  * partial re-upload can never leave a stale derivative of the previous logo —
- * `Branding::favicon()` falls back to the bundled icon, which is correct, where
- * a stale row would show the old brand.
+ * `Branding::favicon()` falls through to the uploaded favicon or the bundled
+ * icon, which is correct, where a stale row would show the old brand.
  */
 class GenerateBrandingSizes implements ShouldQueue
 {
@@ -40,9 +41,6 @@ class GenerateBrandingSizes implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /** @var list<int> */
-    private const array SIZES = [32, 64, 180];
-
     /**
      * @param string $assetId id of the stored `branding`/`logo` asset
      */
@@ -50,10 +48,10 @@ class GenerateBrandingSizes implements ShouldQueue
 
     public function handle(): void
     {
-        $assets = app(AssetService::class);
+        $branding = app(BrandingSupport::class);
 
-        foreach (self::SIZES as $size) {
-            $assets->find(AssetSlot::BRANDING, $this->key($size))?->delete();
+        foreach (BrandingSupport::LOGO_SIZES as $size) {
+            $branding->forget(BrandingSupport::logoKey($size));
         }
 
         $source = Asset::query()->find($this->assetId);
@@ -68,7 +66,7 @@ class GenerateBrandingSizes implements ShouldQueue
             return;
         }
 
-        $extension = $source->type->extensionFor($source->content_type) ?? '';
+        $extension = app(AssetTypes::class)->extensionFor((string) $source->content_type) ?? '';
 
         // An SVG needs no derivatives -- it is resolution-independent, so the
         // same file serves as favicon, switcher icon and full-size logo. It
@@ -79,8 +77,8 @@ class GenerateBrandingSizes implements ShouldQueue
         if ($extension === 'svg') {
             $contents = (string) Storage::disk($source->diskName())->get($source->path);
 
-            foreach (self::SIZES as $size) {
-                $assets->storeContents($contents, AssetSlot::BRANDING, $this->key($size), isPublic: true);
+            foreach (BrandingSupport::LOGO_SIZES as $size) {
+                $branding->store(BrandingSupport::logoKey($size), $contents);
             }
 
             return;
@@ -121,23 +119,17 @@ class GenerateBrandingSizes implements ShouldQueue
         // already cleared, so bailing here leaves exactly the empty state the
         // class contract describes.
         try {
-            $this->writeDerivatives($manager, $source, $format, $assets);
+            $this->writeDerivatives($manager, $source, $format, $branding);
         } catch (Throwable $throwable) {
             Log::warning('GenerateBrandingSizes: could not generate logo derivatives: '.$throwable->getMessage());
         }
     }
 
-    /** Asset key for a derivative — `logo-32`, `logo-64`, `logo-180`. */
-    private function key(int $size): string
-    {
-        return BrandingSupport::KEY_LOGO.'-'.$size;
-    }
-
-    private function writeDerivatives(ImageManager $manager, Asset $sourceAsset, string $format, AssetService $assets): void
+    private function writeDerivatives(ImageManager $manager, Asset $sourceAsset, string $format, BrandingSupport $branding): void
     {
         $source = (string) Storage::disk($sourceAsset->diskName())->get($sourceAsset->path);
 
-        foreach (self::SIZES as $size) {
+        foreach (BrandingSupport::LOGO_SIZES as $size) {
             // fit(), not resize(): resize($size, $size) forces both dimensions
             // and STRETCHES a non-square source. The upload UI offers a 1:1
             // crop but the admin can decline it, and nothing constrains an
@@ -146,10 +138,7 @@ class GenerateBrandingSizes implements ShouldQueue
             // then scales -- correct for any source aspect.
             $encoded = (string) $manager->make($source)->fit($size, $size)->encode($format, ImageUploadService::WEBP_QUALITY);
 
-            // Public like the logo they derive from: the 32px one is the
-            // favicon, which the login screen requests before anyone is
-            // logged in.
-            $assets->storeContents($encoded, AssetSlot::BRANDING, $this->key($size), isPublic: true);
+            $branding->store(BrandingSupport::logoKey($size), $encoded);
         }
     }
 }

@@ -1,8 +1,7 @@
 <?php
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
+use App\Models\Asset;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -37,7 +36,7 @@ function createBrandingAsset(string $key, ?string $contents = null): Asset
 {
     return app(AssetService::class)->storeContents(
         $contents ?? ASSET_TEST_PNG."\x00".$key,
-        AssetSlot::BRANDING,
+        Asset::SLOT_BRANDING,
         $key,
         isPublic: true,
     );

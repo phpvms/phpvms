@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Assets\Models;
+namespace App\Models;
 
 use App\Contracts\Model;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Enums\AssetType;
-use App\Models\User;
+use App\Features\Assets\AssetTypes;
 use App\Traits\HasNanoIds;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Override;
 
 /**
  * One downloadable blob — a branding image, an uploaded sound, a stylesheet, a
@@ -26,17 +28,42 @@ use Illuminate\Support\Facades\Storage;
  *
  * @property string      $id
  * @property string      $key
- * @property AssetSlot   $slot
- * @property AssetType   $type
- * @property string      $source       owning module slug; 'core' for phpVMS itself
+ * @property string      $slot         who consumes it; core owns SLOT_*, modules declare their own
+ * @property string      $type         what the bytes are; see AssetTypes
+ * @property string      $source       owning module slug; 'phpvms' for phpVMS itself
  * @property string|null $name
  * @property string      $content_type
- * @property string      $path         location on the private disk
+ * @property string      $path         location on the asset's disk
  * @property bool        $is_public    served without authentication
  * @property string      $last_update  opaque change stamp — compared for equality only
  * @property int         $size
  * @property int|null    $updated_by
- * @property User|null   $editor
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User|null $editor
+ *
+ * @method static Builder<static>|Asset whereIsPublic($value)
+ * @method static Builder<static>|Asset newModelQuery()
+ * @method static Builder<static>|Asset newQuery()
+ * @method static Builder<static>|Asset query()
+ * @method static Builder<static>|Asset slot(string $slot)
+ * @method static Builder<static>|Asset source(string $source)
+ * @method static Builder<static>|Asset type(string $type)
+ * @method static Builder<static>|Asset whereContentType($value)
+ * @method static Builder<static>|Asset whereCreatedAt($value)
+ * @method static Builder<static>|Asset whereId($value)
+ * @method static Builder<static>|Asset whereKey($value)
+ * @method static Builder<static>|Asset whereLastUpdate($value)
+ * @method static Builder<static>|Asset whereName($value)
+ * @method static Builder<static>|Asset wherePath($value)
+ * @method static Builder<static>|Asset whereSize($value)
+ * @method static Builder<static>|Asset whereSlot($value)
+ * @method static Builder<static>|Asset whereSource($value)
+ * @method static Builder<static>|Asset whereType($value)
+ * @method static Builder<static>|Asset whereUpdatedAt($value)
+ * @method static Builder<static>|Asset whereUpdatedBy($value)
+ *
+ * @mixin \Eloquent
  */
 class Asset extends Model
 {
@@ -58,14 +85,23 @@ class Asset extends Model
 
     public const PATH_PREFIX = 'assets';
 
-    /** Staging for in-progress uploads. Always private, whatever they become. */
-    public const STAGING_DISK = self::PRIVATE_DISK;
+    public const SOURCE_CORE = 'phpvms';
 
-    public const SOURCE_CORE = 'core';
+    /**
+     * The slots core itself consumes. A slot is a plain string, not an enum,
+     * for the same reason `source` is: a module cannot add a case to a PHP enum
+     * core ships, and slots like sounds or paintkits belong to whatever module
+     * serves them, not here. Core declares only its own and validates the
+     * format (see AssetService), because a slot becomes a directory name and a
+     * URL segment downstream.
+     */
+    public const SLOT_BRANDING = 'branding';
+
+    public const SLOT_AIRLINE_LOGO = 'airline-logo';
 
     public $table = 'assets';
 
-    public $fillable = [
+    protected $fillable = [
         'key',
         'slot',
         'type',
@@ -79,12 +115,17 @@ class Asset extends Model
         'updated_by',
     ];
 
-    protected $casts = [
-        'slot'      => AssetSlot::class,
-        'type'      => AssetType::class,
-        'is_public' => 'boolean',
-        'size'      => 'integer',
-    ];
+    /**
+     * The attributes that should be casted to native types.
+     */
+    #[Override]
+    protected function casts(): array
+    {
+        return [
+            'is_public' => 'boolean',
+            'size'      => 'integer',
+        ];
+    }
 
     protected static function booted(): void
     {
@@ -106,22 +147,29 @@ class Asset extends Model
         return $isPublic ? (string) config('filesystems.public_files') : self::PRIVATE_DISK;
     }
 
-    public function editor()
+    /** @return BelongsTo<User, $this> */
+    public function editor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function scopeSlot(Builder $query, AssetSlot $slot): Builder
+    /*
+     * Query scopes
+     */
+    #[Scope]
+    protected function slot(Builder $query, string $slot): Builder
     {
-        return $query->where('slot', $slot->value);
+        return $query->where('slot', $slot);
     }
 
-    public function scopeType(Builder $query, AssetType $type): Builder
+    #[Scope]
+    protected function type(Builder $query, string $type): Builder
     {
-        return $query->where('type', $type->value);
+        return $query->where('type', $type);
     }
 
-    public function scopeSource(Builder $query, string $source): Builder
+    #[Scope]
+    protected function source(Builder $query, string $source): Builder
     {
         return $query->where('source', $source);
     }
@@ -152,7 +200,7 @@ class Asset extends Model
      */
     public function filename(): string
     {
-        $ext = $this->type->extensionFor($this->content_type);
+        $ext = app(AssetTypes::class)->extensionFor((string) $this->content_type);
 
         return $ext === null ? $this->key : $this->key.'.'.$ext;
     }

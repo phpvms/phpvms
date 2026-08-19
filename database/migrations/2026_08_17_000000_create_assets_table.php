@@ -28,9 +28,17 @@ use Illuminate\Support\Facades\Schema;
  * `source` records the owner for filtering and cleanup; it is not part of the
  * identity.
  *
- * `slot` and `type` are closed vocabularies enforced in the model rather than
- * by DB constraints. `slot` in particular becomes a URL segment and a directory
- * name downstream, so an unvalidated value is a path-traversal vector.
+ * `slot` and `type` are open vocabularies, for the same reason `source` is: a
+ * module cannot add a case to a PHP enum core ships, and most slots (sounds,
+ * gauges, paintkits) belong to whatever module serves them rather than to core.
+ * Core declares only its own slots (`Asset::SLOT_*`) and seeds the one kind it
+ * serves (`AssetTypes`); a module registers the rest during boot.
+ *
+ * Open does not mean unchecked. `slot` becomes a URL segment and a directory
+ * name downstream, so `AssetService` enforces a format on it — that guard is
+ * what replaces the closed list, not the absence of one. `type` is never taken
+ * from a caller at all: it is derived from the sniffed content type via the
+ * registry, and bytes nothing has registered are rejected.
  *
  * `content_type` and the stored path are decided server-side on upload, never
  * supplied by the uploader: content_type drives both the extension a file is
@@ -63,10 +71,10 @@ return new class() extends Migration
             $table->string('slot')->index();
             $table->string('type')->index();
 
-            // Owning module: 'core' for phpVMS itself, otherwise a module slug.
+            // Owning module: 'phpvms' for phpVMS itself, otherwise a module slug
             // A plain string, not an enum — modules are extensible and cannot
             // add cases to a PHP enum shipped by core.
-            $table->string('source', 32)->default('core')->index();
+            $table->string('source', 32)->default('phpvms')->index();
 
             // Human label for pickers. Not an identifier; null for assets whose
             // key is already the name a user sees.

@@ -3,9 +3,8 @@
 declare(strict_types=1);
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
 use App\Jobs\GenerateBrandingSizes;
+use App\Models\Asset;
 use App\Services\ImageUploadService;
 use App\Support\Branding;
 use Illuminate\Support\Facades\Log;
@@ -13,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 function derivative(int $size): ?Asset
 {
-    return app(AssetService::class)->find(AssetSlot::BRANDING, Branding::KEY_LOGO.'-'.$size);
+    return app(AssetService::class)->find(Asset::SLOT_BRANDING, Branding::KEY_LOGO.'-'.$size);
 }
 
 /**
@@ -31,7 +30,7 @@ function putLogoAsset(int $red = 255): Asset
     $bytes = (string) ob_get_clean();
     imagedestroy($image);
 
-    return app(AssetService::class)->storeContents($bytes, AssetSlot::BRANDING, Branding::KEY_LOGO, isPublic: true);
+    return app(AssetService::class)->storeContents($bytes, Asset::SLOT_BRANDING, Branding::KEY_LOGO, isPublic: true);
 }
 
 beforeEach(function (): void {
@@ -120,7 +119,7 @@ it('produces square derivatives from a non-square source', function (): void {
     $bytes = (string) ob_get_clean();
     imagedestroy($wide);
 
-    $logo = app(AssetService::class)->storeContents($bytes, AssetSlot::BRANDING, Branding::KEY_LOGO, isPublic: true);
+    $logo = app(AssetService::class)->storeContents($bytes, Asset::SLOT_BRANDING, Branding::KEY_LOGO, isPublic: true);
 
     new GenerateBrandingSizes($logo->id)->handle();
 
@@ -149,7 +148,7 @@ it('produces square derivatives from a non-square source', function (): void {
  */
 it('copies the original into every size for an SVG logo instead of failing', function (): void {
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
-    $logo = app(AssetService::class)->storeContents($svg, AssetSlot::BRANDING, Branding::KEY_LOGO, isPublic: true);
+    $logo = app(AssetService::class)->storeContents($svg, Asset::SLOT_BRANDING, Branding::KEY_LOGO, isPublic: true);
 
     new GenerateBrandingSizes($logo->id)->handle();
 

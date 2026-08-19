@@ -3,10 +3,9 @@
 namespace App\Filament\Resources\Airlines\Schemas;
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
 use App\Filament\Concerns\AutosavesFields;
 use App\Models\Airline;
+use App\Models\Asset;
 use App\Services\ImageUploadService;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\FileUpload;
@@ -111,7 +110,7 @@ class AirlineForm
             // Staging only. persistLogo() moves the file into an `airline-logo`
             // asset and deletes it from here; the private disk keeps an
             // unreviewed upload out of reach in between.
-            ->disk(Asset::STAGING_DISK)
+            ->disk(Asset::PRIVATE_DISK)
             ->directory(Asset::PATH_PREFIX.'/staging')
             // Deterministic staging name, so an abandoned upload is overwritten
             // by the next one rather than accumulating. A record that has not
@@ -198,19 +197,19 @@ class AirlineForm
         // are one thing. The external-URL column is left alone; it is a
         // different way of having a logo, not this one.
         if (blank($staged)) {
-            $assets->find(AssetSlot::AIRLINE_LOGO, $record->icao)?->delete();
+            $assets->find(Asset::SLOT_AIRLINE_LOGO, $record->icao)?->delete();
             $record->unsetRelation('logoAsset');
 
             return;
         }
 
-        $disk = Storage::disk(Asset::STAGING_DISK);
+        $disk = Storage::disk(Asset::PRIVATE_DISK);
 
         // ImageUploadService has already converted to WebP and sanitised any
         // SVG on the way into staging; AssetService decides where it lives.
         $assets->storeContents(
             (string) $disk->get($staged),
-            AssetSlot::AIRLINE_LOGO,
+            Asset::SLOT_AIRLINE_LOGO,
             $record->icao,
             name: $record->icao,
             userId: auth()->id(),

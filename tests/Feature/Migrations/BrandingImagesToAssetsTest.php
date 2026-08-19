@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
+use App\Models\Asset;
 use App\Models\Setting;
 use App\Support\Branding;
 use Illuminate\Support\Facades\DB;
@@ -55,7 +54,7 @@ it('moves a logo on the public disk into the branding slot and drops the setting
 
     brandingImagesMigration()->up();
 
-    $asset = app(AssetService::class)->find(AssetSlot::BRANDING, Branding::KEY_LOGO);
+    $asset = app(AssetService::class)->find(Asset::SLOT_BRANDING, Branding::KEY_LOGO);
 
     expect($asset)->not->toBeNull()
         ->and($asset->content_type)->toBe('image/png')
@@ -103,7 +102,7 @@ it('maps every image key to its asset key', function (): void {
     brandingImagesMigration()->up();
 
     foreach ($keys as $settingKey => $assetKey) {
-        $asset = app(AssetService::class)->find(AssetSlot::BRANDING, $assetKey);
+        $asset = app(AssetService::class)->find(Asset::SLOT_BRANDING, $assetKey);
 
         expect($asset)->not->toBeNull()
             ->and(Storage::disk($asset->diskName())->get($asset->path))->toBe(ASSET_TEST_PNG."\x00".$assetKey)
@@ -121,7 +120,7 @@ it('drops a setting whose URL points somewhere we cannot read', function (): voi
 
     brandingImagesMigration()->up();
 
-    expect(app(AssetService::class)->find(AssetSlot::BRANDING, Branding::KEY_LOGO))->toBeNull()
+    expect(app(AssetService::class)->find(Asset::SLOT_BRANDING, Branding::KEY_LOGO))->toBeNull()
         ->and(Setting::find(Setting::formatKey('branding.logo_url')))->toBeNull();
 });
 
@@ -130,7 +129,7 @@ it('drops a setting whose file has since been deleted', function (): void {
 
     brandingImagesMigration()->up();
 
-    expect(app(AssetService::class)->find(AssetSlot::BRANDING, Branding::KEY_LOGO))->toBeNull()
+    expect(app(AssetService::class)->find(Asset::SLOT_BRANDING, Branding::KEY_LOGO))->toBeNull()
         ->and(Setting::find(Setting::formatKey('branding.logo_url')))->toBeNull();
 });
 

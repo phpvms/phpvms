@@ -4,8 +4,6 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\JournalType;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
 use App\Traits\FilesTrait;
 use App\Traits\JournalTrait;
 use Database\Factories\AirlineFactory;
@@ -146,8 +144,8 @@ class Airline extends Model
      * The mark loads with the airline.
      *
      * `logo_url` is read almost everywhere an airline is — the API resource,
-     * the Inertia identity props, flight lists, the shipped themes and the
-     * ACARS contract — and the app runs with lazy loading prevented, so an
+     * the Inertia identity props, flight lists, the shipped themes and any
+     * module serving airlines — and the app runs with lazy loading prevented, so an
      * accessor reaching for an unloaded relation is a hard error rather than a
      * quiet N+1. Eager-loading it here fixes every one of those call sites at
      * once, and Eloquent batches it into a single extra query per collection.
@@ -195,7 +193,7 @@ class Airline extends Model
     public function logoAsset(): HasOne
     {
         return $this->hasOne(Asset::class, 'key', 'icao')
-            ->where('slot', AssetSlot::AIRLINE_LOGO->value);
+            ->where('slot', Asset::SLOT_AIRLINE_LOGO);
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
 use App\Enums\UserState;
+use App\Features\Assets\AssetTypes;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
 use App\Models\Role;
@@ -318,6 +319,13 @@ class AppServiceProvider extends ServiceProvider
         // Permission registry: modules register custom permissions into the
         // same instance during boot(), so it must be a singleton.
         $this->app->singleton(PermissionRegistry::class);
+
+        // Asset kinds: same shape as the permission registry above. Core seeds
+        // only `image`, the one kind it serves itself, and a module registers
+        // the kinds it ships — sounds, gauges, paintkits — into this instance
+        // during boot(). A PHP enum could never allow that, which is why this
+        // is a registry.
+        $this->app->singleton(AssetTypes::class);
 
         // RouteForge lint catalog: tag every concrete rule class so adding a
         // rule means appending one entry here, not editing LintRunner. The

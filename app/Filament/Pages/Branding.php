@@ -6,13 +6,10 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
-use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Concerns\ReversePrimaryButtons;
-use App\Jobs\GenerateBrandingSizes;
+use App\Models\Asset;
 use App\Services\ImageUploadService;
 use App\Services\SettingService;
 use App\Support\Branding as BrandingSupport;
@@ -45,8 +42,8 @@ use Override;
 use UnitEnum;
 
 /**
- * Config → Branding: airline name, brand colour, logo and banner. Name and
- * colour save on submit; the logo and banner upload fields autosave through
+ * Config → Branding: airline name, brand colour, logo, favicon and banner. Name
+ * and colour save on submit; the image upload fields autosave through
  * {@see AutosavesFields} (following AirlineForm/EditAirline's logo pattern).
  *
  * @property-read Schema $form
@@ -101,14 +98,14 @@ class Branding extends Page
     }
 
     /**
-     * Only the logo and banner uploads autosave; the name and colour fields
-     * save on submit.
+     * Only the image uploads autosave; the name and colour fields save on
+     * submit.
      *
      * @return list<string>
      */
     protected function autosaveKeys(): array
     {
-        return ['logo', 'logo_dark', 'banner'];
+        return ['logo', 'logo_dark', 'favicon', 'banner'];
     }
 
     protected function persistAutosavedField(string $key, mixed $value): void
@@ -118,43 +115,30 @@ class Branding extends Page
         $assetKey = match ($key) {
             'logo'      => BrandingSupport::KEY_LOGO,
             'logo_dark' => BrandingSupport::KEY_LOGO_DARK,
+            'favicon'   => BrandingSupport::KEY_FAVICON,
             'banner'    => BrandingSupport::KEY_BANNER,
             default     => throw new InvalidArgumentException("No branding asset is mapped to the autosaved field [{$key}]."),
         };
 
-        $assets = app(AssetService::class);
+        $branding = app(BrandingSupport::class);
         $staged = is_string($value) ? $value : null;
 
-        // Clearing the field removes the asset, which removes its file — the
-        // row and the bytes are one thing.
         if (blank($staged)) {
-            $assets->find(AssetSlot::BRANDING, $assetKey)?->delete();
+            $branding->forget($assetKey);
 
             return;
         }
 
-        $disk = Storage::disk(Asset::STAGING_DISK);
+        $disk = Storage::disk(Asset::PRIVATE_DISK);
 
-        // The upload landed in a staging directory rather than at its final
-        // path: ImageUploadService does the WebP conversion and the SVG
-        // sanitising on the way in, and AssetService owns where an asset's
-        // bytes actually live. Staging on the private disk means an unreviewed
-        // upload is never publicly reachable, even briefly.
-        $asset = $assets->storeContents(
-            (string) $disk->get($staged),
-            AssetSlot::BRANDING,
-            $assetKey,
-            userId: auth()->id(),
-            // Site branding renders on the login screen, so it has to survive a
-            // logged-out request.
-            isPublic: true,
-        );
+        // The upload landed in a holding directory on the private disk rather
+        // than at its final path: ImageUploadService does the WebP conversion
+        // and the SVG sanitising on the way in, and Branding owns where an
+        // asset's bytes actually live. Private in the meantime, so an
+        // unreviewed upload is never publicly reachable even briefly.
+        $branding->store($assetKey, (string) $disk->get($staged), userId: auth()->id());
 
         $disk->delete($staged);
-
-        if ($key === 'logo') {
-            GenerateBrandingSizes::dispatch($asset->id);
-        }
     }
 
     protected function autosaveNotificationTitle(): string
@@ -355,6 +339,21 @@ class Branding extends Page
                                 ->imageHeight('10rem')
                                 ->alignCenter()
                                 ->visible(fn (): bool => app(BrandingSupport::class)->hasDarkLogo()),
+
+                            $this->upload('favicon')
+                                ->label(__('filament.branding_favicon'))
+                                ->helperText(__('filament.branding_favicon_hint')),
+
+                            // Shown whether or not one was uploaded: with no
+                            // favicon of its own this renders the 32px logo
+                            // derivative, which is what the browser tab will
+                            // actually show.
+                            Image::make(
+                                url: fn (): string => app(BrandingSupport::class)->favicon(),
+                                alt: __('filament.branding_favicon'),
+                            )
+                                ->imageHeight('2rem')
+                                ->alignCenter(),
                         ]),
 
                     Section::make(__('filament.branding_banner'))
@@ -412,8 +411,9 @@ class Branding extends Page
      */
     private function upload(string $key): FileUpload
     {
-        // Both logos are square by contract: they render as a favicon and a
-        // switcher icon, and GenerateBrandingSizes cuts 32/64/180 squares.
+        // Everything but the banner is square by contract: the logos render as
+        // a switcher icon and GenerateBrandingSizes cuts them into 32/64/180
+        // squares, and a favicon is square by definition.
         //
         // The crop dialog is opened by `automaticallyOpenImageEditorForAspectRatio()`,
         // NOT by `imageEditor()`. `imageEditor()` only sets
@@ -432,19 +432,19 @@ class Branding extends Page
         // `imageCropAspectRatio()` is the old name for
         // imageAspectRatio() + automaticallyCropImagesToAspectRatio(), i.e. the
         // silent centre-crop, which is not what we want.
-        $isLogo = str_starts_with($key, 'logo');
+        $isSquare = $key !== 'banner';
 
         return FileUpload::make($key)
             ->label('')
             ->image()
-            ->when($isLogo, fn (FileUpload $upload): FileUpload => $upload
+            ->when($isSquare, fn (FileUpload $upload): FileUpload => $upload
                 ->imageAspectRatio('1:1')
                 ->automaticallyOpenImageEditorForAspectRatio())
             ->previewable(false)
             // Staging only. persistAutosavedField() moves the file into an
             // asset row and deletes it from here; the private disk keeps an
             // upload out of reach in between.
-            ->disk(Asset::STAGING_DISK)
+            ->disk(Asset::PRIVATE_DISK)
             ->directory(Asset::PATH_PREFIX.'/staging')
             ->getUploadedFileNameForStorageUsing(
                 fn (TemporaryUploadedFile $file): string => $key.'.'.strtolower($file->getClientOriginalExtension())

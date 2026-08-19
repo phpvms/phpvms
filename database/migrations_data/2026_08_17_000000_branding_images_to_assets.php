@@ -1,11 +1,12 @@
 <?php
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
+use App\Models\Asset;
 use App\Models\Setting;
 use App\Support\Branding;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -72,10 +73,31 @@ return new class() extends Migration
                     // Never fail the migration over one image either. A missing
                     // or unsupported file costs that install a re-upload;
                     // aborting here would cost it the whole upgrade.
+                    //
+                    // The SAVEPOINT is load-bearing, not decoration. On Postgres
+                    // a failed statement aborts the WHOLE transaction, and
+                    // catching the PHP exception does nothing about that — every
+                    // later statement then dies with 25P02 ("current transaction
+                    // is aborted"), including the delete below. DB::transaction()
+                    // inside an open transaction issues SAVEPOINT / ROLLBACK TO
+                    // SAVEPOINT, which is what actually lets the loop continue.
+                    // MySQL and SQLite do not need this, which is exactly why the
+                    // suite (SQLite, see phpunit.xml) cannot catch its absence.
                     try {
-                        $assets->adopt($path, AssetSlot::BRANDING, $assetKey, isPublic: true);
-                    } catch (Throwable) {
-                        // Falls back to the bundled asset; admin re-uploads.
+                        DB::transaction(
+                            fn () => $assets->adopt($path, Asset::SLOT_BRANDING, $assetKey, isPublic: true)
+                        );
+                    } catch (Throwable $e) {
+                        // Falls back to the bundled asset; admin re-uploads. Logged
+                        // rather than swallowed silently — a bare `catch (Throwable)`
+                        // here is why the first failure of this migration reported
+                        // only its downstream 25P02 and not its actual cause.
+                        Log::warning('branding_images_to_assets: could not adopt branding image', [
+                            'setting'   => $settingKey,
+                            'asset_key' => $assetKey,
+                            'path'      => $path,
+                            'error'     => $e->getMessage(),
+                        ]);
                     }
                 }
             }

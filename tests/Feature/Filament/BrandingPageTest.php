@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\NavigationGroup;
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
 use App\Filament\Pages\Branding;
 use App\Jobs\GenerateBrandingSizes;
+use App\Models\Asset;
 use App\Models\Permission;
 use App\Models\Setting;
 use App\Models\User;
@@ -28,7 +27,7 @@ beforeEach(function (): void {
 
 function brandingAsset(string $key): ?Asset
 {
-    return app(AssetService::class)->find(AssetSlot::BRANDING, $key);
+    return app(AssetService::class)->find(Asset::SLOT_BRANDING, $key);
 }
 
 function brandingUser(string ...$permissions): User
@@ -120,7 +119,7 @@ it('autosaves the logo upload without calling save', function (): void {
         ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
 
     // The staging copy is not left behind on the disk.
-    expect(Storage::disk(Asset::STAGING_DISK)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
+    expect(Storage::disk(Asset::PRIVATE_DISK)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
 });
 
 /**

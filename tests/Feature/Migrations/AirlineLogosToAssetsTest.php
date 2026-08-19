@@ -3,9 +3,8 @@
 declare(strict_types=1);
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
 use App\Models\Airline;
+use App\Models\Asset;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -37,7 +36,7 @@ it('adopts a hosted logo into the airline-logo slot and clears the column', func
 
     airlineLogosMigration()->up();
 
-    $asset = app(AssetService::class)->find(AssetSlot::AIRLINE_LOGO, 'ABC');
+    $asset = app(AssetService::class)->find(Asset::SLOT_AIRLINE_LOGO, 'ABC');
 
     expect($asset)->not->toBeNull()
         ->and($asset->is_public)->toBeTrue()
@@ -64,7 +63,7 @@ it('leaves an external logo URL on the column', function (): void {
 
     airlineLogosMigration()->up();
 
-    expect(app(AssetService::class)->find(AssetSlot::AIRLINE_LOGO, 'XYZ'))->toBeNull()
+    expect(app(AssetService::class)->find(Asset::SLOT_AIRLINE_LOGO, 'XYZ'))->toBeNull()
         ->and(DB::table('airlines')->where('id', $airline->id)->value('logo'))->toBe('https://cdn.example.com/xyz.png')
         ->and($airline->refresh()->logo_url)->toBe('https://cdn.example.com/xyz.png');
 });
@@ -79,7 +78,7 @@ it('leaves a hosted logo whose file is gone', function (): void {
 
     airlineLogosMigration()->up();
 
-    expect(app(AssetService::class)->find(AssetSlot::AIRLINE_LOGO, 'GON'))->toBeNull()
+    expect(app(AssetService::class)->find(Asset::SLOT_AIRLINE_LOGO, 'GON'))->toBeNull()
         ->and(DB::table('airlines')->where('id', $airline->id)->value('logo'))->toBe('airlines/missing.webp');
 });
 
@@ -94,7 +93,7 @@ it('keys each airline to its own logo', function (): void {
     airlineLogosMigration()->up();
 
     foreach (['AAA' => 'a', 'BBB' => 'b', 'CCC' => 'c'] as $icao => $marker) {
-        $asset = app(AssetService::class)->find(AssetSlot::AIRLINE_LOGO, $icao);
+        $asset = app(AssetService::class)->find(Asset::SLOT_AIRLINE_LOGO, $icao);
 
         expect($asset)->not->toBeNull()
             ->and(Storage::disk($asset->diskName())->get($asset->path))->toBe(ASSET_TEST_PNG."\x00".$marker);

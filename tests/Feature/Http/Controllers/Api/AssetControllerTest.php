@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 use App\Features\Assets\AssetService;
-use App\Features\Assets\Enums\AssetSlot;
-use App\Features\Assets\Models\Asset;
+use App\Models\Asset;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,7 +15,7 @@ function storeAsset(string $key, bool $isPublic): Asset
 {
     return app(AssetService::class)->storeContents(
         ASSET_TEST_PNG."\x00".$key,
-        $isPublic ? AssetSlot::BRANDING : AssetSlot::SOUNDS,
+        $isPublic ? Asset::SLOT_BRANDING : 'sounds',
         $key,
         isPublic: $isPublic,
     );
@@ -104,7 +103,7 @@ it('stops matching the old ETag once the bytes change', function (): void {
 
     app(AssetService::class)->storeContents(
         ASSET_TEST_PNG."\x00different",
-        AssetSlot::SOUNDS,
+        'sounds',
         'gear-warning',
     );
 
