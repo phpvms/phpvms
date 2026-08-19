@@ -41,12 +41,14 @@ final class AssetData extends Data
      * hold a plugin token instead — passes its own route here. Same bytes,
      * different door, and the caller has to send consumers to the one they can
      * open.
+     * @param string|null $key overrides the stored key, for a slot keyed on an
+     *                         owning row rather than on the name of the image.
      */
-    public static function fromModel(Asset $asset, ?string $url = null): self
+    public static function fromModel(Asset $asset, ?string $url = null, ?string $key = null): self
     {
         return new self(
             id: (string) $asset->id,
-            key: (string) $asset->key,
+            key: $key ?? (string) $asset->key,
             slot: (string) $asset->slot,
             type: (string) $asset->type,
             content_type: (string) $asset->content_type,

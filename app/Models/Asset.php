@@ -99,6 +99,15 @@ class Asset extends Model
 
     public const SLOT_AIRLINE_LOGO = 'airline-logo';
 
+    /**
+     * A user's own images — today just the avatar. Keyed on the user id, not on
+     * the literal name of the image: `(slot, key)` is unique, so a flat
+     * `avatar` key would let one pilot's picture occupy the slot for everyone.
+     * The ACARS contract still shows a client `key = "avatar"`, because a
+     * client is only ever handed its own user.
+     */
+    public const SLOT_USER = 'user';
+
     public $table = 'assets';
 
     protected $fillable = [
