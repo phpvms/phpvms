@@ -17,7 +17,6 @@ use Filament\Schemas\Components\Image;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 /**
@@ -31,8 +30,11 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
  * host page relies on — validation, dehydration, the upload's own disk handling
  * — instead of re-implementing them behind a view.
  *
- * The host page owns persistence, because only it knows when its record has a
- * key. Wire it up as:
+ * The control is edit-only: an asset is keyed on the record, so it is hidden on
+ * the `create` operation rather than staging bytes with nothing to key them on.
+ *
+ * The host page owns persistence, because only it knows its record's key. Wire
+ * it up as:
  *
  *     // schema
  *     AssetImagePicker::make(Asset::SLOT_RANK, fn (?Rank $r): ?int => $r?->id, $disk)
@@ -47,9 +49,6 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
  *     {
  *         AssetImagePicker::persist(Asset::SLOT_RANK, $this->getRecord()->id, $disk, $key, $value);
  *     }
- *
- *     // Create page, once the record exists
- *     AssetImagePicker::persistState(Asset::SLOT_RANK, $record->id, $disk, $state);
  */
 final class AssetImagePicker
 {
@@ -59,7 +58,7 @@ final class AssetImagePicker
 
     /**
      * @param string  $slot    asset slot the row is written under
-     * @param Closure $key     (?Model $record): int|string|null — null until the record exists
+     * @param Closure $key     (?Model $record): int|string|null — the record's key
      * @param string  $storage disk an upload's bytes land on
      */
     public static function make(string $slot, Closure $key, string $storage, ?string $label = null): Group
@@ -108,14 +107,17 @@ final class AssetImagePicker
                 ->imageHeight('10rem')
                 ->alignCenter()
                 ->visible(fn (?Model $record): bool => filled(self::previewUrl($slot, $key, $record))),
-        ])->columns(2);
+        ])
+            // Edit-only: on a create page there is no key to write the asset
+            // under, so the control is not offered at all.
+            ->hiddenOn('create')
+            ->columns(2);
     }
 
     /**
      * The three form keys this control occupies, in order: source, upload, URL.
      *
-     * A host page needs them to declare its autosave keys, and a create page
-     * needs them to keep non-attribute state out of `Model::create()`.
+     * A host page needs them to declare its autosave keys.
      *
      * @return array{0: string, 1: string, 2: string}
      */
@@ -156,23 +158,6 @@ final class AssetImagePicker
     }
 
     /**
-     * Persist whichever input the chosen source names, from a whole form state.
-     *
-     * For a create page, which has no per-field autosave: it submits once, with
-     * the record's key only existing afterwards.
-     *
-     * @param array<string, mixed> $state
-     */
-    public static function persistState(string $slot, int|string|null $key, string $storage, array $state): void
-    {
-        [$sourceKey, $uploadKey, $urlKey] = self::stateKeys($slot);
-
-        $active = ($state[$sourceKey] ?? self::SOURCE_UPLOAD) === self::SOURCE_URL ? $urlKey : $uploadKey;
-
-        self::persist($slot, $key, $storage, $active, $state[$active] ?? null);
-    }
-
-    /**
      * Drag-and-drop half of the control, staged exactly as AirlineForm stages a
      * logo: onto the disk with no URL of its own, so an unreviewed upload is out
      * of reach until {@see persist()} turns it into an asset.
@@ -189,10 +174,10 @@ final class AssetImagePicker
             ->disk(Asset::STORAGE_LOCAL)
             ->directory(Asset::PATH_PREFIX.'/staging')
             // Deterministic staging name, so an abandoned upload is overwritten
-            // by the next one rather than accumulating. A record that does not
-            // exist yet has no key to use, so it falls back to a ULID.
+            // by the next one rather than accumulating. The control is
+            // edit-only, so the record — and its key — always exist here.
             ->getUploadedFileNameForStorageUsing(
-                fn (TemporaryUploadedFile $file, ?Model $record): string => ($key($record) ?? (string) Str::ulid())
+                fn (TemporaryUploadedFile $file, Model $record): string => $key($record)
                     .'.'.strtolower($file->getClientOriginalExtension())
             )
             // Converts to WebP and sanitises SVG through the shared upload
@@ -205,10 +190,9 @@ final class AssetImagePicker
     }
 
     /**
-     * Autosave hook for a control shared between Create and Edit pages: there is
-     * no `$this` here, so it delegates to whichever page mounted the schema, and
-     * only when that page autosaves at all. A Create page has no record to write
-     * to yet — its state rides the normal submit.
+     * Autosave hook for a static schema helper: there is no `$this` here, so it
+     * delegates to whichever page mounted the schema, and only when that page
+     * autosaves at all.
      */
     private static function autosave(mixed $component, mixed $livewire): void
     {
@@ -231,8 +215,17 @@ final class AssetImagePicker
 
         $disk = Storage::disk(Asset::STORAGE_LOCAL);
 
+        // A staged file that has gone missing reads as null; storing '' would
+        // sniff as `application/x-empty` and blow up the autosave instead of
+        // leaving the existing asset alone.
+        $contents = $disk->get($staged);
+
+        if (blank($contents)) {
+            return;
+        }
+
         $assets->storeContents(
-            (string) $disk->get($staged),
+            $contents,
             $slot,
             $key,
             userId: auth()->id(),

@@ -63,26 +63,28 @@ it('stores an entered badge URL as a link asset', function (): void {
 });
 
 /**
- * The create page has no id to key an asset on until the rank exists, so the
- * picker's state is held back and written afterwards — and its form keys must
- * not reach Rank::create() as attributes.
+ * The picker is edit-only: with no rank id there is nothing to key an asset on,
+ * so the control is not offered until the rank exists.
  */
-it('keys the badge on the rank the create page just made', function (): void {
+it('does not render the image control on the create page', function (): void {
     Livewire::test(CreateRank::class)
-        ->fillForm([
-            'name'        => 'Ponytail Captain',
-            'hours'       => 100,
-            'rank_upload' => UploadedFile::fake()->image('badge.png', 32, 32),
-        ])
+        ->assertFormFieldDoesNotExist('rank_source')
+        ->assertFormFieldDoesNotExist('rank_upload')
+        ->assertFormFieldDoesNotExist('rank_url')
+        // The section that wrapped it goes too, rather than leaving a heading.
+        ->assertDontSee(__('filament.rank_images'));
+});
+
+it('creates a rank with no image state to carry', function (): void {
+    Livewire::test(CreateRank::class)
+        ->fillForm(['name' => 'Ponytail Captain', 'hours' => 100])
         ->call('create')
         ->assertHasNoFormErrors();
 
     $rank = Rank::where('name', 'Ponytail Captain')->firstOrFail();
-    $asset = rankImageAsset($rank);
 
-    expect($asset)->not->toBeNull()
-        ->and($asset->storage)->toBe(config('filesystems.public_files'))
-        ->and($rank->image_url)->toBe($asset->url());
+    expect(rankImageAsset($rank))->toBeNull()
+        ->and($rank->image_url)->toBeNull();
 });
 
 it('opens in URL mode on a link asset', function (): void {

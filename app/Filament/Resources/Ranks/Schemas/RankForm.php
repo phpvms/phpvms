@@ -92,6 +92,9 @@ class RankForm
                                     self::imageDisk(),
                                 ),
                             ])
+                            // The picker is edit-only, so on create the section
+                            // would be an empty heading.
+                            ->hiddenWhenAllChildComponentsHidden()
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),

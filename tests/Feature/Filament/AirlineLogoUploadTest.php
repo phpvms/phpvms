@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Features\Assets\AssetService;
+use App\Filament\Resources\Airlines\Pages\CreateAirline;
 use App\Filament\Resources\Airlines\Pages\EditAirline;
 use App\Http\Middleware\UpdatePending;
 use App\Models\Airline;
@@ -29,6 +30,17 @@ function airlineLogo(Airline $airline): ?Asset
 {
     return app(AssetService::class)->find(Asset::SLOT_AIRLINE_LOGO, $airline->icao);
 }
+
+/**
+ * The upload is edit-only: the asset is keyed on the airline's ICAO, so it is
+ * not offered until the airline exists.
+ */
+it('does not render the logo upload on the create page', function (): void {
+    Livewire::test(CreateAirline::class)
+        ->assertFormFieldDoesNotExist('logo')
+        // The section that wrapped it goes too, rather than leaving a heading.
+        ->assertDontSee(__('filament.airline_logo'));
+});
 
 /**
  * The logo routes through ImageUploadService like every other admin image

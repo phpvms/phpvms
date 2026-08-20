@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Airlines\Schemas;
 
 use App\Features\Assets\AssetService;
-use App\Filament\Concerns\AutosavesFields;
+use App\Filament\Resources\Airlines\Pages\EditAirline;
 use App\Models\Airline;
 use App\Models\Asset;
 use App\Services\ImageUploadService;
@@ -18,7 +18,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use League\ISO3166\ISO3166;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -86,22 +85,30 @@ class AirlineForm
                         )
                             ->imageHeight('10rem')
                             ->alignCenter()
+                            // Nothing to preview before the airline exists.
+                            ->hiddenOn('create')
                             ->visible(fn (Get $get, ?Airline $record): bool => filled(self::previewUrl($get('logo'), $record))),
                     ])
+                    // Both children are edit-only, so on create the section would
+                    // be an empty heading.
+                    ->hiddenWhenAllChildComponentsHidden()
                     ->columnSpanFull()
                     ->columns(2),
             ]);
     }
 
     /**
-     * Drag-and-drop logo upload. On an existing airline the file is stored and
-     * the record updated as soon as it is dropped; on a new airline there is no
-     * record to write to yet, so it is saved along with the rest of the form.
+     * Drag-and-drop logo upload. The file is stored and the record updated as
+     * soon as it is dropped.
+     *
+     * Edit-only: the asset is keyed on the airline's ICAO, so there is nothing
+     * to key an upload on until the record exists.
      */
     private static function logoUpload(): FileUpload
     {
         return FileUpload::make('logo')
             ->label('')
+            ->hiddenOn('create')
             ->image()
             ->acceptedFileTypes(['image/png', 'image/svg+xml'])
             // The preview lives in the other column of this card, so the drop
@@ -113,10 +120,10 @@ class AirlineForm
             ->disk(Asset::STORAGE_LOCAL)
             ->directory(Asset::PATH_PREFIX.'/staging')
             // Deterministic staging name, so an abandoned upload is overwritten
-            // by the next one rather than accumulating. A record that has not
-            // been created yet has no id to use, so it falls back to a ULID.
+            // by the next one rather than accumulating. The field is edit-only,
+            // so the record always exists here.
             ->getUploadedFileNameForStorageUsing(
-                fn (TemporaryUploadedFile $file, ?Airline $record): string => ($record->id ?? Str::ulid()).'.'.strtolower($file->getClientOriginalExtension())
+                fn (TemporaryUploadedFile $file, Airline $record): string => $record->id.'.'.strtolower($file->getClientOriginalExtension())
             )
             // Converts to WebP through the shared upload service instead of
             // storing whatever format was dropped; see ImageUploadService.
@@ -149,16 +156,11 @@ class AirlineForm
                 ];
             })
             ->live()
-            ->afterStateUpdated(function (FileUpload $component, $livewire): void {
-                // Edit page autosaves through the shared AutosavesFields trait
-                // (its getState() dehydration moves the upload onto the disk,
-                // and its re-entrancy guard absorbs the refire that triggers).
-                // The Create page has no record yet — the logo rides the
-                // normal form submit there.
-                if (in_array(AutosavesFields::class, class_uses_recursive($livewire), true)) {
-                    $livewire->runAutosave($component);
-                }
-            });
+            // The edit page is the only page this field renders on, and it
+            // autosaves through AutosavesFields (its getState() dehydration
+            // moves the upload onto the disk, and its re-entrancy guard absorbs
+            // the refire that triggers).
+            ->afterStateUpdated(fn (FileUpload $component, EditAirline $livewire) => $livewire->runAutosave($component));
     }
 
     /**
@@ -185,12 +187,8 @@ class AirlineForm
      * does not wait on the form being submitted. Called from EditAirline's
      * persistAutosavedField (the trait notifies).
      */
-    public static function persistLogo(?Airline $record, ?string $staged): void
+    public static function persistLogo(Airline $record, ?string $staged): void
     {
-        if (!$record instanceof Airline || !$record->exists) {
-            return;
-        }
-
         $assets = app(AssetService::class);
 
         // Clearing the field removes the mark outright — the row and its file

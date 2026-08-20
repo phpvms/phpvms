@@ -16,9 +16,9 @@ use Livewire\Component;
 use Livewire\Livewire;
 
 /**
- * The picker is a schema helper with no page of its own, so the harnesses below
- * stand in for the two kinds of host it supports: a page that autosaves each
- * field, and a create page whose record does not exist until submit.
+ * The picker is a schema helper with no page of its own, so the harness below
+ * stands in for the only host it supports: an edit-shaped page with a record,
+ * autosaving each field.
  *
  * Airline is the stand-in record — any model with a key would do; the picker
  * only ever asks the resolver for one.
@@ -82,57 +82,6 @@ class AssetPickerHarness extends Component implements HasForms
     protected function persistAutosavedField(string $key, mixed $value): void
     {
         AssetImagePicker::persist(PICKER_SLOT, $this->record()?->id, pickerDisk(), $key, $value);
-    }
-
-    public function render(): string
-    {
-        return '<div>{{ $this->form }}</div>';
-    }
-}
-
-/**
- * Create-shaped host: no record, no autosave. The record is created first, then
- * the picker's state is persisted against the key that only exists afterwards.
- * A real create page also keeps these keys out of the attributes it creates the
- * model with, which is what stateKeys() is for.
- *
- * @property-read Schema $form
- */
-class AssetPickerCreateHarness extends Component implements HasForms
-{
-    use InteractsWithForms;
-
-    public ?array $data = [];
-
-    public ?string $createdId = null;
-
-    public function mount(): void
-    {
-        $this->form->fill();
-    }
-
-    public function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                AssetImagePicker::make(
-                    PICKER_SLOT,
-                    fn (?Airline $record): int|string|null => $record?->id,
-                    pickerDisk(),
-                ),
-            ])
-            ->statePath('data');
-    }
-
-    public function create(): void
-    {
-        $state = $this->form->getState();
-
-        $airline = Airline::factory()->create(['icao' => 'NEW', 'iata' => 'NW', 'country' => 'us']);
-
-        AssetImagePicker::persistState(PICKER_SLOT, $airline->id, pickerDisk(), $state);
-
-        $this->createdId = (string) $airline->id;
     }
 
     public function render(): string
@@ -274,33 +223,30 @@ it('renders the preview from the resolved asset URL', function (): void {
         ->assertSee($asset->url(), escape: false);
 });
 
-it('keys the asset on the new record when the create page saves', function (): void {
-    $component = Livewire::test(AssetPickerCreateHarness::class)
+/**
+ * Missing bytes are a fail-soft: the autosave leaves the stored asset alone
+ * rather than storing an empty file and tripping the content-type sniff.
+ */
+it('leaves the stored asset alone when the staged file has gone missing', function (): void {
+    $component = Livewire::test(AssetPickerHarness::class, ['recordId' => $this->airline->id])
         ->set('data.test_image_upload', UploadedFile::fake()->image('pic.png', 32, 32));
 
-    // Nothing yet: there is no record to key an asset on.
-    expect(Asset::query()->slot(PICKER_SLOT)->count())->toBe(0);
+    $stored = pickerAsset($this->airline->id);
+    expect($stored)->not->toBeNull();
 
-    $component->call('create');
+    // Replay the persist with a staging path that was never written.
+    AssetImagePicker::persist(
+        PICKER_SLOT,
+        $this->airline->id,
+        pickerDisk(),
+        'test_image_upload',
+        Asset::PATH_PREFIX.'/staging/gone.png',
+    );
 
-    $createdId = $component->get('createdId');
+    expect(pickerAsset($this->airline->id)->id)->toBe($stored->id);
+    Storage::disk($stored->diskName())->assertExists($stored->path);
 
-    expect($createdId)->not->toBeNull()
-        ->and(pickerAsset($createdId))->not->toBeNull()
-        ->and(pickerAsset($createdId)->storage)->toBe(pickerDisk());
-});
-
-it('creates no asset when a staged upload is abandoned', function (): void {
-    $component = Livewire::test(AssetPickerCreateHarness::class)
-        ->set('data.test_image_upload', UploadedFile::fake()->image('pic.png', 32, 32));
-
-    // The upload really is held in form state — the point is that holding it is
-    // not an asset, not that the drop silently did nothing. Filament only moves
-    // it onto a disk when the form's state is resolved, which on a create page
-    // is the submit that never happened here.
-    expect($component->get('data.test_image_upload'))->not->toBeEmpty()
-        ->and(Storage::disk(Asset::STORAGE_LOCAL)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty()
-        ->and(Asset::query()->slot(PICKER_SLOT)->count())->toBe(0);
+    $component->assertOk();
 });
 
 it('refuses a link URL that is not http(s)', function (): void {
