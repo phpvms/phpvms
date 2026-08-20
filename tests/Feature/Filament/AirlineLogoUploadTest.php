@@ -47,7 +47,7 @@ it('converts an uploaded PNG logo to webp and stores it as an asset', function (
         ->and($asset->content_type)->toBe('image/webp')
         // Airline marks render on public flight pages, so they are fetched
         // without a session.
-        ->and($asset->is_public)->toBeTrue();
+        ->and($asset->storage)->toBe(config('filesystems.public_files'));
 
     Storage::disk($asset->diskName())->assertExists($asset->path);
 
@@ -58,7 +58,7 @@ it('converts an uploaded PNG logo to webp and stores it as an asset', function (
         ->and($airline->logo_hash)->toBe($asset->last_update);
 
     // Staging does not keep a copy.
-    expect(Storage::disk(Asset::PRIVATE_DISK)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
+    expect(Storage::disk(Asset::STORAGE_LOCAL)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
 });
 
 /**
@@ -200,7 +200,7 @@ it('eager-loads logo assets without a query per airline', function (): void {
             ASSET_TEST_PNG."\x00".$icao,
             Asset::SLOT_AIRLINE_LOGO,
             $airline->icao,
-            isPublic: true,
+            storage: (string) config('filesystems.public_files'),
         );
     }
 

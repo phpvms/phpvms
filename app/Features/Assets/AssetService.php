@@ -23,9 +23,11 @@ class AssetService
      * Store an uploaded file as an asset, replacing any existing asset with the
      * same (slot, key).
      *
-     * `$isPublic` decides whether the serving route lets a logged-out request
-     * through, and defaults closed. Site branding needs it open — it renders on
-     * the login screen — while sounds and paintkits do not.
+     * `$storage` names the disk the bytes land on, and defaults to the local
+     * disk, which has no URL of its own. A caller that wants its asset linkable
+     * passes a disk that declares one — `config('filesystems.public_files')`
+     * for site branding, which renders on the login screen. That decision is
+     * the caller's: this service does not read config to guess it.
      *
      * The uploader chooses slot, key and the bytes. The content type is NOT
      * taken from the request: UploadedFile::getClientMimeType() is
@@ -47,10 +49,10 @@ class AssetService
         string $source = Asset::SOURCE_CORE,
         ?string $name = null,
         ?int $userId = null,
-        bool $isPublic = false,
+        string $storage = Asset::STORAGE_LOCAL,
         ?string $type = null,
     ): Asset {
-        return $this->storeContents($file->get(), $slot, $key, $source, $name, $userId, $isPublic, $type);
+        return $this->storeContents($file->get(), $slot, $key, $source, $name, $userId, $storage, $type);
     }
 
     /**
@@ -67,10 +69,11 @@ class AssetService
         string $source = Asset::SOURCE_CORE,
         ?string $name = null,
         ?int $userId = null,
-        bool $isPublic = false,
+        string $storage = Asset::STORAGE_LOCAL,
         ?string $type = null,
     ): Asset {
         $slot = $this->validSlot($slot);
+        $storage = $this->validStorage($storage);
         [$type, $extension, $contentType] = $this->resolveKind($contents, $type);
 
         $existing = Asset::query()->slot($slot)->where('key', $key)->first();
@@ -79,15 +82,15 @@ class AssetService
         // replacement never overwrites the bytes a consumer may still be
         // fetching, and two assets can never contend for one path.
         $path = Asset::PATH_PREFIX.'/'.$slot.'/'.uniqid('', true).'.'.$extension;
-        $disk = Storage::disk(Asset::diskFor($isPublic));
+        $disk = Storage::disk($storage);
 
         $disk->put($path, $contents);
 
-        // Explicit, matching ImageUploadService::store(). The public disk can
-        // point at S3/R2, where a bare put() takes the bucket default and the
-        // URL would 403. rescue() because a local disk has no per-object
-        // visibility to set.
-        if ($isPublic) {
+        // Explicit, matching ImageUploadService::store(). A disk that declares a
+        // URL can point at S3/R2, where a bare put() takes the bucket default
+        // and the URL would 403. rescue() because a local disk has no
+        // per-object visibility to set.
+        if (Asset::diskDeclaresUrl($storage)) {
             rescue(fn () => $disk->setVisibility($path, 'public'), report: false);
         }
 
@@ -99,7 +102,7 @@ class AssetService
             'name'         => $name,
             'content_type' => $contentType,
             'path'         => $path,
-            'is_public'    => $isPublic,
+            'storage'      => $storage,
             'last_update'  => $this->stamp($contents),
             'size'         => strlen($contents),
             'updated_by'   => $userId,
@@ -116,7 +119,7 @@ class AssetService
      * install has already published. The file keeps its own layout; only the
      * row is new.
      *
-     * @param string $path location on the disk `$isPublic` implies
+     * @param string $path location on `$storage`
      *
      * @throws InvalidArgumentException when the file is missing, or its content
      *                                  type is not one we accept
@@ -127,9 +130,10 @@ class AssetService
         string $key,
         string $source = Asset::SOURCE_CORE,
         ?string $name = null,
-        bool $isPublic = false,
+        string $storage = Asset::STORAGE_LOCAL,
     ): Asset {
-        $disk = Storage::disk(Asset::diskFor($isPublic));
+        $storage = $this->validStorage($storage);
+        $disk = Storage::disk($storage);
 
         if (!$disk->exists($path)) {
             throw new InvalidArgumentException("No file to adopt at [{$path}].");
@@ -148,10 +152,77 @@ class AssetService
             'name'         => $name,
             'content_type' => $contentType,
             'path'         => $path,
-            'is_public'    => $isPublic,
+            'storage'      => $storage,
             'last_update'  => $this->stamp($contents),
             'size'         => strlen($contents),
         ]);
+    }
+
+    /**
+     * Record an EXTERNAL URL as an asset: no bytes, no disk, `path` holds the
+     * link and `storage` holds {@see Asset::STORAGE_URL}.
+     *
+     * Lives here rather than in the admin form that collects the URL because it
+     * is the same write as {@see store()} minus the bytes — it replaces the row
+     * for a (slot, key) and, through {@see write()}, deletes the file the
+     * previous row pointed at. Doing that from the UI layer would mean a raw
+     * model write plus a hand-rolled copy of that cleanup at every call site.
+     *
+     * `$type` is declared, not sniffed: there are no bytes to read. It is only
+     * checked against the registry so a link cannot claim a kind nothing serves.
+     * `content_type` stays null — we never saw the file, and guessing from the
+     * URL's extension would be a lie the delivery layer replays as a header.
+     *
+     * @throws InvalidArgumentException on a bad slot, an unregistered type, or a
+     *                                  URL that is not http(s)
+     */
+    public function storeLink(
+        string $url,
+        string $slot,
+        string $key,
+        string $source = Asset::SOURCE_CORE,
+        ?string $name = null,
+        ?int $userId = null,
+        string $type = AssetTypes::IMAGE,
+    ): Asset {
+        $slot = $this->validSlot($slot);
+        $url = $this->validUrl($url);
+
+        if (app(AssetTypes::class)->canonicalFor($type) === null) {
+            throw new InvalidArgumentException("No asset type [{$type}] is registered.");
+        }
+
+        return $this->write(Asset::query()->slot($slot)->where('key', $key)->first(), [
+            'key'          => $key,
+            'slot'         => $slot,
+            'type'         => $type,
+            'source'       => $source,
+            'name'         => $name,
+            'content_type' => null,
+            'path'         => $url,
+            'storage'      => Asset::STORAGE_URL,
+            'last_update'  => $this->stamp($url),
+            'size'         => 0,
+            'updated_by'   => $userId,
+        ]);
+    }
+
+    /**
+     * A link is put straight into an `<img src>` by every consumer, so the
+     * scheme is checked here rather than trusted: `javascript:` and `data:` are
+     * script in a string, and this value arrives from an admin form.
+     *
+     * @throws InvalidArgumentException on anything but an absolute http(s) URL
+     */
+    private function validUrl(string $url): string
+    {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+
+        if (!in_array($scheme, ['http', 'https'], true) || blank(parse_url($url, PHP_URL_HOST))) {
+            throw new InvalidArgumentException("Invalid asset URL [{$url}]: expected an absolute http or https address.");
+        }
+
+        return $url;
     }
 
     /**
@@ -171,6 +242,33 @@ class AssetService
         }
 
         return $slot;
+    }
+
+    /**
+     * The disk bytes may be written to.
+     *
+     * `url` is the sentinel meaning "this asset is a link" (Asset::STORAGE_URL),
+     * so it can never name a disk here: a row written with it would claim its
+     * `path` is a URL when it is a path. That is also the guard against an
+     * install configuring a disk under that literal name — there would be no
+     * way to tell the two apart afterwards, so the write is refused rather than
+     * silently reinterpreted.
+     *
+     * @throws InvalidArgumentException on the sentinel or an unconfigured disk
+     */
+    private function validStorage(string $storage): string
+    {
+        if ($storage === Asset::STORAGE_URL) {
+            throw new InvalidArgumentException(
+                'Asset storage ['.Asset::STORAGE_URL.'] is reserved for external links and cannot name a disk.'
+            );
+        }
+
+        if (!is_array(config("filesystems.disks.{$storage}"))) {
+            throw new InvalidArgumentException("No filesystem disk [{$storage}] is configured.");
+        }
+
+        return $storage;
     }
 
     /**
@@ -267,20 +365,24 @@ class AssetService
             return Asset::create($attributes);
         }
 
-        // Captured before the update, because a replacement may flip is_public
-        // and move the asset to the other disk — deleting from the NEW disk
-        // would leave the old file behind, and on the public disk that means
-        // bytes still reachable by URL.
+        // Captured before the update, because a replacement may move the asset
+        // to another disk, or turn it into a link — deleting from the NEW
+        // storage would leave the old file behind, and on a disk with a URL
+        // that means bytes still reachable.
         $previousDisk = $existing->diskName();
         $previousPath = $existing->path;
+        $wasLink = $existing->isLink();
 
         $existing->update($attributes);
 
         // Done after the row points at the new file, so a failure above leaves
         // the old bytes reachable rather than the row dangling. Skipped when
-        // the row still points at the same file, which is what an adopt() of an
-        // already-adopted path does — deleting there would destroy the asset.
-        if ($previousPath !== $existing->path) {
+        // the row still points at the same file on the same disk, which is what
+        // an adopt() of an already-adopted path does — deleting there would
+        // destroy the asset. A link had no file to begin with.
+        $moved = $previousPath !== $existing->path || $previousDisk !== $existing->diskName();
+
+        if (!$wasLink && $moved) {
             Storage::disk($previousDisk)->delete($previousPath);
         }
 

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Features\Assets\AssetService;
 use App\Features\Assets\AssetTypes;
+use App\Traits\HasAssets;
 use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,9 +34,9 @@ use Override;
  * @property string      $type         what the bytes are; see AssetTypes
  * @property string      $source       owning module slug; 'phpvms' for phpVMS itself
  * @property string|null $name
- * @property string      $content_type
- * @property string      $path         location on the asset's disk
- * @property bool        $is_public    served without authentication
+ * @property string|null $content_type null for a link, whose bytes we never saw
+ * @property string      $path         location on the asset's disk, or the URL itself when storage is STORAGE_URL
+ * @property string      $storage      disk name from config('filesystems.disks'), or STORAGE_URL
  * @property string      $last_update  opaque change stamp — compared for equality only
  * @property int         $size
  * @property int|null    $updated_by
@@ -42,7 +44,7 @@ use Override;
  * @property Carbon|null $updated_at
  * @property-read User|null $editor
  *
- * @method static Builder<static>|Asset whereIsPublic($value)
+ * @method static Builder<static>|Asset whereStorage($value)
  * @method static Builder<static>|Asset newModelQuery()
  * @method static Builder<static>|Asset newQuery()
  * @method static Builder<static>|Asset query()
@@ -70,18 +72,21 @@ class Asset extends Model
     use HasNanoIds;
 
     /**
-     * Where an asset's bytes live is decided by `is_public`, because that is
-     * what decides how they are served.
+     * The reserved `storage` value meaning "this asset is an external link":
+     * there are no bytes on any disk and `path` holds the URL itself.
      *
-     * A public asset — site branding, an airline mark — is served as a plain
-     * storage URL off the public disk. It is public information rendered on
-     * pages a logged-out visitor sees, so routing it through PHP would add a
-     * request hop and gain nothing.
-     *
-     * Everything else sits on the private disk with no URL of its own, and is
-     * reachable only through the authenticated API endpoint.
+     * It shares the column with real disk names, so a disk configured under
+     * this literal name would be ambiguous; AssetService rejects one at write
+     * time.
      */
-    public const PRIVATE_DISK = 'local';
+    public const STORAGE_URL = 'url';
+
+    /**
+     * The disk with no URL of its own: assets on it are reachable only through
+     * an authenticated route. Also where an admin form stages an upload before
+     * it becomes an asset.
+     */
+    public const STORAGE_LOCAL = 'local';
 
     public const PATH_PREFIX = 'assets';
 
@@ -98,6 +103,9 @@ class Asset extends Model
     public const SLOT_BRANDING = 'branding';
 
     public const SLOT_AIRLINE_LOGO = 'airline-logo';
+
+    /** A rank's badge, keyed on the rank id. */
+    public const SLOT_RANK = 'rank';
 
     /**
      * A user's own images — today just the avatar. Keyed on the user id, not on
@@ -118,7 +126,7 @@ class Asset extends Model
         'name',
         'content_type',
         'path',
-        'is_public',
+        'storage',
         'last_update',
         'size',
         'updated_by',
@@ -131,29 +139,51 @@ class Asset extends Model
     protected function casts(): array
     {
         return [
-            'is_public' => 'boolean',
-            'size'      => 'integer',
+            'size' => 'integer',
         ];
     }
 
     protected static function booted(): void
     {
         // The file IS the asset. Leaving it behind orphans bytes nothing owns —
-        // and on the public disk, bytes that are still reachable by URL.
+        // and on a disk with a URL, bytes that are still reachable.
+        //
+        // A link asset owns no bytes, so there is nothing to delete and its
+        // `path` is not a path.
         static::deleted(function (self $asset): void {
+            if ($asset->isLink()) {
+                return;
+            }
+
             Storage::disk($asset->diskName())->delete($asset->path);
         });
     }
 
-    /** The disk this asset's bytes live on, decided by `is_public`. */
+    /** The disk this asset's bytes live on. */
     public function diskName(): string
     {
-        return self::diskFor((bool) $this->is_public);
+        return $this->storage;
     }
 
-    public static function diskFor(bool $isPublic): string
+    /** Whether this asset references an external URL rather than stored bytes. */
+    public function isLink(): bool
     {
-        return $isPublic ? (string) config('filesystems.public_files') : self::PRIVATE_DISK;
+        return $this->storage === self::STORAGE_URL;
+    }
+
+    /**
+     * Whether a disk declares an address its files are served at, which is what
+     * makes an asset on it linkable rather than something to stream.
+     *
+     * `filled()` and not `isset()`: every s3-family disk here declares the key
+     * with a possibly-empty value — `env('AWS_URL')` (config/filesystems.php:86)
+     * and `env('CLOUDFLARE_R2_URL', '')` (:99) — and Storage would happily build
+     * a bare `/assets/x.png` out of one. An operator setting that env var is the
+     * declaration that the bucket is served there.
+     */
+    public static function diskDeclaresUrl(string $disk): bool
+    {
+        return filled(config("filesystems.disks.{$disk}.url"));
     }
 
     /** @return BelongsTo<User, $this> */
@@ -184,24 +214,43 @@ class Asset extends Model
     }
 
     /**
-     * Where this asset's bytes are fetched from.
+     * The URL this asset can be linked at directly, or null when it has none.
      *
-     * A public asset gets its storage URL directly — no PHP in the path, and
-     * the same shape airline logos have always had. A private one gets the
-     * authenticated API endpoint, addressed by id and stable across a
-     * replacement, which is why that endpoint revalidates rather than caching
-     * immutably.
+     * Null is not an error — it means "you have to stream these bytes
+     * yourself". Core does that through `api.assets.show`; a module does it
+     * through its own endpoint. Each consumer knows its own audience, so the
+     * asset does not choose for them.
+     *
+     * Reachability is read from the disk's `url` config entry rather than
+     * stored; see {@see diskDeclaresUrl()}.
      */
-    public function url(): string
+    public function url(): ?string
     {
-        return $this->is_public
-            ? Storage::disk($this->diskName())->url($this->path)
-            : route('api.assets.show', $this);
+        if ($this->isLink()) {
+            return $this->path;
+        }
+
+        return self::diskDeclaresUrl($this->storage)
+            ? Storage::disk($this->storage)->url($this->path)
+            : null;
+    }
+
+    /**
+     * The URL of the asset at (slot, key), or null when there is no such asset
+     * or it has none — see {@see url()} for what null means.
+     *
+     * The global lookup: both arguments are supplied by the caller, so no model
+     * is involved. A model that owns its key uses {@see HasAssets}.
+     */
+    public static function getUrl(string $slot, string $key): ?string
+    {
+        return app(AssetService::class)->find($slot, $key)?->url();
     }
 
     /**
      * Filename a consumer stores this under: {key}.{ext}, the extension derived
-     * from content_type.
+     * from content_type — or the bare key when there is no content type to
+     * derive one from, which is the normal case for a link.
      *
      * Keyed on `key` and not `id` on purpose: a nano ID here would make an
      * on-disk cache undebuggable, and anything referencing an asset by filename

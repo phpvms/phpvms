@@ -129,7 +129,7 @@ class Branding extends Page
             return;
         }
 
-        $disk = Storage::disk(Asset::PRIVATE_DISK);
+        $disk = Storage::disk(Asset::STORAGE_LOCAL);
 
         // The upload landed in a holding directory on the private disk rather
         // than at its final path: ImageUploadService does the WebP conversion
@@ -444,7 +444,7 @@ class Branding extends Page
             // Staging only. persistAutosavedField() moves the file into an
             // asset row and deletes it from here; the private disk keeps an
             // upload out of reach in between.
-            ->disk(Asset::PRIVATE_DISK)
+            ->disk(Asset::STORAGE_LOCAL)
             ->directory(Asset::PATH_PREFIX.'/staging')
             ->getUploadedFileNameForStorageUsing(
                 fn (TemporaryUploadedFile $file): string => $key.'.'.strtolower($file->getClientOriginalExtension())

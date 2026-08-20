@@ -115,11 +115,11 @@ it('autosaves the logo upload without calling save', function (): void {
         ->and($asset->content_type)->toBe('image/webp')
         // Branding renders on the login screen, so it has to be reachable
         // without a session.
-        ->and($asset->is_public)->toBeTrue()
+        ->and($asset->storage)->toBe(config('filesystems.public_files'))
         ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
 
     // The staging copy is not left behind on the disk.
-    expect(Storage::disk(Asset::PRIVATE_DISK)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
+    expect(Storage::disk(Asset::STORAGE_LOCAL)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
 });
 
 /**

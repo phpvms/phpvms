@@ -85,7 +85,12 @@ return new class() extends Migration
                     // suite (SQLite, see phpunit.xml) cannot catch its absence.
                     try {
                         DB::transaction(
-                            fn () => $assets->adopt($path, Asset::SLOT_BRANDING, $assetKey, isPublic: true)
+                            fn () => $assets->adopt(
+                                $path,
+                                Asset::SLOT_BRANDING,
+                                $assetKey,
+                                storage: (string) config('filesystems.public_files'),
+                            )
                         );
                     } catch (Throwable $e) {
                         // Falls back to the bundled asset; admin re-uploads. Logged

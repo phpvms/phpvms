@@ -19,8 +19,8 @@ use Filament\Support\Colors\Color;
  * Images resolve from the `assets` table (slot `branding`); the name and brand
  * colour are still settings, because a name and a colour are not files.
  *
- * Callers hand over bytes, not decisions: which slot, whether the asset is
- * public, and whether a write needs derivatives generated are all settled here.
+ * Callers hand over bytes, not decisions: which slot, which disk, and whether a
+ * write needs derivatives generated are all settled here.
  * The one piece deliberately outside is the image resizing itself, which is
  * queued work and so has to be a job — {@see GenerateBrandingSizes}, dispatched
  * by `store()` and writing back through it.
@@ -87,8 +87,9 @@ final class Branding
 
     /**
      * Stores bytes as the `branding` asset under `$key`, replacing whatever was
-     * there. Public by force: site branding renders on the login screen, so it
-     * has to survive a logged-out request — callers do not get to decide that.
+     * there. Always on the public disk: site branding renders on the login
+     * screen, so it has to be fetchable without a session — callers do not get
+     * to decide that.
      *
      * Writing the logo re-derives its sizes; the derivative keys themselves are
      * written by the job through this same method, and dispatch is keyed on the
@@ -101,7 +102,7 @@ final class Branding
             Asset::SLOT_BRANDING,
             $key,
             userId: $userId,
-            isPublic: true,
+            storage: (string) config('filesystems.public_files'),
         );
 
         if ($key === self::KEY_LOGO) {

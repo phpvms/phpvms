@@ -76,7 +76,7 @@ return new class() extends Migration
                             Asset::SLOT_AIRLINE_LOGO,
                             (string) $airline->icao,
                             name: (string) $airline->icao,
-                            isPublic: true,
+                            storage: (string) config('filesystems.public_files'),
                         ));
                     } catch (Throwable $e) {
                         Log::warning('airline_logos_to_assets: could not adopt airline logo', [

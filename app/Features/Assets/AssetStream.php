@@ -27,6 +27,11 @@ final class AssetStream
      */
     public static function response(Asset $asset, Request $request): StreamedResponse
     {
+        // A link owns no bytes and its `path` is a URL, so there is nothing here
+        // to stream and no disk to ask. 404 rather than resolving a disk named
+        // `url`, which does not exist and would throw.
+        abort_if($asset->isLink(), 404);
+
         $disk = Storage::disk($asset->diskName());
         abort_unless($disk->exists($asset->path), 404);
 
@@ -38,7 +43,10 @@ final class AssetStream
                 fclose($stream);
             }
         }, 200, [
-            'Content-Type' => $asset->content_type,
+            // `content_type` is nullable — a stored asset always has one, but
+            // the column allows null for links, and a null here is a TypeError
+            // in the header bag rather than a missing header.
+            'Content-Type' => $asset->content_type ?? 'application/octet-stream',
             // Read off the disk rather than the row: a size that disagrees with
             // the bytes truncates the response at the client.
             'Content-Length' => (string) $disk->size($asset->path),

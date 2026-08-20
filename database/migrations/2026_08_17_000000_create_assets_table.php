@@ -45,10 +45,12 @@ use Illuminate\Support\Facades\Schema;
  * stored under and the Content-Type replayed when serving it. Serve a component
  * as application/octet-stream and the browser silently refuses to execute it.
  *
- * Files live on a private disk and are served through a core route rather than
- * a public storage URL, which is what the old `branding.*` URLs and the
- * public-disk uploads were. `is_public` decides whether that route demands a
- * session; it defaults closed.
+ * `storage` names the disk the bytes live on, so an install can put assets
+ * anywhere it has configured — the public disk, s3, r2 — or reference an
+ * external URL with the reserved value `url`. Whether an asset can be linked
+ * directly is not stored: it is read back from that disk's `url` config entry.
+ * Anything without one is served through the core route, which applies its own
+ * authorization.
  *
  * Deliberately NOT soft-deleted. An asset owns a file on disk and a slice of
  * the (slot, key) namespace; soft-deleting one would hold its key hostage — so
@@ -80,9 +82,25 @@ return new class() extends Migration
             // key is already the name a user sees.
             $table->string('name')->nullable();
 
-            $table->string('content_type');
+            // Nullable because a link asset (storage = 'url') is a URL we were
+            // handed, not bytes we sniffed — there is nothing to read a type
+            // from unless the caller declares one.
+            $table->string('content_type')->nullable();
 
-            // Location on the private disk. Not a URL: consumers are handed a
+            // Where the bytes are. Either a disk name from
+            // config('filesystems.disks') or the reserved value 'url'
+            // (Asset::STORAGE_URL), which means this asset is an external link
+            // and `path` holds that link rather than a location on a disk.
+            //
+            // Not a boolean: one flag cannot say "put this on r2". Whether the
+            // bytes are directly reachable is read back from the disk's own
+            // `url` config entry (Asset::url()), so it cannot drift out of sync
+            // with how the install is actually configured.
+            $table->string('storage')->index();
+
+            // Location on the asset's disk — or the URL itself when `storage`
+            // is 'url'. Either way it is the only locator, so it stays NOT
+            // NULL. For a stored file this is not a URL: consumers are handed a
             // route addressed by id, so files can move without invalidating
             // anything already stored downstream.
             $table->string('path');
@@ -91,19 +109,6 @@ return new class() extends Migration
             // never ordered or parsed, so it can become a checksum, a revision
             // or a timestamp without breaking anyone.
             $table->string('last_update');
-
-            // Whether the bytes are served without authentication. Files all
-            // live on the same private disk either way; this only decides
-            // whether the serving route demands a session.
-            //
-            // It has to be a per-asset flag rather than a slot rule: site
-            // branding is rendered on pages a logged-out visitor sees — the
-            // login screen's banner (resources/views/filament/auth/login-hero.blade.php:7),
-            // the panel favicon (app/Providers/Filament/BasePanelProvider.php:94)
-            // and the public nav logo (resources/views/layouts/seven/nav.blade.php:12)
-            // — while a paintkit or an uploaded sound in the same install
-            // should not be hotlinkable. Defaults closed.
-            $table->boolean('is_public')->default(false)->index();
 
             $table->unsignedBigInteger('size')->default(0);
             $table->unsignedBigInteger('updated_by')->nullable();

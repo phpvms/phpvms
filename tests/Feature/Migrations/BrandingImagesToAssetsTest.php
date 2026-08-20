@@ -58,7 +58,7 @@ it('moves a logo on the public disk into the branding slot and drops the setting
 
     expect($asset)->not->toBeNull()
         ->and($asset->content_type)->toBe('image/png')
-        ->and($asset->is_public)->toBeTrue()
+        ->and($asset->storage)->toBe(config('filesystems.public_files'))
         ->and(Storage::disk($asset->diskName())->get($asset->path))->toBe(ASSET_TEST_PNG)
         ->and(Setting::find(Setting::formatKey('branding.logo_url')))->toBeNull();
 

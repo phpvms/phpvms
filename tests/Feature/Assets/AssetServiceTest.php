@@ -127,7 +127,7 @@ it('adopts an existing file without moving or copying it', function (): void {
     $disk = Storage::disk(config('filesystems.public_files'));
     $disk->put('branding/logo.png', PNG_BYTES);
 
-    $asset = $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', isPublic: true);
+    $asset = $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', storage: (string) config('filesystems.public_files'));
 
     expect($asset->path)->toBe('branding/logo.png')
         ->and($asset->content_type)->toBe('image/png')
@@ -146,8 +146,8 @@ it('survives adopting the same path twice', function (): void {
     $disk = Storage::disk(config('filesystems.public_files'));
     $disk->put('branding/logo.png', PNG_BYTES);
 
-    $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', isPublic: true);
-    $second = $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', isPublic: true);
+    $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', storage: (string) config('filesystems.public_files'));
+    $second = $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', storage: (string) config('filesystems.public_files'));
 
     $disk->assertExists('branding/logo.png');
     expect(Asset::query()->count())->toBe(1)
@@ -155,7 +155,7 @@ it('survives adopting the same path twice', function (): void {
 });
 
 it('refuses to adopt a path with no file', function (): void {
-    expect(fn () => $this->service->adopt('branding/missing.png', Asset::SLOT_BRANDING, 'logo', isPublic: true))
+    expect(fn () => $this->service->adopt('branding/missing.png', Asset::SLOT_BRANDING, 'logo', storage: (string) config('filesystems.public_files')))
         ->toThrow(InvalidArgumentException::class);
 
     expect(Asset::query()->count())->toBe(0);
@@ -271,11 +271,12 @@ it('will not take a content type where a kind belongs', function (): void {
 });
 
 /**
- * Where the bytes land is decided by is_public, because that is what decides
- * how they are served: a public asset gets a storage URL off the public disk, a
- * private one has no URL at all and is reachable only through the API endpoint.
+ * The caller names the disk and nothing substitutes a different one. What that
+ * choice decides downstream is whether the asset has a URL of its own: the
+ * public disk declares one, `local` does not, and an asset with none is
+ * reachable only through the API endpoint.
  */
-it('stores public and private assets on different disks', function (): void {
+it('stores each asset on the disk the caller named', function (): void {
     $private = $this->service->store(
         assetUpload('a.png', PNG_BYTES, 'image/png'),
         'sounds',
@@ -285,31 +286,33 @@ it('stores public and private assets on different disks', function (): void {
         assetUpload('b.png', PNG_BYTES, 'image/png'),
         Asset::SLOT_BRANDING,
         'public',
-        isPublic: true,
+        storage: (string) config('filesystems.public_files'),
     );
 
-    Storage::disk(Asset::PRIVATE_DISK)->assertExists($private->path);
-    Storage::disk(Asset::PRIVATE_DISK)->assertMissing($public->path);
+    Storage::disk(Asset::STORAGE_LOCAL)->assertExists($private->path);
+    Storage::disk(Asset::STORAGE_LOCAL)->assertMissing($public->path);
 
     Storage::disk(config('filesystems.public_files'))->assertExists($public->path);
     Storage::disk(config('filesystems.public_files'))->assertMissing($private->path);
 
-    expect($private->url())->toContain('/api/v1/assets/'.$private->id)
-        ->and($public->url())->not->toContain('/api/');
+    expect($private->storage)->toBe(Asset::STORAGE_LOCAL)
+        ->and($private->url())->toBeNull()
+        ->and($public->storage)->toBe(config('filesystems.public_files'))
+        ->and($public->url())->toBeString();
 });
 
 /**
- * A replacement can flip visibility, which moves the asset to the other disk.
- * Deleting the old file from the NEW disk would leave the original behind — and
- * on the public disk that means bytes still reachable by URL after the asset
- * was supposedly made private.
+ * A replacement can name a different disk, which moves the asset. Deleting the
+ * old file from the NEW disk would leave the original behind — and on a disk
+ * with a URL that means bytes still reachable after the asset was supposedly
+ * moved out of reach.
  */
-it('removes the old file from its own disk when a replacement flips visibility', function (): void {
+it('removes the old file from its own disk when a replacement changes disk', function (): void {
     $public = $this->service->store(
         assetUpload('a.png', PNG_BYTES, 'image/png'),
         Asset::SLOT_BRANDING,
         'logo',
-        isPublic: true,
+        storage: (string) config('filesystems.public_files'),
     );
     $publicPath = $public->path;
 
@@ -317,11 +320,11 @@ it('removes the old file from its own disk when a replacement flips visibility',
         assetUpload('b.png', PNG_BYTES."\x00v2", 'image/png'),
         Asset::SLOT_BRANDING,
         'logo',
-        isPublic: false,
+        storage: Asset::STORAGE_LOCAL,
     );
 
     Storage::disk(config('filesystems.public_files'))->assertMissing($publicPath);
-    Storage::disk(Asset::PRIVATE_DISK)->assertExists($private->path);
+    Storage::disk(Asset::STORAGE_LOCAL)->assertExists($private->path);
 });
 
 /**
@@ -344,9 +347,56 @@ it('enforces (slot, key) uniqueness across sources', function (): void {
         'source'       => 'acars',
         'content_type' => 'image/png',
         'path'         => 'assets/branding/other.png',
+        'storage'      => Asset::STORAGE_LOCAL,
         'last_update'  => 'x',
         'size'         => 1,
     ]))->toThrow(QueryException::class);
+});
+
+/**
+ * `url` names the link sentinel in the same column real disk names live in, so
+ * bytes can never be written under it — a row claiming its `path` is a URL when
+ * it is a path would resolve to a URL that is really a filename. This is also
+ * what an install configuring a disk under that literal name runs into, which is
+ * the point: refuse rather than silently reinterpret.
+ */
+it('refuses to write bytes to the link sentinel', function (): void {
+    // Guard: the rejection is the sentinel's, not merely "no such disk" —
+    // configure one under that name and it is still refused.
+    config(['filesystems.disks.url' => ['driver' => 'local', 'root' => sys_get_temp_dir()]]);
+
+    expect(fn () => $this->service->storeContents(PNG_BYTES, Asset::SLOT_BRANDING, 'logo', storage: Asset::STORAGE_URL))
+        ->toThrow(InvalidArgumentException::class, 'reserved for external links');
+
+    expect(Asset::query()->count())->toBe(0);
+});
+
+it('refuses a disk nothing configured', function (): void {
+    expect(fn () => $this->service->storeContents(PNG_BYTES, Asset::SLOT_BRANDING, 'logo', storage: 'nowhere'))
+        ->toThrow(InvalidArgumentException::class, 'No filesystem disk [nowhere] is configured.');
+
+    expect(fn () => $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', storage: 'nowhere'))
+        ->toThrow(InvalidArgumentException::class, 'No filesystem disk [nowhere] is configured.');
+});
+
+/**
+ * adopt() keeps a file's existing path, so re-adopting the SAME path onto a
+ * different disk is the one case where the old file is not at the new location.
+ * Comparing paths alone would call that unchanged and orphan the original.
+ */
+it('removes the old file when only the disk changed under an adopted path', function (): void {
+    $public = config('filesystems.public_files');
+
+    Storage::disk($public)->put('branding/logo.png', PNG_BYTES);
+    Storage::disk(Asset::STORAGE_LOCAL)->put('branding/logo.png', PNG_BYTES);
+
+    $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', storage: $public);
+    $moved = $this->service->adopt('branding/logo.png', Asset::SLOT_BRANDING, 'logo', storage: Asset::STORAGE_LOCAL);
+
+    expect($moved->storage)->toBe(Asset::STORAGE_LOCAL);
+
+    Storage::disk(Asset::STORAGE_LOCAL)->assertExists('branding/logo.png');
+    Storage::disk($public)->assertMissing('branding/logo.png');
 });
 
 /**

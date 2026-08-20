@@ -30,7 +30,7 @@ function putLogoAsset(int $red = 255): Asset
     $bytes = (string) ob_get_clean();
     imagedestroy($image);
 
-    return app(AssetService::class)->storeContents($bytes, Asset::SLOT_BRANDING, Branding::KEY_LOGO, isPublic: true);
+    return app(AssetService::class)->storeContents($bytes, Asset::SLOT_BRANDING, Branding::KEY_LOGO, storage: (string) config('filesystems.public_files'));
 }
 
 beforeEach(function (): void {
@@ -55,7 +55,7 @@ it('writes three derivative assets', function (): void {
             ->and($asset->content_type)->toBe('image/webp')
             // Public, because the 32px one is the favicon the login screen asks
             // for before anyone has logged in.
-            ->and($asset->is_public)->toBeTrue();
+            ->and($asset->storage)->toBe(config('filesystems.public_files'));
 
         assetDisk($asset)->assertExists($asset->path);
     }
@@ -119,7 +119,7 @@ it('produces square derivatives from a non-square source', function (): void {
     $bytes = (string) ob_get_clean();
     imagedestroy($wide);
 
-    $logo = app(AssetService::class)->storeContents($bytes, Asset::SLOT_BRANDING, Branding::KEY_LOGO, isPublic: true);
+    $logo = app(AssetService::class)->storeContents($bytes, Asset::SLOT_BRANDING, Branding::KEY_LOGO, storage: (string) config('filesystems.public_files'));
 
     new GenerateBrandingSizes($logo->id)->handle();
 
@@ -148,7 +148,7 @@ it('produces square derivatives from a non-square source', function (): void {
  */
 it('copies the original into every size for an SVG logo instead of failing', function (): void {
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
-    $logo = app(AssetService::class)->storeContents($svg, Asset::SLOT_BRANDING, Branding::KEY_LOGO, isPublic: true);
+    $logo = app(AssetService::class)->storeContents($svg, Asset::SLOT_BRANDING, Branding::KEY_LOGO, storage: (string) config('filesystems.public_files'));
 
     new GenerateBrandingSizes($logo->id)->handle();
 

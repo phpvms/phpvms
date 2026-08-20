@@ -39,7 +39,7 @@ it('adopts a hosted logo into the airline-logo slot and clears the column', func
     $asset = app(AssetService::class)->find(Asset::SLOT_AIRLINE_LOGO, 'ABC');
 
     expect($asset)->not->toBeNull()
-        ->and($asset->is_public)->toBeTrue()
+        ->and($asset->storage)->toBe(config('filesystems.public_files'))
         // Adopted, not copied: the URL every install has published still works.
         ->and($asset->path)->toBe('airlines/1.webp')
         ->and($asset->url())->toBe($originalUrl)

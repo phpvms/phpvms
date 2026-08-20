@@ -110,7 +110,7 @@ class AirlineForm
             // Staging only. persistLogo() moves the file into an `airline-logo`
             // asset and deletes it from here; the private disk keeps an
             // unreviewed upload out of reach in between.
-            ->disk(Asset::PRIVATE_DISK)
+            ->disk(Asset::STORAGE_LOCAL)
             ->directory(Asset::PATH_PREFIX.'/staging')
             // Deterministic staging name, so an abandoned upload is overwritten
             // by the next one rather than accumulating. A record that has not
@@ -203,7 +203,7 @@ class AirlineForm
             return;
         }
 
-        $disk = Storage::disk(Asset::PRIVATE_DISK);
+        $disk = Storage::disk(Asset::STORAGE_LOCAL);
 
         // ImageUploadService has already converted to WebP and sanitised any
         // SVG on the way into staging; AssetService decides where it lives.
@@ -215,7 +215,7 @@ class AirlineForm
             userId: auth()->id(),
             // Airline marks render on public flight pages, so they are fetched
             // without a session.
-            isPublic: true,
+            storage: (string) config('filesystems.public_files'),
         );
 
         $disk->delete($staged);
