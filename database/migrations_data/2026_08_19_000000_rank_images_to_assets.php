@@ -1,0 +1,115 @@
+<?php
+
+use App\Features\Assets\AssetService;
+use App\Models\Asset;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+
+/**
+ * Data migration: move rank badges into the `rank` slot, keyed on the rank id.
+ *
+ * `ranks.image_url` was a free-text field, so it holds either of two things: a
+ * path to a file on the public disk, or an absolute URL somewhere else. Unlike
+ * the airline case, both become assets — an external URL becomes a link row
+ * (`AssetService::storeLink()`), which is exactly what the admin form now writes
+ * when someone picks the URL source.
+ *
+ * **The URL does not change for a hosted badge.** The asset adopts the file
+ * where it already sits (see `AssetService::adopt()`), so a badge an install has
+ * already published keeps its address.
+ *
+ * Anything that is neither — a site-relative path we do not host on the assets
+ * disk, or a file that has since been deleted — is left on the column, which
+ * `Rank::imageUrl()` still falls back to.
+ */
+return new class() extends Migration
+{
+    public function up(): void
+    {
+        if (!Schema::hasTable('ranks') || !Schema::hasTable('assets')) {
+            return;
+        }
+
+        $assets = app(AssetService::class);
+        $storage = (string) config('filesystems.public_files');
+        $disk = Storage::disk($storage);
+
+        DB::table('ranks')
+            ->select(['id', 'name', 'image_url'])
+            ->whereNotNull('image_url')
+            ->where('image_url', '!=', '')
+            ->orderBy('id')
+            ->chunkById(200, function ($ranks) use ($assets, $disk, $storage): void {
+                foreach ($ranks as $rank) {
+                    $image = (string) $rank->image_url;
+
+                    // Never fail the upgrade over one badge. An unsupported
+                    // file, or a value that is neither a hosted file nor an
+                    // http(s) URL, leaves that rank's column untouched, so it
+                    // still renders through the legacy fallback.
+                    //
+                    // The SAVEPOINT is load-bearing: on Postgres a failed
+                    // statement aborts the whole transaction, and catching the
+                    // PHP exception does not clear that — every later statement
+                    // dies with 25P02 until a rollback. DB::transaction() nested
+                    // inside an open transaction issues SAVEPOINT / ROLLBACK TO
+                    // SAVEPOINT, which is what lets `continue` actually continue.
+                    try {
+                        DB::transaction(fn () => $disk->exists($image)
+                            ? $assets->adopt(
+                                $image,
+                                Asset::SLOT_RANK,
+                                (string) $rank->id,
+                                name: (string) $rank->name,
+                                storage: $storage,
+                            )
+                            : $assets->storeLink(
+                                $image,
+                                Asset::SLOT_RANK,
+                                (string) $rank->id,
+                                name: (string) $rank->name,
+                            ));
+                    } catch (Throwable $e) {
+                        Log::warning('rank_images_to_assets: could not move rank image', [
+                            'rank'  => $rank->id,
+                            'image' => $image,
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        continue;
+                    }
+
+                    // The asset owns it now. Clearing the column is what makes
+                    // the asset the single source of truth rather than leaving
+                    // two records of the same image that can drift.
+                    DB::table('ranks')->where('id', $rank->id)->update(['image_url' => null]);
+                }
+            });
+    }
+
+    /**
+     * Points the column back at what the asset holds — a path for an adopted
+     * file, the URL itself for a link — and drops the rows. No file ever moved,
+     * so this restores the previous state exactly.
+     */
+    public function down(): void
+    {
+        if (!Schema::hasTable('ranks') || !Schema::hasTable('assets')) {
+            return;
+        }
+
+        $images = DB::table('assets')->where('slot', Asset::SLOT_RANK)->get();
+
+        foreach ($images as $asset) {
+            DB::table('ranks')->where('id', $asset->key)->update(['image_url' => $asset->path]);
+        }
+
+        // Deleted through the query builder ON PURPOSE, so Asset's `deleted`
+        // hook does not fire and delete the very files the column now points
+        // at again. The rows go; the files stay exactly where they were.
+        DB::table('assets')->where('slot', Asset::SLOT_RANK)->delete();
+    }
+};

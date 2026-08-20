@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Traits\HasAssets;
 use Database\Factories\RankFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -69,6 +70,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Rank extends Model
 {
+    use HasAssets;
+
     /** @use HasFactory<RankFactory> */
     use HasFactory;
 
@@ -104,13 +107,31 @@ class Rank extends Model
         'manual_base_pay_rate',
     ];
 
+    /** The rank badge lives in the `rank` slot, keyed on the rank id. */
+    public function assetSlot(): string
+    {
+        return Asset::SLOT_RANK;
+    }
+
     /**
-     * Return image_url always as full uri
+     * The badge's URL: the rank's asset when it has one, falling back to the
+     * legacy `image_url` column.
+     *
+     * The column is only reached on an install whose data migration could not
+     * move the value — a file that had already been deleted, or a site-relative
+     * path we do not host on the assets disk. Rendering the old value there is
+     * better than rendering nothing.
      */
     public function imageUrl(): Attribute
     {
         return Attribute::make(
-            get: function ($value) {
+            get: function ($value): ?string {
+                $url = $this->assetUrl();
+
+                if ($url !== null) {
+                    return $url;
+                }
+
                 if (!filled($value)) {
                     return null;
                 }
