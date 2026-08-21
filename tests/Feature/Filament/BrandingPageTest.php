@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\NavigationGroup;
+use App\Exceptions\AutosaveFailed;
 use App\Features\Assets\AssetService;
 use App\Filament\Pages\Branding;
 use App\Jobs\GenerateBrandingSizes;
@@ -317,4 +318,22 @@ it('does not wipe the other uploads when one is autosaved', function (): void {
 
     Storage::disk($banner->diskName())->assertExists($banner->path);
     Storage::disk($dark->diskName())->assertExists($dark->path);
+});
+
+/**
+ * Missing bytes leave the stored branding alone and report the failure through
+ * AutosaveFailed, which the trait turns into the one danger toast.
+ */
+it('leaves the stored branding alone when the staged file has gone missing', function (): void {
+    $this->actingAs(brandingUser('view:branding', 'update:branding'));
+
+    $existing = createBrandingAsset(BrandingSupport::KEY_BANNER);
+
+    // persistAutosavedField is protected -- the trait calls it. Replay it with a
+    // staging path that was never written.
+    expect(fn () => (fn () => $this->persistAutosavedField('banner', Asset::PATH_PREFIX.'/staging/gone.png'))
+        ->call(Livewire::test(Branding::class)->instance()))
+        ->toThrow(AutosaveFailed::class, __('filament.branding_save_failed'));
+
+    expect(brandingAsset(BrandingSupport::KEY_BANNER)?->id)->toBe($existing->id);
 });

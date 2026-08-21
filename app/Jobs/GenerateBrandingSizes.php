@@ -75,7 +75,17 @@ class GenerateBrandingSizes implements ShouldQueue
         // on `<svg ...`, which is what every SVG logo upload used to fail with.
         // Copy the original into each size slot instead of erroring.
         if ($extension === 'svg') {
-            $contents = (string) Storage::disk($source->diskName())->get($source->path);
+            $contents = Storage::disk($source->diskName())->get($source->path);
+
+            // This branch is OUTSIDE the try below, so a missing file here would
+            // escape to the queue worker and retry into failed_jobs — the
+            // opposite of the fail-soft contract this class documents. The row
+            // can outlive its bytes; warn and stop.
+            if (blank($contents)) {
+                Log::warning("GenerateBrandingSizes: source asset [{$this->assetId}] has no bytes on disk, skipping.");
+
+                return;
+            }
 
             foreach (BrandingSupport::LOGO_SIZES as $size) {
                 $branding->store(BrandingSupport::logoKey($size), $contents);
@@ -127,6 +137,10 @@ class GenerateBrandingSizes implements ShouldQueue
 
     private function writeDerivatives(ImageManager $manager, Asset $sourceAsset, string $format, BrandingSupport $branding): void
     {
+        // Unchecked on purpose, unlike the SVG branch in handle(): this runs
+        // inside handle()'s try, so a missing file's '' reaches intervention,
+        // throws, and is caught and warned about there — which is already the
+        // fail-soft end state.
         $source = (string) Storage::disk($sourceAsset->diskName())->get($sourceAsset->path);
 
         foreach (BrandingSupport::LOGO_SIZES as $size) {

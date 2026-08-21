@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\AutosaveFailed;
 use App\Features\Assets\AssetService;
 use App\Filament\Resources\Airlines\Pages\CreateAirline;
 use App\Filament\Resources\Airlines\Pages\EditAirline;
+use App\Filament\Resources\Airlines\Schemas\AirlineForm;
 use App\Http\Middleware\UpdatePending;
 use App\Models\Airline;
 use App\Models\Asset;
@@ -227,4 +229,25 @@ it('eager-loads logo assets without a query per airline', function (): void {
         ->and(array_filter($urls))->toHaveCount(3)
         // Distinct bytes per airline, so a relation matching the wrong row fails.
         ->and(array_unique($urls))->toHaveCount(3);
+});
+
+/**
+ * Missing bytes leave the stored mark alone and report the failure through
+ * AutosaveFailed, which the trait turns into the one danger toast.
+ */
+it('leaves the airline mark alone when the staged file has gone missing', function (): void {
+    $airline = airlineWithoutLogo();
+
+    Livewire::test(EditAirline::class, ['record' => $airline->id])
+        ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64));
+
+    $stored = airlineLogo($airline);
+    expect($stored)->not->toBeNull();
+
+    // Replay the persist with a staging path that was never written.
+    expect(fn () => AirlineForm::persistLogo($airline->fresh(), Asset::PATH_PREFIX.'/staging/gone.png'))
+        ->toThrow(AutosaveFailed::class, __('filament.airline_logo_save_failed'));
+
+    expect(airlineLogo($airline)->id)->toBe($stored->id);
+    Storage::disk($stored->diskName())->assertExists($stored->path);
 });

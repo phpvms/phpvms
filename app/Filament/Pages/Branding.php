@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Exceptions\AutosaveFailed;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Concerns\ReversePrimaryButtons;
@@ -136,7 +137,16 @@ class Branding extends Page
         // and the SVG sanitising on the way in, and Branding owns where an
         // asset's bytes actually live. Private in the meantime, so an
         // unreviewed upload is never publicly reachable even briefly.
-        $branding->store($assetKey, (string) $disk->get($staged), userId: auth()->id());
+        // A staged file that has gone missing reads as null; storing '' would
+        // sniff as `application/x-empty` and throw out of the autosave request
+        // instead of leaving the existing branding alone.
+        $contents = $disk->get($staged);
+
+        if (blank($contents)) {
+            throw new AutosaveFailed(__('filament.branding_save_failed'));
+        }
+
+        $branding->store($assetKey, $contents, userId: auth()->id());
 
         $disk->delete($staged);
     }

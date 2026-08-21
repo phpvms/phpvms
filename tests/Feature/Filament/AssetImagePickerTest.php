@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\AutosaveFailed;
 use App\Features\Assets\AssetService;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Forms\Components\AssetImagePicker;
@@ -224,8 +225,9 @@ it('renders the preview from the resolved asset URL', function (): void {
 });
 
 /**
- * Missing bytes are a fail-soft: the autosave leaves the stored asset alone
- * rather than storing an empty file and tripping the content-type sniff.
+ * Missing bytes leave the stored asset alone rather than storing an empty file
+ * and tripping the content-type sniff, and report the failure through
+ * AutosaveFailed so the trait cannot follow it with a success toast.
  */
 it('leaves the stored asset alone when the staged file has gone missing', function (): void {
     $component = Livewire::test(AssetPickerHarness::class, ['recordId' => $this->airline->id])
@@ -235,13 +237,13 @@ it('leaves the stored asset alone when the staged file has gone missing', functi
     expect($stored)->not->toBeNull();
 
     // Replay the persist with a staging path that was never written.
-    AssetImagePicker::persist(
+    expect(fn () => AssetImagePicker::persist(
         PICKER_SLOT,
         $this->airline->id,
         pickerDisk(),
         'test_image_upload',
         Asset::PATH_PREFIX.'/staging/gone.png',
-    );
+    ))->toThrow(AutosaveFailed::class, __('filament.asset_image_save_failed'));
 
     expect(pickerAsset($this->airline->id)->id)->toBe($stored->id);
     Storage::disk($stored->diskName())->assertExists($stored->path);

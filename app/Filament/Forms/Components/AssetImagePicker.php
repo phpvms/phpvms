@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Forms\Components;
 
+use App\Exceptions\AutosaveFailed;
 use App\Features\Assets\AssetService;
 use App\Filament\Concerns\AutosavesFields;
 use App\Models\Asset;
@@ -221,7 +222,7 @@ final class AssetImagePicker
         $contents = $disk->get($staged);
 
         if (blank($contents)) {
-            return;
+            throw new AutosaveFailed(__('filament.asset_image_save_failed'));
         }
 
         $assets->storeContents(

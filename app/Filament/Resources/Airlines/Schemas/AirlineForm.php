@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Airlines\Schemas;
 
+use App\Exceptions\AutosaveFailed;
 use App\Features\Assets\AssetService;
 use App\Filament\Resources\Airlines\Pages\EditAirline;
 use App\Models\Airline;
@@ -203,10 +204,19 @@ class AirlineForm
 
         $disk = Storage::disk(Asset::STORAGE_LOCAL);
 
+        // A staged file that has gone missing reads as null; storing '' would
+        // sniff as `application/x-empty` and throw out of the autosave request
+        // instead of leaving the existing mark alone.
+        $contents = $disk->get($staged);
+
+        if (blank($contents)) {
+            throw new AutosaveFailed(__('filament.airline_logo_save_failed'));
+        }
+
         // ImageUploadService has already converted to WebP and sanitised any
         // SVG on the way into staging; AssetService decides where it lives.
         $assets->storeContents(
-            (string) $disk->get($staged),
+            $contents,
             Asset::SLOT_AIRLINE_LOGO,
             $record->icao,
             name: $record->icao,

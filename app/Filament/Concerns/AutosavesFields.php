@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Concerns;
 
+use App\Exceptions\AutosaveFailed;
 use Closure;
 use Filament\Notifications\Notification;
 
@@ -39,6 +40,10 @@ trait AutosavesFields
     /**
      * Persist a single key. Runs once per key in {@see autosaveKeys()},
      * before {@see afterAutosave()}.
+     *
+     * Throw {@see AutosaveFailed} with a translated message to report a failure
+     * the admin can act on; do not send a Notification by hand, or the success
+     * toast contradicts it. Anything else propagates as a real error.
      */
     abstract protected function persistAutosavedField(string $key, mixed $value): void;
 
@@ -132,6 +137,16 @@ trait AutosavesFields
             }
 
             $this->afterAutosave($state);
+        } catch (AutosaveFailed $autosaveFailed) {
+            // The one report of the failure. Falling through would put the
+            // success toast and the saved tick on top of it, which is what the
+            // hand-rolled Notification at each call site used to do.
+            Notification::make()
+                ->title($autosaveFailed->getMessage())
+                ->danger()
+                ->send();
+
+            return;
         } finally {
             $this->isAutosaving = false;
         }
