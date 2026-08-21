@@ -62,7 +62,7 @@ class AssetPickerHarness extends Component implements HasForms
             ->components([
                 AssetImagePicker::make(
                     PICKER_SLOT,
-                    fn (?Airline $record): int|string|null => $record?->id,
+                    fn (?Airline $record): ?int => $record?->id,
                     pickerDisk(),
                 ),
             ])

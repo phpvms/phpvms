@@ -331,9 +331,13 @@ it('leaves the stored branding alone when the staged file has gone missing', fun
 
     // persistAutosavedField is protected -- the trait calls it. Replay it with a
     // staging path that was never written.
-    expect(fn () => (fn () => $this->persistAutosavedField('banner', Asset::PATH_PREFIX.'/staging/gone.png'))
-        ->call(Livewire::test(Branding::class)->instance()))
-        ->toThrow(AutosaveFailed::class, __('filament.branding_save_failed'));
+    $page = livewireInstance(Branding::class);
+
+    expect(function () use ($page): void {
+        (function (): void {
+            $this->persistAutosavedField('banner', Asset::PATH_PREFIX.'/staging/gone.png');
+        })->call($page);
+    })->toThrow(AutosaveFailed::class, __('filament.branding_save_failed'));
 
     expect(brandingAsset(BrandingSupport::KEY_BANNER)?->id)->toBe($existing->id);
 });
