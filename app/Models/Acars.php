@@ -7,7 +7,6 @@ use App\Casts\FuelCast;
 use App\Contracts\Model;
 use App\Enums\AcarsType;
 use App\Enums\NavaidType;
-use App\Enums\PirepPhase;
 use App\Traits\HasNanoIds;
 use Database\Factories\AcarsFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -23,7 +22,7 @@ use Override;
  * @property string          $id
  * @property string          $pirep_id
  * @property AcarsType       $type
- * @property PirepPhase|null $phase
+ * @property string|null     $phase        open vocabulary; see casts()
  * @property NavaidType|null $nav_type
  * @property int             $order
  * @property string|null     $name
@@ -151,8 +150,18 @@ class Acars extends Model
     protected function casts(): array
     {
         return [
-            'type'         => AcarsType::class,
-            'phase'        => PirepPhase::class,
+            'type' => AcarsType::class,
+            // `phase` is deliberately NOT cast to PirepPhase, matching
+            // PirepPosition. It is a per-sample reading passed through from the
+            // ACARS client, whose `phase` is an open string vocabulary — a code
+            // this phpVMS predates must store rather than throw on save.
+            // `pireps.status` keeps its cast: that is a lifecycle column phpVMS
+            // owns and sets itself.
+            //
+            // An enum cast cannot express this: it throws on an unrecognised
+            // code, so a client reporting a phase newer than this release would
+            // fail the whole telemetry write. The ACARS plugin also reads this
+            // as `(string) $point->phase`, which fatals on an enum.
             'order'        => 'integer',
             'nav_type'     => NavaidType::class,
             'lat'          => 'float',

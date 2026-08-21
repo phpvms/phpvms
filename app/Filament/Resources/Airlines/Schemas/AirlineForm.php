@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\Airlines\Schemas;
 
-use App\Filament\Concerns\AutosavesFields;
+use App\Exceptions\AutosaveFailed;
+use App\Features\Assets\AssetService;
+use App\Filament\Resources\Airlines\Pages\EditAirline;
 use App\Models\Airline;
+use App\Models\Asset;
 use App\Services\ImageUploadService;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\FileUpload;
@@ -16,7 +19,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use League\ISO3166\ISO3166;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -84,36 +86,45 @@ class AirlineForm
                         )
                             ->imageHeight('10rem')
                             ->alignCenter()
+                            // Nothing to preview before the airline exists.
+                            ->hiddenOn('create')
                             ->visible(fn (Get $get, ?Airline $record): bool => filled(self::previewUrl($get('logo'), $record))),
                     ])
+                    // Both children are edit-only, so on create the section would
+                    // be an empty heading.
+                    ->hiddenWhenAllChildComponentsHidden()
                     ->columnSpanFull()
                     ->columns(2),
             ]);
     }
 
     /**
-     * Drag-and-drop logo upload. On an existing airline the file is stored and
-     * the record updated as soon as it is dropped; on a new airline there is no
-     * record to write to yet, so it is saved along with the rest of the form.
+     * Drag-and-drop logo upload. The file is stored and the record updated as
+     * soon as it is dropped.
+     *
+     * Edit-only: the asset is keyed on the airline's ICAO, so there is nothing
+     * to key an upload on until the record exists.
      */
     private static function logoUpload(): FileUpload
     {
         return FileUpload::make('logo')
             ->label('')
+            ->hiddenOn('create')
             ->image()
             ->acceptedFileTypes(['image/png', 'image/svg+xml'])
             // The preview lives in the other column of this card, so the drop
             // zone stays a drop zone.
             ->previewable(false)
-            ->disk(config('filesystems.public_files'))
-            ->directory(Airline::LOGO_DIRECTORY)
-            ->visibility('public')
-            // Name the file after the airline so replacing a logo overwrites it
-            // in place and the URL never changes -- logo_hash is what tells a
-            // client the image behind that URL is new. A record that has not
-            // been created yet has no id to use, so it falls back to a ULID.
+            // Staging only. persistLogo() moves the file into an `airline-logo`
+            // asset and deletes it from here; the private disk keeps an
+            // unreviewed upload out of reach in between.
+            ->disk(Asset::STORAGE_LOCAL)
+            ->directory(Asset::PATH_PREFIX.'/staging')
+            // Deterministic staging name, so an abandoned upload is overwritten
+            // by the next one rather than accumulating. The field is edit-only,
+            // so the record always exists here.
             ->getUploadedFileNameForStorageUsing(
-                fn (TemporaryUploadedFile $file, ?Airline $record): string => ($record->id ?? Str::ulid()).'.'.strtolower($file->getClientOriginalExtension())
+                fn (TemporaryUploadedFile $file, Airline $record): string => $record->id.'.'.strtolower($file->getClientOriginalExtension())
             )
             // Converts to WebP through the shared upload service instead of
             // storing whatever format was dropped; see ImageUploadService.
@@ -146,16 +157,11 @@ class AirlineForm
                 ];
             })
             ->live()
-            ->afterStateUpdated(function (FileUpload $component, $livewire): void {
-                // Edit page autosaves through the shared AutosavesFields trait
-                // (its getState() dehydration moves the upload onto the disk,
-                // and its re-entrancy guard absorbs the refire that triggers).
-                // The Create page has no record yet — the logo rides the
-                // normal form submit there.
-                if (in_array(AutosavesFields::class, class_uses_recursive($livewire), true)) {
-                    $livewire->runAutosave($component);
-                }
-            });
+            // The edit page is the only page this field renders on, and it
+            // autosaves through AutosavesFields (its getState() dehydration
+            // moves the upload onto the disk, and its re-entrancy guard absorbs
+            // the refire that triggers).
+            ->afterStateUpdated(fn (FileUpload $component, EditAirline $livewire) => $livewire->runAutosave($component));
     }
 
     /**
@@ -165,38 +171,65 @@ class AirlineForm
      */
     private static function previewUrl(mixed $state, ?Airline $record): ?string
     {
-        $logo = Arr::first(Arr::wrap($state));
+        $staged = Arr::first(Arr::wrap($state));
 
-        if (!is_string($logo) || blank($logo)) {
+        // A freshly dropped file is still in staging on the private disk, which
+        // has no URL. The saved asset is the only thing that renders, so fall
+        // through to it and let the autosave swap the preview a moment later.
+        if (!is_string($staged) || blank($staged)) {
             return $record?->logo_url;
         }
 
-        return Airline::resolveLogoUrl($logo);
+        return $record?->refresh()->logo_url;
     }
 
     /**
-     * Write the logo straight to the record so an upload does not wait on the
-     * form being submitted. Skipped when the value has not actually changed.
-     * Called from EditAirline's persistAutosavedField (the trait notifies).
+     * Store the dropped logo as the airline's `airline-logo` asset, so an upload
+     * does not wait on the form being submitted. Called from EditAirline's
+     * persistAutosavedField (the trait notifies).
      */
-    public static function persistLogo(?Airline $record, ?string $logo): void
+    public static function persistLogo(Airline $record, ?string $staged): void
     {
-        $logo = blank($logo) ? null : $logo;
+        $assets = app(AssetService::class);
 
-        if (!$record instanceof Airline || !$record->exists || $logo === $record->logo) {
+        // Clearing the field removes the mark outright — the row and its file
+        // are one thing. The external-URL column is left alone; it is a
+        // different way of having a logo, not this one.
+        if (blank($staged)) {
+            $assets->find(Asset::SLOT_AIRLINE_LOGO, $record->icao)?->delete();
+            $record->unsetRelation('logoAsset');
+
             return;
         }
 
-        $previous = $record->logo;
+        $disk = Storage::disk(Asset::STORAGE_LOCAL);
 
-        // logo_hash is stamped by the model whenever logo is set.
-        $record->update(['logo' => $logo]);
+        // A staged file that has gone missing reads as null; storing '' would
+        // sniff as `application/x-empty` and throw out of the autosave request
+        // instead of leaving the existing mark alone.
+        $contents = $disk->get($staged);
 
-        // Drop the file that was just replaced. Deterministic naming means a
-        // re-upload of the same type overwrites in place, so only a changed
-        // path (or a cleared logo) can leave an orphan behind.
-        if (filled($previous) && str_starts_with((string) $previous, Airline::LOGO_DIRECTORY.'/')) {
-            Storage::disk(config('filesystems.public_files'))->delete($previous);
+        if (blank($contents)) {
+            throw new AutosaveFailed(__('filament.airline_logo_save_failed'));
         }
+
+        // ImageUploadService has already converted to WebP and sanitised any
+        // SVG on the way into staging; AssetService decides where it lives.
+        $assets->storeContents(
+            $contents,
+            Asset::SLOT_AIRLINE_LOGO,
+            $record->icao,
+            name: $record->icao,
+            userId: auth()->id(),
+            // Airline marks render on public flight pages, so they are fetched
+            // without a session.
+            storage: (string) config('filesystems.public_files'),
+        );
+
+        $disk->delete($staged);
+
+        // The relation was resolved before the asset existed; drop the memo so
+        // the preview reads the new one rather than the miss.
+        $record->unsetRelation('logoAsset');
     }
 }

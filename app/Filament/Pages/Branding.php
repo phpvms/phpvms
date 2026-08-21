@@ -6,10 +6,11 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Exceptions\AutosaveFailed;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Concerns\ReversePrimaryButtons;
-use App\Jobs\GenerateBrandingSizes;
+use App\Models\Asset;
 use App\Services\ImageUploadService;
 use App\Services\SettingService;
 use App\Support\Branding as BrandingSupport;
@@ -42,8 +43,8 @@ use Override;
 use UnitEnum;
 
 /**
- * Config → Branding: airline name, brand colour, logo and banner. Name and
- * colour save on submit; the logo and banner upload fields autosave through
+ * Config → Branding: airline name, brand colour, logo, favicon and banner. Name
+ * and colour save on submit; the image upload fields autosave through
  * {@see AutosavesFields} (following AirlineForm/EditAirline's logo pattern).
  *
  * @property-read Schema $form
@@ -98,37 +99,56 @@ class Branding extends Page
     }
 
     /**
-     * Only the logo and banner uploads autosave; the name and colour fields
-     * save on submit.
+     * Only the image uploads autosave; the name and colour fields save on
+     * submit.
      *
      * @return list<string>
      */
     protected function autosaveKeys(): array
     {
-        return ['logo', 'logo_dark', 'banner'];
+        return ['logo', 'logo_dark', 'favicon', 'banner'];
     }
 
     protected function persistAutosavedField(string $key, mixed $value): void
     {
         // Keyed on autosaveKeys(); an unlisted key means the two have drifted,
         // and failing loudly beats an UnhandledMatchError from a bare match.
-        $settingKey = match ($key) {
-            'logo'      => 'branding.logo_url',
-            'logo_dark' => 'branding.logo_dark_url',
-            'banner'    => 'branding.banner_url',
-            default     => throw new InvalidArgumentException("No branding setting is mapped to the autosaved field [{$key}]."),
+        $assetKey = match ($key) {
+            'logo'      => BrandingSupport::KEY_LOGO,
+            'logo_dark' => BrandingSupport::KEY_LOGO_DARK,
+            'favicon'   => BrandingSupport::KEY_FAVICON,
+            'banner'    => BrandingSupport::KEY_BANNER,
+            default     => throw new InvalidArgumentException("No branding asset is mapped to the autosaved field [{$key}]."),
         };
-        $path = is_string($value) ? $value : null;
 
-        $url = filled($path)
-            ? Storage::disk(config('filesystems.public_files'))->url($path)
-            : '';
+        $branding = app(BrandingSupport::class);
+        $staged = is_string($value) ? $value : null;
 
-        app(SettingService::class)->store($settingKey, $url);
+        if (blank($staged)) {
+            $branding->forget($assetKey);
 
-        if ($key === 'logo' && filled($path)) {
-            GenerateBrandingSizes::dispatch($path);
+            return;
         }
+
+        $disk = Storage::disk(Asset::STORAGE_LOCAL);
+
+        // The upload landed in a holding directory on the private disk rather
+        // than at its final path: ImageUploadService does the WebP conversion
+        // and the SVG sanitising on the way in, and Branding owns where an
+        // asset's bytes actually live. Private in the meantime, so an
+        // unreviewed upload is never publicly reachable even briefly.
+        // A staged file that has gone missing reads as null; storing '' would
+        // sniff as `application/x-empty` and throw out of the autosave request
+        // instead of leaving the existing branding alone.
+        $contents = $disk->get($staged);
+
+        if (blank($contents)) {
+            throw new AutosaveFailed(__('filament.branding_save_failed'));
+        }
+
+        $branding->store($assetKey, $contents, userId: auth()->id());
+
+        $disk->delete($staged);
     }
 
     protected function autosaveNotificationTitle(): string
@@ -329,6 +349,21 @@ class Branding extends Page
                                 ->imageHeight('10rem')
                                 ->alignCenter()
                                 ->visible(fn (): bool => app(BrandingSupport::class)->hasDarkLogo()),
+
+                            $this->upload('favicon')
+                                ->label(__('filament.branding_favicon'))
+                                ->helperText(__('filament.branding_favicon_hint')),
+
+                            // Shown whether or not one was uploaded: with no
+                            // favicon of its own this renders the 32px logo
+                            // derivative, which is what the browser tab will
+                            // actually show.
+                            Image::make(
+                                url: fn (): string => app(BrandingSupport::class)->favicon(),
+                                alt: __('filament.branding_favicon'),
+                            )
+                                ->imageHeight('2rem')
+                                ->alignCenter(),
                         ]),
 
                     Section::make(__('filament.branding_banner'))
@@ -374,20 +409,21 @@ class Branding extends Page
     }
 
     /**
-     * Drag-and-drop upload for the logo/banner. Not bound to the setting
-     * key directly -- the field only ever holds a freshly dropped file, and
-     * {@see persistAutosavedField()} converts the stored disk path to a URL
-     * before writing it to the setting. The current image is rendered by a
-     * separate {@see Image} component reading {@see BrandingSupport}
-     * directly, so the drop zone never needs to hydrate the existing file.
+     * Drag-and-drop upload for the logo/banner. Not bound to the asset
+     * directly -- the field only ever holds a freshly dropped file, and
+     * {@see persistAutosavedField()} moves it into the `branding` slot. The
+     * current image is rendered by a separate {@see Image} component reading
+     * {@see BrandingSupport} directly, so the drop zone never needs to hydrate
+     * the existing file.
      *
-     * Deterministic filename ("logo.png") so a re-upload overwrites in
-     * place and the URL never changes.
+     * Deterministic staging filename ("logo.webp") so an abandoned upload is
+     * overwritten by the next one rather than accumulating.
      */
     private function upload(string $key): FileUpload
     {
-        // Both logos are square by contract: they render as a favicon and a
-        // switcher icon, and GenerateBrandingSizes cuts 32/64/180 squares.
+        // Everything but the banner is square by contract: the logos render as
+        // a switcher icon and GenerateBrandingSizes cuts them into 32/64/180
+        // squares, and a favicon is square by definition.
         //
         // The crop dialog is opened by `automaticallyOpenImageEditorForAspectRatio()`,
         // NOT by `imageEditor()`. `imageEditor()` only sets
@@ -406,18 +442,20 @@ class Branding extends Page
         // `imageCropAspectRatio()` is the old name for
         // imageAspectRatio() + automaticallyCropImagesToAspectRatio(), i.e. the
         // silent centre-crop, which is not what we want.
-        $isLogo = str_starts_with($key, 'logo');
+        $isSquare = $key !== 'banner';
 
         return FileUpload::make($key)
             ->label('')
             ->image()
-            ->when($isLogo, fn (FileUpload $upload): FileUpload => $upload
+            ->when($isSquare, fn (FileUpload $upload): FileUpload => $upload
                 ->imageAspectRatio('1:1')
                 ->automaticallyOpenImageEditorForAspectRatio())
             ->previewable(false)
-            ->disk(config('filesystems.public_files'))
-            ->directory('branding')
-            ->visibility('public')
+            // Staging only. persistAutosavedField() moves the file into an
+            // asset row and deletes it from here; the private disk keeps an
+            // upload out of reach in between.
+            ->disk(Asset::STORAGE_LOCAL)
+            ->directory(Asset::PATH_PREFIX.'/staging')
             ->getUploadedFileNameForStorageUsing(
                 fn (TemporaryUploadedFile $file): string => $key.'.'.strtolower($file->getClientOriginalExtension())
             )

@@ -21,6 +21,7 @@ enum ApiScope: string
     case All = '*';
     case AirlinesRead = 'airlines:read';
     case AirportsRead = 'airports:read';
+    case AssetsRead = 'assets:read';
     case FleetRead = 'fleet:read';
     case FlightsRead = 'flights:read';
     case PirepsRead = 'pireps:read';
@@ -38,6 +39,7 @@ enum ApiScope: string
             self::All           => 'Full access to the entire API',
             self::AirlinesRead  => 'Read airlines',
             self::AirportsRead  => 'Read airports',
+            self::AssetsRead    => 'Read private assets (sounds, paintkits and the like)',
             self::FleetRead     => 'Read fleet and aircraft',
             self::FlightsRead   => 'Read flights, schedules and briefings',
             self::PirepsRead    => 'Read your PIREPs and their details',

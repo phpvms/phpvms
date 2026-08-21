@@ -4,16 +4,29 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Features\Assets\AssetService;
+use App\Jobs\GenerateBrandingSizes;
+use App\Models\Asset;
 use Filament\Support\Colors\Color;
 
 /**
- * Resolves airline-supplied branding — name, logo, favicon, banner and brand
- * colour — with a fallback chain that terminates in the phpVMS asset that was
- * hardcoded prior to this class existing, so an install with nothing
- * configured renders unchanged.
+ * Owns airline-supplied branding — name, logo, favicon, banner and brand
+ * colour — on both sides: {@see store()}/{@see forget()} write the `branding`
+ * slot, and the accessors read it back through a fallback chain that terminates
+ * in the phpVMS asset that was hardcoded prior to this class existing, so an
+ * install with nothing configured renders unchanged.
  *
- * Holds no state: every accessor reads through the `setting()` helper on
- * every call rather than memoizing. It is bound as a container singleton
+ * Images resolve from the `assets` table (slot `branding`); the name and brand
+ * colour are still settings, because a name and a colour are not files.
+ *
+ * Callers hand over bytes, not decisions: which slot, which disk, and whether a
+ * write needs derivatives generated are all settled here.
+ * The one piece deliberately outside is the image resizing itself, which is
+ * queued work and so has to be a job — {@see GenerateBrandingSizes}, dispatched
+ * by `store()` and writing back through it.
+ *
+ * Holds no state: every accessor reads through `setting()` or a (slot, key)
+ * lookup on every call rather than memoizing. It is bound as a container singleton
  * (`AppServiceProvider`) purely for convenient reuse of one instance, not for
  * caching — if this class ever gains a memo, that memo must be added to
  * `config/octane.php`'s `flush` array, the same way `SettingService` is.
@@ -22,6 +35,91 @@ final class Branding
 {
     /** Fallback brand colour: the phpVMS blue. */
     private const string DEFAULT_BRAND_COLOR = '#067ec1';
+
+    /**
+     * Asset keys in the `branding` slot. Fixed names, not admin-chosen:
+     * consumers look them up by name, so they are part of the interface rather
+     * than data.
+     */
+    public const string KEY_LOGO = 'logo';
+
+    public const string KEY_LOGO_DARK = 'logo-dark';
+
+    public const string KEY_BANNER = 'banner';
+
+    public const string KEY_FAVICON = 'favicon';
+
+    /**
+     * Sizes {@see GenerateBrandingSizes} derives from an uploaded logo, each
+     * stored under its own key -- `logo-32`, `logo-64`, `logo-180`. Owned here
+     * rather than by the job because the readers below look the derivatives up
+     * by name, so the size list and the key spelling are one thing.
+     *
+     * Ascending, and {@see favicon()} depends on that: it takes the first entry
+     * that resolves, which is only the smallest if this list stays sorted.
+     *
+     * @var list<int>
+     */
+    public const array LOGO_SIZES = [32, 64, 180];
+
+    /** Asset key for a logo derivative -- `logo-32`, `logo-64`, `logo-180`. */
+    public static function logoKey(int $size): string
+    {
+        return self::KEY_LOGO.'-'.$size;
+    }
+
+    /**
+     * URL of a `branding` asset, or null when the install has not uploaded one.
+     *
+     * One indexed lookup on (slot, key) per call, deliberately not memoized —
+     * see the class docblock. Every accessor below terminates in a bundled
+     * asset when this returns null, so an install with an empty `assets` table
+     * renders exactly as it does today.
+     */
+    private function url(string $key): ?string
+    {
+        return Asset::query()
+            ->slot(Asset::SLOT_BRANDING)
+            ->where('key', $key)
+            ->first()
+            ?->url();
+    }
+
+    /**
+     * Stores bytes as the `branding` asset under `$key`, replacing whatever was
+     * there. Always on the public disk: site branding renders on the login
+     * screen, so it has to be fetchable without a session — callers do not get
+     * to decide that.
+     *
+     * Writing the logo re-derives its sizes; the derivative keys themselves are
+     * written by the job through this same method, and dispatch is keyed on the
+     * original so that cannot recurse.
+     */
+    public function store(string $key, string $contents, ?int $userId = null): Asset
+    {
+        $asset = app(AssetService::class)->storeContents(
+            $contents,
+            Asset::SLOT_BRANDING,
+            $key,
+            userId: $userId,
+            storage: (string) config('filesystems.public_files'),
+        );
+
+        if ($key === self::KEY_LOGO) {
+            GenerateBrandingSizes::dispatch($asset->id);
+        }
+
+        return $asset;
+    }
+
+    /**
+     * Removes the `branding` asset under `$key`, and with it the file — the row
+     * and the bytes are one thing. A no-op when nothing is stored.
+     */
+    public function forget(string $key): void
+    {
+        app(AssetService::class)->find(Asset::SLOT_BRANDING, $key)?->delete();
+    }
 
     /**
      * Airline display name. Falls back to `config('app.name')` when
@@ -43,12 +141,12 @@ final class Branding
         $default = asset('assets/img/logo_blue.svg');
 
         if ($size === null) {
-            return setting('branding.logo_url', '') ?: $default;
+            return $this->url(self::KEY_LOGO) ?? $default;
         }
 
-        return setting("branding.logo_{$size}_url", '')
-            ?: setting('branding.logo_url', '')
-            ?: $default;
+        return $this->url(self::logoKey($size))
+            ?? $this->url(self::KEY_LOGO)
+            ?? $default;
     }
 
     /**
@@ -59,7 +157,7 @@ final class Branding
      */
     public function hasLogo(): bool
     {
-        return setting('branding.logo_url', '') !== '';
+        return $this->url(self::KEY_LOGO) !== null;
     }
 
     /**
@@ -68,7 +166,7 @@ final class Branding
      */
     public function logoDark(): string
     {
-        return setting('branding.logo_dark_url', '') ?: $this->logo();
+        return $this->url(self::KEY_LOGO_DARK) ?? $this->logo();
     }
 
     /**
@@ -76,17 +174,40 @@ final class Branding
      */
     public function hasDarkLogo(): bool
     {
-        return setting('branding.logo_dark_url', '') !== '';
+        return $this->url(self::KEY_LOGO_DARK) !== null;
     }
 
     /**
-     * Favicon URL. Deliberately skips the full-size original when the 32px
-     * derivative is missing — a full-size logo is a worse favicon than the
-     * bundled one.
+     * Favicon URL: an uploaded favicon, else the smallest logo derivative that
+     * exists, else the bundled phpVMS icon.
+     *
+     * Walks {@see LOGO_SIZES} rather than reading `logo-32` alone so a
+     * derivative run that produced only some sizes still yields a favicon.
+     * Deliberately stops before the full-size original — a full-size logo is a
+     * worse favicon than the bundled one.
      */
     public function favicon(): string
     {
-        return setting('branding.logo_32_url', '') ?: asset('assets/img/favicon.png');
+        if ($uploaded = $this->url(self::KEY_FAVICON)) {
+            return $uploaded;
+        }
+
+        foreach (self::LOGO_SIZES as $size) {
+            if ($derivative = $this->url(self::logoKey($size))) {
+                return $derivative;
+            }
+        }
+
+        return asset('assets/img/favicon.png');
+    }
+
+    /**
+     * Whether a favicon has been uploaded in its own right, as opposed to being
+     * derived from the logo.
+     */
+    public function hasFavicon(): bool
+    {
+        return $this->url(self::KEY_FAVICON) !== null;
     }
 
     /**
@@ -94,7 +215,7 @@ final class Branding
      */
     public function banner(): ?string
     {
-        return setting('branding.banner_url', '') ?: null;
+        return $this->url(self::KEY_BANNER);
     }
 
     /**

@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Ranks\Schemas;
 
+use App\Filament\Forms\Components\AssetImagePicker;
+use App\Models\Asset;
+use App\Models\Rank;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -11,6 +14,15 @@ use Filament\Schemas\Schema;
 
 class RankForm
 {
+    /**
+     * Rank badges render on public profile and roster pages, so they are
+     * fetched without a session — same call as the airline mark.
+     */
+    public static function imageDisk(): string
+    {
+        return (string) config('filesystems.public_files');
+    }
+
     public static function configure(Schema $schema): Schema
     {
 
@@ -23,10 +35,6 @@ class RankForm
                                 TextInput::make('name')
                                     ->label(__('common.name'))
                                     ->required()
-                                    ->string(),
-
-                                TextInput::make('image_url')
-                                    ->label(__('common.image_url'))
                                     ->string(),
                             ])
                             ->columnSpanFull()
@@ -75,6 +83,19 @@ class RankForm
                             ])
                             ->columnSpanFull()
                             ->columns(3),
+
+                        Section::make(__('filament.rank_images'))
+                            ->schema([
+                                AssetImagePicker::make(
+                                    Asset::SLOT_RANK,
+                                    fn (?Rank $record): ?int => $record?->id,
+                                    self::imageDisk(),
+                                ),
+                            ])
+                            // The picker is edit-only, so on create the section
+                            // would be an empty heading.
+                            ->hiddenWhenAllChildComponentsHidden()
+                            ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
             ]);

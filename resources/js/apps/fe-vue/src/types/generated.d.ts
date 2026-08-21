@@ -47,6 +47,15 @@ export type AirportRefData = {
 icao: string,
 name: string,
 };
+export type AssetData = {
+id: string,
+key: string,
+slot: string,
+type: string,
+content_type: string,
+url: string,
+last_update: string,
+};
 export type AwardData = {
 name: string,
 description: string | null,

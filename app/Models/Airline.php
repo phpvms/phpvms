@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -31,8 +32,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string      $name
  * @property string|null $callsign
  * @property string|null $country
- * @property string|null $logo
- * @property string|null $logo_hash
+ * @property string|null $logo          external URL only; a hosted mark is an Asset
+ * @property string|null $logo_hash     accessor over the asset's change stamp
+ * @property Asset|null  $logoAsset
  * @property string|null $logo_url
  * @property bool        $active
  * @property bool        $low_cost
@@ -122,7 +124,6 @@ class Airline extends Model
         'name',
         'callsign',
         'logo',
-        'logo_hash',
         'country',
         'total_flights',
         'total_time',
@@ -138,6 +139,20 @@ class Airline extends Model
         'country',
         'callsign',
     ];
+
+    /**
+     * The mark loads with the airline.
+     *
+     * `logo_url` is read almost everywhere an airline is — the API resource,
+     * the Inertia identity props, flight lists, the shipped themes and any
+     * module serving airlines — and the app runs with lazy loading prevented, so an
+     * accessor reaching for an unloaded relation is a hard error rather than a
+     * quiet N+1. Eager-loading it here fixes every one of those call sites at
+     * once, and Eloquent batches it into a single extra query per collection.
+     *
+     * @var list<string>
+     */
+    protected $with = ['logoAsset'];
 
     /**
      * For backwards compatibility
@@ -166,39 +181,60 @@ class Airline extends Model
     }
 
     /**
-     * Stamp a cheap content hash alongside the logo whenever it is set, so that
-     * every write path (admin, API, seeders) stays consistent. Uploads use a
-     * deterministic filename, so replacing a logo leaves the URL unchanged and
-     * this hash is the only thing clients can key a cache off. crc32b is plenty
-     * here: it is a cache-busting token, not an integrity check.
+     * The airline's mark, when we host it. One asset in the `airline-logo`
+     * slot, public like the rest of the mark's rendering surface.
+     *
+     * Keyed on the ICAO exactly as stored (uppercase), so this is a plain
+     * exact-match relation the caller can eager-load — `Airline::with('logoAsset')`
+     * — rather than a per-row lookup that turns any airline list into an N+1.
+     * `airlines.icao` is unique (`create_phpvms_table.php:173`), so the key is
+     * unique within the slot too.
      */
-    public function logo(): Attribute
+    public function logoAsset(): HasOne
     {
-        return Attribute::make(
-            set: fn (?string $logo): array => [
-                'logo'      => $logo,
-                'logo_hash' => self::hashLogo($logo),
-            ]
-        );
+        return $this->hasOne(Asset::class, 'key', 'icao')
+            ->where('slot', Asset::SLOT_AIRLINE_LOGO);
     }
 
     /**
-     * A URL that is safe to render. The column holds either a path on the
-     * public files disk (uploaded through the admin) or an absolute URL someone
-     * typed in, so resolve the former and pass the latter through untouched.
+     * A URL that is safe to render.
+     *
+     * A hosted logo is an asset now. The `logo` column keeps only the other
+     * case: an absolute URL someone typed in or imported, which is not a file
+     * we host and so cannot become an asset.
      */
     public function logoUrl(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, array $attrs): ?string => self::resolveLogoUrl($attrs['logo'] ?? null)
+            get: fn ($_, array $attrs): ?string => $this->logoAsset?->url()
+                ?? self::resolveExternalLogoUrl($attrs['logo'] ?? null)
         );
     }
 
     /**
-     * Resolve a raw logo value to a URL that is safe to render, so the admin
-     * preview and the accessor cannot drift apart.
+     * Cache-busting token for the logo, or null when we do not host it.
+     *
+     * Reads through to the asset's change stamp, which is a crc32b of the file
+     * contents — the same algorithm the retired `logo_hash` column used, so
+     * anything comparing this across the upgrade sees the same shape.
      */
-    public static function resolveLogoUrl(?string $logo): ?string
+    public function logoHash(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => $this->logoAsset?->last_update
+        );
+    }
+
+    /**
+     * Resolve a raw column value to a URL that is safe to render, so the admin
+     * preview and the accessor cannot drift apart.
+     *
+     * Only the external case reaches here now, but it still has to resolve a
+     * legacy `airlines/…` path: an install whose data migration could not adopt
+     * a file (it had been deleted) keeps the column value, and rendering
+     * nothing at all would be worse than rendering the old file if it turns up.
+     */
+    public static function resolveExternalLogoUrl(?string $logo): ?string
     {
         if (blank($logo)) {
             return null;
@@ -221,26 +257,9 @@ class Airline extends Model
     }
 
     /**
-     * The content hash for a logo we host, or null for an empty value or an
-     * external URL, which we cannot hash and do not control.
-     */
-    public static function hashLogo(?string $logo): ?string
-    {
-        if (blank($logo) || !self::isUploadedLogo($logo)) {
-            return null;
-        }
-
-        $disk = Storage::disk(config('filesystems.public_files'));
-
-        return $disk->exists($logo)
-            ? hash('crc32b', (string) $disk->get($logo))
-            : null;
-    }
-
-    /**
      * Whether the logo value is a path on our own disk rather than a URL.
      */
-    private static function isUploadedLogo(string $logo): bool
+    public static function isUploadedLogo(string $logo): bool
     {
         return str_starts_with($logo, self::LOGO_DIRECTORY.'/');
     }
