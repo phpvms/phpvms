@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Features\Assets\AssetService;
 use App\Models\Asset;
 use App\Models\Rank;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,7 +14,7 @@ function rankImagesMigration(): object
     return require base_path('database/migrations_data/2026_08_19_000000_rank_images_to_assets.php');
 }
 
-function rankPublicDisk()
+function rankPublicDisk(): FilesystemAdapter
 {
     return Storage::disk(config('filesystems.public_files'));
 }
@@ -158,4 +159,37 @@ it('restores the column and keeps the file on down', function (): void {
         ->and(Asset::query()->count())->toBe(0);
 
     rankPublicDisk()->assertExists('ranks/1.png');
+});
+
+/**
+ * A null column is the only state up() leaves behind, so it is the only state
+ * down() may write over. An admin who pointed the column somewhere else after
+ * the upgrade keeps that value, and the asset behind it survives — down() drops
+ * only the rows it actually restored.
+ *
+ * The untouched rank alongside proves the narrowing did not turn down() off.
+ */
+it('leaves a rank the admin re-pointed after the upgrade alone on down', function (): void {
+    $readopted = Rank::factory()->create(['image_url' => null]);
+    rankPublicDisk()->put('ranks/1.png', ASSET_TEST_PNG);
+    seedLegacyRankImage($readopted, 'ranks/1.png');
+
+    $untouched = Rank::factory()->create(['image_url' => null]);
+    seedLegacyRankImage($untouched, 'https://cdn.example.com/badge.png');
+
+    rankImagesMigration()->up();
+
+    // After the upgrade, an admin points the column at something of their own.
+    seedLegacyRankImage($readopted, 'https://cdn.example.com/admin-choice.png');
+    $kept = rankAsset($readopted);
+
+    rankImagesMigration()->down();
+
+    expect(DB::table('ranks')->where('id', $readopted->id)->value('image_url'))
+        ->toBe('https://cdn.example.com/admin-choice.png')
+        ->and(Asset::query()->whereKey($kept->id)->exists())->toBeTrue()
+        // The rank down() *did* restore still round-trips, and only its row went.
+        ->and(DB::table('ranks')->where('id', $untouched->id)->value('image_url'))
+        ->toBe('https://cdn.example.com/badge.png')
+        ->and(Asset::query()->count())->toBe(1);
 });

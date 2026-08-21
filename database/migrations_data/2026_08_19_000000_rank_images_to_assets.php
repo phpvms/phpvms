@@ -92,8 +92,20 @@ return new class() extends Migration
 
     /**
      * Points the column back at what the asset holds — a path for an adopted
-     * file, the URL itself for a link — and drops the rows. No file ever moved,
-     * so this restores the previous state exactly.
+     * file, the URL itself for a link — and drops the rows it restored. No file
+     * ever moved, so a rank this migration touched ends up where it started.
+     *
+     * Only ranks whose `image_url` is still null are restored, because that is
+     * the state {@see up()} left behind. An admin who set the column again
+     * afterwards keeps their value, and the asset backing it is left alone
+     * rather than deleted out from under them.
+     *
+     * Not exact in one case: a rank whose badge was re-uploaded through the
+     * asset picker after the upgrade also has a null column, so the rollback
+     * writes that asset's internal path into it. That path is not what the
+     * column's accessor serves, so the badge is lost — but so is the asset row
+     * either way, and a data migration's `down()` is an escape hatch rather
+     * than a supported round trip.
      */
     public function down(): void
     {
@@ -103,13 +115,26 @@ return new class() extends Migration
 
         $images = DB::table('assets')->where('slot', Asset::SLOT_RANK)->get();
 
+        $restored = [];
+
         foreach ($images as $asset) {
-            DB::table('ranks')->where('id', $asset->key)->update(['image_url' => $asset->path]);
+            $wrote = DB::table('ranks')
+                ->where('id', $asset->key)
+                ->whereNull('image_url')
+                ->update(['image_url' => $asset->path]);
+
+            if ($wrote > 0) {
+                $restored[] = $asset->id;
+            }
+        }
+
+        if ($restored === []) {
+            return;
         }
 
         // Deleted through the query builder ON PURPOSE, so Asset's `deleted`
         // hook does not fire and delete the very files the column now points
         // at again. The rows go; the files stay exactly where they were.
-        DB::table('assets')->where('slot', Asset::SLOT_RANK)->delete();
+        DB::table('assets')->whereIn('id', $restored)->delete();
     }
 };
