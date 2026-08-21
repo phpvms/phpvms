@@ -45,8 +45,11 @@ Route::group(['middleware' => ['api.auth']], function (): void {
     // asset endpoints, and they carry a contract the ACARS client codes
     // against, so they take a version segment now rather than a rename later.
     //
-    // Private assets only. A public asset lives on the public disk and
-    // Asset::url() hands out that storage URL directly — see AssetController.
+    // Any asset, not only the private ones. Whether an asset is served here is
+    // this route's authorization and not a property of the row: one on a disk
+    // that declares a URL is simply also fetchable at that address, and the
+    // ones with no URL of their own are reachable no other way. See
+    // AssetController.
     Route::get('v1/assets/{asset}', AssetController::class)
         ->middleware('scope:assets:read')
         ->name('api.assets.show');

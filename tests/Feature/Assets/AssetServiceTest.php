@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Features\Assets\AssetService;
 use App\Features\Assets\AssetTypes;
 use App\Models\Asset;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -253,6 +254,44 @@ it('refuses bytes that contradict the declared kind', function (): void {
         ->toThrow(InvalidArgumentException::class, 'declared as [css] but its bytes are [image/png]');
 });
 
+/**
+ * The veto's other half. When the sniff DOES recognise the bytes and agrees
+ * with the declaration, it is more specific than the kind's canonical entry and
+ * must win. `image` is canonically image/png, so falling back to it filed SVG
+ * bytes as image/png under a .png — the wrong Content-Type on delivery, and
+ * invisible to GenerateBrandingSizes' SVG branch, which keys on the extension.
+ */
+it('keeps the sniffed content type when it agrees with the declared kind', function (): void {
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
+
+    $asset = $this->service->storeContents($svg, Asset::SLOT_BRANDING, 'logo', type: 'image');
+
+    expect($asset->type)->toBe('image')
+        ->and($asset->content_type)->toBe('image/svg+xml')
+        ->and($asset->path)->toEndWith('.svg');
+});
+
+/**
+ * Same rule for a kind a module registers. `sound` is canonically audio/mpeg
+ * (the first entry the ACARS module registers), so WAV bytes declared `sound`
+ * used to be stored as audio/mpeg under a .mp3 and replayed with that header.
+ */
+it('keeps the sniffed content type for a module kind too', function (): void {
+    app(AssetTypes::class)->register('sound', [
+        'audio/mpeg'  => 'mp3',
+        'audio/x-wav' => 'wav',
+    ]);
+
+    // A minimal RIFF/WAVE header — enough for finfo to name it.
+    $wav = 'RIFF'.pack('V', 36)."WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00\x44\xac\x00\x00\x88\x58\x01\x00\x02\x00\x10\x00".'data'.pack('V', 0);
+
+    $asset = $this->service->storeContents($wav, 'sounds', 'ding', type: 'sound');
+
+    expect($asset->type)->toBe('sound')
+        ->and($asset->content_type)->toBe('audio/x-wav')
+        ->and($asset->path)->toEndWith('.wav');
+});
+
 it('refuses a declared kind nothing registered', function (): void {
     expect(fn () => $this->service->storeContents('body { color: red }', 'gauge', 'theme', type: 'nonsense'))
         ->toThrow(InvalidArgumentException::class, 'No asset type [nonsense] is registered.');
@@ -268,6 +307,24 @@ it('will not take a content type where a kind belongs', function (): void {
 
     expect(fn () => $this->service->storeContents('body { color: red }', 'gauge', 'theme', type: 'text/css'))
         ->toThrow(InvalidArgumentException::class, 'No asset type [text/css] is registered.');
+});
+
+/**
+ * `local` and `public` are configured `'throw' => false`
+ * (config/filesystems.php:58,67), so a failed write returns false instead of
+ * raising. Persisting the row regardless would leave an asset pointing at a
+ * file that is not there — a 404 for every consumer, and no clue why.
+ */
+it('does not persist a row when the bytes cannot be written', function (): void {
+    $failing = Mockery::mock(Filesystem::class);
+    $failing->shouldReceive('put')->once()->andReturn(false);
+
+    Storage::shouldReceive('disk')->with(Asset::STORAGE_LOCAL)->andReturn($failing);
+
+    expect(fn () => $this->service->storeContents(PNG_BYTES, Asset::SLOT_BRANDING, 'logo'))
+        ->toThrow(RuntimeException::class, 'Could not write asset bytes');
+
+    expect(Asset::query()->count())->toBe(0);
 });
 
 /**
@@ -361,14 +418,22 @@ it('enforces (slot, key) uniqueness across sources', function (): void {
  * the point: refuse rather than silently reinterpret.
  */
 it('refuses to write bytes to the link sentinel', function (): void {
-    // Guard: the rejection is the sentinel's, not merely "no such disk" —
-    // configure one under that name and it is still refused.
-    config(['filesystems.disks.url' => ['driver' => 'local', 'root' => sys_get_temp_dir()]]);
+    $disks = config('filesystems.disks');
 
-    expect(fn () => $this->service->storeContents(PNG_BYTES, Asset::SLOT_BRANDING, 'logo', storage: Asset::STORAGE_URL))
-        ->toThrow(InvalidArgumentException::class, 'reserved for external links');
+    try {
+        // Guard: the rejection is the sentinel's, not merely "no such disk" —
+        // configure one under that name and it is still refused.
+        config(['filesystems.disks.url' => ['driver' => 'local', 'root' => sys_get_temp_dir()]]);
 
-    expect(Asset::query()->count())->toBe(0);
+        expect(fn () => $this->service->storeContents(PNG_BYTES, Asset::SLOT_BRANDING, 'logo', storage: Asset::STORAGE_URL))
+            ->toThrow(InvalidArgumentException::class, 'reserved for external links');
+
+        expect(Asset::query()->count())->toBe(0);
+    } finally {
+        // A disk really named `url` must not survive into another test — one
+        // asserts that resolving it throws.
+        config(['filesystems.disks' => $disks]);
+    }
 });
 
 it('refuses a disk nothing configured', function (): void {

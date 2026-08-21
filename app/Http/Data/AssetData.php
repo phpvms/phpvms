@@ -35,12 +35,17 @@ final class AssetData extends Data
     /**
      * @param string|null $url overrides where the bytes are fetched from.
      *
-     * A private asset's default URL is core's own authenticated endpoint, which
-     * expects a core API credential and the `assets:read` scope. A caller
-     * serving a different audience — the ACARS contract, say, whose clients
-     * hold a plugin token instead — passes its own route here. Same bytes,
-     * different door, and the caller has to send consumers to the one they can
-     * open.
+     * `url` is non-nullable on the wire — it is the one field a consumer cannot
+     * do without, and a null would only move the "now what?" to every client.
+     * So there is always a default: the asset's own address when its disk
+     * declares one, and otherwise core's authenticated endpoint, which expects
+     * a core API credential and the `assets:read` scope.
+     *
+     * `Asset::url()` returning null is exactly the case that endpoint exists
+     * for, so this is a fallback and not a guess. A caller serving a different
+     * audience — the ACARS contract, say, whose clients hold a plugin token
+     * instead — passes its own route here. Same bytes, different door, and the
+     * caller has to send consumers to the one they can open.
      * @param string|null $key overrides the stored key, for a slot keyed on an
      *                         owning row rather than on the name of the image.
      */
@@ -52,7 +57,7 @@ final class AssetData extends Data
             slot: (string) $asset->slot,
             type: (string) $asset->type,
             content_type: (string) $asset->content_type,
-            url: $url ?? $asset->url(),
+            url: $url ?? $asset->url() ?? route('api.assets.show', $asset),
             last_update: (string) $asset->last_update,
         );
     }

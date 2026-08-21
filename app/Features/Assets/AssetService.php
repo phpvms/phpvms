@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Stores and lists assets. The single place that decides an asset's content
@@ -84,7 +85,14 @@ class AssetService
         $path = Asset::PATH_PREFIX.'/'.$slot.'/'.uniqid('', true).'.'.$extension;
         $disk = Storage::disk($storage);
 
-        $disk->put($path, $contents);
+        // Checked, not assumed. Both `local` and `public` are configured
+        // `'throw' => false` (config/filesystems.php:58,67), so a failed write —
+        // a full disk, bad permissions, an S3 refusal — returns false instead of
+        // raising, and persisting the row anyway leaves an asset pointing at a
+        // file that does not exist.
+        if ($disk->put($path, $contents) === false) {
+            throw new RuntimeException("Could not write asset bytes to [{$path}] on disk [{$storage}].");
+        }
 
         // Explicit, matching ImageUploadService::store(). A disk that declares a
         // URL can point at S3/R2, where a bare put() takes the bucket default
@@ -272,17 +280,6 @@ class AssetService
     }
 
     /**
-     * The kind and extension for sniffed bytes.
-     *
-     * Rejects rather than guesses when nothing accepts the content type: a
-     * wrong extension is a file the consumer cannot serve correctly, and a kind
-     * nobody registered is a file nothing knows how to use.
-     *
-     * @return array{0: string, 1: string}
-     *
-     * @throws InvalidArgumentException when no registered kind accepts it
-     */
-    /**
      * Decide the kind, extension and stored content type for some bytes.
      *
      * Two routes, because sniffing cannot see every format:
@@ -294,8 +291,11 @@ class AssetService
      *   formats sniffing reads as `text/plain` (a stylesheet always, a script
      *   often). Sniffing is not skipped: it is demoted to a veto. If the bytes
      *   sniff to a kind we recognise and it is not the declared one, the store
-     *   is refused, so a PNG cannot be filed as a stylesheet. The stored
-     *   content type comes from the registry either way, never from the caller.
+     *   is refused, so a PNG cannot be filed as a stylesheet. A sniff that
+     *   AGREES is still the better answer than the kind's canonical type, so it
+     *   wins — declaring `image` for SVG bytes must not file them as PNG. Only
+     *   when the sniff says nothing does the kind's canonical entry stand in.
+     *   Either way the content type comes from the registry, never the caller.
      *
      * @return array{0: string, 1: string, 2: string} [type, extension, content type]
      *
@@ -333,6 +333,16 @@ class AssetService
             throw new InvalidArgumentException(
                 "Asset declared as [{$declaredType}] but its bytes are [{$sniffed}]."
             );
+        }
+
+        // The sniff recognised the bytes AND agrees with the declaration, so it
+        // is more specific than the kind's canonical entry and is what gets
+        // stored. Falling back to the canonical one here is what filed SVG bytes
+        // declared `image` as image/png with a .png extension — replayed as the
+        // wrong Content-Type on delivery, and invisible to anything keyed on the
+        // extension (GenerateBrandingSizes' SVG branch).
+        if ($sniffedType !== null) {
+            return [$declaredType, (string) $types->extensionFor($sniffed), $sniffed];
         }
 
         return [$declaredType, $canonical[1], $canonical[0]];

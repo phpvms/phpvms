@@ -50,13 +50,21 @@ it('resolves null for a disk with no configured URL', function (): void {
  * will happily build a bare, wrong `/assets/...` out of an empty one.
  */
 it('resolves null for a disk whose URL entry is empty', function (): void {
-    foreach (['', null] as $configured) {
-        config(['filesystems.disks.r2.url' => $configured]);
+    $disks = config('filesystems.disks');
 
-        // Guard: the key is present, so isset() would have passed here.
-        expect(config()->has('filesystems.disks.r2.url'))->toBeTrue()
-            ->and(assetRow('r2', 'assets/branding/logo.png', 'logo-'.var_export($configured, true))->url())
-            ->toBeNull();
+    try {
+        foreach (['', null] as $configured) {
+            config(['filesystems.disks.r2.url' => $configured]);
+
+            // Guard: the key is present, so isset() would have passed here.
+            expect(config()->has('filesystems.disks.r2.url'))->toBeTrue()
+                ->and(assetRow('r2', 'assets/branding/logo.png', 'logo-'.var_export($configured, true))->url())
+                ->toBeNull();
+        }
+    } finally {
+        // A failed expectation must not leave a mangled disk behind for the
+        // rest of the process.
+        config(['filesystems.disks' => $disks]);
     }
 });
 

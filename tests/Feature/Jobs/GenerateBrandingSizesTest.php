@@ -7,6 +7,7 @@ use App\Jobs\GenerateBrandingSizes;
 use App\Models\Asset;
 use App\Services\ImageUploadService;
 use App\Support\Branding;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -38,7 +39,7 @@ beforeEach(function (): void {
 });
 
 /** Branding assets are public, so their bytes live on the public disk. */
-function assetDisk(Asset $asset)
+function assetDisk(Asset $asset): Filesystem
 {
     return Storage::disk($asset->diskName());
 }

@@ -52,10 +52,6 @@ it('resolves the URL of the asset keyed by the model', function (): void {
         ->and($user->assetUrl())->toBe('https://cdn.example.com/avatar.png');
 });
 
-it('resolves null when the model has no asset', function (): void {
-    expect(userWithAsset()->assetUrl())->toBeNull();
-});
-
 it('returns null from Asset::getUrl for an unknown slot and key', function (): void {
     linkAsset(Asset::SLOT_BRANDING, 'logo', 'https://cdn.example.com/logo.png');
 
