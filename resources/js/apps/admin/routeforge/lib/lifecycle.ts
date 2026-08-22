@@ -133,17 +133,18 @@ function toPayloadRow(r: Row): PayloadRow {
 
 /**
  * Snapshot the current form + rows into the `/lint` wire shape. Returns
- * null when the envelope can't be linted yet — no airline picked, or the
- * server-required `origins` / `destinations` lists are empty (the server's
- * `BaseRouteForgeBatchRequest` enforces both as `required|array|min:1`).
- * Exported so PreviewPanel's Create-click reuses the same envelope.
+ * null when the envelope can't be linted yet — no airline picked, or a
+ * required airport list is empty. A tour has no destinations by design
+ * (the picker is disabled; the chain is origins alone), so only origins
+ * gate it — the server accepts an empty `destinations` array. Exported so
+ * PreviewPanel's Create-click reuses the same envelope.
  */
 export function buildLintPayload(): LintPayload | null {
   const f = form.value;
   if (f.airline_id === null) {
     return null;
   }
-  if (f.origins.length === 0 || f.destinations.length === 0) {
+  if (f.origins.length === 0 || (f.mode !== "tour" && f.destinations.length === 0)) {
     return null;
   }
   return {
