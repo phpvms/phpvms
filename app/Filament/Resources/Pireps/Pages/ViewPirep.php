@@ -159,6 +159,15 @@ class ViewPirep extends ViewRecord
      *
      * The addon view is passed ONLY the record, never the page's scope.
      *
+     * Two independent failure modes, both contained: a throwing `visible`,
+     * `label` or `badge` closure drops the whole tab (with no label there is
+     * nothing to put on a button), while a throwing view keeps the tab and
+     * shows fallback content in its panel. Both report the exception.
+     *
+     * `domId` is prefixed and hash-suffixed so it can neither collide with the
+     * built-in `tab-*`/`t-*` ids nor with another addon whose id slugifies the
+     * same way (`acme.a.b` and `acme.a-b` both slugify to `acme-a-b`).
+     *
      * @return array<int, array{id: string, domId: string, label: string, badge: string|int|null, html: string}>
      */
     private function extensionTabs(): array
@@ -169,7 +178,16 @@ class ViewPirep extends ViewRecord
         $tabs = [];
 
         foreach (app(PirepViewTabRegistry::class)->ordered() as $tab) {
-            if (!$resolve($tab['visible'] ?? true)) {
+            try {
+                if (!$resolve($tab['visible'] ?? true)) {
+                    continue;
+                }
+
+                $label = (string) $resolve($tab['label']);
+                $badge = $resolve($tab['badge'] ?? null);
+            } catch (Throwable $throwable) {
+                report($throwable);
+
                 continue;
             }
 
@@ -183,12 +201,10 @@ class ViewPirep extends ViewRecord
             }
 
             $tabs[] = [
-                'id' => $tab['id'],
-                // Ids are namespaced ('vendor.name'); a dot is legal in an HTML
-                // id but not in a CSS/querySelector one, so derive a safe one.
-                'domId' => preg_replace('/[^A-Za-z0-9_-]+/', '-', $tab['id']),
-                'label' => (string) $resolve($tab['label'] ?? ''),
-                'badge' => $resolve($tab['badge'] ?? null),
+                'id'    => $tab['id'],
+                'domId' => 'ext-'.preg_replace('/[^A-Za-z0-9_-]+/', '-', $tab['id']).'-'.substr(md5($tab['id']), 0, 6),
+                'label' => $label,
+                'badge' => $badge,
                 'html'  => $html,
             ];
         }

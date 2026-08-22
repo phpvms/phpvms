@@ -109,8 +109,8 @@ test('view-pirep page renders an addon-registered tab with a record-derived labe
         ->assertSuccessful()
         ->assertSee('ACME '.$pirep->ident)
         ->assertSee('BADGE-'.$pirep->ident)
-        // Alpine wiring + the dot-free DOM id derived from the namespaced id.
-        ->assertSee('id="tab-acme-debrief"', false)
+        // Prefixed, hash-suffixed DOM id derived from the namespaced id.
+        ->assertSee('id="tab-ext-acme-debrief-'.substr(md5('acme.debrief'), 0, 6).'"', false)
         ->assertSee('TAB-PANEL-OK '.$pirep->ident)
         // The addon view sees only the record, not the page's variables.
         ->assertSee('SCOPE-CLEAN')
@@ -135,7 +135,7 @@ test('view-pirep page hides an addon tab whose visible closure returns false', f
         ->assertSuccessful()
         ->assertDontSee('ZZ-HIDDEN-TAB')
         ->assertDontSee('TAB-PANEL-OK')
-        ->assertDontSee('tab-acme-hidden', false);
+        ->assertDontSee('acme-hidden', false);
 });
 
 test('view-pirep page orders addon tabs by their order value, after the built-ins', function (): void {
@@ -209,4 +209,79 @@ test('view-pirep page renders the built-in tabs untouched when no addon register
         ->assertSee(__('pireps.flight_log'))
         ->assertSee(__('filament.original_flight'))
         ->assertDontSee(__('filament.extension_tab_error'));
+});
+
+test('view-pirep page drops an addon tab whose metadata closure throws', function (string $key): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+    $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
+
+    $boom = function (Pirep $p): never {
+        throw new RuntimeException('metadata closure exploded');
+    };
+
+    pirepTabRegistry()
+        ->register([
+            'id'    => 'acme.boom',
+            'label' => 'ZZ-BROKEN-TAB',
+            'view'  => 'pireptabs::ok',
+            $key    => $boom,
+        ])
+        ->register(['id' => 'acme.ok', 'label' => 'ZZ-HEALTHY-TAB', 'view' => 'pireptabs::ok']);
+
+    $this->actingAs($admin)
+        ->get(PirepResource::getUrl('view', ['record' => $pirep]))
+        ->assertSuccessful()
+        // No label to put on a button, so the whole tab goes — not even a
+        // fallback panel. Its healthy sibling and the built-ins are untouched.
+        ->assertDontSee('ZZ-BROKEN-TAB')
+        ->assertDontSee('acme-boom', false)
+        ->assertDontSee(__('filament.extension_tab_error'))
+        ->assertSee('ZZ-HEALTHY-TAB')
+        ->assertSee(__('filament.original_flight'));
+})->with(['visible', 'label', 'badge']);
+
+test('view-pirep page gives colliding tab slugs distinct DOM ids', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+    $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
+
+    // All three slugify to `acme-a-b`/`acme-a_b`; only the hash separates the
+    // first and third.
+    $ids = ['acme.a-b', 'acme.a_b', 'acme.a.b'];
+
+    $registry = pirepTabRegistry();
+    foreach ($ids as $id) {
+        $registry->register(['id' => $id, 'label' => 'ZZ-TAB-'.$id, 'view' => 'pireptabs::ok']);
+    }
+
+    $html = $this->actingAs($admin)
+        ->get(PirepResource::getUrl('view', ['record' => $pirep]))
+        ->assertSuccessful()
+        ->getContent();
+
+    $domIds = [];
+    foreach ($ids as $id) {
+        preg_match('/id="(tab-ext-[^"]+'.substr(md5($id), 0, 6).')"/', $html, $m);
+        $domIds[] = $m[1] ?? null;
+    }
+
+    expect($domIds)->not->toContain(null)
+        ->and(array_unique($domIds))->toHaveCount(3);
+});
+
+test('the tab registry rejects a definition with no label', function (): void {
+    expect(fn (): PirepViewTabRegistry => new PirepViewTabRegistry()->register(['id' => 'acme.x', 'view' => 'pireptabs::ok']))
+        ->toThrow(InvalidArgumentException::class);
+});
+
+test('the tab registry rejects a non-int order', function (): void {
+    expect(fn (): PirepViewTabRegistry => new PirepViewTabRegistry()->register([
+        'id'    => 'acme.x',
+        'label' => 'X',
+        'view'  => 'pireptabs::ok',
+        'order' => '50',
+    ]))->toThrow(InvalidArgumentException::class);
 });

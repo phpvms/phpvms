@@ -70,7 +70,6 @@
                 @svg('phosphor-archive-light') {{ __('filament.original_flight') }}
             </button>
 
-            {{-- Addon-registered subtabs, after the built-ins --}}
             @foreach ($extensionTabs as $tab)
                 <button
                     type="button"

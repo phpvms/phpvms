@@ -113,7 +113,9 @@ public function boot(): void
 The view gets the record and nothing else — not the page's `$mapFeatures`, `$logEntries` or
 `$this`. It is rendered to a string by `ViewPirep::getViewData()` before the page renders, inside
 a `Throwable` catch: if it throws, the exception is reported and that one panel shows fallback
-text while the rest of the page renders normally. (It cannot be rendered from inside the page
+text while the rest of the page renders normally. A `visible`, `label` or `badge` closure that
+throws is also reported, but drops the whole tab — with no label there is nothing to put on a
+button. Either way the page still renders. (The view cannot be rendered from inside the page
 view: Laravel's `View::render()` calls `Factory::flushState()` when a view throws, which wipes the
 global component stack and would take the whole page down.)
 

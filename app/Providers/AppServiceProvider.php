@@ -328,9 +328,6 @@ class AppServiceProvider extends ServiceProvider
         // is a registry.
         $this->app->singleton(AssetTypes::class);
 
-        // Admin PIREP view tabs: addon providers register onto the SAME
-        // instance the detail partial later reads, so it must be a singleton.
-        // Entries hold closures — never cache or serialize this.
         $this->app->singleton(PirepViewTabRegistry::class);
 
         // RouteForge lint catalog: tag every concrete rule class so adding a

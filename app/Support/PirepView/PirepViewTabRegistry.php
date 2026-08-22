@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\PirepView;
 
+use Closure;
 use InvalidArgumentException;
 
 /**
@@ -40,9 +41,9 @@ final class PirepViewTabRegistry
      *   id      string   required, namespaced ('vendor.name'). Doubles as the
      *                    Alpine `activeTab` value and the source of the panel's
      *                    DOM id.
-     *   label   string|Closure(Pirep): string           required, escaped as text.
-     *   badge   string|Closure(Pirep): string|int|null  optional, escaped as text.
-     *   visible Closure(Pirep): bool                    optional, default true.
+     *   label   string|Closure(Pirep): string             required, escaped as text.
+     *   badge   string|int|Closure(Pirep): string|int|null  optional, escaped as text.
+     *   visible Closure(Pirep): bool                      optional, default true.
      *                    False hides both the button and the panel for that record.
      *   order   int      optional, default 100 — after the built-in tabs. Ties
      *                    break by registration order.
@@ -58,6 +59,22 @@ final class PirepViewTabRegistry
 
         if (empty($tab['view']) || !is_string($tab['view'])) {
             throw new InvalidArgumentException('A PIREP view tab requires a string "view".');
+        }
+
+        if (!isset($tab['label']) || !is_string($tab['label']) && !$tab['label'] instanceof Closure) {
+            throw new InvalidArgumentException('A PIREP view tab requires a string or Closure "label".');
+        }
+
+        if (isset($tab['badge']) && !(is_string($tab['badge']) || is_int($tab['badge']) || $tab['badge'] instanceof Closure)) {
+            throw new InvalidArgumentException('A PIREP view tab "badge" must be a string, an int or a Closure.');
+        }
+
+        if (isset($tab['visible']) && !$tab['visible'] instanceof Closure) {
+            throw new InvalidArgumentException('A PIREP view tab "visible" must be a Closure.');
+        }
+
+        if (isset($tab['order']) && !is_int($tab['order'])) {
+            throw new InvalidArgumentException('A PIREP view tab "order" must be an int.');
         }
 
         $tab['order'] ??= 100;
