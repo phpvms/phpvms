@@ -74,6 +74,24 @@ test('access to registration when registration enabled', function (): void {
         ->assertRedirect('/dashboard');
 });
 
+// auto_accept_pireps is fillable for the admin pages, so the public
+// registration form must not be able to smuggle the privilege flag in.
+test('registration cannot mass-assign auto accept pireps', function (): void {
+    Notification::fake();
+
+    updateSetting('general.disable_registrations', false);
+    updateSetting('general.invite_only_registrations', false);
+
+    $data = getUserData();
+    $data['auto_accept_pireps'] = 1;
+
+    $this->post('/register', $data)
+        ->assertRedirect('/dashboard');
+
+    expect(User::where('email', $data['email'])->firstOrFail()->auto_accept_pireps)
+        ->toBeFalse();
+});
+
 test('access to registration when registration disabled', function (): void {
     updateSetting('general.disable_registrations', true);
 
