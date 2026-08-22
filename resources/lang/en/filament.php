@@ -311,6 +311,10 @@ return [
             'end_date_helper'   => 'Optional. When set, overrides individual flight end dates within this bundle.',
         ],
     ],
+    'tours' => [
+        'label'        => 'Tour',
+        'plural_label' => 'Tours',
+    ],
     'flights' => [
         'navigation_label'           => 'Schedules',
         'all_flights'                => 'All flights',

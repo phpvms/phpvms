@@ -39,6 +39,9 @@ class EditFlightBundle extends EditRecord
 {
     protected static string $resource = FlightBundleResource::class;
 
+    /** Set by the tours page, which drops the type field from the drawer. */
+    protected static bool $forTours = false;
+
     #[Override]
     public function getTitle(): string|Htmlable
     {
@@ -52,6 +55,9 @@ class EditFlightBundle extends EditRecord
      * `Flight Bundles › <name>`. Filament names no record crumb at all here --
      * the resource has no `$recordTitleAttribute` -- and ends the chain on the
      * page label, which only repeats the heading above it.
+     *
+     * The first crumb comes from the page's own resource so the tours page,
+     * which subclasses this one, says `Tours ›` rather than `Flight Bundles ›`.
      */
     #[Override]
     public function getBreadcrumbs(): array
@@ -60,7 +66,7 @@ class EditFlightBundle extends EditRecord
         $record = $this->getRecord();
 
         return [
-            FlightBundleResource::getUrl() => FlightBundleResource::getBreadcrumb(),
+            ...$this->getResourceBreadcrumbs(),
             $record->name,
         ];
     }
@@ -168,7 +174,7 @@ class EditFlightBundle extends EditRecord
     /** The Edit trigger rendered inside the overview's last card. */
     public function editAction(): Action
     {
-        return EditDetailsAction::make(FlightBundleForm::fields())
+        return EditDetailsAction::make(FlightBundleForm::fields(static::$forTours))
             ->modalHeading(__('filament.bundles.edit_details'))
             ->modalDescription(__('filament.bundles.edit_details_description'))
             ->extraModalFooterActions([

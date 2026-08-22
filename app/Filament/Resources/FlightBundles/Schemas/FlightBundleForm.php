@@ -6,6 +6,7 @@ use App\Enums\BundleType;
 use App\Models\FlightBundle;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -18,12 +19,12 @@ use Filament\Schemas\Schema;
 
 class FlightBundleForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(Schema $schema, bool $forTours = false): Schema
     {
         return $schema
             ->components([
                 Section::make(__('filament.bundles.sections.details'))
-                    ->schema(self::fields())
+                    ->schema(self::fields($forTours))
                     ->columnSpanFull()
                     ->columns(1),
             ]);
@@ -33,9 +34,14 @@ class FlightBundleForm
      * The bundle's editable fields, bare of layout — the create page wraps
      * them in a section, the edit drawer lays them out flat.
      *
+     * `$forTours` is set by the tours resource, whose pages are scoped to
+     * `type = tour`: the type becomes a hidden field carrying that value, so a
+     * new bundle is born a tour and an existing one cannot be saved out of the
+     * scope it is being edited in.
+     *
      * @return array<int, Component>
      */
-    public static function fields(): array
+    public static function fields(bool $forTours = false): array
     {
         return [
             TextInput::make('name')
@@ -47,17 +53,19 @@ class FlightBundleForm
                 ->rows(3)
                 ->label(__('filament.bundles.fields.description')),
 
-            Select::make('type')
-                ->label(__('filament.bundles.fields.type'))
-                ->options(BundleType::class)
-                ->default(BundleType::Flights)
-                ->selectablePlaceholder(false)
-                ->native(false)
-                ->required()
-                // Live so the leg warning below appears the moment the admin
-                // picks Tour, rather than only after a save.
-                ->live()
-                ->helperText(__('filament.bundles.fields.type_helper')),
+            $forTours
+                ? Hidden::make('type')->default(BundleType::Tour->value)
+                : Select::make('type')
+                    ->label(__('filament.bundles.fields.type'))
+                    ->options(BundleType::class)
+                    ->default(BundleType::Flights)
+                    ->selectablePlaceholder(false)
+                    ->native(false)
+                    ->required()
+                    // Live so the leg warning below appears the moment the admin
+                    // picks Tour, rather than only after a save.
+                    ->live()
+                    ->helperText(__('filament.bundles.fields.type_helper')),
 
             Text::make(fn (?FlightBundle $record): string => self::tourLegWarning($record))
                 ->key('tour_leg_warning')
