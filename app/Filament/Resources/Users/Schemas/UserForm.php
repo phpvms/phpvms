@@ -214,7 +214,7 @@ class UserForm
 
             TextEntry::make('ident_preview')
                 ->label(__('filament.user_ident'))
-                ->state(fn (Get $get): string => self::identFor(self::selectedAirline($get), $get('pilot_id')))
+                ->state(fn (Get $get): string => User::formatIdent(self::selectedAirline($get), $get('pilot_id')))
                 ->helperText(fn (Get $get): ?string => self::selectedAirline($get)?->name),
 
             TextEntry::make('name_preview')
@@ -224,29 +224,12 @@ class UserForm
 
             TextEntry::make('atc_preview')
                 ->label(__('filament.user_atc_callsign'))
-                ->state(fn (Get $get): string => self::atcFor(
+                ->state(fn (Get $get): string => User::formatAtc(
                     self::selectedAirline($get),
                     $get('pilot_id'),
                     $get('callsign'),
                 )),
         ]);
-    }
-
-    /** Mirrors User::ident(): the code, then the pilot ID padded to length. */
-    public static function identFor(?Airline $airline, int|string|null $pilotId): string
-    {
-        return self::identCode($airline).str_pad(
-            (string) $pilotId,
-            (int) setting('pilots.id_length'),
-            '0',
-            STR_PAD_LEFT,
-        );
-    }
-
-    /** Mirrors User::atc(): the code, then the callsign, or the unpadded ID. */
-    public static function atcFor(?Airline $airline, int|string|null $pilotId, ?string $callsign): string
-    {
-        return self::identCode($airline).(filled($callsign) ? $callsign : (string) $pilotId);
     }
 
     /**
@@ -268,14 +251,6 @@ class UserForm
         }
 
         return __('filament.pilot_id_out_of_range_hint', ['start' => $start, 'end' => $end]);
-    }
-
-    /** A configured `pilots.id_code` overrides the airline's ICAO everywhere. */
-    private static function identCode(?Airline $airline): string
-    {
-        return filled(setting('pilots.id_code'))
-            ? (string) setting('pilots.id_code')
-            : (string) $airline?->icao;
     }
 
     private static function selectedAirline(Get $get): ?Airline
