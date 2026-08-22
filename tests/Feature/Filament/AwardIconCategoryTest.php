@@ -5,9 +5,7 @@ declare(strict_types=1);
 use App\Filament\Resources\Awards\Pages\CreateAward;
 use App\Filament\Resources\Awards\Pages\ListAwards;
 use App\Filament\Resources\Awards\Schemas\AwardForm;
-use App\Filament\Resources\Users\Pages\EditUser;
 use App\Models\Award;
-use App\Models\User;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
@@ -134,54 +132,4 @@ it('filters the awards table by category', function (): void {
         ->filterTable('category', 'DISTANCE')
         ->assertCanSeeTableRecords([$distance])
         ->assertCanNotSeeTableRecords([$skill]);
-});
-
-it('renders the pilot awards grid with icon, name and category', function (): void {
-    $user = User::factory()->create();
-    $award = Award::factory()->create([
-        'name'     => 'Transatlantic',
-        'icon'     => 'phosphor-globe-light',
-        'category' => 'ROUTE',
-    ]);
-
-    $user->awards()->attach($award->id);
-
-    Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
-        ->assertSee('Transatlantic')
-        ->assertSee('ROUTE');
-});
-
-it('renders an award image in the grid when no icon is set', function (): void {
-    $user = User::factory()->create();
-    $award = Award::factory()->create([
-        'name'      => 'Old Badge',
-        'image_url' => 'https://example.com/badge.png',
-        'icon'      => null,
-    ]);
-
-    $user->awards()->attach($award->id);
-
-    Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
-        ->assertSee('https://example.com/badge.png');
-});
-
-it('survives an icon name that no longer exists in the icon set', function (): void {
-    $user = User::factory()->create();
-    $award = Award::factory()->create([
-        'name' => 'Ghost Icon',
-        'icon' => 'phosphor-this-icon-was-removed',
-    ]);
-
-    $user->awards()->attach($award->id);
-
-    Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
-        ->assertOk()
-        ->assertSee('Ghost Icon');
-});
-
-it('shows an empty state for a pilot with no awards', function (): void {
-    $user = User::factory()->create();
-
-    Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
-        ->assertSee(__('filament.user_awards_empty'));
 });

@@ -65,6 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property UserState|null $state
  * @property bool|null      $toc_accepted
  * @property bool|null      $opt_in
+ * @property bool           $auto_accept_pireps
  * @property int|null       $active
  * @property string|null    $last_ip
  * @property Carbon|null    $lastlogin_at
@@ -218,6 +219,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         'status',
         'toc_accepted',
         'opt_in',
+        'auto_accept_pireps',
         'last_ip',
         'lastlogin_at',
         'notes',
@@ -595,19 +597,20 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     protected function casts(): array
     {
         return [
-            'id'                => 'integer',
-            'pilot_id'          => 'integer',
-            'flights'           => 'integer',
-            'flight_time'       => 'integer',
-            'transfer_time'     => 'integer',
-            'balance'           => 'double',
-            'state'             => UserState::class,
-            'status'            => 'integer',
-            'toc_accepted'      => 'boolean',
-            'opt_in'            => 'boolean',
-            'lastlogin_at'      => 'datetime',
-            'deleted_at'        => 'datetime',
-            'email_verified_at' => 'datetime',
+            'id'                 => 'integer',
+            'pilot_id'           => 'integer',
+            'flights'            => 'integer',
+            'flight_time'        => 'integer',
+            'transfer_time'      => 'integer',
+            'balance'            => 'double',
+            'state'              => UserState::class,
+            'status'             => 'integer',
+            'toc_accepted'       => 'boolean',
+            'opt_in'             => 'boolean',
+            'auto_accept_pireps' => 'boolean',
+            'lastlogin_at'       => 'datetime',
+            'deleted_at'         => 'datetime',
+            'email_verified_at'  => 'datetime',
         ];
     }
 }

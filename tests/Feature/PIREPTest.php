@@ -2,6 +2,7 @@
 
 use App\Enums\AcarsType;
 use App\Enums\PirepFieldSource;
+use App\Enums\PirepSource;
 use App\Enums\PirepState;
 use App\Enums\UserState;
 use App\Models\Acars;
@@ -340,6 +341,49 @@ test('pilot stats incr', function (): void {
 
     // Make sure latest PIREP was updated
     $this->assertNotEquals($last_pirep->id, $latest_pirep->id);
+});
+
+test('user auto accept pireps flag accepts the pirep', function (): void {
+    $pirepSvc = app(PirepService::class);
+
+    // Rank has neither auto-approve set, so only the user flag can accept this
+    $user = User::factory()->create([
+        'rank_id'            => Rank::factory()->create()->id,
+        'auto_accept_pireps' => true,
+    ]);
+
+    $pirep = Pirep::factory()->create([
+        'airline_id' => $user->airline_id,
+        'user_id'    => $user->id,
+        'source'     => PirepSource::MANUAL,
+        'state'      => PirepState::PENDING,
+    ]);
+
+    $pirepSvc->create($pirep);
+    $pirepSvc->submit($pirep);
+
+    expect($pirep->refresh()->state)->toEqual(PirepState::ACCEPTED);
+});
+
+test('user without auto accept pireps flag stays pending', function (): void {
+    $pirepSvc = app(PirepService::class);
+
+    $user = User::factory()->create([
+        'rank_id'            => Rank::factory()->create()->id,
+        'auto_accept_pireps' => false,
+    ]);
+
+    $pirep = Pirep::factory()->create([
+        'airline_id' => $user->airline_id,
+        'user_id'    => $user->id,
+        'source'     => PirepSource::MANUAL,
+        'state'      => PirepState::PENDING,
+    ]);
+
+    $pirepSvc->create($pirep);
+    $pirepSvc->submit($pirep);
+
+    expect($pirep->refresh()->state)->toEqual(PirepState::PENDING);
 });
 
 test('pilot dont change rank', function (): void {

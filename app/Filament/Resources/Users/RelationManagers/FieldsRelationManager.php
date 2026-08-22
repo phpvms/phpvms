@@ -87,6 +87,6 @@ class FieldsRelationManager extends RelationManager
     #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return trans_choice('common.field', 2);
+        return __('filament.user_additional_metadata');
     }
 }
