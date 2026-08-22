@@ -111,6 +111,7 @@ return [
     'planned_details'                  => 'Planned Details',
     'original_flight'                  => 'Original Flight',
     'original_flight_empty'            => 'No archived flight data is available for this PIREP.',
+    'extension_tab_error'              => 'This section could not be displayed.',
     'filed_after'                      => 'Filed after',
     'filed_before'                     => 'Filed before',
     'rank_information'                 => 'Rank Information',

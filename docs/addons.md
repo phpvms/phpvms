@@ -69,3 +69,73 @@
 │      └── Octane::reload()  ← activates new providers on next worker boot         │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+## PIREP view extension points
+
+Two hooks let an addon add content to the PIREP pages without core changing again.
+
+### Admin: a tab on the PIREP view page
+
+`App\Support\PirepView\PirepViewTabRegistry` is a container singleton. Register from your
+`ServiceProvider::boot()`; a disabled addon's provider never boots, so its tab simply never
+appears. Guard with `class_exists` so the addon still installs against an older core.
+
+```php
+use App\Models\Pirep;
+use App\Support\PirepView\PirepViewTabRegistry;
+
+public function boot(): void
+{
+    if (!class_exists(PirepViewTabRegistry::class)) {
+        return;
+    }
+
+    app(PirepViewTabRegistry::class)->register([
+        'id'      => 'vmsacars.debrief',                       // required, namespaced
+        'label'   => fn (Pirep $pirep): string => __('vmsacars::debrief.tab_label'),
+        'badge'   => fn (Pirep $pirep): ?int => PirepDebrief::where('pirep_id', $pirep->id)->count() ?: null,
+        'visible' => fn (Pirep $pirep): bool => PirepDebrief::where('pirep_id', $pirep->id)->exists(),
+        'order'   => 100,
+        'view'    => 'vmsacars::pirep-debrief-tab',
+    ]);
+}
+```
+
+| Key       | Type                                                  | Notes                                                                                                                           |
+| --------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `id`      | `string`                                              | Required, namespaced `vendor.name`. Doubles as the Alpine tab value; a duplicate id **replaces** the earlier entry (last-wins). |
+| `label`   | `string` or `Closure(Pirep): string`                  | Rendered as escaped text.                                                                                                       |
+| `badge`   | `string`/`int` or `Closure(Pirep): string\|int\|null` | Optional. Escaped; hidden when blank.                                                                                           |
+| `visible` | `Closure(Pirep): bool`                                | Optional, default true. False hides both the button and the panel for that record.                                              |
+| `order`   | `int`                                                 | Optional, default 100 — i.e. after the built-in tabs. Ties keep registration order.                                             |
+| `view`    | `string`                                              | Required Blade view, rendered with **only** `['record' => $pirep]`.                                                             |
+
+The view gets the record and nothing else — not the page's `$mapFeatures`, `$logEntries` or
+`$this`. It is rendered to a string by `ViewPirep::getViewData()` before the page renders, inside
+a `Throwable` catch: if it throws, the exception is reported and that one panel shows fallback
+text while the rest of the page renders normally. (It cannot be rendered from inside the page
+view: Laravel's `View::render()` calls `Factory::flushState()` when a view throws, which wipes the
+global component stack and would take the whole page down.)
+
+Panels render eagerly with the page, like the built-in tabs. If your content is expensive, defer
+inside your own view — render a mount point and load it on demand.
+
+Closures are not serializable; the registry is an in-memory, boot-time singleton and is never
+cached.
+
+### Frontend: the `pireps.detail.main` slot
+
+The skylight SPA's PIREP detail layout exposes a Skylight slot with the pirep as context:
+
+```php
+Skylight::slots()->register([
+    'slot'      => 'pireps.detail.main',
+    'component' => 'AcarsDebriefPanel',
+    'module'    => '/ext/vmsacars/widgets/debrief.js',
+    'props'     => ['pirep' => '@pirep'],   // @-ref resolved from the slot context
+]);
+```
+
+It sits full-width below the two-column detail grid, and renders nothing at all when no addon
+targets it. See `modules/phpvms-sample-vue-slot/` for a complete working addon (registration,
+the Vue component, and the ESM build step).

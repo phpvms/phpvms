@@ -76,8 +76,8 @@ props, so a `@bid` ref works even though `bid` is not a page-level prop.
 
 Relevant source (read-only):
 - `app/Support/Skylight/SlotRegistry.php` — the `register()` contract.
-- `resources/js/apps/fe-vue/src/components/pv/PvSlot.vue` — resolves `@`-refs against `{ ...pageProps, ...context }`.
-- `resources/js/apps/fe-vue/src/components/pv/PvApp.vue` — for each server slot entry with a `module`, registers `resolver[component] = defineAsyncComponent(() => import(module))`.
+- `resources/js/apps/fe-vue/src/shared/components/PvSlot.vue` — resolves `@`-refs against `{ ...pageProps, ...context }`.
+- `resources/js/apps/fe-vue/src/app/PvApp.vue` — for each server slot entry with a `module`, registers `resolver[component] = defineAsyncComponent(() => import(module))`.
 
 Because of PvApp's resolver step, a slot entry needs **both** a unique
 `component` name (the resolver key) **and** a `module` URL (what to import).

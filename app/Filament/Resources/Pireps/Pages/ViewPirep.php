@@ -10,6 +10,8 @@ use App\Models\PirepEvent;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
+use App\Support\PirepView\PirepViewTabRegistry;
+use Closure;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -128,6 +130,70 @@ class ViewPirep extends ViewRecord
     {
         // No default infolist — the custom blade renders the detail layout.
         return $schema->components([]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    #[Override]
+    protected function getViewData(): array
+    {
+        return [
+            ...parent::getViewData(),
+            'extensionTabs' => $this->extensionTabs(),
+        ];
+    }
+
+    /**
+     * Addon-registered subtabs for this record (PirepViewTabRegistry): drop the
+     * ones whose `visible` closure says no, resolve label/badge, render each
+     * panel to HTML.
+     *
+     * Panels are rendered HERE — from getViewData(), before the page view
+     * starts rendering — and never from inside the blade. Laravel's
+     * View::render() calls Factory::flushState() when a view throws, which
+     * wipes the GLOBAL component/section stacks; a throwing addon view rendered
+     * inside the page would take the surrounding <x-filament-panels::page>
+     * component down with it (unwinding the output buffers is not enough).
+     * Rendering to a string first keeps a failure inside its own panel.
+     *
+     * The addon view is passed ONLY the record, never the page's scope.
+     *
+     * @return array<int, array{id: string, domId: string, label: string, badge: string|int|null, html: string}>
+     */
+    private function extensionTabs(): array
+    {
+        $record = $this->record;
+        $resolve = static fn (mixed $value): mixed => $value instanceof Closure ? $value($record) : $value;
+
+        $tabs = [];
+
+        foreach (app(PirepViewTabRegistry::class)->ordered() as $tab) {
+            if (!$resolve($tab['visible'] ?? true)) {
+                continue;
+            }
+
+            try {
+                $html = view($tab['view'], ['record' => $record])->render();
+            } catch (Throwable $throwable) {
+                report($throwable);
+                $html = '<div class="panel__body panel__body--centred"><p class="text-ink-3 text-sm">'
+                    .e(__('filament.extension_tab_error'))
+                    .'</p></div>';
+            }
+
+            $tabs[] = [
+                'id' => $tab['id'],
+                // Ids are namespaced ('vendor.name'); a dot is legal in an HTML
+                // id but not in a CSS/querySelector one, so derive a safe one.
+                'domId' => preg_replace('/[^A-Za-z0-9_-]+/', '-', $tab['id']),
+                'label' => (string) $resolve($tab['label'] ?? ''),
+                'badge' => $resolve($tab['badge'] ?? null),
+                'html'  => $html,
+            ];
+        }
+
+        return $tabs;
     }
 
     /**
