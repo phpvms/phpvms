@@ -36,6 +36,7 @@ use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
 use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Services\SettingService;
 use App\Support\Branding;
+use App\Support\PirepView\PirepViewTabRegistry;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
@@ -326,6 +327,8 @@ class AppServiceProvider extends ServiceProvider
         // during boot(). A PHP enum could never allow that, which is why this
         // is a registry.
         $this->app->singleton(AssetTypes::class);
+
+        $this->app->singleton(PirepViewTabRegistry::class);
 
         // RouteForge lint catalog: tag every concrete rule class so adding a
         // rule means appending one entry here, not editing LintRunner. The

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
+import PvSlot from "@/shared/components/PvSlot.vue";
 import PirepContent from "./PirepContent.vue";
 import PirepDetails from "./PirepDetails.vue";
 import PirepSummary from "./PirepSummary.vue";
@@ -15,6 +16,7 @@ defineProps<{ pirep: App.Http.Data.PirepData }>();
       <PirepContent :pirep />
       <PirepDetails :pirep />
     </div>
+    <PvSlot name="pireps.detail.main" :context="{ pirep }" />
   </section>
 </template>
 

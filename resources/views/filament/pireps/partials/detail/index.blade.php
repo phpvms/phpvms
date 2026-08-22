@@ -12,6 +12,12 @@
     // Computed once here so the "Flight log <em>N</em>" subtab badge and the
     // Flight Log tab body share a single query instead of two.
     $logEntries = $this->logEntries;
+
+    /* Addon-registered subtabs, already resolved and rendered to HTML by
+       ViewPirep::getViewData() — see the docblock there for why the panels
+       cannot be rendered from inside this view.
+       @var array<int, array{id: string, domId: string, label: string, badge: string|int|null, html: string}> $extensionTabs */
+    $extensionTabs = $extensionTabs ?? [];
 @endphp
 
 @include('filament.pireps.partials.detail.header', ['record' => $record])
@@ -63,6 +69,20 @@
             >
                 @svg('phosphor-archive-light') {{ __('filament.original_flight') }}
             </button>
+
+            @foreach ($extensionTabs as $tab)
+                <button
+                    type="button"
+                    class="subtab"
+                    role="tab"
+                    :aria-selected="activeTab === @js($tab['id'])"
+                    aria-controls="tab-{{ $tab['domId'] }}"
+                    id="t-{{ $tab['domId'] }}"
+                    @click="activeTab = @js($tab['id'])"
+                >
+                    {{ $tab['label'] }}@if (filled($tab['badge'])) <em>{{ $tab['badge'] }}</em>@endif
+                </button>
+            @endforeach
         </div>
 
         {{-- Flight tab: route bar + map + vertical profile chart + touchdown + notes --}}
@@ -91,6 +111,14 @@
         <div id="tab-arc" role="tabpanel" aria-labelledby="t-arc" x-show="activeTab === 'archive'" x-cloak>
             @include('filament.pireps.partials.detail.archive', ['record' => $record])
         </div>
+
+        {{-- Addon-registered panels, pre-rendered (and error-contained) by the
+             page class. --}}
+        @foreach ($extensionTabs as $tab)
+            <div id="tab-{{ $tab['domId'] }}" role="tabpanel" aria-labelledby="t-{{ $tab['domId'] }}" x-show="activeTab === @js($tab['id'])" x-cloak>
+                {!! $tab['html'] !!}
+            </div>
+        @endforeach
     </section>
 
     @include('filament.pireps.partials.detail.sidebar', ['record' => $record])

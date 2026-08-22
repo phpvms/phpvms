@@ -8,8 +8,9 @@
 
 <x-filament-panels::page>
     @include('filament.pireps.partials.detail.index', [
-        'record'      => $record,
-        'mapFeatures' => $mapFeatures,
-        'performance' => $performance,
+        'record'        => $record,
+        'mapFeatures'   => $mapFeatures,
+        'performance'   => $performance,
+        'extensionTabs' => $extensionTabs,
     ])
 </x-filament-panels::page>
