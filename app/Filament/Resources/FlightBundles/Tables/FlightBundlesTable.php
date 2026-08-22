@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FlightBundles\Tables;
 
+use App\Enums\BundleType;
 use App\Models\FlightBundle;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -14,6 +15,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -28,6 +30,12 @@ class FlightBundlesTable
                     ->searchable()
                     ->sortable()
                     ->label(__('filament.bundles.fields.name')),
+
+                TextColumn::make('type')
+                    ->label(__('filament.bundles.fields.type'))
+                    ->badge()
+                    ->color(fn (BundleType $state): string => $state === BundleType::Tour ? 'info' : 'gray')
+                    ->sortable(),
 
                 TextColumn::make('flights_count_display')
                     ->label(__('filament.bundles.fields.flights_count'))
@@ -61,6 +69,12 @@ class FlightBundlesTable
             ])
             ->filters([
                 TrashedFilter::make(),
+
+                // No option is "all types" — SelectFilter's own placeholder is
+                // the unfiltered state, so there is nothing to add for it.
+                SelectFilter::make('type')
+                    ->label(__('filament.bundles.fields.type'))
+                    ->options(BundleType::class),
 
                 TernaryFilter::make('enabled'),
 

@@ -7,7 +7,9 @@
  *     summary (name / description / dates / enabled) of the bundle being
  *     attached to. fare_multiplier input is hidden in this mode (it doesn't
  *     apply to an existing bundle in the v1 UI — power-user override is
- *     deferred to v2). A "Change" affordance clears the selection.
+ *     deferred to v2). A "Change" affordance clears the selection, unless the
+ *     bundle arrived by deep link (`bundleLocked`), in which case the target
+ *     is fixed to the bundle whose page the admin came from.
  *
  *   - **Types a new name** in the combobox → `existing_bundle_id` stays
  *     null, the typed text drives `bundle.name`, and the full config form
@@ -36,7 +38,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import { ApiError, getBundles } from "../lib/api";
 import { t } from "../lib/i18n";
-import { form } from "../state/store";
+import { bundleLocked, form } from "../state/store";
 import type { BundleConfig, BundleSummary } from "../state/types";
 import { Field, INPUT_CLASS, INPUT_CLASS_ERROR } from "./Field";
 
@@ -87,6 +89,7 @@ export function BundleConfigSection() {
       <BundlePicker
         bundleName={b.name}
         existingId={b.existing_bundle_id}
+        locked={bundleLocked.value}
         onSelectExisting={(bundle) => {
           // Pre-fill the new-mode fields so falling back via "Change"
           // produces a useful starting point, not a blank form.
@@ -119,6 +122,8 @@ export function BundleConfigSection() {
 type BundlePickerProps = {
   bundleName: string;
   existingId: number | null;
+  /** Deep-linked from a bundle page — the target bundle is not changeable here. */
+  locked: boolean;
   onSelectExisting: (bundle: BundleSummary) => void;
   onTypeNewName: (name: string) => void;
   onClearSelection: () => void;
@@ -127,6 +132,7 @@ type BundlePickerProps = {
 function BundlePicker({
   bundleName,
   existingId,
+  locked,
   onSelectExisting,
   onTypeNewName,
   onClearSelection,
@@ -207,6 +213,7 @@ function BundlePicker({
         bundleId={existingId}
         fallbackName={bundleName}
         seen={seenBundlesRef}
+        locked={locked}
         onChange={() => {
           onClearSelection();
           setQuery(bundleName);
@@ -320,6 +327,7 @@ type ExistingBundleSummaryProps = {
   bundleId: number;
   fallbackName: string;
   seen: { current: Map<number, BundleSummary> };
+  locked: boolean;
   onChange: () => void;
 };
 
@@ -328,6 +336,7 @@ function ExistingBundleSummary({
   bundleId,
   fallbackName,
   seen,
+  locked,
   onChange,
 }: ExistingBundleSummaryProps) {
   const empty = t("bundle.value_empty");
@@ -384,13 +393,17 @@ function ExistingBundleSummary({
             </p>
             <p class="text-base font-semibold text-(--ink)">{name}</p>
           </div>
-          <button
-            type="button"
-            class="text-xs font-medium text-primary-600 hover:opacity-80"
-            onClick={onChange}
-          >
-            {t("bundle.change_selection")}
-          </button>
+          {locked ? (
+            <span class="text-xs text-(--ink-3)">Set from the bundle page</span>
+          ) : (
+            <button
+              type="button"
+              class="text-xs font-medium text-primary-600 hover:opacity-80"
+              onClick={onChange}
+            >
+              {t("bundle.change_selection")}
+            </button>
+          )}
         </div>
         <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
           <dt class="font-medium text-(--ink-3)">{t("bundle.field_description")}</dt>

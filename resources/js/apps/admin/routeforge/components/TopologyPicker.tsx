@@ -19,13 +19,18 @@ import { useState } from "preact/hooks";
 
 import { t } from "../lib/i18n";
 import { form } from "../state/store";
-import type { FlightNumberStrategy, Topology } from "../state/types";
+import type { FlightNumberStrategy, Form, Topology } from "../state/types";
 import { Field, SELECT_CLASS } from "./Field";
 import { HelpModal, type HelpModalItem } from "./HelpModal";
 
 const TOPOLOGY_ORDER: Topology[] = ["hub_spokes", "spokes_hub", "hub_and_spokes", "mesh", "tour"];
 
-const TOUR_DEFAULT_BASE_LEG = 1;
+/**
+ * Tour legs must be numbered from 1: a tour bundle is bid as a contiguous
+ * `route_leg` 1..N chain, and `Flight::routeLeg()` canonicalizes 0 to NULL,
+ * so any other base produces a bundle that cannot be bid.
+ */
+const TOUR_BASE_LEG = 1;
 
 function deriveMode(topology: Topology): "cartesian" | "tour" {
   return topology === "tour" ? "tour" : "cartesian";
@@ -48,10 +53,10 @@ function deriveCreateReturns(topology: Topology, current: boolean): boolean {
 /**
  * Tour topology models one flight flown across many legs (e.g. round-the-
  * world tour), so the natural numbering is `flight_number=base, route_leg
- * walks 1..N`. Auto-default to `same_number_incrementing_legs` on tour
- * selection — but only when the user hasn't already chosen that strategy
- * (preserve their `base` / `base_leg` if they have). Leaving tour does NOT
- * revert; the user keeps the strategy they had on tour if they liked it.
+ * walks 1..N`. Selecting tour forces `same_number_incrementing_legs` and
+ * pins `base_leg` to 1 — the user's `base` survives, their `base_leg` does
+ * not, because a tour that starts at leg 5 cannot be bid. Leaving tour does
+ * NOT revert; the user keeps the strategy they had on tour if they liked it.
  */
 function deriveFlightNumberStrategy(
   topology: Topology,
@@ -60,11 +65,26 @@ function deriveFlightNumberStrategy(
   if (topology !== "tour") {
     return current;
   }
-  if (current.kind === "same_number_incrementing_legs") {
-    return current;
-  }
   const base = current.kind === "manual" ? 100 : current.base;
-  return { kind: "same_number_incrementing_legs", base, base_leg: TOUR_DEFAULT_BASE_LEG };
+  return { kind: "same_number_incrementing_legs", base, base_leg: TOUR_BASE_LEG };
+}
+
+/**
+ * The whole topology change, as one pure transition. `mode`, `create_returns`
+ * and `flight_number_strategy` are derived together and are not independently
+ * meaningful: writing `topology` and `mode` alone leaves the strategy at the
+ * store default (`sequential`), and a tour generated that way carries no
+ * `route_leg` at all. Every path that selects a topology — the picker below
+ * and the URL prefill in `lib/prefill.ts` — goes through here.
+ */
+export function applyTopology(current: Form, next: Topology): Form {
+  return {
+    ...current,
+    topology: next,
+    mode: deriveMode(next),
+    create_returns: deriveCreateReturns(next, current.create_returns),
+    flight_number_strategy: deriveFlightNumberStrategy(next, current.flight_number_strategy),
+  };
 }
 
 export function TopologyPicker() {
@@ -76,14 +96,7 @@ export function TopologyPicker() {
     // Read the freshest form value at apply time so concurrent edits (e.g.,
     // an airport picker mutating origins between render and event) survive
     // this update instead of being clobbered by the captured `f` snapshot.
-    const current = form.value;
-    form.value = {
-      ...current,
-      topology: next,
-      mode: deriveMode(next),
-      create_returns: deriveCreateReturns(next, current.create_returns),
-      flight_number_strategy: deriveFlightNumberStrategy(next, current.flight_number_strategy),
-    };
+    form.value = applyTopology(form.value, next);
   }
 
   const helpItems: HelpModalItem[] = TOPOLOGY_ORDER.map((topo) => ({

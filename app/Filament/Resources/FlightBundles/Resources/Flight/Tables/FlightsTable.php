@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Tables;
 
+use App\Filament\Resources\FlightBundles\Resources\Flight\Schemas\FlightForm;
 use App\Jobs\RecomputeBundleVisibility;
 use App\Models\Airport;
 use App\Models\Flight;
@@ -104,7 +105,11 @@ class FlightsTable
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
-                    DeleteAction::make(),
+                    // Deleting a leg out from under a live tour strands it, so
+                    // the confirmation says who it affects. A null falls back to
+                    // Filament's own confirmation text.
+                    DeleteAction::make()
+                        ->modalDescription(fn (Flight $record): ?string => FlightForm::liveTourWarning($record->bundle)),
                     ForceDeleteAction::make(),
                     RestoreAction::make(),
                 ]),

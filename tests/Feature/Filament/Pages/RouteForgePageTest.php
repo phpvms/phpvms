@@ -58,6 +58,53 @@ it('renders the boot URL on the mount element as data-boot-url', function (): vo
         ->assertSeeHtml('id="routeforge-root"');
 });
 
+it('renders a bundle-page deep link on the mount element as data-prefill', function (): void {
+    $this->actingAs(createAdminUser());
+
+    Livewire::withQueryParams([
+        'topology'    => 'tour',
+        'bundle'      => '12',
+        'bundle_name' => 'Pacific Tour',
+        'fresh'       => '1',
+    ])
+        ->test(RouteForge::class)
+        ->assertSuccessful()
+        ->assertSet('prefill', [
+            'topology'    => 'tour',
+            'bundle_id'   => 12,
+            'bundle_name' => 'Pacific Tour',
+            'fresh'       => true,
+        ])
+        ->assertSeeHtml('data-prefill=')
+        ->assertSeeHtml(e((string) json_encode([
+            'topology'    => 'tour',
+            'bundle_id'   => 12,
+            'bundle_name' => 'Pacific Tour',
+            'fresh'       => true,
+        ])));
+});
+
+it('drops deep-link params it does not recognise', function (): void {
+    $this->actingAs(createAdminUser());
+
+    Livewire::withQueryParams([
+        'topology' => 'spiral',
+        'bundle'   => 'not-an-id',
+        'fresh'    => '1',
+    ])
+        ->test(RouteForge::class)
+        ->assertSuccessful()
+        ->assertSet('prefill', []);
+});
+
+it('renders no data-prefill attribute without a deep link', function (): void {
+    $this->actingAs(createAdminUser());
+
+    Livewire::test(RouteForge::class)
+        ->assertSuccessful()
+        ->assertDontSeeHtml('data-prefill');
+});
+
 it('does NOT render the legacy window.routeforgeConfig envelope', function (): void {
     $this->actingAs(createAdminUser());
 

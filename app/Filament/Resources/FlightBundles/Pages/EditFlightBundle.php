@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\FlightBundles\Pages;
 
+use App\Enums\BundleType;
+use App\Features\Tour\Enums\TourStatus;
+use App\Features\Tour\Models\UserTour;
 use App\Filament\Actions\EditDetailsAction;
+use App\Filament\Pages\RouteForge;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Models\Aircraft;
@@ -16,9 +20,12 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Override;
 
@@ -78,14 +85,84 @@ class EditFlightBundle extends EditRecord
     public function content(Schema $schema): Schema
     {
         return $schema->components([
+            // Above the overview, not inside it: a tour whose legs do not run
+            // 1..N cannot be bid at all, so it outranks everything the summary
+            // cards report.
+            Text::make(fn (): string => $this->tourLegWarning())
+                ->color('warning')
+                ->icon(Phosphor::WarningLight)
+                ->visible(fn (): bool => $this->tourLegWarning() !== ''),
+
             View::make('components.admin.overview')
                 ->viewData([
                     'cards'      => $this->summaryCards(),
                     'ariaLabel'  => __('filament.bundles.sections.details'),
                     'editAction' => $this->editAction,
                 ]),
+
+            // Who is mid-tour right now, above the flights table so the admin
+            // sees it before they start editing legs.
+            Section::make(__('filament.bundles.live_tours.heading'))
+                ->description(__('filament.bundles.live_tours.description'))
+                // Closure, so switching the type in the drawer reveals the panel
+                // without a reload. The rows behind it are read once at build
+                // time; a bundle only just made a tour has no runs to show.
+                ->visible(fn (): bool => $this->isTour())
+                ->schema([
+                    View::make('filament.resources.flight-bundle.live-tours')
+                        ->viewData(['tours' => $this->liveTours()]),
+                ]),
+
             $this->getRelationManagersContentComponent(),
         ]);
+    }
+
+    /**
+     * The bundle's `in_progress` runs, newest last.
+     *
+     * Straight off the (bundle_id, status) index; `legs_completed`,
+     * `legs_total` and `flight_id` are columns, so the `legs` JSON is never
+     * touched. A `flights` bundle has no runs to look for, and gets no query.
+     *
+     * @return Collection<int, UserTour>
+     */
+    private function liveTours(): Collection
+    {
+        if (!$this->isTour()) {
+            return new Collection();
+        }
+
+        return UserTour::query()
+            ->where('bundle_id', $this->getRecord()->getKey())
+            ->where('status', TourStatus::InProgress)
+            ->with(['user', 'flight.airline'])
+            ->orderBy('started_at')
+            ->get();
+    }
+
+    private function isTour(): bool
+    {
+        /** @var FlightBundle $record */
+        $record = $this->getRecord();
+
+        return $record->type === BundleType::Tour;
+    }
+
+    /**
+     * The bundle's leg-numbering complaint, or '' when there is none. Only a
+     * tour has a leg sequence to be wrong about; a `flights` bundle stays
+     * silent.
+     */
+    private function tourLegWarning(): string
+    {
+        /** @var FlightBundle $record */
+        $record = $this->getRecord();
+
+        if ($record->type !== BundleType::Tour) {
+            return '';
+        }
+
+        return FlightBundleForm::tourLegWarning($record);
     }
 
     /** The Edit trigger rendered inside the overview's last card. */
@@ -103,9 +180,37 @@ class EditFlightBundle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            $this->forgeFlightsAction(),
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
             RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
+    }
+
+    /**
+     * Open RouteForge with this bundle as the target and the tour topology
+     * already chosen. `fresh=1` tells the SPA to drop any stored draft, which
+     * would otherwise render the resume banner instead of the prefilled form.
+     *
+     * Tour bundles only: the link hard-codes the tour topology, so offering it
+     * on a `flights` bundle would forge the wrong shape.
+     */
+    private function forgeFlightsAction(): Action
+    {
+        return Action::make('forgeFlights')
+            ->label(__('filament.bundles.forge_flights'))
+            ->icon(Phosphor::StackLight)
+            ->visible(fn (): bool => $this->isTour() && RouteForge::canAccess())
+            ->url(function (): string {
+                /** @var FlightBundle $record */
+                $record = $this->getRecord();
+
+                return RouteForge::getUrl().'?'.http_build_query([
+                    'topology'    => 'tour',
+                    'bundle'      => $record->getKey(),
+                    'bundle_name' => $record->name,
+                    'fresh'       => 1,
+                ]);
+            });
     }
 
     /**

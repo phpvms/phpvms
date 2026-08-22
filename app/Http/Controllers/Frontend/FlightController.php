@@ -7,6 +7,9 @@ use App\Contracts\Controller;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
+use App\Features\Tour\Enums\TourStatus;
+use App\Features\Tour\Models\UserTour;
+use App\Features\Tour\TourService;
 use App\Http\Data\BidRowData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
@@ -44,6 +47,7 @@ class FlightController extends Controller
         private readonly GeoService $geoSvc,
         private readonly AddonRegistry $addonRegistry,
         private readonly BidService $bidSvc,
+        private readonly TourService $tourSvc,
     ) {}
 
     private function acarsEnabled(): bool
@@ -446,7 +450,19 @@ class FlightController extends Controller
         $user = $request->user();
         $flight = $this->accessibleFlightQuery($user)->findOrFail($id);
 
-        $this->bidSvc->removeBid($flight, $user);
+        // Dropping a tour leg means the pilot is done with the whole chain —
+        // removeBid() itself stays tour-unaware, because filing a leg goes
+        // through it too and must not end the run.
+        $tour = Bid::query()
+            ->where('user_id', $user->id)
+            ->where('flight_id', $flight->id)
+            ->first()?->userTour;
+
+        if ($tour instanceof UserTour && $tour->status === TourStatus::InProgress) {
+            $this->tourSvc->cancel($tour);
+        } else {
+            $this->bidSvc->removeBid($flight, $user);
+        }
 
         return response()->json([
             'flightUrl' => route('frontend.flights.show', $flight->id),

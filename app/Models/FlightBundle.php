@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\BundleType;
 use App\Observers\BundleObserver;
 use Database\Factories\FlightBundleFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -26,6 +27,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int         $id
  * @property string      $name
  * @property string|null $description
+ * @property BundleType  $type
  * @property bool        $enabled
  * @property bool        $visible
  * @property Carbon|null $start_date
@@ -52,9 +54,18 @@ class FlightBundle extends Model
 
     public $table = 'flight_bundles';
 
+    /**
+     * Mirrors the column default, so a bundle read back before it has been
+     * refreshed still answers `type` rather than null.
+     */
+    protected $attributes = [
+        'type' => BundleType::Flights->value,
+    ];
+
     protected $fillable = [
         'name',
         'description',
+        'type',
         'enabled',
         'visible',
         'start_date',
@@ -70,6 +81,7 @@ class FlightBundle extends Model
             ->dontSubmitEmptyLogs();
     }
 
+    /** @return HasMany<Flight, $this> */
     public function flights(): HasMany
     {
         return $this->hasMany(Flight::class, 'bundle_id');
@@ -108,10 +120,70 @@ class FlightBundle extends Model
         );
     }
 
+    /**
+     * This bundle's flights in leg order, plus the first thing wrong with that
+     * order. A tour needs `route_leg` to run 1..N over its flights with no gap
+     * and no repeat; a `flights` bundle has no such requirement and callers
+     * simply do not ask.
+     *
+     * `problem` names the reason the sequence is unusable and `leg` the number
+     * it concerns, rather than a finished sentence, so each caller phrases its
+     * own: the bundle page warns, the tour path refuses to start. Both are null
+     * exactly when `valid` is true.
+     *
+     * A flight carrying no `route_leg` surfaces as a missing leg rather than as
+     * a problem of its own — Flight::routeLeg() canonicalizes '', '0' and 0 to
+     * NULL as its deliberate "absent" sentinel, so there is no leg 0 for an
+     * unnumbered flight to be confused with, and numbering starts at 1.
+     *
+     * @return array{
+     *     flights: Collection<int, Flight>,
+     *     valid: bool,
+     *     problem: 'empty'|'missing'|'duplicate'|null,
+     *     leg: int|null,
+     * }
+     */
+    public function tourLegSequence(): array
+    {
+        $flights = $this->flights()->orderBy('route_leg')->get();
+
+        $problem = null;
+        $leg = null;
+
+        if ($flights->isEmpty()) {
+            // An empty tour has nothing to bid, so it is not merely "trivially
+            // contiguous" — it is unusable, and callers need to hear that.
+            $problem = 'empty';
+        } else {
+            // Unnumbered flights land under 0, which no expected leg matches,
+            // so they read as whichever leg they failed to fill.
+            $counts = $flights->countBy(fn (Flight $flight): int => $flight->route_leg ?? 0);
+
+            foreach (range(1, $flights->count()) as $expected) {
+                $count = $counts->get($expected, 0);
+
+                if ($count !== 1) {
+                    $problem = $count === 0 ? 'missing' : 'duplicate';
+                    $leg = $expected;
+
+                    break;
+                }
+            }
+        }
+
+        return [
+            'flights' => $flights,
+            'valid'   => $problem === null,
+            'problem' => $problem,
+            'leg'     => $leg,
+        ];
+    }
+
     #[Override]
     protected function casts(): array
     {
         return [
+            'type'       => BundleType::class,
             'enabled'    => 'boolean',
             'visible'    => 'boolean',
             'start_date' => 'datetime',
