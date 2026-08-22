@@ -501,9 +501,12 @@ class PirepService extends Service
             $default_state = $pirep->state;
         }
 
-        // If pirep is still at PENDING or DRAFT state decide the default behavior by looking at rank settings
+        // If pirep is still at PENDING or DRAFT state decide the default behavior by looking at
+        // the user's own flag first, then falling back to their rank settings
         if ($pirep->state === PirepState::PENDING || $pirep->state === PirepState::DRAFT) {
-            if ($pirep->source === PirepSource::ACARS && $pirep->user->rank?->auto_approve_acars) {
+            if ($pirep->user->auto_accept_pireps) {
+                $default_state = PirepState::ACCEPTED;
+            } elseif ($pirep->source === PirepSource::ACARS && $pirep->user->rank?->auto_approve_acars) {
                 $default_state = PirepState::ACCEPTED;
             } elseif ($pirep->source === PirepSource::MANUAL && $pirep->user->rank?->auto_approve_manual) {
                 $default_state = PirepState::ACCEPTED;

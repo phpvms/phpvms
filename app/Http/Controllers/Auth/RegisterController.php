@@ -192,6 +192,11 @@ class RegisterController extends Controller
         $opts = $request->all();
         $opts['password'] = Hash::make($opts['password']);
 
+        // A privilege flag, not a registration field: it is fillable so the
+        // admin pages can write it, which means a tampered registration
+        // request could grant itself auto-accepted PIREPs.
+        unset($opts['auto_accept_pireps']);
+
         if (setting('general.record_user_ip', true)) {
             $opts['last_ip'] = $request->ip();
         }

@@ -65,6 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property UserState|null $state
  * @property bool|null      $toc_accepted
  * @property bool|null      $opt_in
+ * @property bool           $auto_accept_pireps
  * @property int|null       $active
  * @property string|null    $last_ip
  * @property Carbon|null    $lastlogin_at
@@ -218,6 +219,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         'status',
         'toc_accepted',
         'opt_in',
+        'auto_accept_pireps',
         'last_ip',
         'lastlogin_at',
         'notes',
@@ -266,14 +268,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function ident(): Attribute
     {
         return Attribute::make(
-            get: function ($_, array $attrs): string {
-                $length = setting('pilots.id_length');
-                $ident_code = filled(setting('pilots.id_code')) ? setting(
-                    'pilots.id_code'
-                ) : optional($this->airline)->icao;
-
-                return $ident_code.str_pad((string) $attrs['pilot_id'], $length, '0', STR_PAD_LEFT);
-            }
+            get: fn ($_, array $attrs): string => self::formatIdent($this->airline, $attrs['pilot_id'])
         );
     }
 
@@ -283,12 +278,39 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function atc(): Attribute
     {
         return Attribute::make(
-            get: function ($_, array $attrs): string {
-                $ident_code = filled(setting('pilots.id_code')) ? setting('pilots.id_code') : optional($this->airline)->icao;
-
-                return filled($attrs['callsign']) ? $ident_code.$attrs['callsign'] : $ident_code.$attrs['pilot_id'];
-            }
+            get: fn ($_, array $attrs): string => self::formatAtc($this->airline, $attrs['pilot_id'], $attrs['callsign'])
         );
+    }
+
+    /**
+     * The single source of the ident rule: the code (`pilots.id_code` setting,
+     * else the airline's ICAO), then the pilot ID padded to `pilots.id_length`.
+     * The admin drawer preview renders unsaved state through these same
+     * formatters, so the rule must not fork.
+     */
+    public static function formatIdent(?Airline $airline, int|string|null $pilotId): string
+    {
+        return self::identCode($airline).str_pad(
+            (string) $pilotId,
+            (int) setting('pilots.id_length'),
+            '0',
+            STR_PAD_LEFT,
+        );
+    }
+
+    /**
+     * The ATC callsign rule: the code, then the callsign, or the unpadded ID.
+     */
+    public static function formatAtc(?Airline $airline, int|string|null $pilotId, ?string $callsign): string
+    {
+        return self::identCode($airline).(filled($callsign) ? $callsign : (string) $pilotId);
+    }
+
+    private static function identCode(?Airline $airline): string
+    {
+        return filled(setting('pilots.id_code'))
+            ? (string) setting('pilots.id_code')
+            : (string) $airline?->icao;
     }
 
     /**
@@ -595,19 +617,20 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     protected function casts(): array
     {
         return [
-            'id'                => 'integer',
-            'pilot_id'          => 'integer',
-            'flights'           => 'integer',
-            'flight_time'       => 'integer',
-            'transfer_time'     => 'integer',
-            'balance'           => 'double',
-            'state'             => UserState::class,
-            'status'            => 'integer',
-            'toc_accepted'      => 'boolean',
-            'opt_in'            => 'boolean',
-            'lastlogin_at'      => 'datetime',
-            'deleted_at'        => 'datetime',
-            'email_verified_at' => 'datetime',
+            'id'                 => 'integer',
+            'pilot_id'           => 'integer',
+            'flights'            => 'integer',
+            'flight_time'        => 'integer',
+            'transfer_time'      => 'integer',
+            'balance'            => 'double',
+            'state'              => UserState::class,
+            'status'             => 'integer',
+            'toc_accepted'       => 'boolean',
+            'opt_in'             => 'boolean',
+            'auto_accept_pireps' => 'boolean',
+            'lastlogin_at'       => 'datetime',
+            'deleted_at'         => 'datetime',
+            'email_verified_at'  => 'datetime',
         ];
     }
 }
