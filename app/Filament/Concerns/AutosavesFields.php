@@ -7,6 +7,7 @@ namespace App\Filament\Concerns;
 use App\Exceptions\AutosaveFailed;
 use Closure;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Schema;
 
 /**
  * Field-level autosave for Filament form pages: wire a field with
@@ -111,6 +112,23 @@ trait AutosavesFields
     }
 
     /**
+     * The schema the triggering field actually lives in: for a field mounted
+     * inside an action drawer (EditDetailsAction), that is the action's own
+     * form, NOT `$this->form` — the page form holds no such key there, so
+     * resolving it would read null and silently persist nothing. For a
+     * main-form field the root container IS `$this->form`, so behavior is
+     * unchanged.
+     */
+    private function autosaveSchema(mixed $component): Schema
+    {
+        if ($component !== null && method_exists($component, 'getRootContainer')) {
+            return $component->getRootContainer();
+        }
+
+        return $this->form;
+    }
+
+    /**
      * Run one autosave cycle. Public so schema classes shared between pages
      * (e.g. AirlineForm) can delegate to whichever page mounted them:
      * `$livewire->runAutosave($component)` from an afterStateUpdated hook.
@@ -130,7 +148,7 @@ trait AutosavesFields
         $this->isAutosaving = true;
 
         try {
-            $state = $this->form->getState();
+            $state = $this->autosaveSchema($component)->getState();
 
             foreach ($this->autosavingKeys($component) as $key) {
                 $this->persistAutosavedField($key, $state[$key] ?? null);
