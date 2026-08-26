@@ -20,6 +20,8 @@ it('lists enabled tours with their legs in order', function (): void {
     ['bundle' => $bundle, 'flights' => $flights, 'user' => $user] = makeTour(3);
     FlightBundle::factory()->create(['type' => BundleType::Tour, 'enabled' => false]);
     FlightBundle::factory()->create();
+    // Enabled tour with no legs yet: stays off the pilot page until it's set up.
+    FlightBundle::factory()->create(['type' => BundleType::Tour]);
     app(AssetService::class)->storeLink(
         'https://example.com/tour.jpg',
         Asset::SLOT_BUNDLE,
@@ -61,7 +63,8 @@ it('shows the pilot run: progress, flown legs and the next leg to open', functio
 it('lists the pilot in-progress tour first, ahead of alphabetically earlier tours', function (): void {
     ['bundle' => $bundle, 'flights' => $flights, 'user' => $user, 'aircraft' => $aircraft] = makeTour(2);
     $bundle->update(['name' => 'Zulu Tour']);
-    FlightBundle::factory()->create(['type' => BundleType::Tour, 'name' => 'Alpha Tour']);
+    $alpha = FlightBundle::factory()->create(['type' => BundleType::Tour, 'name' => 'Alpha Tour']);
+    makeTour(2, null, $alpha);
     app(BidService::class)->addBid($flights[0], $user, $aircraft);
 
     $this->actingAs($user)

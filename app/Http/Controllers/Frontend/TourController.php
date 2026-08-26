@@ -60,6 +60,10 @@ class TourController extends Controller
                 $bundle,
                 $latestRuns->get($bundle->id),
             ))
+            // A tour whose legs don't run 1..N yet has nothing to offer a
+            // pilot — it stays off the page until the admin finishes it. A
+            // run already in progress stays visible regardless.
+            ->filter(fn (TourListItemData $tour): bool => $tour->valid || $tour->status === TourStatus::InProgress->value)
             ->values()
             ->all();
 

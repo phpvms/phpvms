@@ -61,7 +61,7 @@ interface LegTimelineItem {
   ident: string;
   dpt: string;
   arr: string;
-  date?: string;
+  state?: "next" | "flown";
   icon?: string;
   avatar?: { text: string };
 }
@@ -75,10 +75,10 @@ function timelineItems(tour: App.Http.Data.TourListItemData): LegTimelineItem[] 
       ident: leg.ident,
       dpt: leg.dpt,
       arr: leg.arr,
-      date: leg.flown
-        ? "Flown"
+      state: leg.flown
+        ? "flown"
         : tour.status === "in_progress" && leg.flightId === tour.activeLegFlightId
-          ? "Up next"
+          ? "next"
           : undefined,
       icon: leg.flown ? "i-tabler-check" : undefined,
       avatar: leg.flown ? undefined : { text: String(leg.routeLeg ?? "") },
@@ -187,6 +187,12 @@ function statusBadge(
       >
         <template v-if="formatWindow(tour)" #date>{{ formatWindow(tour) }}</template>
 
+        <template v-if="!tour.image" #header>
+          <div class="image-placeholder">
+            <UEmpty icon="i-tabler-photo" size="xs" />
+          </div>
+        </template>
+
         <template #footer>
           <UTimeline
             v-if="tour.legs.length"
@@ -195,6 +201,7 @@ function statusBadge(
             color="primary"
             size="xs"
             class="tour-legs"
+            :ui="{ wrapper: 'mt-0 pb-4', title: 'leading-6' }"
           >
             <template #title="{ item }">
               <span class="leg-line">
@@ -202,6 +209,12 @@ function statusBadge(
                 <span class="leg-route"
                   >{{ (item as LegTimelineItem).dpt }} <span aria-hidden="true">→</span>
                   <span class="sr-only">to</span> {{ (item as LegTimelineItem).arr }}</span
+                >
+                <span
+                  v-if="(item as LegTimelineItem).state"
+                  class="leg-state"
+                  :data-state="(item as LegTimelineItem).state"
+                  >{{ (item as LegTimelineItem).state === "next" ? "Up next" : "Flown" }}</span
                 >
               </span>
             </template>
@@ -250,14 +263,13 @@ function statusBadge(
   .tours-header {
     margin-bottom: 16px;
   }
-  /* Cards take their natural height; without this the grid stretches an
-     empty card to its tallest sibling and it reads as a giant blank. Only
-     at the component's lg grid breakpoint — below it the list is a flex
-     column, where `start` would shrink card WIDTH instead. */
-  @media (min-width: 1024px) {
-    .tour-list {
-      align-items: start;
-    }
+  .image-placeholder {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    background: var(--pv-panel-inset);
+    color: var(--pv-ink-faint);
   }
   .leg-line {
     display: inline-flex;
@@ -271,6 +283,17 @@ function statusBadge(
   }
   .leg-route {
     font-family: var(--pv-font-mono);
+  }
+  .leg-state {
+    font-size: 0.6875rem;
+    font-weight: 750;
+    text-transform: uppercase;
+  }
+  .leg-state[data-state="next"] {
+    color: var(--pv-accent);
+  }
+  .leg-state[data-state="flown"] {
+    color: color-mix(in srgb, var(--pv-green) 70%, var(--pv-ink));
   }
   .sr-only {
     position: absolute;
