@@ -197,13 +197,13 @@ function statusBadge(
             class="tour-legs"
           >
             <template #title="{ item }">
-              <span class="leg-ident">{{ (item as LegTimelineItem).ident }}</span>
-            </template>
-            <template #description="{ item }">
-              <span class="leg-route"
-                >{{ (item as LegTimelineItem).dpt }} <span aria-hidden="true">→</span>
-                <span class="sr-only">to</span> {{ (item as LegTimelineItem).arr }}</span
-              >
+              <span class="leg-line">
+                <span class="leg-ident">{{ (item as LegTimelineItem).ident }}</span>
+                <span class="leg-route"
+                  >{{ (item as LegTimelineItem).dpt }} <span aria-hidden="true">→</span>
+                  <span class="sr-only">to</span> {{ (item as LegTimelineItem).arr }}</span
+                >
+              </span>
             </template>
           </UTimeline>
 
@@ -250,6 +250,21 @@ function statusBadge(
   .tours-header {
     margin-bottom: 16px;
   }
+  /* Cards take their natural height; without this the grid stretches an
+     empty card to its tallest sibling and it reads as a giant blank. Only
+     at the component's lg grid breakpoint — below it the list is a flex
+     column, where `start` would shrink card WIDTH instead. */
+  @media (min-width: 1024px) {
+    .tour-list {
+      align-items: start;
+    }
+  }
+  .leg-line {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
   .leg-ident {
     font-family: var(--pv-font-mono);
     font-weight: 650;
@@ -274,8 +289,13 @@ function statusBadge(
     justify-content: flex-end;
   }
   .unavailable {
+    width: 100%;
+    border: 1px dashed var(--pv-line-strong, var(--pv-line));
+    border-radius: var(--pv-radius-sm);
     color: var(--pv-ink-dim);
     font-size: 0.8125rem;
+    padding: 16px;
+    text-align: center;
   }
   .empty {
     display: grid;
