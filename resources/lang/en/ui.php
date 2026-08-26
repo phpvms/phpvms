@@ -16,6 +16,7 @@ return [
     'nav_section'   => 'Workspace',
     'nav_flights'   => 'Flights',
     'nav_bids'      => 'My Bids',
+    'nav_tours'     => 'Tours',
     'nav_logbook'   => 'Logbook',
     'on_duty'       => 'On duty',
     'role_pilot'    => 'Pilot',

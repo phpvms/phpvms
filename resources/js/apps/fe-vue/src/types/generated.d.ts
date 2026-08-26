@@ -372,6 +372,27 @@ export type StateBadgeData = {
 label: string,
 color: string,
 };
+export type TourLegData = {
+flightId: string,
+routeLeg: number | null,
+ident: string,
+dpt: string,
+arr: string,
+flown: boolean,
+};
+export type TourListItemData = {
+id: number,
+name: string,
+description: string | null,
+image: string | null,
+startDate: string | null,
+endDate: string | null,
+valid: boolean,
+legs: App.Http.Data.TourLegData[],
+status: string | null,
+legsCompleted: number,
+activeLegFlightId: string | null,
+};
 export type TypeRatingData = {
 name: string,
 type: string,

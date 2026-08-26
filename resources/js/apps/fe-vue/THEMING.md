@@ -294,6 +294,7 @@ foundation shades.
 | `.pv-dashboard-pilot`      | Dashboard pilot summary                                                                                 |
 | `.pv-dashboard-board`      | Dashboard widget board                                                                                  |
 | `.pv-flight-info`          | Inline flight callsign and airport pair                                                                 |
+| `.pv-tours`                | Pilot tours page                                                                                        |
 | `.pv-aircraft-selector`    | Flight aircraft selection card                                                                          |
 | `.pv-profile`              | Pilot profile page                                                                                      |
 | `.pv-pirep-detail`         | PIREP detail view                                                                                       |
