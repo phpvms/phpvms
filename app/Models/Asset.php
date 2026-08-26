@@ -107,6 +107,9 @@ class Asset extends Model
     /** A rank's badge, keyed on the rank id. */
     public const SLOT_RANK = 'rank';
 
+    /** A flight bundle's hero image (tours page), keyed on the bundle id. */
+    public const SLOT_BUNDLE = 'flight-bundle';
+
     /**
      * A user's own images — today just the avatar. Keyed on the user id, not on
      * the literal name of the image: `(slot, key)` is unique, so a flat

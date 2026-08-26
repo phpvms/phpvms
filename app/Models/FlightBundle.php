@@ -109,6 +109,20 @@ class FlightBundle extends Model
     }
 
     /**
+     * A browser-loadable URL for the bundle's hero image, or null.
+     *
+     * A per-row lookup with an explicit string key, like HasAssets::assetUrl()
+     * — NOT a hasOne on the integer id: `assets.key` is varchar, and Postgres
+     * refuses `key IN (38, 39)` with integer bindings.
+     */
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => Asset::getUrl(Asset::SLOT_BUNDLE, (string) $this->id),
+        );
+    }
+
+    /**
      * True when this bundle has any schedule window set (start_date or end_date
      * is non-null). Drives FlightForm's "bundle owns schedule" UI branch and
      * SetVisibleFlights' case-B/case-C dispatch.

@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\FlightBundles\Schemas;
 
 use App\Enums\BundleType;
+use App\Filament\Forms\Components\AssetImagePicker;
+use App\Models\Asset;
 use App\Models\FlightBundle;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\DatePicker;
@@ -87,11 +89,30 @@ class FlightBundleForm
 
             self::subfleets(),
 
+            AssetImagePicker::make(
+                Asset::SLOT_BUNDLE,
+                // String, not int: assets.key is varchar and Postgres refuses
+                // an integer comparison against it.
+                fn (?FlightBundle $record): ?string => !$record instanceof FlightBundle ? null : (string) $record->id,
+                self::imageDisk(),
+                __('filament.bundles.fields.image'),
+            ),
+
             Toggle::make('enabled')
                 ->default(true)
                 ->label(__('filament.bundles.fields.enabled'))
                 ->extraFieldWrapperAttributes(['class' => 'field-rule-above']),
         ];
+    }
+
+    /**
+     * Bundle images render on the pilot-facing tours page, which is fetched
+     * with a session but loads images as plain <img> tags — public disk, same
+     * as rank badges.
+     */
+    public static function imageDisk(): string
+    {
+        return (string) config('filesystems.public_files');
     }
 
     /**

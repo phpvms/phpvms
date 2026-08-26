@@ -8,10 +8,13 @@ use App\Enums\BundleType;
 use App\Features\Tour\Enums\TourStatus;
 use App\Features\Tour\Models\UserTour;
 use App\Filament\Actions\EditDetailsAction;
+use App\Filament\Concerns\AutosavesFields;
+use App\Filament\Forms\Components\AssetImagePicker;
 use App\Filament\Pages\RouteForge;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Models\Aircraft;
+use App\Models\Asset;
 use App\Models\FlightBundle;
 use Carbon\Carbon;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -37,10 +40,39 @@ use Override;
  */
 class EditFlightBundle extends EditRecord
 {
+    use AutosavesFields;
+
     protected static string $resource = FlightBundleResource::class;
 
     /** Set by the tours page, which drops the type field from the drawer. */
     protected static bool $forTours = false;
+
+    /**
+     * Only the image control autosaves; the rest of the drawer saves on
+     * submit. The picker wires itself through its own afterStateUpdated hook.
+     *
+     * @return list<string>
+     */
+    protected function autosaveKeys(): array
+    {
+        return AssetImagePicker::stateKeys(Asset::SLOT_BUNDLE);
+    }
+
+    protected function persistAutosavedField(string $key, mixed $value): void
+    {
+        AssetImagePicker::persist(
+            Asset::SLOT_BUNDLE,
+            (string) $this->getRecord()->getKey(),
+            FlightBundleForm::imageDisk(),
+            $key,
+            $value,
+        );
+    }
+
+    protected function autosaveNotificationTitle(): string
+    {
+        return __('filament.bundles.image_saved');
+    }
 
     #[Override]
     public function getTitle(): string|Htmlable

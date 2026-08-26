@@ -309,7 +309,9 @@ return [
             'created_by'        => 'Created By',
             'start_date_helper' => 'Optional. When set, overrides individual flight start dates within this bundle.',
             'end_date_helper'   => 'Optional. When set, overrides individual flight end dates within this bundle.',
+            'image'             => 'Image',
         ],
+        'image_saved' => 'Bundle image saved',
     ],
     'tours' => [
         'label'        => 'Tour',
