@@ -6,6 +6,7 @@ use App\Enums\BundleType;
 use App\Features\Assets\AssetService;
 use App\Models\Asset;
 use App\Models\FlightBundle;
+use App\Models\User;
 use App\Services\BidService;
 use Igaster\LaravelTheme\Facades\Theme;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -32,7 +33,7 @@ it('lists enabled tours with their legs in order', function (): void {
         ->get('/tours')
         ->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page
-            ->component('Tours', false)
+            ->component('Tours/Index', false)
             ->has('tours', 1)
             ->where('tours.0.id', $bundle->id)
             ->where('tours.0.valid', true)
@@ -99,4 +100,32 @@ it('renders the Blade tours page on a blade theme', function (): void {
         ->get('/tours')
         ->assertOk()
         ->assertSee(e($bundle->name), false);
+});
+
+it('shows a single tour with its legs', function (): void {
+    ['bundle' => $bundle, 'flights' => $flights, 'user' => $user] = makeTour(3);
+
+    $this->actingAs($user)
+        ->get('/tours/'.$bundle->id)
+        ->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->component('Tours/Show', false)
+            ->where('tour.id', $bundle->id)
+            ->where('tour.name', $bundle->name)
+            ->has('tour.legs', 3)
+            ->where('tour.legs.0.flightId', $flights[0]->id));
+});
+
+it('hides a disabled tour the pilot never ran', function (): void {
+    ['bundle' => $bundle, 'user' => $user] = makeTour(2);
+    $bundle->update(['enabled' => false]);
+
+    $this->actingAs(User::factory()->create())
+        ->get('/tours/'.$bundle->id)
+        ->assertNotFound();
+
+    // Its own pilot has no run either — makeTour only builds the flights.
+    $this->actingAs($user)
+        ->get('/tours/'.$bundle->id)
+        ->assertNotFound();
 });

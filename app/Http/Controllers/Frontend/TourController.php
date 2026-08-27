@@ -68,10 +68,42 @@ class TourController extends Controller
             ->all();
 
         return response()->themed(
-            'Tours',
+            'Tours/Index',
             'tours.index',
             bladeData: ['tours' => $tours],
             spa: ['tours' => $tours],
+        );
+    }
+
+    /**
+     * One tour and the pilot's latest run through it. Reachable for any tour
+     * the index would list, plus any the pilot has ever run — a completed run
+     * stays readable after the bundle is disabled.
+     */
+    public function show(Request $request, int $id): View|InertiaResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $bundle = FlightBundle::query()
+            ->where('type', BundleType::Tour)
+            ->findOrFail($id);
+
+        $run = UserTour::query()
+            ->where('user_id', $user->id)
+            ->where('bundle_id', $bundle->id)
+            ->orderByDesc('started_at')
+            ->first();
+
+        abort_unless($bundle->enabled || $run instanceof UserTour, 404);
+
+        $tour = TourListItemData::fromModel($bundle, $run);
+
+        return response()->themed(
+            'Tours/Show',
+            'tours.show',
+            bladeData: ['tour' => $tour],
+            spa: ['tour' => $tour],
         );
     }
 }
