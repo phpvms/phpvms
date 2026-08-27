@@ -181,3 +181,40 @@ it('marks every leg as having a bid', function (): void {
     expect(Flight::query()->whereIn('id', $flights->pluck('id'))->pluck('has_bid')->all())
         ->toBe([true, true, true]);
 });
+
+it('refuses a second tour when tours.max_in_progress is 1', function (): void {
+    updateSetting('tours.max_in_progress', 1);
+    ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(2);
+    app(BidService::class)->addBid($flights[0], $user, $aircraft);
+
+    ['flights' => $otherFlights, 'aircraft' => $otherAircraft] = makeTour(2, $user);
+
+    expect(fn () => app(BidService::class)->addBid($otherFlights[0], $user->fresh(), $otherAircraft))
+        ->toThrow(ValidationException::class, 'You already have a tour in progress');
+
+    expect(UserTour::query()->where('user_id', $user->id)->where('status', TourStatus::InProgress)->count())
+        ->toBe(1);
+});
+
+it('still lets the pilot re-bid a leg of their own tour at the limit', function (): void {
+    updateSetting('tours.max_in_progress', 1);
+    ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(2);
+
+    $first = app(BidService::class)->addBid($flights[0], $user, $aircraft);
+    $again = app(BidService::class)->addBid($flights[0]->fresh(), $user->fresh(), $aircraft);
+
+    expect($again->id)->toBe($first->id)
+        ->and(UserTour::query()->where('user_id', $user->id)->count())->toBe(1);
+});
+
+it('allows a second tour when tours.max_in_progress is 2', function (): void {
+    updateSetting('tours.max_in_progress', 2);
+    ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(2);
+    app(BidService::class)->addBid($flights[0], $user, $aircraft);
+
+    ['flights' => $otherFlights, 'aircraft' => $otherAircraft] = makeTour(2, $user);
+    app(BidService::class)->addBid($otherFlights[0], $user->fresh(), $otherAircraft);
+
+    expect(UserTour::query()->where('user_id', $user->id)->where('status', TourStatus::InProgress)->count())
+        ->toBe(2);
+});

@@ -362,6 +362,17 @@ class SettingsSeeder extends Seeder
             'description' => 'Number of hours to expire bids after',
         ],
 
+        // Tours
+        [
+            'key'         => 'tours.max_in_progress',
+            'name'        => 'Max tours in progress',
+            'group'       => 'tours',
+            'value'       => '1',
+            'type'        => 'int',
+            'options'     => '',
+            'description' => 'How many tours a pilot can have in progress at once. 0 for unlimited',
+        ],
+
         // Flights
         [
             'key'         => 'flights.default_load_factor',

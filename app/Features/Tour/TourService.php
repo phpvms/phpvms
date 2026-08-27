@@ -92,6 +92,24 @@ class TourService extends Service
                 return $this->bidFor($lockedUser, $anyLeg);
             }
 
+            // Behind the user lock, so two concurrent starts serialize and
+            // cannot both slip under the limit. 0 means unlimited.
+            $maxInProgress = (int) setting('tours.max_in_progress', 1);
+            if ($maxInProgress > 0) {
+                $inProgress = UserTour::query()
+                    ->where('user_id', $lockedUser->id)
+                    ->where('status', TourStatus::InProgress)
+                    ->count();
+
+                if ($inProgress >= $maxInProgress) {
+                    throw ValidationException::withMessages([
+                        'flightId' => $maxInProgress === 1
+                            ? 'You already have a tour in progress. Finish or cancel it before starting another.'
+                            : "You can have at most {$maxInProgress} tours in progress.",
+                    ]);
+                }
+            }
+
             // Leg 1 runs the full gauntlet; legs 2..N cannot be checked at all
             // at this point (they depart elsewhere, and the aircraft is not
             // PARKED there), so they are inserted unchecked on purpose.

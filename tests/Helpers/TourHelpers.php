@@ -35,6 +35,7 @@ function tourSettingsBaseline(): void
     updateSetting('flights.only_company_aircraft', false);
     updateSetting('simbrief.block_aircraft', false);
     updateSetting('simbrief.only_bids', false);
+    updateSetting('tours.max_in_progress', 0);
 }
 
 /**
