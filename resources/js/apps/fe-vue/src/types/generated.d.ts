@@ -69,6 +69,7 @@ export type BidData = {
 id: number,
 flightId: string,
 aircraftId: number | null,
+userTourId: string | null,
 };
 export type BidRowData = {
 bid: App.Http.Data.BidData,
@@ -78,6 +79,10 @@ state: string,
 expiresAt: string | null,
 canGenerateSimBrief: boolean,
 canRemove: boolean,
+tourName: string | null,
+tourId: number | null,
+tourLeg: number | null,
+ofpUrl: string | null,
 };
 export type BidSelectionData = {
 bid: App.Http.Data.BidData,

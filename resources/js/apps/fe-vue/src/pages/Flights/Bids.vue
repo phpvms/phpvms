@@ -1,71 +1,74 @@
 <script setup lang="ts">
-import { Link } from "@inertiajs/vue3";
-import { computed, nextTick, shallowRef, useTemplateRef } from "vue";
-import AssignmentDrawer from "@/components/assignments/AssignmentDrawer.vue";
-import PvSlot from "@/shared/components/PvSlot.vue";
+import { computed, shallowRef } from "vue";
+import BidCard from "@/components/flights/BidCard.vue";
 
 /**
- * My Bids page. Reads BidRowData[] (one row per validated bid: a `bid` object +
- * its `flight` summary). The row types are GENERATED from the PHP DTOs by
- * `php artisan typescript:transform` (App.Http.Data.* — an ambient global, no
- * import), so client and server shapes stay in lock-step. Rendered as a semantic
- * table (Workspace look). Each row exposes a per-instance extension outlet
- * `bids.row.actions` whose `context` is `{ bid, flight }` — the host for the
- * external ACARS plugin, which injects a Vue component into the row.
+ * My Bids page. Reads BidRowData[] (one card per validated bid) — types are
+ * GENERATED from the PHP DTOs by `php artisan typescript:transform`
+ * (App.Http.Data.* is an ambient global, no import).
+ *
+ * Tour legs group under their tour, with a link to that tour's overview page;
+ * everything else lists below, expiring first (the controller sorts). Each
+ * card keeps the `bids.row.actions` extension outlet the external ACARS
+ * plugin injects into — see BidCard.
  */
 
 const props = defineProps<{
   bids: App.Http.Data.BidRowData[];
-  acarsPlugin: boolean;
 }>();
 
-const drawer = useTemplateRef<InstanceType<typeof AssignmentDrawer>>("drawer");
-const invokingControl = shallowRef<HTMLElement | null>(null);
+/**
+ * Two separate confirms: a plain bid card confirms by bid id, a tour
+ * confirms by tour id on its group header. One shared flag would light both
+ * (a tour's first leg card carries the same bid id the group cancels with).
+ */
 const confirmingId = shallowRef<number | null>(null);
+const confirmingTourId = shallowRef<number | null>(null);
 const removingId = shallowRef<number | null>(null);
 const removeError = shallowRef<string | null>(null);
-const removedId = shallowRef<number | null>(null);
-const visibleBids = computed(() => props.bids.filter((row) => row.bid.id !== removedId.value));
+const removedIds = shallowRef<number[]>([]);
 
-function openBid(flightId: string, event: MouseEvent) {
-  invokingControl.value = event.currentTarget as HTMLElement;
-  drawer.value?.show(flightId);
+const visibleBids = computed(() =>
+  props.bids.filter((row) => !removedIds.value.includes(row.bid.id)),
+);
+
+interface TourGroup {
+  id: number;
+  name: string;
+  rows: App.Http.Data.BidRowData[];
 }
 
-async function returnFocus() {
-  await nextTick();
-  invokingControl.value?.focus();
-}
+/** Tour legs, grouped by their tour, in the order the bids arrived. */
+const tourGroups = computed<TourGroup[]>(() => {
+  const groups = new Map<number, TourGroup>();
+  for (const row of visibleBids.value) {
+    if (row.tourId == null || !row.tourName) continue;
+    const group = groups.get(row.tourId) ?? { id: row.tourId, name: row.tourName, rows: [] };
+    group.rows.push(row);
+    groups.set(row.tourId, group);
+  }
+  // Legs read in flight order, not bid order.
+  for (const group of groups.values()) {
+    group.rows.sort((a, b) => (a.tourLeg ?? 0) - (b.tourLeg ?? 0));
+  }
+  return [...groups.values()];
+});
 
-function formatExpiry(value: string | null): string {
-  if (!value) return "No expiry";
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function simBriefHref(row: App.Http.Data.BidRowData): string {
-  return `/ofp/planning?bid_id=${row.bid.id}`;
-}
+const looseBids = computed(() => visibleBids.value.filter((row) => row.tourId == null));
 
 function csrfToken(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? "";
 }
 
-function requestRemoval(id: number) {
-  removeError.value = null;
-  confirmingId.value = id;
-}
-
-function cancelRemoval() {
-  if (removingId.value === null) confirmingId.value = null;
-}
-
+/**
+ * Dropping the bid; on a tour leg the server ends the whole run
+ * (FlightController::destroyBid), so every leg of it leaves the page.
+ */
 async function removeBid(row: App.Http.Data.BidRowData) {
   if (!row.canRemove || removingId.value !== null) return;
 
   confirmingId.value = null;
+  confirmingTourId.value = null;
   removingId.value = row.bid.id;
   removeError.value = null;
 
@@ -76,7 +79,13 @@ async function removeBid(row: App.Http.Data.BidRowData) {
     });
     const body = (await response.json().catch(() => ({}))) as { message?: string };
     if (!response.ok) throw new Error(body.message ?? "The bid could not be removed. Try again.");
-    removedId.value = row.bid.id;
+
+    removedIds.value = row.tourId
+      ? [
+          ...removedIds.value,
+          ...props.bids.filter((r) => r.tourId === row.tourId).map((r) => r.bid.id),
+        ]
+      : [...removedIds.value, row.bid.id];
   } catch (error) {
     removeError.value =
       error instanceof Error
@@ -89,396 +98,190 @@ async function removeBid(row: App.Http.Data.BidRowData) {
 </script>
 
 <template>
-  <section class="pv-my-bids" aria-labelledby="my-bids-heading">
-    <header class="page-heading">
-      <div>
-        <p class="pv-eyebrow">FLIGHTS · MY BIDS</p>
-        <h1 id="my-bids-heading">My bids</h1>
-        <p class="page-summary">Your reserved dispatches, ready to reopen and brief.</p>
+  <UPage class="pv-my-bids" aria-label="My bids">
+    <UPageHeader
+      class="bids-header"
+      headline="Flights"
+      title="My bids"
+      description="Your reserved dispatches, ready to reopen and brief."
+    >
+      <template #links>
+        <UBadge color="neutral" variant="subtle" size="lg"
+          >{{ visibleBids.length }} {{ visibleBids.length === 1 ? "bid" : "bids" }}</UBadge
+        >
+      </template>
+    </UPageHeader>
+
+    <UPageBody>
+      <div v-if="removeError" class="remove-error" role="alert" aria-live="assertive">
+        {{ removeError }}
       </div>
-      <span class="bid-count"
-        >{{ visibleBids.length }} {{ visibleBids.length === 1 ? "bid" : "bids" }}</span
+
+      <section
+        v-for="group in tourGroups"
+        :key="group.id"
+        class="bid-group"
+        :aria-labelledby="`tour-group-${group.id}`"
       >
-    </header>
+        <header class="group-head">
+          <div class="group-title">
+            <UBadge color="primary" variant="subtle" size="sm">Tour</UBadge>
+            <h2 :id="`tour-group-${group.id}`">{{ group.name }}</h2>
+            <span class="group-count"
+              >{{ group.rows.length }} {{ group.rows.length === 1 ? "leg" : "legs" }}</span
+            >
 
-    <div v-if="removeError" class="remove-error" role="alert" aria-live="assertive">
-      {{ removeError }}
-    </div>
-
-    <div v-if="visibleBids.length" class="tablewrap">
-      <table class="bids">
-        <thead>
-          <tr>
-            <th scope="col">Flight</th>
-            <th scope="col">Route</th>
-            <th scope="col">Schedule</th>
-            <th scope="col" class="num">Dist</th>
-            <th scope="col" class="num">Block</th>
-            <th scope="col">Aircraft</th>
-            <th scope="col">Bid</th>
-            <th scope="col">Expiry</th>
-            <th scope="col" class="actions">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in visibleBids" :key="row.bid.id">
-            <td class="callsign" data-label="Flight">
-              <strong>{{ row.flight?.callsign ?? row.bid.flightId }}</strong>
-              <span class="route-code">
-                {{ row.flight?.routeCode ? `Route ${row.flight.routeCode}` : "" }}
-                <template v-if="row.flight?.type"> · {{ row.flight.type }}</template>
-              </span>
-            </td>
-            <td data-label="Route">
-              <span class="route-pair"
-                >{{ row.flight?.dpt ?? "—" }} → {{ row.flight?.arr ?? "—" }}</span
+            <!-- Cancelling any leg ends the run, so the action belongs to the
+                 tour, not to each of its leg cards. -->
+            <span v-if="confirmingTourId === group.id" class="group-confirm">
+              <span>Cancel the whole tour?</span>
+              <UButton
+                type="button"
+                size="sm"
+                color="error"
+                :loading="removingId !== null"
+                :disabled="removingId !== null"
+                @click="removeBid(group.rows[0])"
+                >Yes, cancel it</UButton
               >
-            </td>
-            <td data-label="Schedule">
-              <span class="schedule"
-                >{{ row.flight?.scheduledDeparture ?? "—" }} →
-                {{ row.flight?.scheduledArrival ?? "—" }}</span
+              <UButton
+                type="button"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                :disabled="removingId !== null"
+                @click="confirmingTourId = null"
+                >Keep flying</UButton
               >
-            </td>
-            <td class="num" data-label="Distance">
-              {{ row.flight?.distanceNm != null ? `${row.flight.distanceNm}NM` : "—" }}
-            </td>
-            <td class="num" data-label="Block">{{ row.flight?.blockTime ?? "—" }}</td>
-            <td data-label="Aircraft">
-              <span v-if="row.aircraft" class="aircraft">
-                <strong>{{ row.aircraft.registration }}</strong>
-                <span>{{ row.aircraft.icaoType }} · {{ row.aircraft.subfleetName }}</span>
-              </span>
-              <span v-else class="muted">Aircraft not selected</span>
-            </td>
-            <td data-label="Bid">
-              <span class="bid-state" :data-state="row.state">{{ row.state }}</span>
-            </td>
-            <td data-label="Expiry">
-              <span class="expiry">{{ formatExpiry(row.expiresAt) }}</span>
-            </td>
-            <td class="actions" data-label="Actions">
-              <div class="row-actions">
-                <Link v-if="row.flight" class="detail-link" :href="`/flights/${row.bid.flightId}`"
-                  >Details</Link
-                >
-                <Link v-if="row.canGenerateSimBrief" class="simbrief-link" :href="simBriefHref(row)"
-                  >Generate OFP</Link
-                >
-                <UButton
-                  type="button"
-                  size="sm"
-                  variant="soft"
-                  @click="openBid(row.bid.flightId, $event)"
-                  >Overview</UButton
-                >
-                <template v-if="row.canRemove">
-                  <UButton
-                    v-if="confirmingId !== row.bid.id"
-                    type="button"
-                    size="sm"
-                    color="neutral"
-                    variant="ghost"
-                    :disabled="removingId !== null"
-                    @click="requestRemoval(row.bid.id)"
-                    >Remove</UButton
-                  >
-                  <span v-else class="remove-confirmation">
-                    <span>Remove this bid?</span>
-                    <UButton
-                      type="button"
-                      size="sm"
-                      color="error"
-                      :loading="removingId === row.bid.id"
-                      :disabled="removingId !== null"
-                      @click="removeBid(row)"
-                      >Confirm removal</UButton
-                    >
-                    <UButton
-                      type="button"
-                      size="sm"
-                      color="neutral"
-                      variant="ghost"
-                      :disabled="removingId !== null"
-                      @click="cancelRemoval"
-                      >Keep</UButton
-                    >
-                  </span>
-                </template>
-                <PvSlot name="bids.row.actions" :context="{ bid: row.bid, flight: row.flight }" />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </span>
+            <UButton
+              v-else
+              type="button"
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              icon="i-tabler-x"
+              :disabled="removingId !== null"
+              @click="confirmingTourId = group.id"
+              >Cancel tour</UButton
+            >
+          </div>
+          <UButton
+            :to="`/tours/${group.id}`"
+            size="sm"
+            variant="soft"
+            trailing-icon="i-tabler-arrow-right"
+            >Tour overview</UButton
+          >
+        </header>
 
-    <div v-else class="empty">
-      <strong>No bids yet</strong>
-      <p>Reserve a flight from the manifest to keep it here for your next dispatch.</p>
-      <Link class="browse-link" href="/flights">Browse flights</Link>
-    </div>
+        <UPageGrid class="bid-grid">
+          <BidCard
+            v-for="row in group.rows"
+            :key="row.bid.id"
+            :row="row"
+            :confirming="confirmingId === row.bid.id"
+            :removing="removingId === row.bid.id"
+            :busy="removingId !== null"
+            @confirm="confirmingId = row.bid.id"
+            @cancel-confirm="confirmingId = null"
+            @remove="removeBid(row)"
+          />
+        </UPageGrid>
+      </section>
 
-    <AssignmentDrawer ref="drawer" @closed="returnFocus" />
-  </section>
+      <section v-if="looseBids.length" class="bid-group" aria-labelledby="loose-bids-heading">
+        <header class="group-head">
+          <div class="group-title">
+            <h2 id="loose-bids-heading">Bids</h2>
+            <span class="group-count">Expiring first</span>
+          </div>
+        </header>
+
+        <UPageGrid class="bid-grid">
+          <BidCard
+            v-for="row in looseBids"
+            :key="row.bid.id"
+            :row="row"
+            :confirming="confirmingId === row.bid.id"
+            :removing="removingId === row.bid.id"
+            :busy="removingId !== null"
+            @confirm="confirmingId = row.bid.id"
+            @cancel-confirm="confirmingId = null"
+            @remove="removeBid(row)"
+          />
+        </UPageGrid>
+      </section>
+
+      <UEmpty
+        v-if="!visibleBids.length"
+        icon="i-tabler-checks"
+        title="No bids yet"
+        description="Reserve a flight from the manifest to keep it here for your next dispatch."
+      >
+        <template #actions>
+          <UButton to="/flights" variant="soft">Browse flights</UButton>
+        </template>
+      </UEmpty>
+    </UPageBody>
+  </UPage>
 </template>
 
 <style scoped>
-.pv-my-bids {
-  min-width: 0;
-}
-.page-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.page-heading h1 {
-  margin: 3px 0 0;
-  color: var(--pv-ink);
-  font-size: calc(24px * var(--pv-type-scale));
-}
-.page-summary {
-  margin: 6px 0 0;
-  color: var(--pv-ink-dim);
-  font-size: 1rem;
-}
-.bid-count {
-  flex: 0 0 auto;
-  border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-full);
-  background: var(--pv-panel-inset);
-  color: var(--pv-ink-dim);
-  font-family: var(--pv-font-mono);
-  font-size: 0.75rem;
-  padding: 5px 10px;
-}
-.tablewrap {
-  min-width: 0;
-  border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-md);
-  overflow: hidden;
-  background: var(--pv-panel);
-}
-.remove-error {
-  margin-bottom: 12px;
-  border: 1px solid color-mix(in srgb, var(--pv-red) 45%, var(--pv-line));
-  border-radius: var(--pv-radius-md);
-  background: color-mix(in srgb, var(--pv-red) 8%, var(--pv-panel));
-  color: var(--pv-red);
-  padding: 10px 12px;
-  font-size: 0.875rem;
-}
-.bids {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-  color: var(--pv-ink);
-}
-.bids thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--pv-panel);
-  border-bottom: 1px solid var(--pv-line-strong, var(--pv-line));
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--pv-ink-dim);
-  font-weight: 500;
-  text-align: left;
-  padding: 10px 14px;
-}
-.bids tbody td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--pv-line);
-  white-space: nowrap;
-}
-.bids tbody tr:last-child td {
-  border-bottom: none;
-}
-.bids tbody tr:hover td {
-  background: var(--pv-hover);
-}
-.callsign {
-  display: grid;
-  gap: 3px;
-  font-family: var(--pv-font-mono);
-  font-weight: 500;
-  color: var(--pv-accent);
-}
-.route-code,
-.aircraft span,
-.muted,
-.expiry,
-.schedule {
-  color: var(--pv-ink-dim);
-  font-size: 0.75rem;
-}
-.route-pair,
-.schedule,
-.aircraft,
-.expiry {
-  font-family: var(--pv-font-mono);
-}
-.aircraft {
-  display: grid;
-  gap: 3px;
-}
-.aircraft strong {
-  color: var(--pv-ink);
-  font-family: var(--pv-font-mono);
-}
-.bid-state {
-  display: inline-flex;
-  border-radius: var(--pv-radius-full);
-  background: color-mix(in srgb, var(--pv-green) 13%, transparent);
-  color: var(--pv-green);
-  padding: 3px 8px;
-  font-size: 0.75rem;
-  font-weight: 750;
-  text-transform: uppercase;
-}
-.bid-state[data-state="expired"] {
-  background: color-mix(in srgb, var(--pv-amber) 13%, transparent);
-  color: var(--pv-amber);
-}
-.num {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-.actions {
-  text-align: right;
-  width: 1%;
-}
-.row-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.remove-confirmation {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  color: var(--pv-ink-dim);
-  font-size: 0.75rem;
-}
-.detail-link {
-  color: var(--pv-accent);
-  font-size: 0.875rem;
-  font-weight: 650;
-  text-decoration: none;
-}
-.detail-link:hover {
-  text-decoration: underline;
-}
-.simbrief-link {
-  color: var(--pv-accent);
-  font-size: 0.875rem;
-  font-weight: 650;
-  text-decoration: none;
-}
-.simbrief-link:hover {
-  text-decoration: underline;
-}
-.empty {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  border: 1px dashed var(--pv-line-strong, var(--pv-line));
-  border-radius: var(--pv-radius-md);
-  color: var(--pv-ink-dim);
-  padding: 32px 24px;
-  text-align: center;
-}
-.empty strong {
-  color: var(--pv-ink);
-  font-size: 1rem;
-}
-.empty p {
-  max-width: 42ch;
-  margin: 0;
-  font-size: 1rem;
-}
-.browse-link {
-  color: var(--pv-accent);
-  font-size: 0.875rem;
-  font-weight: 650;
-  text-decoration: none;
-}
-.browse-link:hover {
-  text-decoration: underline;
-}
-@media (max-width: 700px) {
-  .page-heading {
-    align-items: start;
-    flex-direction: column;
+@layer components {
+  .pv-my-bids {
+    min-width: 0;
   }
-  .bids,
-  .bids tbody,
-  .bids tr,
-  .bids td {
-    display: block;
-    width: 100%;
+  .bids-header {
+    margin-bottom: 16px;
   }
-  .bids thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
+  .remove-error {
+    margin-bottom: 12px;
+    border: 1px solid color-mix(in srgb, var(--pv-red) 45%, var(--pv-line));
+    border-radius: var(--pv-radius-md);
+    background: color-mix(in srgb, var(--pv-red) 8%, var(--pv-panel));
+    color: var(--pv-red);
+    padding: 10px 12px;
+    font-size: 0.875rem;
   }
-  .bids tbody tr {
-    padding: 14px;
-    border-bottom: 1px solid var(--pv-line);
+  .bid-group + .bid-group {
+    margin-top: 28px;
   }
-  .bids tbody tr:last-child {
-    border-bottom: 0;
-  }
-  .bids tbody td {
-    display: grid;
-    grid-template-columns: minmax(90px, 0.35fr) minmax(0, 1fr);
+  .group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 12px;
-    align-items: baseline;
-    padding: 6px 0;
-    border: 0;
-    text-align: left;
-    white-space: normal;
+    margin-bottom: 12px;
   }
-  .bids tbody td::before {
-    content: attr(data-label);
-    color: var(--pv-ink-dim);
-    font-size: 0.75rem;
-    font-weight: 650;
-    text-transform: uppercase;
+  .group-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
   }
-  .bids tbody td.actions {
-    display: block;
-    padding-top: 12px;
-  }
-  .bids tbody td.actions::before {
-    display: block;
-    margin-bottom: 8px;
-  }
-  .row-actions {
-    justify-content: flex-start;
-  }
-}
-@media (max-width: 390px) {
-  .page-summary {
+  .group-title h2 {
+    margin: 0;
+    color: var(--pv-ink);
     font-size: 1rem;
   }
-  .tablewrap {
-    border-radius: var(--pv-radius-sm);
+  .group-count {
+    color: var(--pv-ink-dim);
+    font-family: var(--pv-font-mono);
+    font-size: 0.75rem;
   }
-  .bids tbody tr {
-    padding-inline: 12px;
+  .group-confirm {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    color: var(--pv-ink-dim);
+    font-size: 0.75rem;
   }
-  .row-actions :deep(button) {
-    min-height: 44px;
+  .bid-grid {
+    gap: 16px;
   }
 }
 </style>

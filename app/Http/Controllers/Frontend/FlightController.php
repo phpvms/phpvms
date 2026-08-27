@@ -234,6 +234,10 @@ class FlightController extends Controller
             'bids.flight.airline',
             'bids.flight.arr_airport',
             'bids.flight.dpt_airport',
+            // Whether a briefing already exists decides View vs Generate OFP
+            // on the bid card; scoped so one pilot never sees another's.
+            'bids.flight.simbrief' => fn ($q) => $q->where('user_id', Auth::id()),
+            'bids.userTour',
         ])->findOrFail(Auth::id());
 
         $flights = collect();
@@ -276,7 +280,10 @@ class FlightController extends Controller
             'flights.bids',
             bladeData: $viewData,
             spa: fn (): array => [
+                // Expiring first: expiry is created_at + bids.expire_time, so
+                // the oldest bid is always the one running out next.
                 'bids' => $valid_bids
+                    ->sortBy(fn (Bid $bid): int => $bid->created_at?->getTimestamp() ?? 0)
                     ->map(fn (Bid $bid): BidRowData => BidRowData::fromModel($bid, $policy, $saved_flights))
                     ->values()
                     ->all(),

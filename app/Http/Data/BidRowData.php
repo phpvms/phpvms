@@ -26,12 +26,23 @@ final class BidRowData extends Data
         public ?string $expiresAt,
         public bool $canGenerateSimBrief,
         public bool $canRemove,
+        /** The tour run this bid is a leg of, for the row's Tour badge. */
+        public ?string $tourName,
+        /** The tour's bundle id, for linking to its overview page. */
+        public ?int $tourId,
+        /** This leg's position in the tour, when it is one. */
+        public ?int $tourLeg,
+        /**
+         * A briefing already generated for this flight, so the card offers
+         * "View OFP" instead of "Generate OFP". Null when none exists.
+         */
+        public ?string $ofpUrl,
     ) {}
 
     /** @param array<string, int> $saved */
     public static function fromModel(Bid $bid, FlightDispatchPolicyData $policy, array $saved): self
     {
-        $bid->loadMissing(['aircraft.airport', 'aircraft.subfleet', 'flight.airline', 'flight.arr_airport', 'flight.dpt_airport']);
+        $bid->loadMissing(['aircraft.airport', 'aircraft.subfleet', 'flight.airline', 'flight.arr_airport', 'flight.dpt_airport', 'flight.simbrief', 'userTour']);
 
         return new self(
             bid: BidData::fromModel($bid),
@@ -43,6 +54,12 @@ final class BidRowData extends Data
                 : null,
             canGenerateSimBrief: $policy->simbriefEnabled,
             canRemove: true,
+            tourName: $bid->userTour?->name,
+            tourId: $bid->userTour?->bundle_id,
+            tourLeg: $bid->flight?->route_leg,
+            ofpUrl: $bid->flight?->simbrief
+                ? route('frontend.ofp.briefing', $bid->flight->simbrief->id)
+                : null,
         );
     }
 }
