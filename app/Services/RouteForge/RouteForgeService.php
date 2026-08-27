@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\RouteForge;
 
+use App\Enums\FlightType;
 use App\Jobs\RecomputeBundleVisibility;
 use App\Models\Flight;
 use App\Models\FlightBundle;
@@ -187,6 +188,14 @@ final readonly class RouteForgeService
             $attrs['bundle_id'] = $bundle->id;
             $attrs['created_at'] = $now;
             $attrs['updated_at'] = $now;
+
+            // The SPA sends the flight_type key even when the admin never
+            // picked one, and an explicit NULL in a bulk insert overrides
+            // the column's NOT NULL default. Fall back to the batch-wide
+            // type, then to the column's own default.
+            if (blank($attrs['flight_type'] ?? null)) {
+                $attrs['flight_type'] = $input->flightType?->value ?? FlightType::SCHED_PAX->value;
+            }
 
             $attrsList[] = $attrs;
         }

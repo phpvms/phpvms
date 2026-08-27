@@ -189,6 +189,29 @@ it('commits a tour batch whose destinations list is empty', function (): void {
         )->toBe([1, 2]);
 });
 
+it('commits rows carrying an explicit null flight_type, defaulting them to J', function (): void {
+    $airline = Airline::factory()->create();
+    $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $dpt = RF::nextAirport();
+    $arr = RF::nextAirport();
+
+    // The SPA always sends the flight_type key, null when the admin never
+    // picked one; an explicit NULL in the bulk insert must not override the
+    // column's NOT NULL default.
+    $payload = RF::batchPayload($airline->id, $dpt->id, $arr->id, [
+        'subfleet_ids' => [$subfleet->id],
+        'rows'         => [
+            ['airline_id' => $airline->id, 'flight_number' => 300, 'flight_type' => null, 'dpt_airport_id' => $dpt->id, 'arr_airport_id' => $arr->id],
+        ],
+    ]);
+
+    $body = $this->postJson('/admin/route-forge/api/commit', $payload)
+        ->assertStatus(201)
+        ->json('data');
+
+    expect(Flight::query()->find($body['flight_ids'][0])->flight_type->value)->toBe('J');
+});
+
 it('still rejects a batch whose destinations key is missing entirely', function (): void {
     $airline = Airline::factory()->create();
     $dpt = RF::nextAirport();
