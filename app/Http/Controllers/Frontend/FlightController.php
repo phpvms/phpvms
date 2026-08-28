@@ -455,24 +455,30 @@ class FlightController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $flight = $this->accessibleFlightQuery($user)->findOrFail($id);
+
+        // The pilot's own bid decides this, not the leg's visibility. A run
+        // deliberately outlives its bundle's window, and SetVisibleFlights
+        // turns the remaining legs invisible when that window closes — so
+        // resolving the flight through the visible-only query first would 404
+        // "Cancel tour" in exactly the state the tour is meant to survive.
+        $bid = Bid::query()
+            ->where('user_id', $user->id)
+            ->where('flight_id', $id)
+            ->first();
 
         // Dropping a tour leg means the pilot is done with the whole chain —
         // removeBid() itself stays tour-unaware, because filing a leg goes
         // through it too and must not end the run.
-        $tour = Bid::query()
-            ->where('user_id', $user->id)
-            ->where('flight_id', $flight->id)
-            ->first()?->userTour;
+        $tour = $bid?->userTour;
 
         if ($tour instanceof UserTour && $tour->status === TourStatus::InProgress) {
             $this->tourSvc->cancel($tour);
         } else {
-            $this->bidSvc->removeBid($flight, $user);
+            $this->bidSvc->removeBid($this->accessibleFlightQuery($user)->findOrFail($id), $user);
         }
 
         return response()->json([
-            'flightUrl' => route('frontend.flights.show', $flight->id),
+            'flightUrl' => route('frontend.flights.show', $id),
             'bidsUrl'   => route('frontend.flights.bids'),
         ]);
     }

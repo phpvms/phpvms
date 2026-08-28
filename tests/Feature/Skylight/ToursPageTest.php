@@ -91,6 +91,35 @@ it('keeps a disabled tour listed while the pilot has a run in progress', functio
             ->where('tours.0.status', 'in_progress'));
 });
 
+it('keeps a completed run listed after the admin breaks the leg sequence', function (): void {
+    ['flights' => $flights, 'user' => $user, 'aircraft' => $aircraft] = makeTour(2);
+    app(BidService::class)->addBid($flights[0], $user, $aircraft);
+    fileTourLeg($user, $flights[0], $aircraft);
+    fileTourLeg($user, $flights[1], $aircraft);
+
+    // Renumbering a leg leaves the bundle unbiddable, but what the pilot has
+    // already flown is history — it stays on their list.
+    $flights[1]->update(['route_leg' => 5]);
+
+    $this->actingAs($user)
+        ->get('/tours')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->has('tours', 1)
+            ->where('tours.0.status', 'completed')
+            ->where('tours.0.valid', false));
+});
+
+it('still hides an unready tour the pilot has never run', function (): void {
+    ['flights' => $flights, 'user' => $user] = makeTour(2);
+    $flights[1]->update(['route_leg' => 5]);
+
+    $this->actingAs($user)
+        ->get('/tours')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->has('tours', 0));
+});
+
 it('renders the Blade tours page on a blade theme', function (): void {
     ['bundle' => $bundle, 'user' => $user] = makeTour(2);
     Theme::set('seven');

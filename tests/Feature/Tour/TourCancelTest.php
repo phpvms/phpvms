@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Cron\Hourly\RemoveExpiredBids;
+use App\Cron\Nightly\SetVisibleFlights;
 use App\Enums\PirepFieldSource;
 use App\Enums\PirepState;
 use App\Events\CronHourly;
@@ -38,6 +39,42 @@ it('cancels the whole run when the pilot drops one leg', function (): void {
         ->and($tour->legs_completed)->toBe(1)
         ->and(collect($tour->legs)->firstWhere('route_leg', 1)['pirep_id'])->not->toBeNull()
         ->and(Bid::query()->where('user_id', $user->id)->count())->toBe(0);
+});
+
+it('cancels a run whose remaining legs have gone invisible', function (): void {
+    ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft, 'bundle' => $bundle] = makeTour(3);
+    app(BidService::class)->addBid($flights[0], $user, $aircraft);
+    fileTourLeg($user, $flights[0], $aircraft);
+
+    // The window closing is what a run is meant to survive, and it is also what
+    // hides the legs still to fly. Cancelling has to keep working there.
+    $bundle->update([
+        'start_date' => now('UTC')->subDays(30),
+        'end_date'   => now('UTC')->subDay(),
+    ]);
+    SetVisibleFlights::run();
+
+    expect($flights[1]->refresh()->visible)->toBeFalse();
+
+    $this->actingAs($user)
+        ->delete(route('frontend.flights.bid.destroy', $flights[1]->id))
+        ->assertOk();
+
+    expect(UserTour::query()->where('user_id', $user->id)->firstOrFail()->status)
+        ->toBe(TourStatus::Cancelled)
+        ->and(Bid::query()->where('user_id', $user->id)->count())->toBe(0);
+});
+
+it('still refuses to drop an ordinary bid on a flight the pilot cannot see', function (): void {
+    ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(3);
+    app(BidService::class)->addBid($flights[0], $user, $aircraft);
+
+    $stranger = User::factory()->create(['airline_id' => $user->airline_id]);
+    $hidden = Flight::factory()->create(['airline_id' => $user->airline_id, 'visible' => false]);
+
+    $this->actingAs($stranger)
+        ->delete(route('frontend.flights.bid.destroy', $hidden->id))
+        ->assertNotFound();
 });
 
 it('leaves other pilots alone and recomputes has_bid per flight', function (): void {
