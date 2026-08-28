@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import TourLegTimeline from "@/components/tours/TourLegTimeline.vue";
+import IconPhoto from "~icons/tabler/photo";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UBlogPost from "@nuxt/ui/components/BlogPost.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UEmpty from "@nuxt/ui/components/Empty.vue";
 
 /**
  * One tour as an image card: hero (or a placeholder), the run's status badge
@@ -102,7 +107,7 @@ const actionLabel = computed(() => {
         :class="ui.image()"
       />
       <div v-else class="image-placeholder">
-        <UEmpty icon="i-tabler-photo" size="xs" />
+        <UEmpty :icon="IconPhoto" size="xs" />
       </div>
       <UBadge v-if="statusBadge" v-bind="statusBadge" variant="solid" class="tour-status-overlay" />
     </template>

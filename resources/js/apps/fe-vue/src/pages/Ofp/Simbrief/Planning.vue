@@ -6,6 +6,15 @@ import SimBriefPlanningOptions from "@/components/simbrief/SimBriefPlanningOptio
 import { useSimBriefAttempt } from "@/components/simbrief/useSimBriefAttempt";
 import FlightIdentHeader from "@/components/flights/FlightIdentHeader.vue";
 import PvLoadingState from "@/shared/components/PvLoadingState.vue";
+import IconAlertCircle from "~icons/tabler/alert-circle";
+import IconExternalLink from "~icons/tabler/external-link";
+import UAlert from "@nuxt/ui/components/Alert.vue";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageBody from "@nuxt/ui/components/PageBody.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 const props = defineProps<{
   planning: App.Http.Data.SimBriefPlanningData | null;
@@ -130,7 +139,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
             v-if="planning && attempt.state.value === 'waiting-for-popup'"
             color="info"
             variant="subtle"
-            icon="i-tabler-external-link"
+            :icon="IconExternalLink"
             description="SimBrief is open. phpVMS is checking for the completed briefing."
           />
           <PvLoadingState
@@ -141,7 +150,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
             v-else-if="planning && attempt.failure.value"
             color="error"
             variant="subtle"
-            icon="i-tabler-alert-circle"
+            :icon="IconAlertCircle"
             :description="attempt.failure.value"
           />
 
@@ -182,7 +191,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
             v-else-if="assignmentFailure"
             color="error"
             variant="subtle"
-            icon="i-tabler-alert-circle"
+            :icon="IconAlertCircle"
             :description="assignmentFailure"
           />
         </UPageCard>

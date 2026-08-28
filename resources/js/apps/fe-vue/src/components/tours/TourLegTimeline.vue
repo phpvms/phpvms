@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type Component } from "vue";
+import IconCheck from "~icons/tabler/check";
+import UTimeline from "@nuxt/ui/components/Timeline.vue";
 
 /**
  * A tour's legs as a UTimeline: numbered markers that become checks once a
@@ -22,7 +24,7 @@ interface LegTimelineItem {
   dpt: string;
   arr: string;
   state?: "next" | "flown";
-  icon?: string;
+  icon?: Component;
   avatar?: { text: string };
 }
 
@@ -37,7 +39,7 @@ const items = computed<LegTimelineItem[]>(() =>
     dpt: leg.dpt,
     arr: leg.arr,
     state: leg.flown ? "flown" : isCurrent(leg) ? "next" : undefined,
-    icon: leg.flown ? "i-tabler-check" : undefined,
+    icon: leg.flown ? IconCheck : undefined,
     avatar: leg.flown ? undefined : { text: String(leg.routeLeg ?? "") },
   })),
 );

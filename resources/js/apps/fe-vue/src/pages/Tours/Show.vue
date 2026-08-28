@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
 import TourLegTimeline from "@/components/tours/TourLegTimeline.vue";
+import IconArrowLeft from "~icons/tabler/arrow-left";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageBody from "@nuxt/ui/components/PageBody.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 /**
  * One tour: its hero image, the pilot's progress, and every leg in order.
@@ -54,9 +61,7 @@ const statusBadge = (() => {
       <template #links>
         <div class="header-actions">
           <UBadge v-if="statusBadge" v-bind="statusBadge" variant="subtle" size="lg" />
-          <UButton to="/tours" size="sm" variant="ghost" icon="i-tabler-arrow-left"
-            >All tours</UButton
-          >
+          <UButton to="/tours" size="sm" variant="ghost" :icon="IconArrowLeft">All tours</UButton>
         </div>
       </template>
     </UPageHeader>

@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { computed, shallowRef } from "vue";
 import BidCard from "@/components/flights/BidCard.vue";
+import IconArrowRight from "~icons/tabler/arrow-right";
+import IconChecks from "~icons/tabler/checks";
+import IconX from "~icons/tabler/x";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UEmpty from "@nuxt/ui/components/Empty.vue";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageBody from "@nuxt/ui/components/PageBody.vue";
+import UPageGrid from "@nuxt/ui/components/PageGrid.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 /**
  * My Bids page. Reads BidRowData[] (one card per validated bid) — types are
@@ -160,7 +170,7 @@ async function removeBid(row: App.Http.Data.BidRowData) {
               size="sm"
               color="neutral"
               variant="ghost"
-              icon="i-tabler-x"
+              :icon="IconX"
               :disabled="removingId !== null"
               @click="confirmingTourId = group.id"
               >Cancel tour</UButton
@@ -170,7 +180,7 @@ async function removeBid(row: App.Http.Data.BidRowData) {
             :to="`/tours/${group.id}`"
             size="sm"
             variant="soft"
-            trailing-icon="i-tabler-arrow-right"
+            :trailing-icon="IconArrowRight"
             >Tour overview</UButton
           >
         </header>
@@ -215,7 +225,7 @@ async function removeBid(row: App.Http.Data.BidRowData) {
 
       <UEmpty
         v-if="!visibleBids.length"
-        icon="i-tabler-checks"
+        :icon="IconChecks"
         title="No bids yet"
         description="Reserve a flight from the manifest to keep it here for your next dispatch."
       >

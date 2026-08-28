@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import ui from "@nuxt/ui/vite";
+import icons from "unplugin-icons/vite";
 import { phpTypescriptTransform } from "./dev/php-typescript-transform";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -207,6 +208,12 @@ export default defineConfig(({ command }) => ({
     ui({
       router: "inertia",
       dts: false,
+      // No magic imports: every U* control and every composable is imported by
+      // name at its call site. Nuxt UI's own runtime keeps working — the plugin
+      // still serves `#imports`, `#build/*` and the Vue-compatible Icon/Link
+      // overrides its internals resolve to.
+      components: false,
+      autoImport: false,
       ui: { icons: tablerIcons },
       icon: {
         clientBundle: {
@@ -215,6 +222,10 @@ export default defineConfig(({ command }) => ({
         },
       },
     }),
+    // `import X from "~icons/tabler/name"` compiles the Tabler SVG straight into
+    // a Vue component at build time, from the @iconify-json/tabler collection
+    // already installed. No network fetch, no runtime icon resolution.
+    icons({ compiler: "vue3", autoInstall: false }),
     tailwindcss(),
     // Dev-only: regenerate SPA types from PHP DTOs on change (no-op on build).
     phpTypescriptTransform({ repoRoot: REPO_ROOT }),

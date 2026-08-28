@@ -4,6 +4,12 @@ import FlightIdentHeader from "@/components/flights/FlightIdentHeader.vue";
 import FlightStats from "@/components/flights/FlightStats.vue";
 import type { FlightStat } from "@/components/flights/types";
 import PvSlot from "@/shared/components/PvSlot.vue";
+import IconFilePlus from "~icons/tabler/file-plus";
+import IconFileText from "~icons/tabler/file-text";
+import IconX from "~icons/tabler/x";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
 
 /**
  * One reserved dispatch as a card: the shared flight identity header (ident
@@ -123,7 +129,7 @@ function formatExpiry(value: string | null): string {
           size="sm"
           color="neutral"
           variant="ghost"
-          icon="i-tabler-x"
+          :icon="IconX"
           :disabled="props.busy"
           @click="emit('confirm')"
           >Cancel</UButton
@@ -133,7 +139,7 @@ function formatExpiry(value: string | null): string {
           :to="props.row.ofpUrl"
           size="sm"
           variant="soft"
-          icon="i-tabler-file-text"
+          :icon="IconFileText"
           >View OFP</UButton
         >
         <UButton
@@ -141,7 +147,7 @@ function formatExpiry(value: string | null): string {
           :to="`/ofp/planning?bid_id=${props.row.bid.id}`"
           size="sm"
           variant="soft"
-          icon="i-tabler-file-plus"
+          :icon="IconFilePlus"
           >Generate OFP</UButton
         >
         <PvSlot

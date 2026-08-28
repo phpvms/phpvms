@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, useTemplateRef, watch } from "vue";
 import { submitProviderGet, type ProviderSubmission } from "@phpvms/simbrief";
+import IconAlertCircle from "~icons/tabler/alert-circle";
+import IconX from "~icons/tabler/x";
+import UAlert from "@nuxt/ui/components/Alert.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UModal from "@nuxt/ui/components/Modal.vue";
 
 const props = defineProps<{
   failure: string | null;
@@ -61,7 +66,7 @@ function returnToPlanning() {
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-tabler-x"
+            :icon="IconX"
             aria-label="Close OFP generation"
             @click="returnToPlanning"
           />
@@ -75,7 +80,7 @@ function returnToPlanning() {
             v-if="failure && !submitted"
             color="error"
             variant="subtle"
-            icon="i-tabler-alert-circle"
+            :icon="IconAlertCircle"
             :description="failure"
           />
           <iframe

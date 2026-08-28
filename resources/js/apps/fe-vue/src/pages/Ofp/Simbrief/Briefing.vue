@@ -3,6 +3,9 @@ import { reactive, shallowRef } from "vue";
 import { router } from "@inertiajs/vue3";
 import PvSlot from "@/shared/components/PvSlot.vue";
 import SimBriefEditorDialog from "@/components/simbrief/SimBriefEditorDialog.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 const props = defineProps<{ briefing: App.Http.Data.SimBriefBriefingData }>();
 const briefing = reactive({ ...props.briefing });

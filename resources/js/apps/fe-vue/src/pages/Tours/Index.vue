@@ -3,6 +3,14 @@ import { router } from "@inertiajs/vue3";
 import { computed, nextTick, ref, shallowRef, useTemplateRef } from "vue";
 import AssignmentDrawer from "@/components/assignments/AssignmentDrawer.vue";
 import TourCard from "@/components/tours/TourCard.vue";
+import IconRoute from "~icons/tabler/route";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UBlogPosts from "@nuxt/ui/components/BlogPosts.vue";
+import UEmpty from "@nuxt/ui/components/Empty.vue";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageBody from "@nuxt/ui/components/PageBody.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
+import UTabs from "@nuxt/ui/components/Tabs.vue";
 
 /**
  * Tours page. Reads TourListItemData[] (one card per tour bundle) — types are
@@ -126,13 +134,13 @@ async function cancelTour(tour: App.Http.Data.TourListItemData) {
 
       <UEmpty
         v-else-if="tourFilter === 'mine'"
-        icon="i-tabler-route"
+        :icon="IconRoute"
         title="No tours of your own yet"
         description="Bid a tour from the All tours list and it will show up here."
       />
       <UEmpty
         v-else
-        icon="i-tabler-route"
+        :icon="IconRoute"
         title="No tours yet"
         description="When your airline publishes a tour, it will appear here ready to bid."
       />

@@ -13,6 +13,7 @@ import { useAppChrome } from "./useAppChrome";
 import { useHeaderClocks } from "./useHeaderClocks";
 import { useHeaderTheme } from "./useHeaderTheme";
 import { useMetar } from "./useMetar";
+import UButton from "@nuxt/ui/components/Button.vue";
 
 const { appName, initials, pilotChrome, user } = useAppChrome();
 const station = computed(() => pilotChrome.value?.station ?? null);

@@ -2,6 +2,10 @@
 import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import type { HeaderUser } from "./headerTypes";
+import IconLogout from "~icons/tabler/logout";
+import IconUser from "~icons/tabler/user";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UDropdownMenu from "@nuxt/ui/components/DropdownMenu.vue";
 
 const props = defineProps<{ initials: string; user: HeaderUser | null }>();
 const menuItems = computed(() => [
@@ -13,8 +17,8 @@ const menuItems = computed(() => [
     },
   ],
   [
-    { label: "Profile", icon: "i-tabler-user", onSelect: () => router.visit("/profile") },
-    { label: "Sign out", icon: "i-tabler-logout", onSelect: () => router.visit("/logout") },
+    { label: "Profile", icon: IconUser, onSelect: () => router.visit("/profile") },
+    { label: "Sign out", icon: IconLogout, onSelect: () => router.visit("/logout") },
   ],
 ]);
 </script>

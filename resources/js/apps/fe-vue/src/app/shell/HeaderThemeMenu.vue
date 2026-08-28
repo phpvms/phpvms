@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { ThemeMode } from "./useHeaderTheme";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UDropdownMenu from "@nuxt/ui/components/DropdownMenu.vue";
 
 const props = defineProps<{ mode: ThemeMode }>();
 const emit = defineEmits<{ select: [mode: ThemeMode] }>();
