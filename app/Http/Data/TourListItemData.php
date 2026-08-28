@@ -8,7 +8,6 @@ use App\Features\Tour\Enums\TourStatus;
 use App\Features\Tour\Models\UserTour;
 use App\Models\Flight;
 use App\Models\FlightBundle;
-use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -42,12 +41,11 @@ final class TourListItemData extends Data
     public static function fromModel(FlightBundle $bundle, ?UserTour $userTour): self
     {
         $sequence = $bundle->tourLegSequence();
-        /** @var Collection<int, Flight> $flights */
         $flights = $sequence['flights'];
         $flights->loadMissing('airline');
 
         $flownFlightIds = [];
-        foreach ($userTour?->legs ?? [] as $leg) {
+        foreach ($userTour->legs ?? [] as $leg) {
             if (!empty($leg['filed_at'])) {
                 $flownFlightIds[$leg['flight_id']] = true;
             }
@@ -68,7 +66,7 @@ final class TourListItemData extends Data
                 ->values()
                 ->all(),
             status: $userTour?->status->value,
-            legsCompleted: $userTour?->legs_completed ?? 0,
+            legsCompleted: $userTour->legs_completed ?? 0,
             activeLegFlightId: $inProgress
                 ? $userTour->flight_id
                 : ($sequence['valid'] ? $flights->first()?->id : null),

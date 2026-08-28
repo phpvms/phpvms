@@ -17,10 +17,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Override;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -40,6 +42,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Subfleet> $subfleets
  * @property-read User|null $creator
  * @property-read bool $has_dates
+ * @property-read string|null $image_url
  * @property int|null $enabled_flights_count
  * @property int|null $disabled_flights_count
  */
@@ -100,6 +103,20 @@ class FlightBundle extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Same relation as the LogsActivity trait's, typed. The trait resolves the
+     * model through `determineActivityModel()`, which returns a bare `string`,
+     * so callers see `Model` and lose Activity's own accessors (`changes()`,
+     * `properties()`). Naming the class directly is what `config/activitylog.php`
+     * already pins `activity_model` to.
+     *
+     * @return MorphMany<Activity, $this>
+     */
+    public function activities(): MorphMany
+    {
+        return $this->morphMany(Activity::class, 'subject');
     }
 
     #[Scope]

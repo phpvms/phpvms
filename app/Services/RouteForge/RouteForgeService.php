@@ -194,7 +194,7 @@ final readonly class RouteForgeService
             // the column's NOT NULL default. Fall back to the batch-wide
             // type, then to the column's own default.
             if (blank($attrs['flight_type'] ?? null)) {
-                $attrs['flight_type'] = $input->flightType?->value ?? FlightType::SCHED_PAX->value;
+                $attrs['flight_type'] = $input->flightType->value ?? FlightType::SCHED_PAX->value;
             }
 
             $attrsList[] = $attrs;

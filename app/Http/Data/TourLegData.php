@@ -30,7 +30,7 @@ final class TourLegData extends Data
         return new self(
             flightId: $flight->id,
             routeLeg: $flight->route_leg,
-            ident: ($flight->airline?->code ?? '').$flight->flight_number,
+            ident: ($flight->airline->code ?? '').$flight->flight_number,
             dpt: $flight->dpt_airport_id,
             arr: $flight->arr_airport_id,
             flown: isset($flownFlightIds[$flight->id]),
