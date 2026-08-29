@@ -8,6 +8,7 @@ use App\Models\Asset;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /** A real 1x1 PNG, so the mime sniffer has actual bytes to read. */
@@ -508,4 +509,44 @@ it('lists by slot, type and source', function (): void {
         ->and($this->service->list('gauge', 'sound'))->toHaveCount(0)
         ->and($this->service->find('gauge', 'dial')?->key)->toBe('dial')
         ->and($this->service->find('gauge', 'missing'))->toBeNull();
+});
+
+/*
+ * urlsFor() -- the batched lookup HasAssets::preloadAssetUrls() calls to
+ * avoid one find() per model.
+ */
+
+it('resolves urls for every key in one query', function (): void {
+    $a = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+    $b = $this->service->storeContents(PNG_BYTES."\x00b", Asset::SLOT_AWARD, '2', storage: (string) config('filesystems.public_files'));
+    // Guard: the same key in a different slot must not leak into the map.
+    $this->service->storeContents(PNG_BYTES."\x00c", Asset::SLOT_RANK, '1', storage: (string) config('filesystems.public_files'));
+
+    DB::enableQueryLog();
+    $urls = $this->service->urlsFor(Asset::SLOT_AWARD, ['1', '2', '3']);
+    $assetQueries = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'assets'));
+    DB::disableQueryLog();
+
+    // '3' has no asset at all -- absent from the map, same as find() null.
+    expect($urls)->toBe([
+        '1' => $a->url(),
+        '2' => $b->url(),
+    ])
+        ->and($assetQueries->count())->toBe(1);
+});
+
+it('compares integer keys as strings, matching a string key stored the normal way', function (): void {
+    $asset = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '7', storage: (string) config('filesystems.public_files'));
+
+    expect($this->service->urlsFor(Asset::SLOT_AWARD, [7]))->toBe(['7' => $asset->url()]);
+});
+
+it('returns an empty map for no keys without querying', function (): void {
+    DB::enableQueryLog();
+    $urls = $this->service->urlsFor(Asset::SLOT_AWARD, []);
+    $assetQueries = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'assets'));
+    DB::disableQueryLog();
+
+    expect($urls)->toBe([])
+        ->and($assetQueries->count())->toBe(0);
 });

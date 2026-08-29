@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Features\Assets\AssetService;
+use App\Models\Asset;
 use App\Models\Award;
 use App\Models\User;
 use Igaster\LaravelTheme\Facades\Theme;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
@@ -109,4 +112,37 @@ it('hides the Edit button on the Blade profile of another pilot', function (): v
         ->get('/profile/'.$other->id)
         ->assertOk()
         ->assertDontSee('/profile/'.$other->id.'/edit', false);
+});
+
+/**
+ * Award::imageUrl() queries assets once per award through assetUrl() unless
+ * something preloads them first -- ProfileController::show() does, via
+ * Award::preloadAssetUrls(). This fails on the pre-fix controller, which
+ * issued one `assets` query per award (3 here) instead of the one preload
+ * query below.
+ */
+it('resolves several award badges with one asset query, not one per award', function (): void {
+    fakeAssetDisks();
+    $user = User::factory()->create();
+    $awards = Award::factory()->count(3)->create(['image_url' => null]);
+
+    foreach ($awards as $award) {
+        $user->awards()->attach($award);
+        app(AssetService::class)->storeContents(
+            ASSET_TEST_PNG."\x00".$award->id,
+            Asset::SLOT_AWARD,
+            (string) $award->id,
+            storage: (string) config('filesystems.public_files'),
+        );
+    }
+
+    DB::enableQueryLog();
+    $this->actingAs($user)->get('/profile/'.$user->id)->assertOk();
+    // The page also queries `assets` for branding and the airline logo --
+    // this narrows to the award badge lookup specifically, by its slot binding.
+    $awardAssetQueries = collect(DB::getQueryLog())
+        ->filter(fn (array $q): bool => str_contains($q['query'], 'assets') && in_array(Asset::SLOT_AWARD, $q['bindings'], true));
+    DB::disableQueryLog();
+
+    expect($awardAssetQueries)->toHaveCount(1);
 });

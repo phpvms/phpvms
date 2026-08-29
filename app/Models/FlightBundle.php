@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Enums\BundleType;
 use App\Observers\BundleObserver;
+use App\Traits\HasAssets;
 use Database\Factories\FlightBundleFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -49,6 +50,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 #[ObservedBy(BundleObserver::class)]
 class FlightBundle extends Model
 {
+    use HasAssets;
+
     /** @use HasFactory<FlightBundleFactory> */
     use HasFactory;
 
@@ -125,17 +128,23 @@ class FlightBundle extends Model
         return $query->where('visible', true);
     }
 
+    /** The bundle's hero image lives in the `flight-bundle` slot, keyed on the bundle id. */
+    public function assetSlot(): string
+    {
+        return Asset::SLOT_BUNDLE;
+    }
+
     /**
      * A browser-loadable URL for the bundle's hero image, or null.
      *
-     * A per-row lookup with an explicit string key, like HasAssets::assetUrl()
+     * A per-row lookup with an explicit string key, via {@see HasAssets::assetUrl()}
      * — NOT a hasOne on the integer id: `assets.key` is varchar, and Postgres
      * refuses `key IN (38, 39)` with integer bindings.
      */
     protected function imageUrl(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?string => Asset::getUrl(Asset::SLOT_BUNDLE, (string) $this->id),
+            get: fn (): ?string => $this->assetUrl(),
         );
     }
 

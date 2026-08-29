@@ -271,3 +271,32 @@ it('round-trips a description as plain text', function (): void {
 
     expect($imported->description)->toBe("Ten legs\nOne tour");
 });
+
+/*
+ * HasAssets cleanup -- deleted() hook in App\Traits\HasAssets
+ */
+
+it('deletes the badge asset and its file when the award is force-deleted', function (): void {
+    $award = Award::factory()->create(['image_url' => null]);
+    $asset = app(AssetService::class)->storeContents(ASSET_TEST_PNG, Asset::SLOT_AWARD, (string) $award->id, storage: (string) config('filesystems.public_files'));
+    awardPublicDisk()->assertExists($asset->path);
+
+    $award->forceDelete();
+
+    expect(Asset::query()->whereKey($asset->id)->exists())->toBeFalse();
+    awardPublicDisk()->assertMissing($asset->path);
+});
+
+it('keeps the badge asset and file when the award is only soft-deleted, and it still resolves after restore', function (): void {
+    $award = Award::factory()->create(['image_url' => null]);
+    $asset = app(AssetService::class)->storeContents(ASSET_TEST_PNG, Asset::SLOT_AWARD, (string) $award->id, storage: (string) config('filesystems.public_files'));
+
+    $award->delete();
+
+    expect(Asset::query()->whereKey($asset->id)->exists())->toBeTrue();
+    awardPublicDisk()->assertExists($asset->path);
+
+    $award->restore();
+
+    expect($award->image_url)->toBe($asset->fresh()->url());
+});

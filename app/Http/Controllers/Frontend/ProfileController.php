@@ -8,6 +8,7 @@ use App\Events\ProfileUpdated;
 use App\Features\Tour\Enums\TourStatus;
 use App\Http\Data\ProfileData;
 use App\Models\Airline;
+use App\Models\Award;
 use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
@@ -95,6 +96,11 @@ class ProfileController extends Controller
         // middleware (any pilot's profile is publicly viewable), so a guest
         // or another pilot never counts as the owner.
         $isOwnProfile = Auth::check() && Auth::id() === $user->id;
+
+        // One query for every award's badge instead of one per award — the
+        // SPA DTO and the Blade awards loop below both read from this same
+        // loaded collection, so they share the preload.
+        Award::preloadAssetUrls($user->awards);
 
         return response()->themed(
             'Profile',

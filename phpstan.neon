@@ -224,3 +224,15 @@ parameters:
         - identifier: staticMethod.notFound
           message: '#Call to an undefined static method Filament\\Pages\\Page(<[^>]+>)?::getFormContentComponent\(\)#'
           path: app/Filament/Concerns/ReversePrimaryButtons.php
+
+        # Every model using HasAssets today (Award, Rank, FlightBundle) also uses
+        # SoftDeletes, so PHPStan can prove the guard always passes. It is
+        # defensive on purpose: the trait has to stay correct on a model that
+        # does not soft-delete, where isForceDeleting() does not exist and the
+        # asset should be cleaned up on any delete. Dropping the guard would
+        # destroy the badge of a soft-deleted record an admin later restores.
+        # (Reported once per using class, test fixtures included, so the class
+        # is not named -- the path is what keeps this narrow.)
+        - identifier: function.alreadyNarrowedType
+          message: '#method_exists\(\) with .+ and ''isForceDeleting''#'
+          path: app/Traits/HasAssets.php

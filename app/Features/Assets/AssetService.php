@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Features\Assets;
 
 use App\Models\Asset;
+use App\Models\FlightBundle;
 use finfo;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -430,5 +431,39 @@ class AssetService
     public function find(string $slot, string $key): ?Asset
     {
         return Asset::query()->slot($slot)->where('key', $key)->first();
+    }
+
+    /**
+     * URLs for every asset at `$slot` whose key is in `$keys`, keyed by that
+     * key — one `whereIn` query instead of one {@see find()} per key.
+     *
+     * Keys are cast to strings before the query and before indexing the
+     * result, so the comparison stays varchar-to-varchar on every driver
+     * regardless of what a caller passes in: `assets.key` is a varchar, and
+     * an int compared bare is what let this app's Postgres/MySQL divergence
+     * bite before (see {@see FlightBundle::imageUrl()}).
+     *
+     * A key with no asset, or whose asset has no reachable {@see Asset::url()}
+     * (an unreachable disk), is simply absent from the map — the same "not
+     * found" a caller already gets from {@see find()}.
+     *
+     * @param  array<int, string|int> $keys
+     * @return array<string, string>  url by key
+     */
+    public function urlsFor(string $slot, array $keys): array
+    {
+        if ($keys === []) {
+            return [];
+        }
+
+        $keys = array_map(strval(...), $keys);
+
+        return Asset::query()
+            ->slot($slot)
+            ->whereIn('key', $keys)
+            ->get()
+            ->mapWithKeys(fn (Asset $asset): array => [$asset->key => $asset->url()])
+            ->filter(fn (?string $url): bool => $url !== null)
+            ->all();
     }
 }
