@@ -49,7 +49,11 @@ it('renders the awards table with one asset query per row instead of one per acc
         ->assertSuccessful()
         ->assertCanSeeTableRecords($awards);
 
-    $assetQueries = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'select * from "assets"'));
+    // unquoteSql(): MySQL emits backticks where SQLite and PostgreSQL emit
+    // double quotes, so matching the quoted table name directly passes on two
+    // drivers and silently counts zero on the third.
+    $assetQueries = collect(DB::getQueryLog())
+        ->filter(fn (array $q): bool => str_contains(unquoteSql($q['query']), 'select * from assets'));
     DB::disableQueryLog();
 
     // Bounded by row count, not by how many times Filament reads a row's
