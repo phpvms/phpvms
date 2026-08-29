@@ -27,6 +27,7 @@ return [
     'award_imported'                   => "Imported ':name' (inactive — review and enable it)",
     'award_icon_placeholder'           => 'Search icons…',
     'award_icon_browse'                => 'Browse the Phosphor icon set',
+    'award_image_saved'                => 'Award image saved',
     'award_type'                       => 'Award type',
     'award_type_legacy'                => 'Legacy script',
     'award_type_rules'                 => 'Rules',

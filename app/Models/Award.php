@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\AwardTrigger;
+use App\Http\Resources\AwardResource;
+use App\Traits\HasAssets;
 use Database\Factories\AwardFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -64,6 +66,8 @@ use Override;
  */
 class Award extends Model
 {
+    use HasAssets;
+
     /** @use HasFactory<AwardFactory> */
     use HasFactory;
 
@@ -193,20 +197,100 @@ class Award extends Model
             ->all();
     }
 
+    /**
+     * Descriptions are plain text. Normalising on write rather than on render
+     * means every path stores the same thing — the admin form, an imported
+     * document (`AwardExport::fromJson()`), a seeder — and no consumer has to
+     * decide whether what it holds is markup.
+     *
+     * The column held HTML while the field was a `RichEditor`; existing rows
+     * are converted by the `award_descriptions_to_plain_text` data migration,
+     * and this keeps any that arrive later from an old export in line.
+     */
+    public function description(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => self::toPlainText($value),
+        );
+    }
+
+    /**
+     * Flatten HTML to plain text, preserving line structure.
+     *
+     * Block boundaries become newlines *before* the tags come off — a bare
+     * `strip_tags()` on `<p>one</p><p>two</p>` yields "onetwo", running two
+     * sentences together. Entities are decoded after, so `&amp;` reads as `&`
+     * rather than surviving as an escape in text nobody will unescape again.
+     * Plain text in already passes through unchanged.
+     */
+    public static function toPlainText(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $text = preg_replace('#<(?:br\s*/?|/p|/div|/li|/h[1-6])\s*>#i', "\n", $value) ?? $value;
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // Non-breaking spaces come back from entity decoding as U+00A0, which
+        // is not whitespace to trim(); a description of "&nbsp;" is empty.
+        $text = str_replace("\xC2\xA0", ' ', $text);
+        $text = preg_replace("/[ \t]+\n/", "\n", $text) ?? $text;
+        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+
+        return trim($text);
+    }
+
+    /** The award badge lives in the `award` slot, keyed on the award id. */
+    public function assetSlot(): string
+    {
+        return Asset::SLOT_AWARD;
+    }
+
+    /**
+     * The badge's URL: the award's asset when it has one, falling back to the
+     * legacy `image_url` column — mirroring {@see Rank::imageUrl()}.
+     *
+     * The column is only reached on an install whose data migration could not
+     * move the value — a file that had already been deleted, or a value that
+     * was neither a hosted path nor an absolute URL. Rendering the old value
+     * there is better than rendering nothing. A hosted path (the `awards/`
+     * prefix the upload field always wrote) still resolves through the public
+     * disk, exactly as the retired accessor did; anything else is returned
+     * verbatim.
+     */
+    public function imageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function (?string $value): ?string {
+                $url = $this->assetUrl();
+
+                if ($url !== null) {
+                    return $url;
+                }
+
+                if (!filled($value)) {
+                    return null;
+                }
+
+                if (str_starts_with($value, 'awards/')) {
+                    return Storage::disk(config('filesystems.public_files'))->url($value);
+                }
+
+                return $value;
+            },
+        );
+    }
+
+    /**
+     * Alias kept for the consumers that already read `image` rather than
+     * `image_url` ({@see AwardResource}, the awards relation manager's table
+     * column) — same resolution, just a second name.
+     */
     public function image(): Attribute
     {
         return Attribute::make(
-            get: function ($_, array $attrs) {
-                if (array_key_exists('image_url', $attrs)) {
-                    if (str_starts_with((string) $attrs['image_url'], 'awards/')) {
-                        return Storage::disk(config('filesystems.public_files'))->url($attrs['image_url']);
-                    }
-
-                    return $attrs['image_url'];
-                }
-
-                return null;
-            }
+            get: fn (): ?string => $this->image_url,
         );
     }
 
