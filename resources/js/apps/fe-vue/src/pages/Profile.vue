@@ -56,14 +56,22 @@ const initials = computed(() =>
           <UBadge v-if="profile.airline" color="neutral" variant="subtle">
             {{ profile.airline.icao }} · {{ profile.airline.name }}
           </UBadge>
-          <UBadge v-if="profile.rank" color="primary" variant="subtle">{{ profile.rank.name }}</UBadge>
+          <UBadge v-if="profile.rank" color="primary" variant="subtle">{{
+            profile.rank.name
+          }}</UBadge>
           <UBadge color="neutral" variant="subtle">{{ profile.state.label }}</UBadge>
           <span class="since">Member since {{ memberYear }}</span>
         </div>
       </template>
 
       <template v-if="profile.isOwnProfile" #links>
-        <UButton v-if="profile.acars" href="/profile/acars" color="neutral" variant="outline" size="sm">
+        <UButton
+          v-if="profile.acars"
+          href="/profile/acars"
+          color="neutral"
+          variant="outline"
+          size="sm"
+        >
           ACARS config
         </UButton>
         <UButton :to="`/profile/${profile.id}/edit`" color="neutral" variant="outline" size="sm">

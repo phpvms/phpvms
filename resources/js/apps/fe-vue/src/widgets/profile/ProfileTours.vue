@@ -5,7 +5,9 @@ defineProps<{ profile: App.Http.Data.ProfileData }>();
 const failedImages = shallowReactive(new Set<number>());
 
 function formatCompletedAt(value: string | null): string | null {
-  return value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value)) : null;
+  return value
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value))
+    : null;
 }
 </script>
 
