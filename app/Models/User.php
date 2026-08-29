@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\JournalType;
 use App\Enums\UserState;
+use App\Features\Tour\Models\UserTour;
 use App\Observers\UserObserver;
 use App\Services\PermissionRegistry;
 use App\Traits\JournalTrait;
@@ -106,6 +107,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $roles_count
  * @property-read Collection<int, Permission> $teams
  * @property-read int|null $teams_count
+ * @property-read Collection<int, UserTour> $tours
+ * @property-read int|null $tours_count
  * @property-read Collection<int, Typerating> $typeratings
  * @property-read int|null $typeratings_count
  * @property mixed $tz
@@ -485,6 +488,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function pireps(): HasMany
     {
         return $this->hasMany(Pirep::class, 'user_id');
+    }
+
+    /**
+     * Every run this pilot has ever started through a tour bundle, in any
+     * state. Rows outlive the bundle and the flights they point at — see the
+     * `user_tours` create migration — so this is the pilot's tour history, not
+     * a list of things still in play.
+     *
+     * @return HasMany<UserTour, $this>
+     */
+    public function tours(): HasMany
+    {
+        return $this->hasMany(UserTour::class, 'user_id');
     }
 
     public function rank(): BelongsTo
