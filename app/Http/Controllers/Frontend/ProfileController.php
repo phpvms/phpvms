@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Events\ProfileUpdated;
+use App\Features\Tour\Enums\TourStatus;
 use App\Http\Data\ProfileData;
 use App\Models\Airline;
 use App\Models\User;
@@ -71,6 +72,12 @@ class ProfileController extends Controller
             'home_airport',
             'last_pirep',
             'rank',
+            // `bundle` comes along because both render paths reach for the
+            // bundle image. The run's own columns carry everything else --
+            // a bundle that has since been deleted still renders.
+            'tours' => fn ($query) => $query->with('bundle')
+                ->where('status', TourStatus::Completed)
+                ->orderByDesc('completed_at'),
             'typeratings',
         ];
         /** @var ?User $user */
@@ -84,6 +91,11 @@ class ProfileController extends Controller
 
         $userFields = $this->userSvc->getUserFields($user, true);
 
+        // Server-decided, never client-supplied: this route has no `auth`
+        // middleware (any pilot's profile is publicly viewable), so a guest
+        // or another pilot never counts as the owner.
+        $isOwnProfile = Auth::check() && Auth::id() === $user->id;
+
         return response()->themed(
             'Profile',
             'profile.index',
@@ -92,7 +104,9 @@ class ProfileController extends Controller
                 'userFields' => $userFields,
                 'acars'      => $this->acarsEnabled(),
             ],
-            spa: fn (): array => ['profile' => ProfileData::fromModel($user, $userFields, $this->acarsEnabled())],
+            spa: fn (): array => [
+                'profile' => ProfileData::fromModel($user, $userFields, $this->acarsEnabled(), $isOwnProfile),
+            ],
         );
     }
 

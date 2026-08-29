@@ -311,7 +311,17 @@ state: App.Http.Data.StateBadgeData,
 awards: App.Http.Data.AwardData[],
 typeRatings: App.Http.Data.TypeRatingData[],
 fields: App.Http.Data.UserFieldData[],
+tours: App.Http.Data.ProfileTourData[],
 acars: boolean,
+isOwnProfile: boolean,
+};
+export type ProfileTourData = {
+id: string,
+name: string,
+description: string | null,
+image: string | null,
+legs: number,
+completedAt: string | null,
 };
 export type RankData = {
 name: string,

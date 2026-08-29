@@ -8,6 +8,7 @@ return [
     'newapikey'               => 'New API Key',
     'your-profile'            => 'Your Profile',
     'your-awards'             => 'Your Awards',
+    'your-tours'              => 'Your Tours',
     'apikey'                  => 'API Key',
     'apikey-show'             => 'Show key',
     'dontshare'               => "don't share this!",
