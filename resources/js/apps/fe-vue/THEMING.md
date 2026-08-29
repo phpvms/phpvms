@@ -286,14 +286,14 @@ foundation shades.
 | `.pv-header-duty`          | Pilot duty state                                                                                        |
 | `.pv-header-metar`         | Header METAR state and observation                                                                      |
 | `.pv-header-clocks`        | UTC and station-local clocks                                                                            |
-| `.pv-header-theme`         | Header theme-mode control                                                                               |
-| `.pv-header-account`       | Authenticated pilot account control                                                                     |
 | `.pv-header-status-drawer` | Mobile dispatch-status drawer                                                                           |
+| `.pv-pilot-status`         | Sidebar pilot account and theme menu trigger                                                            |
 | `.pv-dashboard`            | Dashboard workspace                                                                                     |
 | `.pv-dashboard-toolbar`    | Dashboard title and Customize-mode toolbar, including Add widget, Reset, and Customize or Done controls |
 | `.pv-dashboard-pilot`      | Dashboard pilot summary                                                                                 |
 | `.pv-dashboard-board`      | Dashboard widget board                                                                                  |
 | `.pv-flight-info`          | Inline flight callsign and airport pair                                                                 |
+| `.pv-tours`                | Pilot tours page                                                                                        |
 | `.pv-aircraft-selector`    | Flight aircraft selection card                                                                          |
 | `.pv-profile`              | Pilot profile page                                                                                      |
 | `.pv-pirep-detail`         | PIREP detail view                                                                                       |

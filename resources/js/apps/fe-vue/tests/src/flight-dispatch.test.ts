@@ -106,7 +106,7 @@ function dispatchPayload(selection: App.Http.Data.BidSelectionData | null = null
 
 function selection(): App.Http.Data.BidSelectionData {
   return {
-    bid: { id: 9, flightId: summary.id, aircraftId: aircraft.id },
+    bid: { id: 9, flightId: summary.id, aircraftId: aircraft.id, userTourId: null },
     flight: {
       ...flight,
       summary: { ...summary, bidId: 9, primaryAction: "overview" },

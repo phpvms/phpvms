@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import { computed, shallowRef } from "vue";
-import HeaderAccountMenu from "./HeaderAccountMenu.vue";
 import HeaderAirline from "./HeaderAirline.vue";
 import HeaderClocks from "./HeaderClocks.vue";
 import HeaderDuty from "./HeaderDuty.vue";
 import HeaderMetar from "./HeaderMetar.vue";
 import HeaderSector from "./HeaderSector.vue";
 import HeaderStatusDrawer from "./HeaderStatusDrawer.vue";
-import HeaderThemeMenu from "./HeaderThemeMenu.vue";
 import type { DutyState } from "./headerTypes";
 import { useAppChrome } from "./useAppChrome";
 import { useHeaderClocks } from "./useHeaderClocks";
-import { useHeaderTheme } from "./useHeaderTheme";
 import { useMetar } from "./useMetar";
+import UButton from "@nuxt/ui/components/Button.vue";
 
-const { appName, initials, pilotChrome, user } = useAppChrome();
+const { appName, pilotChrome, user } = useAppChrome();
 const station = computed(() => pilotChrome.value?.station ?? null);
 const duty = computed<DutyState>(
   () => pilotChrome.value?.duty ?? { state: "off_duty", label: "Off duty", color: "neutral" },
@@ -22,7 +20,6 @@ const duty = computed<DutyState>(
 const sector = computed(() => pilotChrome.value?.activeSector ?? null);
 const { state: metar, retry } = useMetar(station);
 const { local, timezone, utc } = useHeaderClocks(station);
-const { mode, select } = useHeaderTheme();
 const isStatusDrawerOpen = shallowRef(false);
 </script>
 
@@ -46,8 +43,6 @@ const isStatusDrawerOpen = shallowRef(false);
         >
           Status
         </UButton>
-        <HeaderThemeMenu :mode="mode" @select="select" />
-        <HeaderAccountMenu :initials :user />
       </div>
     </div>
 
@@ -92,7 +87,6 @@ const isStatusDrawerOpen = shallowRef(false);
     display: flex;
     min-width: 0;
     align-items: center;
-    gap: 2px;
     margin-left: auto;
   }
   .mobile-sector,
@@ -173,7 +167,6 @@ const isStatusDrawerOpen = shallowRef(false);
     }
     .primary-actions {
       flex: 0 0 auto;
-      gap: 0;
     }
     .pv-header-status-trigger:focus-visible {
       outline: 2px solid var(--pv-accent);

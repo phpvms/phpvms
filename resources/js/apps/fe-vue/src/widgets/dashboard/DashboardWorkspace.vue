@@ -6,6 +6,8 @@ import DashboardBoard from "./DashboardBoard.vue";
 import DashboardPilotHeader from "./DashboardPilotHeader.vue";
 import DashboardToolbar from "./DashboardToolbar.vue";
 import { useDashboardLayout } from "./useDashboardLayout";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 type DashboardPageProps = App.Http.Data.DashboardData &
   Record<string, unknown> & {

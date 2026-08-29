@@ -264,21 +264,39 @@ test('bid with aircraft', function (): void {
         ->and($flight->has_bid)->toBeTrue()
         ->and($aircraft->bid->count())->toEqual(1);
 
-    // Expect aircraft to have a bid
-
-    // Now add another bid on another flight with the same aircraft, should throw an exception
+    // Another bid on another flight with the same aircraft is the pilot's own
+    // reservation, so it's allowed
     $flight2 = Flight::factory()->hasAttached($subfleet)->create([
         'airline_id' => $user->airline_id,
     ]);
-
-    $bid2 = $bidSvc->addBid($flight2, $user, $aircraft);
-
-    // Remove the first one and try again
-    $bidSvc->removeBid($flight, $user);
 
     $bid2 = $bidSvc->addBid($flight2, $user, $aircraft);
     expect($bid2->user_id)->toEqual($user->id)
         ->and($bid2->flight_id)->toEqual($flight2->id)
         ->and($bid2->aircraft_id)->toEqual($aircraft->id)
         ->and($flight2->has_bid)->toBeTrue();
+});
+
+test('bid with aircraft held by another user', function (): void {
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
+    updateSetting('bids.allow_multiple_bids', true);
+    updateSetting('bids.block_aircraft', true);
+
+    $user = User::factory()->create();
+    $other_user = User::factory()->create();
+    $bidSvc = app(BidService::class);
+
+    $subfleet = Subfleet::factory()->hasAircraft(10)->create();
+    $aircraft = $subfleet->aircraft->first();
+
+    $other_flight = Flight::factory()->hasAttached($subfleet)->create([
+        'airline_id' => $other_user->airline_id,
+    ]);
+    $flight = Flight::factory()->hasAttached($subfleet)->create([
+        'airline_id' => $user->airline_id,
+    ]);
+
+    $bidSvc->addBid($other_flight, $other_user, $aircraft);
+    $bidSvc->addBid($flight, $user, $aircraft);
 })->throws(BidExistsForAircraft::class);

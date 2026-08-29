@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import UUser from "@nuxt/ui/components/User.vue";
 
 interface PilotIdentUser {
   ident: string | null;

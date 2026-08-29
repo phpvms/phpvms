@@ -65,6 +65,9 @@ export function FlightNumberStrategyPicker() {
   const strat = f.flight_number_strategy;
   const returnsOff = !f.create_returns;
   const currentBase = strat.kind === "manual" ? 100 : strat.base;
+  // Tour topology pins base_leg to 1 (see TopologyPicker.applyTopology); the
+  // input stays visible so the value is legible, but not editable.
+  const isTour = f.topology === "tour";
 
   function handleKindChange(e: Event): void {
     const next = (e.currentTarget as HTMLSelectElement).value as StrategyKind;
@@ -151,7 +154,11 @@ export function FlightNumberStrategyPicker() {
         <Field
           label="Base leg number"
           htmlFor="rf-fn-base-leg"
-          hint="First row gets this leg; subsequent rows increment by one."
+          hint={
+            isTour
+              ? "Tours always start at leg 1 — a tour bundle is bid as a contiguous 1..N chain."
+              : "First row gets this leg; subsequent rows increment by one."
+          }
         >
           <input
             id="rf-fn-base-leg"
@@ -160,6 +167,7 @@ export function FlightNumberStrategyPicker() {
             step={1}
             class={INPUT_CLASS}
             value={strat.base_leg}
+            disabled={isTour}
             onInput={handleBaseLegChange}
           />
         </Field>

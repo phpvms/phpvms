@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import UUser from "@nuxt/ui/components/User.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -7,8 +8,15 @@ const props = withDefaults(
     aircraft?: string | null;
     href?: string;
     size?: "md" | "lg";
+    /**
+     * Put the route on its own line under the ident, and let a long ident
+     * ellipsize rather than hold its full width. Off by default — on the
+     * wide OFP pages the two read as one headline; inside a ~360px card
+     * they don't fit side by side (AP9100/C.Est./L.2 alone is 163px).
+     */
+    stacked?: boolean;
   }>(),
-  { aircraft: null, size: "md" },
+  { aircraft: null, size: "md", stacked: false },
 );
 
 const airlineMark = computed(
@@ -26,13 +34,18 @@ const avatar = computed(() => ({
 <template>
   <UUser
     class="pv-flight-info flight-ident-header"
-    :class="{ 'flight-ident-header--lg': size === 'lg' }"
+    :class="{
+      'flight-ident-header--lg': size === 'lg',
+      'flight-ident-header--stacked': stacked,
+    }"
     :to="href"
     :size="userSize"
     :avatar="avatar"
     :ui="{
       wrapper: 'min-w-0',
-      name: 'flex min-w-0 items-baseline gap-2 leading-tight',
+      name: stacked
+        ? 'flex min-w-0 flex-col items-start leading-tight'
+        : 'flex min-w-0 items-baseline gap-2 leading-tight',
       description: 'mt-0.5 truncate text-ink-dim',
     }"
   >
@@ -62,6 +75,20 @@ const avatar = computed(() => ({
   color: var(--pv-ink);
   font-family: var(--pv-font-mono);
   font-weight: 700;
+}
+.flight-ident-header--stacked {
+  min-width: 0;
+}
+.flight-ident-header--stacked .flight-ident-header__callsign {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.flight-ident-header--stacked .flight-ident-header__route {
+  margin-top: 2px;
+  max-width: 100%;
+  font-weight: 500;
 }
 .flight-ident-header__route {
   display: inline-flex;

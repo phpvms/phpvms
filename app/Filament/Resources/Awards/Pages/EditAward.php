@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Awards\Pages;
 
 use App\Filament\Actions\EditDetailsAction;
+use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Forms\Components\AssetImagePicker;
 use App\Filament\Resources\Awards\AwardResource;
 use App\Filament\Resources\Awards\Schemas\AwardForm;
+use App\Models\Asset;
 use App\Models\Award;
 use App\Models\AwardRule;
 use App\Models\User;
@@ -39,9 +42,39 @@ use Override;
  */
 class EditAward extends EditRecord
 {
+    use AutosavesFields;
     use ReversePrimaryButtons;
 
     protected static string $resource = AwardResource::class;
+
+    /**
+     * Only the image control autosaves; the rest of the drawer saves on
+     * submit. The picker wires itself through its own afterStateUpdated
+     * hook, mounted inside the drawer rather than the page form — see
+     * {@see AutosavesFields::autosaveSchema()}.
+     *
+     * @return list<string>
+     */
+    protected function autosaveKeys(): array
+    {
+        return AssetImagePicker::stateKeys(Asset::SLOT_AWARD);
+    }
+
+    protected function persistAutosavedField(string $key, mixed $value): void
+    {
+        AssetImagePicker::persist(
+            Asset::SLOT_AWARD,
+            $this->getRecord()->getKey(),
+            AwardForm::imageDisk(),
+            $key,
+            $value,
+        );
+    }
+
+    protected function autosaveNotificationTitle(): string
+    {
+        return __('filament.award_image_saved');
+    }
 
     #[Override]
     public function content(Schema $schema): Schema
@@ -70,25 +103,8 @@ class EditAward extends EditRecord
             ->extraModalFooterActions([
                 DeleteAction::make()->cancelParentActions(),
             ])
-            ->mutateRecordDataUsing(function (array $data): array {
-                $data = AwardForm::injectTypeIntoFillData($data);
-
-                if (str_starts_with((string) ($data['image_url'] ?? ''), 'awards/')) {
-                    $data['image_file'] = $data['image_url'];
-                    unset($data['image_url']);
-                }
-
-                return $data;
-            })
-            ->mutateDataUsing(function (array $data): array {
-                $data = AwardForm::mutateTypeFields($data);
-
-                if (!empty($data['image_file'])) {
-                    $data['image_url'] = $data['image_file'];
-                }
-
-                return $data;
-            })
+            ->mutateRecordDataUsing(fn (array $data): array => AwardForm::injectTypeIntoFillData($data))
+            ->mutateDataUsing(fn (array $data): array => AwardForm::mutateTypeFields($data))
             ->after(function (Award $record): void {
                 // Switching to legacy retires the ruleset row (and its fact
                 // pivot) — the two configurations are mutually exclusive.

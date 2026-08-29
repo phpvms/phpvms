@@ -16,6 +16,7 @@ return [
     'nav_section'   => 'Workspace',
     'nav_flights'   => 'Flights',
     'nav_bids'      => 'My Bids',
+    'nav_tours'     => 'Tours',
     'nav_logbook'   => 'Logbook',
     'on_duty'       => 'On duty',
     'role_pilot'    => 'Pilot',
@@ -25,6 +26,14 @@ return [
     'search_placeholder' => 'Search flights, airports, PIREPs…',
     'toggle_theme'       => 'Toggle theme',
     'notifications'      => 'Notifications',
+
+    // Sidebar account menu
+    'sign_in'     => 'Sign in',
+    'sign_out'    => 'Sign out',
+    'theme'       => 'Theme',
+    'theme_light' => 'Light',
+    'theme_dark'  => 'Dark',
+    'theme_auto'  => 'Auto',
 
     // Dashboard chrome
     'customize'          => 'Customize',

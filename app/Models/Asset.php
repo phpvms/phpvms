@@ -107,6 +107,12 @@ class Asset extends Model
     /** A rank's badge, keyed on the rank id. */
     public const SLOT_RANK = 'rank';
 
+    /** A flight bundle's hero image (tours page), keyed on the bundle id. */
+    public const SLOT_BUNDLE = 'flight-bundle';
+
+    /** An award's badge, keyed on the award id. */
+    public const SLOT_AWARD = 'award';
+
     /**
      * A user's own images — today just the avatar. Keyed on the user id, not on
      * the literal name of the image: `(slot, key)` is unique, so a flat
@@ -145,12 +151,22 @@ class Asset extends Model
 
     protected static function booted(): void
     {
+        // AssetService::find() memoises per (slot, key) for the life of a
+        // request. Both hooks fire for a write made through the service (its
+        // store()/storeContents()/storeLink()/adopt() all persist through
+        // Eloquent) and for one made directly against the model, so either
+        // route sees the memo cleared before the next find().
+        static::saved(function (self $asset): void {
+            app(AssetService::class)->forgetMemo($asset->slot, $asset->key);
+        });
+
         // The file IS the asset. Leaving it behind orphans bytes nothing owns —
         // and on a disk with a URL, bytes that are still reachable.
-        //
-        // A link asset owns no bytes, so there is nothing to delete and its
-        // `path` is not a path.
         static::deleted(function (self $asset): void {
+            app(AssetService::class)->forgetMemo($asset->slot, $asset->key);
+
+            // A link asset owns no bytes, so there is nothing to delete and its
+            // `path` is not a path.
             if ($asset->isLink()) {
                 return;
             }

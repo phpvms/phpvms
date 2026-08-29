@@ -5,6 +5,8 @@ import AssignmentDrawer from "@/components/assignments/AssignmentDrawer.vue";
 import DispatchFilters from "@/components/flights/DispatchFilters.vue";
 import FlightManifest from "@/components/flights/FlightManifest.vue";
 import type { FlightFilterOptions, FlightFilters, FlightPage } from "@/components/flights/types";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 const props = defineProps<{
   flights: App.Http.Data.FlightListItemData[];

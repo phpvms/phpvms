@@ -7,9 +7,11 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Enums\AircraftState;
 use App\Enums\AircraftStatus;
+use App\Enums\BundleType;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
+use App\Features\Tour\TourService;
 use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Flight;
@@ -150,10 +152,21 @@ class BidService extends Service
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null): Bid
     {
+        // A tour is bid as a unit, so the whole chain is created at once and the
+        // bid handed back is still this flight's. Resolved from the container
+        // rather than injected: TourService depends on this service.
+        if ($flight->bundle?->type === BundleType::Tour) {
+            $bid = app(TourService::class)->start($flight, $user, $aircraft);
+
+            $flight->refresh();
+
+            return $this->getBid($user, $bid->id) ?? $bid;
+        }
+
         $bid = DB::transaction(function () use ($flight, $user, $aircraft): Bid {
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
             $lockedFlight = Flight::query()->whereKey($flight->id)->lockForUpdate()->firstOrFail();
-            $lockedAircraft = $aircraft === null
+            $lockedAircraft = !$aircraft instanceof Aircraft
                 ? null
                 : Aircraft::query()->whereKey($aircraft->id)->lockForUpdate()->firstOrFail();
 
@@ -291,6 +304,10 @@ class BidService extends Service
 
     public function removeBidsForUser(User $user): void
     {
+        // The pilot is going away, so their live tours end rather than sitting
+        // at in_progress with no bids left. This drops the tour bids too.
+        app(TourService::class)->cancelLiveToursFor($user);
+
         foreach (Bid::query()->where('user_id', $user->id)->with('flight')->get() as $bid) {
             if ($bid->flight) {
                 $this->removeBid($bid->flight, $user);
@@ -314,7 +331,11 @@ class BidService extends Service
         $this->removeBid($flight, $pirep->user);
     }
 
-    private function assertFlightMayBeBid(Flight $flight, User $user): void
+    /**
+     * Public so the tour path can run the identical guard against leg 1 rather
+     * than reimplementing it. Not part of the ordinary bid API.
+     */
+    public function assertFlightMayBeBid(Flight $flight, User $user): void
     {
         if ((bool) setting('pilots.restrict_to_company', false)
             && $flight->airline_id !== $user->airline_id) {
@@ -332,10 +353,14 @@ class BidService extends Service
 
     }
 
-    private function assertAircraftMayBeBid(Flight $flight, User $user, Aircraft $aircraft): void
+    /** Public for the same reason as assertFlightMayBeBid(). */
+    public function assertAircraftMayBeBid(Flight $flight, User $user, Aircraft $aircraft): void
     {
         if ((bool) setting('bids.block_aircraft', false)
-            && Bid::query()->where('aircraft_id', $aircraft->id)->exists()) {
+            && Bid::query()
+                ->where('aircraft_id', $aircraft->id)
+                ->where('user_id', '!=', $user->id)
+                ->exists()) {
             throw new BidExistsForAircraft($aircraft);
         }
 
@@ -358,7 +383,8 @@ class BidService extends Service
         ]);
     }
 
-    private function recomputeFlightBidState(Flight $flight): void
+    /** Public so the tour path can settle `has_bid` across all N legs it creates. */
+    public function recomputeFlightBidState(Flight $flight): void
     {
         $hasBid = Bid::query()->where('flight_id', $flight->id)->exists();
         if ($flight->has_bid !== $hasBid) {

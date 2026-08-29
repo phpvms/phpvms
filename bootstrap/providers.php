@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
@@ -23,6 +24,11 @@ return [
 
     AddonServiceProvider::class,
     PassportServiceProvider::class,
+
+    // Hooks the tour slice to the PIREP lifecycle; event discovery does not
+    // reach app/Features, and the deletion hook is a model event.
+    TourServiceProvider::class,
+
     AdminPanelProvider::class,
     SystemPanelProvider::class,
 

@@ -2,6 +2,34 @@
 import { computed, reactive } from "vue";
 import { useAppChrome } from "@/app/shell/useAppChrome";
 import PilotIdentHeader from "../pilots/PilotIdentHeader.vue";
+import IconAlertCircle from "~icons/tabler/alert-circle";
+import IconBroadcast from "~icons/tabler/broadcast";
+import IconCalendar from "~icons/tabler/calendar";
+import IconClipboardText from "~icons/tabler/clipboard-text";
+import IconClock from "~icons/tabler/clock";
+import IconClockHour4 from "~icons/tabler/clock-hour-4";
+import IconCompass from "~icons/tabler/compass";
+import IconFileDescription from "~icons/tabler/file-description";
+import IconGasStation from "~icons/tabler/gas-station";
+import IconGauge from "~icons/tabler/gauge";
+import IconListDetails from "~icons/tabler/list-details";
+import IconMap2 from "~icons/tabler/map-2";
+import IconPercentage from "~icons/tabler/percentage";
+import IconPlaneArrival from "~icons/tabler/plane-arrival";
+import IconPlaneDeparture from "~icons/tabler/plane-departure";
+import IconPlaneInflight from "~icons/tabler/plane-inflight";
+import IconPlaneTilt from "~icons/tabler/plane-tilt";
+import IconRoute from "~icons/tabler/route";
+import IconRuler from "~icons/tabler/ruler";
+import IconStairs from "~icons/tabler/stairs";
+import IconWorld from "~icons/tabler/world";
+import UFormField from "@nuxt/ui/components/FormField.vue";
+import UInput from "@nuxt/ui/components/Input.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
+import UPageGrid from "@nuxt/ui/components/PageGrid.vue";
+import USelect from "@nuxt/ui/components/Select.vue";
+import USeparator from "@nuxt/ui/components/Separator.vue";
+import UTextarea from "@nuxt/ui/components/Textarea.vue";
 
 type ProviderFieldValue = string | number | null;
 export type SimBriefEditableOverrides = Record<string, ProviderFieldValue>;
@@ -171,19 +199,19 @@ defineExpose({ generate });
       <UPageGrid class="gap-4">
         <PilotIdentHeader v-if="user" class="sm:col-span-2 lg:col-span-3" :user="user" />
 
-        <USeparator class="sm:col-span-2 lg:col-span-3" decorative="true" />
+        <USeparator class="sm:col-span-2 lg:col-span-3" decorative />
 
         <UFormField label="ATC callsign">
           <USelect
             v-if="planning.callsignEditable"
             v-model="fields.callsign"
             name="callsign"
-            icon="i-tabler-broadcast"
+            :icon="IconBroadcast"
             :items="callsignOptions"
           />
           <UInput
             v-else
-            icon="i-tabler-broadcast"
+            :icon="IconBroadcast"
             variant="subtle"
             :model-value="fields.callsign"
             disabled
@@ -191,27 +219,27 @@ defineExpose({ generate });
         </UFormField>
         <UFormField label="Departure airport">
           <UInput
-            icon="i-tabler-plane-departure"
+            :icon="IconPlaneDeparture"
             variant="subtle"
-            :model-value="planning.providerFields.orig ?? ''"
+            :model-value="String(planning.providerFields.orig ?? '')"
             disabled
           />
         </UFormField>
         <UFormField label="Arrival airport">
           <UInput
-            icon="i-tabler-plane-arrival"
+            :icon="IconPlaneArrival"
             variant="subtle"
-            :model-value="planning.providerFields.dest ?? ''"
+            :model-value="String(planning.providerFields.dest ?? '')"
             disabled
           />
         </UFormField>
         <UFormField label="Alternate airport">
-          <UInput v-model="fields.altn" name="altn" icon="i-tabler-plane-tilt" maxlength="8" />
+          <UInput v-model="fields.altn" name="altn" :icon="IconPlaneTilt" maxlength="8" />
         </UFormField>
 
         <UFormField label="Scheduled departure time (UTC)">
           <UInput
-            icon="i-tabler-clock"
+            :icon="IconClock"
             variant="subtle"
             :model-value="planning.flight.scheduledDeparture ?? ''"
             disabled
@@ -219,7 +247,7 @@ defineExpose({ generate });
         </UFormField>
         <UFormField label="Estimated departure time (UTC)">
           <UInput
-            icon="i-tabler-clock-hour-4"
+            :icon="IconClockHour4"
             variant="subtle"
             :model-value="departureTiming.etd"
             disabled
@@ -227,7 +255,7 @@ defineExpose({ generate });
         </UFormField>
         <UFormField label="Date of flight (UTC)">
           <UInput
-            icon="i-tabler-calendar"
+            :icon="IconCalendar"
             variant="subtle"
             :model-value="departureTiming.date"
             disabled
@@ -235,13 +263,7 @@ defineExpose({ generate });
         </UFormField>
 
         <UFormField class="sm:col-span-2 lg:col-span-3" label="Preferred company route">
-          <UTextarea
-            v-model="fields.route"
-            name="route"
-            icon="i-tabler-route"
-            :rows="3"
-            autoresize
-          />
+          <UTextarea v-model="fields.route" name="route" :icon="IconRoute" :rows="3" autoresize />
         </UFormField>
       </UPageGrid>
     </UPageCard>
@@ -252,7 +274,7 @@ defineExpose({ generate });
           <UInput
             v-model="fields.fl"
             name="fl"
-            icon="i-tabler-gauge"
+            :icon="IconGauge"
             :variant="flightLevelDisabled ? 'ghost' : undefined"
             :disabled="flightLevelDisabled"
             maxlength="5"
@@ -262,7 +284,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.contpct"
             name="contpct"
-            icon="i-tabler-percentage"
+            :icon="IconPercentage"
             :items="contingencyOptions"
           />
         </UFormField>
@@ -270,7 +292,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.resvrule"
             name="resvrule"
-            icon="i-tabler-gas-station"
+            :icon="IconGasStation"
             :items="reserveOptions"
           />
         </UFormField>
@@ -278,7 +300,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.findSidstar"
             name="find_sidstar"
-            icon="i-tabler-compass"
+            :icon="IconCompass"
             class="w-full"
             :items="[
               { value: 'C', label: 'Conventional' },
@@ -290,17 +312,12 @@ defineExpose({ generate });
           <USelect
             v-model="fields.stepclimbs"
             name="stepclimbs"
-            icon="i-tabler-stairs"
+            :icon="IconStairs"
             :items="enabledOptions"
           />
         </UFormField>
         <UFormField label="ETOPS planning">
-          <USelect
-            v-model="fields.etops"
-            name="etops"
-            icon="i-tabler-world"
-            :items="enabledOptions"
-          />
+          <USelect v-model="fields.etops" name="etops" :icon="IconWorld" :items="enabledOptions" />
         </UFormField>
       </UPageGrid>
     </UPageCard>
@@ -311,7 +328,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.planformat"
             name="planformat"
-            icon="i-tabler-file-description"
+            :icon="IconFileDescription"
             :items="layoutOptions"
           />
         </UFormField>
@@ -319,7 +336,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.units"
             name="units"
-            icon="i-tabler-ruler"
+            :icon="IconRuler"
             :items="[
               { value: 'KGS', label: 'KGS' },
               { value: 'LBS', label: 'LBS' },
@@ -330,7 +347,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.navlog"
             name="navlog"
-            icon="i-tabler-list-details"
+            :icon="IconListDetails"
             :items="enabledOptions"
           />
         </UFormField>
@@ -338,7 +355,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.tlr"
             name="tlr"
-            icon="i-tabler-plane-inflight"
+            :icon="IconPlaneInflight"
             :items="enabledOptions"
           />
         </UFormField>
@@ -346,7 +363,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.notams"
             name="notams"
-            icon="i-tabler-clipboard-text"
+            :icon="IconClipboardText"
             :items="enabledOptions"
           />
         </UFormField>
@@ -354,7 +371,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.firnot"
             name="firnot"
-            icon="i-tabler-alert-circle"
+            :icon="IconAlertCircle"
             :items="enabledOptions"
           />
         </UFormField>
@@ -362,7 +379,7 @@ defineExpose({ generate });
           <USelect
             v-model="fields.maps"
             name="maps"
-            icon="i-tabler-map-2"
+            :icon="IconMap2"
             :items="[
               { value: 'detail', label: 'Detailed' },
               { value: 'simple', label: 'Simple' },

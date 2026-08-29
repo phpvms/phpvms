@@ -117,13 +117,15 @@
                                     <div class="card-header bg-primary text-white bg-primary text-center">
                                         <h4 class="text-white">{{ $award->name }}</h4>
                                         @if ($award->image_url)
-                                            <img src="{{ $award->image_url }}" alt="{{ $award->description }}"
+                                            <img src="{{ $award->image_url }}" alt="{{ $award->name }}"
                                                 class="img-fluid card-img-top" style="width: 123px;">
                                         @endif
                                     </div>
-                                    <div class="card-body text-center">
-                                        {{ $award->description }}
-                                    </div>
+                                    @if (filled($award->description))
+                                        <div class="card-body text-center">
+                                            {{ $award->description }}
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -132,5 +134,34 @@
             </div>
         </div>
 
+    @endif
+
+    {{-- Show the user's completed tours, if they have any --}}
+    @if ($user->tours->isNotEmpty())
+        <div class="row mt-5">
+            <div class="col-sm-12">
+                <h3>@lang('profile.your-tours')</h3>
+                @foreach ($user->tours->chunk(3) as $tours)
+                    <div class="row">
+                        @foreach ($tours as $tour)
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white bg-primary text-center">
+                                        <h4 class="text-white">{{ $tour->name }}</h4>
+                                        @if ($tour->bundle?->image_url)
+                                            <img src="{{ $tour->bundle->image_url }}" alt="{{ $tour->name }}"
+                                                class="img-fluid card-img-top" style="width: 123px;">
+                                        @endif
+                                    </div>
+                                    <div class="card-body text-center">
+                                        {{ $tour->description }}
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endforeach
+            </div>
+        </div>
     @endif
 @endsection

@@ -18,6 +18,7 @@ use App\Http\Controllers\Frontend\PageController;
 use App\Http\Controllers\Frontend\PirepController;
 use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SimBriefController;
+use App\Http\Controllers\Frontend\TourController;
 use App\Http\Controllers\Frontend\UserController;
 use App\Http\Controllers\Frontend\WeatherController;
 use App\Http\Controllers\ThemeAssetController;
@@ -66,6 +67,9 @@ Route::group([
     Route::post('flights/{id}/bid', [FlightController::class, 'storeBid'])->name('flights.bid.store');
     Route::delete('flights/{id}/bid', [FlightController::class, 'destroyBid'])->name('flights.bid.destroy');
     Route::resource('flights', FlightController::class);
+
+    Route::get('tours', [TourController::class, 'index'])->name('tours.index');
+    Route::get('tours/{id}', [TourController::class, 'show'])->whereNumber('id')->name('tours.show');
 
     Route::get('pireps/fares', [PirepController::class, 'fares']);
     Route::post('pireps/{id}/submit', [PirepController::class, 'submit'])->name('pireps.submit');

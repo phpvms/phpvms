@@ -69,6 +69,7 @@ export type BidData = {
 id: number,
 flightId: string,
 aircraftId: number | null,
+userTourId: string | null,
 };
 export type BidRowData = {
 bid: App.Http.Data.BidData,
@@ -78,6 +79,10 @@ state: string,
 expiresAt: string | null,
 canGenerateSimBrief: boolean,
 canRemove: boolean,
+tourName: string | null,
+tourId: number | null,
+tourLeg: number | null,
+ofpUrl: string | null,
 };
 export type BidSelectionData = {
 bid: App.Http.Data.BidData,
@@ -306,7 +311,17 @@ state: App.Http.Data.StateBadgeData,
 awards: App.Http.Data.AwardData[],
 typeRatings: App.Http.Data.TypeRatingData[],
 fields: App.Http.Data.UserFieldData[],
+tours: App.Http.Data.ProfileTourData[],
 acars: boolean,
+isOwnProfile: boolean,
+};
+export type ProfileTourData = {
+id: string,
+name: string,
+description: string | null,
+image: string | null,
+legs: number,
+completedAt: string | null,
 };
 export type RankData = {
 name: string,
@@ -371,6 +386,27 @@ embedGenerationAllowed: boolean,
 export type StateBadgeData = {
 label: string,
 color: string,
+};
+export type TourLegData = {
+flightId: string,
+routeLeg: number | null,
+ident: string,
+dpt: string,
+arr: string,
+flown: boolean,
+};
+export type TourListItemData = {
+id: number,
+name: string,
+description: string | null,
+image: string | null,
+startDate: string | null,
+endDate: string | null,
+valid: boolean,
+legs: App.Http.Data.TourLegData[],
+status: string | null,
+legsCompleted: number,
+activeLegFlightId: string | null,
 };
 export type TypeRatingData = {
 name: string,

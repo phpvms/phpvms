@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { applyTopology } from "../components/TopologyPicker";
 import { generate, type GenerateInput } from "./generator";
 import type {
   AirportSummary,
@@ -170,6 +171,73 @@ describe("generator.generate", () => {
       "KLAX→KPHX",
       "KPHX→KDFW",
     ]);
+  });
+
+  it("Tour topology numbers the legs 1..N", () => {
+    // Via applyTopology, exactly as picking "tour" in the UI does — writing
+    // mode: "tour" alone leaves the strategy at sequential and produces no
+    // route_leg at all.
+    const form = applyTopology(
+      baseForm({ origins: ["KJFK", "KBOS", "KORD", "KLAX"], destinations: [] }),
+      "tour",
+    );
+    const airports = [
+      airport("KJFK", 40.64, -73.78),
+      airport("KBOS", 42.36, -71.01),
+      airport("KORD", 41.97, -87.9),
+      airport("KLAX", 33.94, -118.41),
+    ];
+
+    const rows = generate(buildInput(form, airports));
+
+    expect(rows).toHaveLength(3);
+    expect(rows.map((r) => r.route_leg)).toEqual(["1", "2", "3"]);
+    expect(rows.map((r) => `${r.dpt_airport_id}→${r.arr_airport_id}`)).toEqual([
+      "KJFK→KBOS",
+      "KBOS→KORD",
+      "KORD→KLAX",
+    ]);
+  });
+
+  it("Tour topology pins a non-default base leg back to 1", () => {
+    const form = applyTopology(
+      baseForm({
+        origins: ["KJFK", "KBOS", "KORD"],
+        destinations: [],
+        flight_number_strategy: { kind: "same_number_incrementing_legs", base: 200, base_leg: 5 },
+      }),
+      "tour",
+    );
+    const airports = [
+      airport("KJFK", 40.64, -73.78),
+      airport("KBOS", 42.36, -71.01),
+      airport("KORD", 41.97, -87.9),
+    ];
+
+    const rows = generate(buildInput(form, airports));
+
+    expect(rows.map((r) => r.route_leg)).toEqual(["1", "2"]);
+    // The user's base flight number survives; only the leg base is pinned.
+    expect(rows.map((r) => r.flight_number)).toEqual([200, 200]);
+  });
+
+  it("leaves route_leg alone for non-tour topologies", () => {
+    const form = applyTopology(
+      baseForm({ origins: ["KSFO", "KLAX"], destinations: ["KORD", "KJFK"] }),
+      "mesh",
+    );
+    const airports = [
+      airport("KSFO"),
+      airport("KLAX", 33.94, -118.41),
+      airport("KORD", 41.97, -87.9),
+      airport("KJFK", 40.64, -73.78),
+    ];
+
+    const rows = generate(buildInput(form, airports));
+
+    expect(rows).toHaveLength(4);
+    rows.forEach((r) => expect(r.route_leg).toBeNull());
+    expect(rows.map((r) => r.flight_number)).toEqual([100, 101, 102, 103]);
   });
 
   it("excludes self-loop rows where origin === destination", () => {

@@ -31,3 +31,9 @@ export interface FlightPage {
   last: number;
   total: number;
 }
+
+/** One label-over-value fact in a flight card's stat strip. */
+export interface FlightStat {
+  label: string;
+  value: string;
+}

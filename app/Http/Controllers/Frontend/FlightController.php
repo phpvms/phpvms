@@ -7,6 +7,9 @@ use App\Contracts\Controller;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
+use App\Features\Tour\Enums\TourStatus;
+use App\Features\Tour\Models\UserTour;
+use App\Features\Tour\TourService;
 use App\Http\Data\BidRowData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
@@ -44,6 +47,7 @@ class FlightController extends Controller
         private readonly GeoService $geoSvc,
         private readonly AddonRegistry $addonRegistry,
         private readonly BidService $bidSvc,
+        private readonly TourService $tourSvc,
     ) {}
 
     private function acarsEnabled(): bool
@@ -230,6 +234,10 @@ class FlightController extends Controller
             'bids.flight.airline',
             'bids.flight.arr_airport',
             'bids.flight.dpt_airport',
+            // Whether a briefing already exists decides View vs Generate OFP
+            // on the bid card; scoped so one pilot never sees another's.
+            'bids.flight.simbrief' => fn ($q) => $q->where('user_id', Auth::id()),
+            'bids.userTour',
         ])->findOrFail(Auth::id());
 
         $flights = collect();
@@ -272,7 +280,10 @@ class FlightController extends Controller
             'flights.bids',
             bladeData: $viewData,
             spa: fn (): array => [
+                // Expiring first: expiry is created_at + bids.expire_time, so
+                // the oldest bid is always the one running out next.
                 'bids' => $valid_bids
+                    ->sortBy(fn (Bid $bid): int => $bid->created_at?->getTimestamp() ?? 0)
                     ->map(fn (Bid $bid): BidRowData => BidRowData::fromModel($bid, $policy, $saved_flights))
                     ->values()
                     ->all(),
@@ -444,12 +455,30 @@ class FlightController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $flight = $this->accessibleFlightQuery($user)->findOrFail($id);
 
-        $this->bidSvc->removeBid($flight, $user);
+        // The pilot's own bid decides this, not the leg's visibility. A run
+        // deliberately outlives its bundle's window, and SetVisibleFlights
+        // turns the remaining legs invisible when that window closes — so
+        // resolving the flight through the visible-only query first would 404
+        // "Cancel tour" in exactly the state the tour is meant to survive.
+        $bid = Bid::query()
+            ->where('user_id', $user->id)
+            ->where('flight_id', $id)
+            ->first();
+
+        // Dropping a tour leg means the pilot is done with the whole chain —
+        // removeBid() itself stays tour-unaware, because filing a leg goes
+        // through it too and must not end the run.
+        $tour = $bid?->userTour;
+
+        if ($tour instanceof UserTour && $tour->status === TourStatus::InProgress) {
+            $this->tourSvc->cancel($tour);
+        } else {
+            $this->bidSvc->removeBid($this->accessibleFlightQuery($user)->findOrFail($id), $user);
+        }
 
         return response()->json([
-            'flightUrl' => route('frontend.flights.show', $flight->id),
+            'flightUrl' => route('frontend.flights.show', $id),
             'bidsUrl'   => route('frontend.flights.bids'),
         ]);
     }
