@@ -27,6 +27,14 @@ return [
     'toggle_theme'       => 'Toggle theme',
     'notifications'      => 'Notifications',
 
+    // Sidebar account menu
+    'sign_in'     => 'Sign in',
+    'sign_out'    => 'Sign out',
+    'theme'       => 'Theme',
+    'theme_light' => 'Light',
+    'theme_dark'  => 'Dark',
+    'theme_auto'  => 'Auto',
+
     // Dashboard chrome
     'customize'          => 'Customize',
     'done'               => 'Done',

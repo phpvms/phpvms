@@ -2,7 +2,6 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { defineComponent, nextTick, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AppHeader from "@/app/shell/AppHeader.vue";
-import HeaderAccountMenu from "@/app/shell/HeaderAccountMenu.vue";
 import HeaderClocks from "@/app/shell/HeaderClocks.vue";
 import HeaderDuty from "@/app/shell/HeaderDuty.vue";
 import HeaderMetar from "@/app/shell/HeaderMetar.vue";
@@ -152,33 +151,6 @@ describe("dispatch header status", () => {
     expect(clocks.text()).toContain("16:51Z");
     expect(clocks.text()).toContain("Unavailable");
     expect(clocks.findAll("time")).toHaveLength(2);
-  });
-
-  it("renders public and authenticated account actions from persistent identity", async () => {
-    const global = { stubs: { UButton: buttonStub, UDropdownMenu: menuStub } };
-    const publicAccount = mount(HeaderAccountMenu, {
-      props: { initials: "TS", user: null },
-      global,
-    });
-    expect(publicAccount.text()).toContain("Sign in");
-    await publicAccount.get("button").trigger("click");
-    expect(inertia.visits).toEqual(["/login"]);
-
-    const authenticated = mount(HeaderAccountMenu, { props: { initials: "TS", user }, global });
-    expect(authenticated.text()).toContain("Taylor Swift");
-    expect(authenticated.text()).toContain("TAYLOR1");
-    const items = authenticated.getComponent(menuStub).props("items") as Array<
-      Array<{ label: string; onSelect?: () => void }>
-    >;
-    expect(items.flat().map((item) => item.label)).toEqual([
-      "Taylor Swift",
-      "PVA123 · TAYLOR1",
-      "Profile",
-      "Sign out",
-    ]);
-    items[1]?.[0]?.onSelect?.();
-    items[1]?.[1]?.onSelect?.();
-    expect(inertia.visits).toEqual(["/login", "/profile", "/logout"]);
   });
 
   it("keeps full status information in the header-owned mobile drawer", async () => {
