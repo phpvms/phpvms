@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\AwardTrigger;
-use App\Http\Resources\AwardResource;
 use App\Traits\HasAssets;
 use Database\Factories\AwardFactory;
 use Exception;
@@ -284,8 +283,8 @@ class Award extends Model
 
     /**
      * Alias kept for the consumers that already read `image` rather than
-     * `image_url` ({@see AwardResource}, the awards relation manager's table
-     * column) — same resolution, just a second name.
+     * `image_url` (the awards relation manager's table column, among others)
+     * — same resolution, just a second name.
      */
     public function image(): Attribute
     {

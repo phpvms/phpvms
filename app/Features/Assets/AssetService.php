@@ -22,6 +22,23 @@ use RuntimeException;
 class AssetService
 {
     /**
+     * {@see find()} results for the life of this instance, keyed by slot then
+     * key. A miss is stored too — `array_key_exists()` on the inner array is
+     * what tells "queried, found nothing" apart from "never queried", since a
+     * bare `null` value cannot.
+     *
+     * Bound {@see scoped()} in AppServiceProvider rather than singleton, so
+     * Octane resets this between requests instead of leaking one request's
+     * assets into the next. Invalidated by {@see Asset::booted()}'s `saved`
+     * and `deleted` hooks, which cover every write path — the ones on this
+     * class and a write made directly through the model — because they all
+     * persist through Eloquent, which is what fires those events.
+     *
+     * @var array<string, array<string, ?Asset>>
+     */
+    private array $findMemo = [];
+
+    /**
      * Store an uploaded file as an asset, replacing any existing asset with the
      * same (slot, key).
      *
@@ -430,7 +447,21 @@ class AssetService
 
     public function find(string $slot, string $key): ?Asset
     {
-        return Asset::query()->slot($slot)->where('key', $key)->first();
+        if (array_key_exists($slot, $this->findMemo) && array_key_exists($key, $this->findMemo[$slot])) {
+            return $this->findMemo[$slot][$key];
+        }
+
+        return $this->findMemo[$slot][$key] = Asset::query()->slot($slot)->where('key', $key)->first();
+    }
+
+    /**
+     * Drop a memoised {@see find()} result so the next call re-queries.
+     * Called from {@see Asset::booted()}'s `saved`/`deleted` hooks — never by
+     * a caller directly, since every write already fires one of those.
+     */
+    public function forgetMemo(string $slot, string $key): void
+    {
+        unset($this->findMemo[$slot][$key]);
     }
 
     /**

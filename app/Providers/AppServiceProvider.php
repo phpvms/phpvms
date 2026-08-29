@@ -10,6 +10,7 @@ use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
 use App\Enums\UserState;
+use App\Features\Assets\AssetService;
 use App\Features\Assets\AssetTypes;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
@@ -327,6 +328,13 @@ class AppServiceProvider extends ServiceProvider
         // during boot(). A PHP enum could never allow that, which is why this
         // is a registry.
         $this->app->singleton(AssetTypes::class);
+
+        // Memoises find() per (slot, key) for the life of a request (see
+        // AssetService::$findMemo). Scoped, not singleton: OperationTerminated
+        // already flushes scoped bindings (config/octane.php), so Octane
+        // starts every request with an empty memo instead of one worker's
+        // lookups leaking into the next request it serves.
+        $this->app->scoped(AssetService::class);
 
         $this->app->singleton(PirepViewTabRegistry::class);
 

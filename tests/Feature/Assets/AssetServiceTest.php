@@ -512,6 +512,109 @@ it('lists by slot, type and source', function (): void {
 });
 
 /*
+ * find() -- memoised for the life of the request (AssetService is bound
+ * scoped(), not singleton, in AppServiceProvider).
+ */
+
+it('memoises find() so a repeat lookup for the same slot and key issues one query', function (): void {
+    $asset = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+
+    DB::enableQueryLog();
+    $first = $this->service->find(Asset::SLOT_AWARD, '1');
+    $second = $this->service->find(Asset::SLOT_AWARD, '1');
+    $assetQueries = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'assets'));
+    DB::disableQueryLog();
+
+    expect($first?->id)->toBe($asset->id)
+        ->and($second?->id)->toBe($asset->id)
+        ->and($assetQueries->count())->toBe(1);
+});
+
+/**
+ * A miss is the case that actually costs a query at scale -- most (slot, key)
+ * lookups across an admin table are for keys with no asset -- so it has to be
+ * memoised too, not just a hit.
+ */
+it('memoises a miss too, so a repeat lookup for a key with no asset issues one query', function (): void {
+    DB::enableQueryLog();
+    $first = $this->service->find(Asset::SLOT_AWARD, 'missing');
+    $second = $this->service->find(Asset::SLOT_AWARD, 'missing');
+    $assetQueries = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'assets'));
+    DB::disableQueryLog();
+
+    expect($first)->toBeNull()
+        ->and($second)->toBeNull()
+        ->and($assetQueries->count())->toBe(1);
+});
+
+/**
+ * A different key at the same slot must not answer for the one just queried
+ * -- the memo is keyed on the full (slot, key) pair, not just the slot.
+ */
+it('does not let one key answer for another key memoised at the same slot', function (): void {
+    $one = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+    $two = $this->service->storeContents(PNG_BYTES."\x00b", Asset::SLOT_AWARD, '2', storage: (string) config('filesystems.public_files'));
+
+    expect($this->service->find(Asset::SLOT_AWARD, '1')?->id)->toBe($one->id)
+        ->and($this->service->find(Asset::SLOT_AWARD, '2')?->id)->toBe($two->id);
+});
+
+/**
+ * The write itself (not a raw model call) invalidating its own memo entry.
+ * find() is called first to seed the memo with the miss that store() is
+ * about to make stale -- the same sequence AssetImagePicker's autosave runs
+ * (find() to resolve the current badge, then a write).
+ */
+it('returns the new asset after a service write invalidates a memoised miss', function (): void {
+    expect($this->service->find(Asset::SLOT_AWARD, '1'))->toBeNull();
+
+    $created = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+
+    expect($this->service->find(Asset::SLOT_AWARD, '1')?->id)->toBe($created->id);
+});
+
+/**
+ * A replacement, not a first write: write() takes the $existing->update()
+ * branch rather than Asset::create(), which is the path this test isolates.
+ */
+it('returns the replacement after a service write invalidates the memoised original', function (): void {
+    $original = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+    expect($this->service->find(Asset::SLOT_AWARD, '1')?->last_update)->toBe($original->last_update);
+
+    $replaced = $this->service->storeContents(PNG_BYTES."\x00v2", Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+
+    expect($this->service->find(Asset::SLOT_AWARD, '1')?->last_update)->toBe($replaced->last_update)
+        ->and($replaced->last_update)->not->toBe($original->last_update);
+});
+
+/**
+ * A write made directly through the model -- $asset->update(), not a service
+ * method -- is the path AssetService cannot see coming; only Asset::booted()'s
+ * `saved` hook catches it.
+ */
+it('returns the updated value after a write made directly through the model, bypassing the service', function (): void {
+    $asset = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+    $this->service->find(Asset::SLOT_AWARD, '1'); // seed the memo with the pre-update row
+
+    $asset->update(['last_update' => 'changed-directly']);
+
+    expect($this->service->find(Asset::SLOT_AWARD, '1')?->last_update)->toBe('changed-directly');
+});
+
+/**
+ * Same as above for a direct $asset->delete() -- only Asset::booted()'s
+ * `deleted` hook catches this one, since the service was never called.
+ */
+it('returns null after a delete made directly through the model, bypassing the service', function (): void {
+    $asset = $this->service->storeContents(PNG_BYTES, Asset::SLOT_AWARD, '1', storage: (string) config('filesystems.public_files'));
+    $this->service->find(Asset::SLOT_AWARD, '1'); // seed the memo with the row about to be deleted
+
+    $asset->delete();
+
+    expect($this->service->find(Asset::SLOT_AWARD, '1'))->toBeNull();
+});
+
+/*
  * urlsFor() -- the batched lookup HasAssets::preloadAssetUrls() calls to
  * avoid one find() per model.
  */
