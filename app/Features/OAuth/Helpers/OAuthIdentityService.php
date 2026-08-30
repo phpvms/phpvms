@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\OAuth;
+namespace App\Features\OAuth\Helpers;
 
 use App\Enums\UserState;
 use App\Models\OAuthConnection;

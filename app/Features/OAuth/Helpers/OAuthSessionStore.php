@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace App\Features\OAuth\Helpers;
 
 use App\Models\OAuthConnection;
 use Illuminate\Contracts\Encryption\DecryptException;

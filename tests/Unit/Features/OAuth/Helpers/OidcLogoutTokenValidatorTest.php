@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Features\OAuth\Helpers\InvalidOidcLogoutToken;
+use App\Features\OAuth\Helpers\OidcLogoutTokenValidator;
 use App\Models\OAuthConnection;
-use App\Services\OAuth\InvalidOidcLogoutToken;
-use App\Services\OAuth\OidcLogoutTokenValidator;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Cache;

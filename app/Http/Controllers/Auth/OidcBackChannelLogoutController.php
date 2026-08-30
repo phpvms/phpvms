@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
+use App\Features\OAuth\Helpers\ExternalAuthSessionService;
+use App\Features\OAuth\Helpers\InvalidOidcLogoutToken;
+use App\Features\OAuth\Helpers\OidcLogoutTokenValidator;
 use App\Models\OAuthConnection;
-use App\Services\OAuth\ExternalAuthSessionService;
-use App\Services\OAuth\InvalidOidcLogoutToken;
-use App\Services\OAuth\OidcLogoutTokenValidator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

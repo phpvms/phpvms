@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Features\OAuth;
 
 use App\Contracts\Service;
+use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Models\UserOAuthToken;
-use App\Services\OAuth\OAuthConnectionService;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;

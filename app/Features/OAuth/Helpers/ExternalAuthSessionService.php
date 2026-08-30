@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\OAuth;
+namespace App\Features\OAuth\Helpers;
 
 use App\Models\ExternalAuthSession;
 use App\Models\OAuthConnection;

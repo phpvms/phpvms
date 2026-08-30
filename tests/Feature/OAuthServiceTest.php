@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Features\OAuth\OAuthService;
 use App\Models\OAuthConnection;
 use App\Models\User;
 use App\Models\UserOAuthToken;
-use App\Services\OAuthService;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;

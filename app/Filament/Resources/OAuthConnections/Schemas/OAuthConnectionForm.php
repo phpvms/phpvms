@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\OAuthConnections\Schemas;
 
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Models\OAuthConnection;
-use App\Services\OAuth\SocialiteProviderRegistry;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;

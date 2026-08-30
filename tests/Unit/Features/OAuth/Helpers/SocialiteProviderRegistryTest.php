@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\OAuth\SocialiteProviderRegistry;
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use SocialiteProviders\Discord\Provider;
 
 it('reports installed and unavailable provider packages', function (): void {

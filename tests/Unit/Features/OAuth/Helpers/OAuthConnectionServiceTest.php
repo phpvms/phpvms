@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Features\OAuth\Helpers\OAuthConnectionService;
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Models\OAuthConnection;
 use App\Models\User;
 use App\Models\UserIdentity;
 use App\Models\UserOAuthToken;
-use App\Services\OAuth\OAuthConnectionService;
-use App\Services\OAuth\SocialiteProviderRegistry;
 use Illuminate\Validation\ValidationException;
 
 function makeOAuthConnectionService(bool $packagesInstalled = true): OAuthConnectionService

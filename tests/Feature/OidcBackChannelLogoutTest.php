@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Features\OAuth\Helpers\ExternalAuthSessionService;
+use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Models\ExternalAuthSession;
 use App\Models\OAuthConnection;
 use App\Models\User;
 use App\Models\UserIdentity;
-use App\Services\OAuth\ExternalAuthSessionService;
-use App\Services\OAuth\OAuthConnectionService;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Features\OAuth\Helpers\OAuthConnectionService;
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Filament\Resources\OAuthConnections\Pages\ManageOAuthConnections;
 use App\Models\OAuthConnection;
 use App\Models\Permission;
 use App\Models\User;
 use App\Policies\Filament\OAuthConnectionPolicy;
-use App\Services\OAuth\OAuthConnectionService;
-use App\Services\OAuth\SocialiteProviderRegistry;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\DB;

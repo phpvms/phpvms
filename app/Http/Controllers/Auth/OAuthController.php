@@ -6,13 +6,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
 use App\Enums\UserState;
+use App\Features\OAuth\Helpers\ExternalAuthSessionService;
+use App\Features\OAuth\Helpers\OAuthConnectionService;
+use App\Features\OAuth\Helpers\OAuthIdentityService;
+use App\Features\OAuth\Helpers\OAuthSessionStore;
 use App\Models\Invite;
 use App\Models\OAuthConnection;
 use App\Models\User;
-use App\Services\OAuth\ExternalAuthSessionService;
-use App\Services\OAuth\OAuthConnectionService;
-use App\Services\OAuth\OAuthIdentityService;
-use App\Support\OAuthSessionStore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\OAuth;
+namespace App\Features\OAuth\Helpers;
 
 use Closure;
 use SocialiteProviders\Discord\Provider;

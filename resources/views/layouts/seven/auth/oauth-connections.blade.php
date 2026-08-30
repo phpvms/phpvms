@@ -1,4 +1,4 @@
-@inject('oauthConnectionService', 'App\Services\OAuth\OAuthConnectionService')
+@inject('oauthConnectionService', 'App\Features\OAuth\Helpers\OAuthConnectionService')
 @php
   $oauthConnections = $oauthConnectionService->enabledFor($surface);
   $intent = $surface === 'registration' ? 'register' : 'login';

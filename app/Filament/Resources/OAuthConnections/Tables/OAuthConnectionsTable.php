@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\OAuthConnections\Tables;
 
+use App\Features\OAuth\Helpers\OAuthConnectionService;
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Filament\Actions\Drawer;
 use App\Filament\Resources\OAuthConnections\Schemas\OAuthConnectionForm;
 use App\Models\OAuthConnection;
-use App\Services\OAuth\OAuthConnectionService;
-use App\Services\OAuth\SocialiteProviderRegistry;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
