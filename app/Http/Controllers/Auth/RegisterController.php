@@ -9,15 +9,20 @@ use App\Models\Invite;
 use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
+use App\Services\OAuth\ExternalAuthSessionService;
+use App\Services\OAuth\OAuthConnectionService;
+use App\Services\OAuth\OAuthIdentityService;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\HttpClient;
+use App\Support\OAuthSessionStore;
 use App\Support\Timezonelist;
 use Exception;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -41,16 +46,28 @@ class RegisterController extends Controller
     public function __construct(
         private readonly HttpClient $httpClient,
         private readonly UserService $userService,
+        private readonly OAuthConnectionService $oauthConnections,
+        private readonly OAuthIdentityService $oauthIdentities,
+        private readonly OAuthSessionStore $oauthSessions,
+        private readonly ExternalAuthSessionService $externalSessions,
     ) {
         $this->middleware('guest');
 
         $this->redirectTo = config('phpvms.registration_redirect');
     }
 
-    public function showRegistrationForm(Request $request): View
+    public function showRegistrationForm(Request $request): RedirectResponse|View
     {
         if (setting('general.disable_registrations', false)) {
             abort(403, 'Registrations are disabled');
+        }
+
+        $oauthRegistration = $request->old('oauth_registration');
+        if ($oauthRegistration !== null
+            && (!is_string($oauthRegistration)
+                || $oauthRegistration === ''
+                || $this->oauthSessions->pendingRegistration($request, $oauthRegistration) === null)) {
+            return $this->expiredOAuthRegistration();
         }
 
         if (setting('general.invite_only_registrations', false)) {
@@ -76,14 +93,15 @@ class RegisterController extends Controller
         $userFields = UserField::where(['show_on_registration' => true, 'active' => true, 'internal' => false])->get();
 
         return view('auth.register', [
-            'airports'   => [],
-            'airlines'   => $airlines,
-            'countries'  => Countries::getSelectList(),
-            'timezones'  => Timezonelist::toArray(),
-            'userFields' => $userFields,
-            'hubs_only'  => setting('pilots.home_hubs_only'),
-            'invite'     => $invite ?? null,
-            'captcha'    => [
+            'airports'          => [],
+            'airlines'          => $airlines,
+            'countries'         => Countries::getSelectList(),
+            'timezones'         => Timezonelist::toArray(),
+            'userFields'        => $userFields,
+            'hubs_only'         => setting('pilots.home_hubs_only'),
+            'invite'            => $invite ?? null,
+            'oauthRegistration' => is_string($oauthRegistration) ? $oauthRegistration : null,
+            'captcha'           => [
                 'enabled'    => setting('captcha.enabled', false),
                 'site_key'   => setting('captcha.site_key', ''),
                 'secret_key' => setting('captcha.secret_key', ''),
@@ -230,15 +248,80 @@ class RegisterController extends Controller
      */
     public function register(Request $request): RedirectResponse|View
     {
+        $oauthRegistration = $request->input('oauth_registration');
+        $pendingIdentity = null;
+        if ($oauthRegistration !== null) {
+            if (!is_string($oauthRegistration)
+                || $oauthRegistration === ''
+                || ($pendingIdentity = $this->oauthSessions->pendingRegistration(
+                    $request,
+                    $oauthRegistration,
+                )) === null) {
+                return $this->expiredOAuthRegistration();
+            }
+        }
+
         $this->validator($request->all())->validate();
 
-        $user = $this->create($request);
+        $connection = null;
+        if ($pendingIdentity !== null) {
+            $connection = $this->oauthConnections->resolve((string) $pendingIdentity['connection_id']);
+            if (!$this->oauthConnections->pendingIdentityMatches($connection, $pendingIdentity)) {
+                $this->oauthSessions->forgetPending($request);
+
+                return $this->expiredOAuthRegistration();
+            }
+
+            $this->oauthConnections->assertServerSideSessionRevocationSupported($connection);
+            if (!$connection->registration_enabled) {
+                abort(403);
+            }
+        }
+
+        $user = DB::transaction(function () use ($request, $pendingIdentity): User {
+            $user = $this->create($request);
+            if ($pendingIdentity !== null) {
+                $this->oauthIdentities->link($user, $pendingIdentity);
+            }
+
+            return $user;
+        });
+
+        if ($pendingIdentity !== null) {
+            $this->oauthSessions->forgetPending($request);
+        }
+
         if ($user->state === UserState::PENDING) {
             return view('auth.pending');
         }
 
         $this->guard()->login($user);
 
+        if ($pendingIdentity !== null
+            && in_array($connection->provider, ['openidconnect', 'vacentral'], true)) {
+            $this->externalSessions->record(
+                $user,
+                $connection,
+                $request->session()->getId(),
+                (string) $pendingIdentity['provider_user_id'],
+                is_string($pendingIdentity['oidc_sid'] ?? null) ? $pendingIdentity['oidc_sid'] : null,
+            );
+        }
+
         return redirect('/dashboard');
+    }
+
+    public function cancelOAuthRegistration(Request $request): RedirectResponse
+    {
+        $this->oauthSessions->forgetPending($request);
+
+        return redirect('/login');
+    }
+
+    private function expiredOAuthRegistration(): RedirectResponse
+    {
+        flash()->error(__('auth.oauth_registration_expired'));
+
+        return redirect('/login');
     }
 }

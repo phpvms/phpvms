@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Models\UserIdentity;
 
 /*
  * Locks in the JSON response shape of the public User API.
@@ -54,4 +55,23 @@ test('user resource returns expected json structure', function (): void {
             'rank',
         ],
     ]);
+});
+
+test('user resource returns provider subjects from linked identities', function (): void {
+    $user = User::factory()->create();
+
+    foreach (['discord', 'vatsim', 'ivao'] as $connectionId) {
+        UserIdentity::query()->create([
+            'user_id'          => $user->id,
+            'connection_id'    => $connectionId,
+            'provider_user_id' => $connectionId.'-subject',
+        ]);
+    }
+
+    $this->withHeader('Authorization', $user->api_key)
+        ->get('/api/user')
+        ->assertOk()
+        ->assertJsonPath('data.discord_id', 'discord-subject')
+        ->assertJsonPath('data.vatsim_id', 'vatsim-subject')
+        ->assertJsonPath('data.ivao_id', 'ivao-subject');
 });

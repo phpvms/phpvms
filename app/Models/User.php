@@ -98,6 +98,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $notifications_count
  * @property-read Collection<int, UserOAuthToken> $oauth_tokens
  * @property-read int|null $oauth_tokens_count
+ * @property-read Collection<int, ExternalAuthSession> $external_auth_sessions
+ * @property-read int|null $external_auth_sessions_count
+ * @property-read Collection<int, UserIdentity> $identities
+ * @property-read int|null $identities_count
  * @property-read Collection<int, Permission> $permissions
  * @property-read int|null $permissions_count
  * @property-read Collection<int, Pirep> $pireps
@@ -483,6 +487,18 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function oauth_tokens(): HasMany
     {
         return $this->hasMany(UserOAuthToken::class, 'user_id');
+    }
+
+    /** @return HasMany<UserIdentity, $this> */
+    public function identities(): HasMany
+    {
+        return $this->hasMany(UserIdentity::class, 'user_id');
+    }
+
+    /** @return HasMany<ExternalAuthSession, $this> */
+    public function external_auth_sessions(): HasMany
+    {
+        return $this->hasMany(ExternalAuthSession::class, 'user_id');
     }
 
     public function pireps(): HasMany

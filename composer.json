@@ -103,7 +103,8 @@
     "andreiio/blade-iconoir": "^4.7",
     "mddev31/filament-dynamic-dashboard": "^1.0.3",
     "enshrined/svg-sanitize": "^0.22.0",
-    "filafly/filament-phosphor-icons": "^2.2"
+    "filafly/filament-phosphor-icons": "^2.2",
+    "socialiteproviders/openidconnect": "^1.0"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",

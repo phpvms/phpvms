@@ -6,6 +6,7 @@ use App\Models\News;
 use App\Models\Pirep;
 use App\Models\User;
 use App\Models\UserAward;
+use App\Models\UserIdentity;
 use App\Notifications\Messages\Broadcast\AwardAwarded;
 use App\Notifications\Messages\Broadcast\NewsAdded;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
@@ -30,7 +31,12 @@ beforeEach(function (): void {
 // --- Message content ---------------------------------------------------------
 
 test('award announcement credits the recipient', function (): void {
-    $user = User::factory()->create(['discord_id' => '555']);
+    $user = User::factory()->create();
+    UserIdentity::query()->create([
+        'user_id'          => $user->id,
+        'connection_id'    => 'discord',
+        'provider_user_id' => '555',
+    ]);
     $award = Award::factory()->create(['name' => 'Century Club']);
     $userAward = UserAward::create(['user_id' => $user->id, 'award_id' => $award->id]);
 
@@ -45,7 +51,7 @@ test('award announcement credits the recipient', function (): void {
 });
 
 test('announcement omits the mention when the member has no discord linked', function (): void {
-    $user = User::factory()->create(['discord_id' => '']);
+    $user = User::factory()->create();
     $award = Award::factory()->create();
     $userAward = UserAward::create(['user_id' => $user->id, 'award_id' => $award->id]);
 

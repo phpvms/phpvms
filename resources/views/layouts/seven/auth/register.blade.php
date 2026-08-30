@@ -11,6 +11,8 @@
                         <h2>@lang('common.register')</h2>
                     </div>
                     <div class="card-body">
+                        @include('auth.oauth-connections', ['surface' => 'registration'])
+
                         <div class="mb-3">
                             <label for="name" class="form-label">@lang('auth.full_name')</label>
                             <input type="text" name="name" id="name"
@@ -146,6 +148,9 @@
                         @if ($invite)
                             <input type="hidden" name="invite" value="{{ $invite->id }}" />
                             <input type="hidden" name="invite_token" value="{{ base64_encode($invite->token) }}" />
+                        @endif
+                        @if ($oauthRegistration)
+                            <input type="hidden" name="oauth_registration" value="{{ $oauthRegistration }}" />
                         @endif
 
                         <div class="mb-3">

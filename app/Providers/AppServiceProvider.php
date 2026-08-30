@@ -20,6 +20,8 @@ use App\Policies\Filament\ActivityPolicy;
 use App\Services\AddonSettingService;
 use App\Services\ImageUploadService;
 use App\Services\ModuleService;
+use App\Services\OAuth\OAuthConnectionService;
+use App\Services\OAuth\SocialiteProviderRegistry;
 use App\Services\PermissionRegistry;
 use App\Services\RouteForge\Contracts\LintRule;
 use App\Services\RouteForge\LintRunner;
@@ -74,7 +76,6 @@ use Override;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature;
-use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\Yaml\Yaml;
@@ -85,7 +86,7 @@ class AppServiceProvider extends ServiceProvider
      * @throws UnknownUnitOfMeasure
      * @throws NonStringUnitName
      */
-    public function boot(): void
+    public function boot(OAuthConnectionService $oauthConnections): void
     {
         Schema::defaultStringLength(191);
 
@@ -277,13 +278,12 @@ class AppServiceProvider extends ServiceProvider
             config('phpvms.metar_lookup')
         );
 
-        /**
-         * OAuth providers events registration
-         */
-        Event::listen(function (SocialiteWasCalled $event): void {
-            $event->extendSocialite('discord', Provider::class);
-            $event->extendSocialite('ivao', \SocialiteProviders\Ivao\Provider::class);
-            $event->extendSocialite('vatsim', \SocialiteProviders\Vatsim\Provider::class);
+        $oauthConnections->loadRuntimeConfiguration();
+
+        Event::listen(function (SocialiteWasCalled $event) use ($oauthConnections): void {
+            foreach ($oauthConnections->providerClasses() as $driver => $providerClass) {
+                $event->extendSocialite($driver, $providerClass);
+            }
         });
     }
 
@@ -299,6 +299,8 @@ class AppServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(ModuleService::class);
+        $this->app->singleton(SocialiteProviderRegistry::class);
+        $this->app->singleton(OAuthConnectionService::class);
 
         // Core settings read/write. Bound as a singleton so the per-request
         // Tier-1 memo ($memo array) is shared across all setting() calls within

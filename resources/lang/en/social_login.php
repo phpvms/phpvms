@@ -1,0 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'title'                  => 'Social Login',
+    'connection'             => 'social login connection',
+    'connections'            => 'social login connections',
+    'create_action'          => 'Create New 3rd Party Login',
+    'installed_providers'    => 'Installed providers: :providers',
+    'no_providers_installed' => 'No supported Socialite provider packages are installed.',
+    'empty_heading'          => 'No social login connections',
+    'empty_description'      => 'Add a provider when you are ready to offer pilots another way to sign in.',
+    'fields'                 => [
+        'connection_id'             => 'Connection ID',
+        'connection_id_help'        => 'Lowercase letters, numbers, and dashes. This becomes part of the callback URL and cannot be changed later.',
+        'display_name'              => 'Display Name',
+        'display_name_help'         => 'The name pilots see on login, registration, and connected-account screens.',
+        'protocol'                  => 'Protocol',
+        'protocol_help'             => 'Choose OAuth 2.0 for a listed provider, or OpenID Connect for a custom issuer.',
+        'provider'                  => 'Provider',
+        'provider_help'             => ':package :status',
+        'client_id'                 => 'Client ID',
+        'client_secret'             => 'Client Secret',
+        'client_secret_create_help' => 'Stored encrypted after you save the connection.',
+        'client_secret_edit_help'   => 'A secret is saved. Leave this blank to keep it, or enter a replacement.',
+        'scopes'                    => 'Scopes',
+        'scopes_help'               => 'Press Enter after each scope.',
+        'enabled'                   => 'Connection enabled',
+        'enabled_help'              => 'Turn off the connection without deleting pilot links.',
+        'login_enabled'             => 'Show on login',
+        'registration_enabled'      => 'Show on registration',
+        'linking_enabled'           => 'Allow account linking',
+        'sort_order'                => 'Sort Order',
+    ],
+    'protocols' => [
+        'oauth2' => 'OAuth 2.0',
+        'oidc'   => 'OpenID Connect',
+    ],
+    'sections' => [
+        'connection'   => 'Connection',
+        'provider'     => 'Provider Configuration',
+        'availability' => 'Availability',
+    ],
+    'status' => [
+        'available'     => 'Available',
+        'unavailable'   => 'Provider unavailable',
+        'installed'     => 'is installed.',
+        'not_installed' => 'is not installed.',
+        'managed'       => 'Managed by vacentral',
+        'manual'        => 'Manual',
+    ],
+    'columns' => [
+        'provider'     => 'Provider',
+        'package'      => 'Package Status',
+        'management'   => 'Management',
+        'login'        => 'Login',
+        'registration' => 'Registration',
+        'linking'      => 'Linking',
+        'order'        => 'Order',
+    ],
+    'actions' => [
+        'enable'          => 'Enable',
+        'disable'         => 'Disable',
+        'disable_confirm' => 'Pilots will no longer be able to use this connection. Existing account links will be kept.',
+        'managed_delete'  => 'Managed connections must be disconnected from their addon settings.',
+    ],
+];

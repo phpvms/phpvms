@@ -7,6 +7,7 @@ namespace App\Queries;
 use App\Enums\UserState;
 use App\Http\Requests\SearchUsersRequest;
 use App\Models\User;
+use App\Models\UserIdentity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -155,7 +156,7 @@ class UserSearchQuery
 
     private function applyOrdering(Builder $query, SearchUsersRequest $request): void
     {
-        $orderBy = $request->input('orderBy');
+        $orderBy = (string) $request->input('orderBy', '');
         if (!$orderBy) {
             $query->orderBy('id', 'asc');
 
@@ -165,6 +166,20 @@ class UserSearchQuery
         $direction = strtolower((string) $request->input('sortedBy', 'asc'));
         if (!in_array($direction, ['asc', 'desc'], true)) {
             $direction = 'asc';
+        }
+
+        $identityConnection = SearchUsersRequest::IDENTITY_ORDER_FIELDS[$orderBy] ?? null;
+        if ($identityConnection !== null) {
+            $query->orderBy(
+                UserIdentity::query()
+                    ->select('provider_user_id')
+                    ->whereColumn('user_id', 'users.id')
+                    ->where('connection_id', $identityConnection)
+                    ->limit(1),
+                $direction,
+            );
+
+            return;
         }
 
         $query->orderBy($orderBy, $direction);

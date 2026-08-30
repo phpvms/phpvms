@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Http\Controllers\Admin\RouteForgeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OAuthController;
+use App\Http\Controllers\Auth\OidcBackChannelLogoutController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Frontend\AirportController;
 use App\Http\Controllers\Frontend\CreditsController;
 use App\Http\Controllers\Frontend\DashboardController;
@@ -24,6 +26,7 @@ use App\Http\Controllers\Frontend\WeatherController;
 use App\Http\Controllers\ThemeAssetController;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
@@ -138,8 +141,19 @@ Route::group([
 ], function (): void {
     Route::get('{provider}/redirect', [OAuthController::class, 'redirectToProvider'])->name('redirect');
     Route::get('{provider}/callback', [OAuthController::class, 'handleProviderCallback'])->name('callback');
-    Route::get('{provider}/logout', [OAuthController::class, 'logoutProvider'])->name('logout')->middleware('auth');
+    Route::post('{provider}/register', [OAuthController::class, 'beginRegistration'])->name('register');
+    Route::post('{provider}/link', [OAuthController::class, 'beginExistingLink'])->name('link');
+    Route::post('cancel', [RegisterController::class, 'cancelOAuthRegistration'])->name('cancel');
+    Route::get('{provider}/link/complete', [OAuthController::class, 'completeExistingLink'])
+        ->name('link.complete')
+        ->middleware('auth');
+    Route::delete('{provider}/unlink', [OAuthController::class, 'unlink'])->name('unlink')->middleware('auth');
 });
+
+Route::post('/oauth/{provider}/backchannel-logout', OidcBackChannelLogoutController::class)
+    ->withoutMiddleware(PreventRequestForgery::class)
+    ->middleware('throttle:60,1')
+    ->name('oauth.backchannel-logout');
 
 Route::get('/logout', [LoginController::class, 'logout'])->name(Logout::class);
 Auth::routes(['verify' => true]);

@@ -6,6 +6,7 @@ use App\Enums\UserState;
 use App\Http\Requests\SearchUsersRequest;
 use App\Models\Airline;
 use App\Models\User;
+use App\Models\UserIdentity;
 use App\Queries\UserSearchQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -129,6 +130,31 @@ test('UserSearchQuery applies orderBy + sortedBy', function (): void {
     User::factory()->create(['name' => 'Bob',     'state' => UserState::ACTIVE]);
 
     $request = userSearchRequest(['orderBy' => 'name', 'sortedBy' => 'asc']);
+    $names = new UserSearchQuery()->build($request)->pluck('name')->all();
+
+    expect($names)->toBe(['Alice', 'Bob', 'Charlie']);
+});
+
+test('UserSearchQuery orders legacy provider aliases by linked identities', function (): void {
+    updateSetting('pilots.hide_inactive', false);
+
+    $charlie = User::factory()->create(['name' => 'Charlie', 'state' => UserState::ACTIVE]);
+    $alice = User::factory()->create(['name' => 'Alice', 'state' => UserState::ACTIVE]);
+    $bob = User::factory()->create(['name' => 'Bob', 'state' => UserState::ACTIVE]);
+
+    foreach ([
+        $charlie->id => '300',
+        $alice->id   => '100',
+        $bob->id     => '200',
+    ] as $userId => $providerUserId) {
+        UserIdentity::query()->create([
+            'user_id'          => $userId,
+            'connection_id'    => 'vatsim',
+            'provider_user_id' => $providerUserId,
+        ]);
+    }
+
+    $request = userSearchRequest(['orderBy' => 'vatsim_id', 'sortedBy' => 'asc']);
     $names = new UserSearchQuery()->build($request)->pluck('name')->all();
 
     expect($names)->toBe(['Alice', 'Bob', 'Charlie']);
