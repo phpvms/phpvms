@@ -1449,8 +1449,14 @@
   flex: none;
 }
 
-.fi-brandbtn-mark svg {
-  @apply w-4.25 h-4.25;
+.fi-brandbtn-mark img {
+  /* Fixed size, not padding: box-sizing varies across the admin's mixed
+     stylesheets, and a padded w-full img inflates past the tile on the
+     content-box path. */
+  @apply w-4.75 h-4.75;
+  object-fit: contain;
+  /* logo_blue.svg is a bare brand-blue glyph; tint it white for the swatch. */
+  filter: brightness(0) invert(1);
 }
 
 .fi-brandbtn-text {
@@ -1510,8 +1516,9 @@
 }
 
 .fi-brandmenu-item-mark img {
-  @apply w-4 h-4;
-  /* logo.svg ships brand-blue; the swatch is brand-blue too. */
+  @apply w-4.5 h-4.5;
+  object-fit: contain;
+  /* logo_blue.svg is a bare brand-blue glyph; tint it white for the swatch. */
   filter: brightness(0) invert(1);
 }
 
