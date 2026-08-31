@@ -541,6 +541,15 @@ class SettingsSeeder extends Seeder
 
         // PIREPs
         [
+            'key'         => 'pireps.disable_manual',
+            'name'        => 'Disable Manual PIREPs',
+            'group'       => 'pireps',
+            'value'       => 'false',
+            'type'        => 'boolean',
+            'options'     => 'true,false',
+            'description' => 'Prevent pilots from filing PIREPs through the frontend',
+        ],
+        [
             'key'         => 'pireps.duplicate_check_time',
             'name'        => 'PIREP duplicate time check',
             'group'       => 'pireps',

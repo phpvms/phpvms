@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Frontend;
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Events\ProfileUpdated;
+use App\Features\OAuth\Helpers\OAuthConnectionService;
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Features\Tour\Enums\TourStatus;
 use App\Http\Data\ProfileData;
 use App\Models\Airline;
@@ -38,6 +40,8 @@ class ProfileController extends Controller
      */
     public function __construct(
         private readonly UserService $userSvc,
+        private readonly OAuthConnectionService $oauthConnections,
+        private readonly SocialiteProviderRegistry $socialiteProviders,
     ) {}
 
     /**
@@ -125,7 +129,7 @@ class ProfileController extends Controller
     public function edit(Request $request): RedirectResponse|View
     {
         /** @var ?User $user */
-        $user = User::with('fields.field', 'home_airport')->where('id', Auth::id())->first();
+        $user = User::with('fields.field', 'home_airport', 'identities')->where('id', Auth::id())->first();
 
         if (empty($user)) {
             Flash::error('User not found!');
@@ -137,15 +141,28 @@ class ProfileController extends Controller
 
         $airlines = Airline::selectList();
         $userFields = $this->userSvc->getUserFields($user);
+        $linkedConnectionIds = $user->identities->pluck('connection_id');
+        $oauthConnections = $this->oauthConnections->all();
+        $connectableConnectionIds = $oauthConnections
+            ->filter(fn ($connection): bool => $connection->enabled
+                && $connection->linking_enabled
+                && $this->socialiteProviders->isInstalled($connection->provider))
+            ->pluck('connection_id');
+        $oauthConnections = $oauthConnections
+            ->filter(fn ($connection): bool => $linkedConnectionIds->contains($connection->connection_id)
+                || $connectableConnectionIds->contains($connection->connection_id));
 
         return view('profile.edit', [
-            'user'       => $user,
-            'airlines'   => $airlines,
-            'airports'   => $airports,
-            'hubs_only'  => setting('pilots.home_hubs_only'),
-            'countries'  => Countries::getSelectList(),
-            'timezones'  => Timezonelist::toArray(),
-            'userFields' => $userFields,
+            'user'                     => $user,
+            'airlines'                 => $airlines,
+            'airports'                 => $airports,
+            'hubs_only'                => setting('pilots.home_hubs_only'),
+            'countries'                => Countries::getSelectList(),
+            'timezones'                => Timezonelist::toArray(),
+            'userFields'               => $userFields,
+            'oauthConnections'         => $oauthConnections,
+            'linkedConnectionIds'      => $linkedConnectionIds,
+            'connectableConnectionIds' => $connectableConnectionIds,
         ]);
     }
 

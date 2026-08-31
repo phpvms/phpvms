@@ -107,11 +107,6 @@ parameters:
           message: '#\$clientEntity of method App\\Auth\\ScopeRepository::finalizeScopes\(\) expects League\\OAuth2\\Server\\Entities\\ClientEntityInterface, Mockery\\MockInterface given#'
           path: tests/
 
-        # Same union, read side: these are properties of the access-token double.
-        - identifier: property.notFound
-          message: '#Access to an undefined property Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\|Mockery\\MockInterface::\$(token|refreshToken|expiresIn)#'
-          path: tests/
-
         # The sample addon is not tracked (modules/.gitignore ignores every addon
         # directory), so a fresh clone or CI checkout has no Modules\Sample at all.
         # The tests that drive it already guard with ->skip(sampleAddonMissing(...)).

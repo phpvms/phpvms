@@ -21,15 +21,12 @@
               <li><a class="dropdown-item" href="{{ url(route('frontend.simbrief.generate_new', [$simbrief->id])) }}">Generate New OFP</a></li>
             </ul>
           </div>
-          <div class="btn-group" role="group">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-              Fly Now
-            </button>
-            <ul class="dropdown-menu">
-              @if (empty($simbrief->pirep_id))
-                <li><a class="dropdown-item" href="{{ url(route('frontend.simbrief.prefile', [$simbrief->id])) }}">Prefile PIREP</a></li>
-              @endif
-              @if ($acars_plugin)
+          @if ($acars_plugin)
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Fly Now
+              </button>
+              <ul class="dropdown-menu">
                 @if ($bid)
                   <li><a href="vmsacars:bid/{{$bid->id}}"
                          class="dropdown-item">Load in vmsACARS</a></li>
@@ -37,18 +34,13 @@
                   <li><a href="vmsacars:flight/{{$flight->id}}"
                      class="dropdown-item">Load in vmsACARS</a></li>
                 @endif
-              @endif
-            </ul>
-          </div>
+              </ul>
+            </div>
+          @endif
         </div>
       </div>
       </div>
       {{--
-      @if (empty($simbrief->pirep_id))
-        <a class="btn btn-outline-info pull-right btn-sm"
-           style="margin-top: -10px; margin-bottom: 5px"
-           href="{{ url(route('frontend.simbrief.prefile', [$simbrief->id])) }}">Prefile PIREP</a>
-      @endif
     </div>
     @if (!empty($simbrief->ofp->params->static_id) && $user->id === $simbrief->user_id)
     <div class="col">

@@ -85,10 +85,6 @@ async function syncEditor() {
     syncingEditor.value = false;
   }
 }
-
-function prefile() {
-  router.visit(`/pireps/create?sb_id=${encodeURIComponent(props.briefing.id)}`);
-}
 </script>
 
 <template>
@@ -103,7 +99,6 @@ function prefile() {
         </p>
       </div>
       <div class="briefing-actions">
-        <UButton color="neutral" variant="soft" @click="prefile">Prefile PIREP</UButton>
         <UButton v-if="briefing.editorUrl" @click="editorOpen = true">Edit OFP</UButton>
       </div>
     </UPageHeader>

@@ -12,7 +12,7 @@ use Override;
 /**
  * @property int         $id
  * @property int         $user_id
- * @property string      $provider
+ * @property string      $connection_id
  * @property string      $token
  * @property string      $refresh_token
  * @property Carbon|null $expires_at
@@ -27,7 +27,7 @@ use Override;
  * @method static Builder<static>|UserOAuthToken whereCreatedAt($value)
  * @method static Builder<static>|UserOAuthToken whereExpiresAt($value)
  * @method static Builder<static>|UserOAuthToken whereId($value)
- * @method static Builder<static>|UserOAuthToken whereProvider($value)
+ * @method static Builder<static>|UserOAuthToken whereConnectionId($value)
  * @method static Builder<static>|UserOAuthToken whereRefreshToken($value)
  * @method static Builder<static>|UserOAuthToken whereToken($value)
  * @method static Builder<static>|UserOAuthToken whereUpdatedAt($value)
@@ -41,7 +41,7 @@ class UserOAuthToken extends Model
 
     protected $fillable = [
         'user_id',
-        'provider',
+        'connection_id',
         'token',
         'refresh_token',
         'expires_at',
@@ -49,7 +49,7 @@ class UserOAuthToken extends Model
 
     public static array $rules = [
         'user_id'       => 'required|integer',
-        'provider'      => 'required|string',
+        'connection_id' => 'required|string',
         'token'         => 'required|string',
         'refresh_token' => 'required|string',
         'expires_at'    => 'nullable|datetime',
@@ -72,9 +72,9 @@ class UserOAuthToken extends Model
     {
         return [
             'user_id'       => 'integer',
-            'provider'      => 'string',
-            'token'         => 'string',
-            'refresh_token' => 'string',
+            'connection_id' => 'string',
+            'token'         => 'encrypted',
+            'refresh_token' => 'encrypted',
             'expires_at'    => 'datetime',
         ];
     }

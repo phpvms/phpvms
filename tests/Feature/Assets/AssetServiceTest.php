@@ -631,7 +631,7 @@ it('resolves urls for every key in one query', function (): void {
     DB::disableQueryLog();
 
     // '3' has no asset at all -- absent from the map, same as find() null.
-    expect($urls)->toBe([
+    expect($urls)->toEqual([
         '1' => $a->url(),
         '2' => $b->url(),
     ])

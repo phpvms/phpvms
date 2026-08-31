@@ -11,23 +11,41 @@
                         <h2>@lang('common.register')</h2>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">@lang('auth.full_name')</label>
-                            <input type="text" name="name" id="name"
-                                class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" />
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @include('auth.oauth-connections', ['surface' => 'registration'])
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label">@lang('auth.email_address')</label>
-                            <input type="email" name="email" id="email"
-                                class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" />
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @if ($oauthRegistration)
+                            <p class="mb-4">
+                                {{ __('auth.oauth_complete_registration', ['provider' => $oauthProviderName]) }}
+                            </p>
+
+                            <div class="mb-3">
+                                <div class="form-label">@lang('auth.full_name')</div>
+                                <p class="mb-0">{{ old('name') }}</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-label">@lang('auth.email_address')</div>
+                                <p class="mb-0">{{ old('email') }}</p>
+                            </div>
+                        @else
+                            <div class="mb-3">
+                                <label for="name" class="form-label">@lang('auth.full_name')</label>
+                                <input type="text" name="name" id="name"
+                                    class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" />
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">@lang('auth.email_address')</label>
+                                <input type="email" name="email" id="email"
+                                    class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" />
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        @endif
 
                         <div class="mb-3">
                             <label for="airline_id" class="form-label">@lang('common.airline')</label>
@@ -101,23 +119,25 @@
                             </div>
                         @endif
 
-                        <div class="mb-3">
-                            <label for="password" class="form-label">@lang('auth.password')</label>
-                            <input type="password" name="password" id="password"
-                                class="form-control @error('password') is-invalid @enderror" />
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @unless ($oauthRegistration)
+                            <div class="mb-3">
+                                <label for="password" class="form-label">@lang('auth.password')</label>
+                                <input type="password" name="password" id="password"
+                                    class="form-control @error('password') is-invalid @enderror" />
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <div class="mb-3">
-                            <label for="password_confirmation" class="form-label">@lang('passwords.confirm')</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation"
-                                class="form-control @error('password_confirmation') is-invalid @enderror" />
-                            @error('password_confirmation')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <div class="mb-3">
+                                <label for="password_confirmation" class="form-label">@lang('passwords.confirm')</label>
+                                <input type="password" name="password_confirmation" id="password_confirmation"
+                                    class="form-control @error('password_confirmation') is-invalid @enderror" />
+                                @error('password_confirmation')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        @endunless
 
                         @if ($userFields)
                             @foreach ($userFields as $field)
@@ -146,6 +166,9 @@
                         @if ($invite)
                             <input type="hidden" name="invite" value="{{ $invite->id }}" />
                             <input type="hidden" name="invite_token" value="{{ base64_encode($invite->token) }}" />
+                        @endif
+                        @if ($oauthRegistration)
+                            <input type="hidden" name="oauth_registration" value="{{ $oauthRegistration }}" />
                         @endif
 
                         <div class="mb-3">

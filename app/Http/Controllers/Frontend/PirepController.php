@@ -49,7 +49,13 @@ class PirepController extends Controller
         private readonly GeoService $geoSvc,
         private readonly PirepSearchQuery $pirepSearchQuery,
         private readonly PirepService $pirepSvc,
-    ) {}
+    ) {
+        $this->middleware(function (Request $request, \Closure $next) {
+            abort_if(setting('pireps.disable_manual', false), 405, 'Manual PIREP filing is disabled.');
+
+            return $next($request);
+        })->only(['create', 'store']);
+    }
 
     /**
      * Dropdown with aircraft grouped by subfleet

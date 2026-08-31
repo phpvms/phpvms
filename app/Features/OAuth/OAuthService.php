@@ -2,18 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Features\OAuth;
 
 use App\Contracts\Service;
+use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Models\UserOAuthToken;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
 
 class OAuthService extends Service
 {
+    public function __construct(private readonly OAuthConnectionService $connections) {}
+
     public function refreshTokensBeforeTheyExpire(): void
     {
         // Refresh tokens that expired within the last 2 days or will expire in the next 24 hours.
@@ -28,14 +32,18 @@ class OAuthService extends Service
         $start_date = now()->subHours(49);
         $end_date = now()->addHours(25);
 
-        $tokens = UserOAuthToken::where(function (Builder $query) use ($start_date, $end_date) {
+        $ivaoConnections = $this->connections->all()
+            ->where('provider', 'ivao')
+            ->pluck('connection_id');
+
+        $tokens = UserOAuthToken::where(function (Builder $query) use ($start_date, $end_date, $ivaoConnections) {
             /** @var Builder<UserOAuthToken> $query */
-            return $query->whereNot('provider', 'ivao')
+            return $query->whereNotIn('connection_id', $ivaoConnections)
                 ->whereBetween('expires_at', [$start_date, $end_date]);
         })
-            ->orWhere(function (Builder $query) {
+            ->orWhere(function (Builder $query) use ($ivaoConnections) {
                 /** @var Builder<UserOAuthToken> $query */
-                return $query->where('provider', 'ivao')
+                return $query->whereIn('connection_id', $ivaoConnections)
                     ->whereBetween('expires_at', [now()->subDays(8), now()->subDays(6)]);
             })
             ->get();
@@ -48,8 +56,10 @@ class OAuthService extends Service
     public function refreshToken(UserOAuthToken $token): UserOAuthToken
     {
         try {
+            $connection = $this->connections->resolve($token->connection_id);
+
             /** @var AbstractProvider $driver */
-            $driver = Socialite::driver($token->provider);
+            $driver = Socialite::driver($this->connections->driverFor($connection));
 
             $updatedToken = $driver->refreshToken($token->refresh_token);
 
@@ -58,9 +68,9 @@ class OAuthService extends Service
                 'refresh_token' => $updatedToken->refreshToken,
                 'expires_at'    => now()->addSeconds($updatedToken->expiresIn),
             ]);
-            Log::debug('OAuth token refresh for user_id '.$token->user_id.' and provider '.$token->provider);
-        } catch (ClientException $clientException) {
-            Log::error('Error updating OAuth tokens: '.$clientException->getMessage(), ['exception' => $clientException, 'token' => $token]);
+            Log::debug('OAuth token refresh for user_id '.$token->user_id.' and connection '.$token->connection_id);
+        } catch (ClientException|ValidationException $exception) {
+            Log::error('Error updating OAuth tokens: '.$exception->getMessage(), ['exception' => $exception, 'token_id' => $token->id]);
         }
 
         return $token->refresh();

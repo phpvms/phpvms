@@ -39,31 +39,9 @@
           <div class="d-grid">
             <button type="submit" class="btn btn-primary">@lang('common.login')</button>
           </div>
-
-          @if(config('services.discord.enabled'))
-            <div class="d-grid mt-3">
-              <a href="{{ route('oauth.redirect', ['provider' => 'discord']) }}" class="btn" style="background-color:#738ADB;">
-                @lang('auth.login_with', ['provider' => 'Discord'])
-              </a>
-            </div>
-          @endif
-
-          @if(config('services.ivao.enabled'))
-            <div class="d-grid mt-3">
-              <a href="{{ route('oauth.redirect', ['provider' => 'ivao']) }}" class="btn" style="background-color:#0d2c99;">
-                @lang('auth.login_with', ['provider' => 'IVAO'])
-              </a>
-            </div>
-          @endif
-
-          @if(config('services.vatsim.enabled'))
-            <div class="d-grid mt-3">
-              <a href="{{ route('oauth.redirect', ['provider' => 'vatsim']) }}" class="btn" style="background-color:#29B473;">
-                @lang('auth.login_with', ['provider' => 'VATSIM'])
-              </a>
-            </div>
-          @endif
         </form>
+
+        @include('auth.oauth-connections', ['surface' => 'login'])
       </div>
       <div class="card-footer d-flex justify-content-between">
         <a href="{{ url('/register') }}" class="link">@lang('auth.create_account')</a>
