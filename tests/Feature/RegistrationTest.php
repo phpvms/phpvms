@@ -9,8 +9,11 @@ use App\Notifications\Messages\AdminUserRegistered;
 use App\Services\UserService;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Contracts\Mail\Factory as MailFactory;
+use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Symfony\Component\Mailer\Exception\TransportException;
 
 use function Pest\Laravel\seed;
 
@@ -72,6 +75,36 @@ test('access to registration when registration enabled', function (): void {
 
     $this->post('/register', getUserData())
         ->assertRedirect('/dashboard');
+});
+
+test('mail transport failure does not fail registration and notifies admins', function (): void {
+    seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser(['name' => 'Mail Failure Admin']);
+    $mailer = Mockery::mock(Mailer::class);
+    $mailer->shouldReceive('send')
+        ->andThrow(new TransportException('Unable to connect to mailpit:1025'));
+    $mailFactory = Mockery::mock(MailFactory::class);
+    $mailFactory->shouldReceive('mailer')->andReturn($mailer);
+    app()->instance(MailFactory::class, $mailFactory);
+
+    updateSetting('general.disable_registrations', false);
+    updateSetting('general.invite_only_registrations', false);
+
+    $data = getUserData();
+
+    $this->post('/register', $data)
+        ->assertRedirect('/dashboard');
+
+    $failureNotification = $admin->notifications()->get()->first(
+        fn ($notification): bool => str_contains(
+            $notification->data['body'] ?? '',
+            'Unable to connect to mailpit:1025',
+        ),
+    );
+
+    expect(User::where('email', $data['email'])->exists())->toBeTrue()
+        ->and($failureNotification)->not->toBeNull();
 });
 
 // auto_accept_pireps is fillable for the admin pages, so the public

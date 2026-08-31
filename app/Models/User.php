@@ -6,6 +6,7 @@ use App\Enums\JournalType;
 use App\Enums\UserState;
 use App\Features\Tour\Models\UserTour;
 use App\Observers\UserObserver;
+use App\Services\EmailFailureReporter;
 use App\Services\PermissionRegistry;
 use App\Traits\JournalTrait;
 use Database\Factories\UserFactory;
@@ -38,6 +39,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Throwable;
 
 /**
  * @property int            $id
@@ -401,6 +403,16 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function routeNotificationForDiscord(): ?string
     {
         return $this->discord_private_channel_id ?: null;
+    }
+
+    #[Override]
+    public function sendEmailVerificationNotification(): void
+    {
+        try {
+            parent::sendEmailVerificationNotification();
+        } catch (Throwable $throwable) {
+            app(EmailFailureReporter::class)->report($throwable, $this->email);
+        }
     }
 
     /**
