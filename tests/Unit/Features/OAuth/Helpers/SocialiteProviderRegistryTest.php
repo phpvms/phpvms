@@ -31,7 +31,7 @@ it('exposes stable provider and field definitions', function (): void {
             'installed' => true,
         ])
         ->and(collect($openId['fields'])->pluck('key')->all())
-        ->toBe(['client_id', 'client_secret', 'scopes', 'base_url', 'logo_url']);
+        ->toBe(['client_id', 'client_secret', 'scopes', 'base_url', 'email_claims', 'logo_url']);
 
     foreach ($openId['fields'] as $field) {
         expect($field)->toHaveKeys(['key', 'label', 'type', 'required']);
