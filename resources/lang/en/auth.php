@@ -37,6 +37,7 @@ return [
     'oauth_create_pilot'              => 'Create pilot account',
     'oauth_link_existing'             => 'Link existing account',
     'oauth_cancel'                    => 'Return to sign in',
+    'oauth_complete_registration'     => 'Complete the registration to continue your :provider login',
     'oauth_registration_expired'      => 'Your social login registration expired. Please start again.',
     'oauth_linked'                    => ':provider account connected.',
     'oauth_unlinked'                  => ':provider account disconnected.',

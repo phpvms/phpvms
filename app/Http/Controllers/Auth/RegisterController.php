@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -63,12 +64,22 @@ class RegisterController extends Controller
         }
 
         $oauthRegistration = $request->old('oauth_registration');
+        $pendingIdentity = null;
         if ($oauthRegistration !== null
             && (!is_string($oauthRegistration)
                 || $oauthRegistration === ''
-                || $this->oauthSessions->pendingRegistration($request, $oauthRegistration) === null)) {
+                || ($pendingIdentity = $this->oauthSessions->pendingRegistration(
+                    $request,
+                    $oauthRegistration,
+                )) === null)) {
             return $this->expiredOAuthRegistration();
         }
+
+        $oauthProviderName = $pendingIdentity === null
+            ? null
+            : $this->oauthConnections
+                ->resolve((string) $pendingIdentity['connection_id'])
+                ->display_name;
 
         if (setting('general.invite_only_registrations', false)) {
             if (!$request->has('invite') && !$request->has('token')) {
@@ -101,6 +112,7 @@ class RegisterController extends Controller
             'hubs_only'         => setting('pilots.home_hubs_only'),
             'invite'            => $invite ?? null,
             'oauthRegistration' => is_string($oauthRegistration) ? $oauthRegistration : null,
+            'oauthProviderName' => $oauthProviderName,
             'captcha'           => [
                 'enabled'    => setting('captcha.enabled', false),
                 'site_key'   => setting('captcha.site_key', ''),
@@ -112,7 +124,7 @@ class RegisterController extends Controller
     /**
      * Get a validator for an incoming registration request.
      */
-    protected function validator(array $data): Validator
+    protected function validator(array $data, bool $oauthRegistration = false): Validator
     {
         if (isset($data['email'])) {
             $data['email'] = mb_strtolower(trim((string) $data['email']));
@@ -123,7 +135,7 @@ class RegisterController extends Controller
             'email'           => 'required|email|max:255|unique:users,email',
             'airline_id'      => 'required',
             'home_airport_id' => 'required',
-            'password'        => 'required|min:5|confirmed',
+            'password'        => $oauthRegistration ? 'nullable' : 'required|min:5|confirmed',
             'toc_accepted'    => 'accepted',
         ];
 
@@ -169,7 +181,7 @@ class RegisterController extends Controller
      * @throws Exception
      * @throws RuntimeException
      */
-    protected function create(Request $request): User
+    protected function create(Request $request, bool $oauthRegistration = false): User
     {
         if (setting('general.disable_registrations', false)) {
             abort(403, 'Registrations are disabled');
@@ -208,7 +220,7 @@ class RegisterController extends Controller
 
         // Default options
         $opts = $request->all();
-        $opts['password'] = Hash::make($opts['password']);
+        $opts['password'] = Hash::make($oauthRegistration ? Str::random(64) : $opts['password']);
 
         // A privilege flag, not a registration field: it is fillable so the
         // admin pages can write it, which means a tampered registration
@@ -259,9 +271,14 @@ class RegisterController extends Controller
                 )) === null) {
                 return $this->expiredOAuthRegistration();
             }
+
+            $request->merge([
+                'name'  => $pendingIdentity['name'],
+                'email' => $pendingIdentity['email'],
+            ]);
         }
 
-        $this->validator($request->all())->validate();
+        $this->validator($request->all(), $pendingIdentity !== null)->validate();
 
         $connection = null;
         if ($pendingIdentity !== null) {
@@ -279,7 +296,7 @@ class RegisterController extends Controller
         }
 
         $user = DB::transaction(function () use ($request, $pendingIdentity): User {
-            $user = $this->create($request);
+            $user = $this->create($request, $pendingIdentity !== null);
             if ($pendingIdentity !== null) {
                 $this->oauthIdentities->link($user, $pendingIdentity);
             }
@@ -308,7 +325,9 @@ class RegisterController extends Controller
             );
         }
 
-        return redirect('/dashboard');
+        return $pendingIdentity !== null
+            ? redirect()->route('frontend.profile.index')
+            : redirect('/dashboard');
     }
 
     public function cancelOAuthRegistration(Request $request): RedirectResponse

@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Models\UserIdentity;
 use App\Models\UserOAuthToken;
 use Illuminate\Auth\Events\Login as AuthLogin;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request as HttpRequest;
@@ -34,6 +35,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use SocialiteProviders\Discord\Provider as DiscordProvider;
+use SocialiteProviders\Manager\Contracts\Helpers\ConfigRetrieverInterface;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
 beforeEach(function (): void {
@@ -123,6 +125,7 @@ function pendingOAuthIdentity(
     string $connection = 'discord',
     string $subject = 'subject-123',
     ?string $oidcSid = null,
+    string $email = 'oauth.user@phpvms.net',
 ): array {
     $oauthConnection = OAuthConnection::query()->where('connection_id', $connection)->firstOrFail();
     $issuer = $oauthConnection->configuration['base_url'] ?? null;
@@ -137,7 +140,7 @@ function pendingOAuthIdentity(
                 'provider_user_id'     => $subject,
                 'oidc_sid'             => $oidcSid,
                 'name'                 => 'OAuth User',
-                'email'                => 'oauth.user@phpvms.net',
+                'email'                => $email,
                 'email_verified'       => true,
                 'registration_attempt' => 'registration-attempt',
                 'token'                => Crypt::encryptString('access-token'),
@@ -152,16 +155,21 @@ function pendingOAuthIdentity(
 /** @return array<string, mixed> */
 function oauthRegistrationPayload(string $email, ?string $attempt = 'registration-attempt'): array
 {
-    return [
-        'name'                  => 'New OAuth Pilot',
-        'email'                 => $email,
-        'airline_id'            => Airline::factory()->create()->id,
-        'home_airport_id'       => Airport::factory()->create()->id,
-        'password'              => 'secret',
-        'password_confirmation' => 'secret',
-        'toc_accepted'          => true,
+    $payload = [
+        'name'            => 'New OAuth Pilot',
+        'email'           => $email,
+        'airline_id'      => Airline::factory()->create()->id,
+        'home_airport_id' => Airport::factory()->create()->id,
+        'toc_accepted'    => true,
         ...($attempt === null ? [] : ['oauth_registration' => $attempt]),
     ];
+
+    if ($attempt === null) {
+        $payload['password'] = 'secret';
+        $payload['password_confirmation'] = 'secret';
+    }
+
+    return $payload;
 }
 
 test('a known provider subject signs in its linked pilot', function (): void {
@@ -243,6 +251,27 @@ test('OIDC login cannot be restored after its recorded session is revoked', func
         ->and($followUpResponse->headers->get('Location'))->toBe(url('/login'));
     app(HttpKernel::class)->terminate($request, $followUpResponse);
     expect(ExternalAuthSession::query()->whereKey($externalSession->id)->exists())->toBeFalse();
+});
+
+test('runtime provider registration works without the manager config retriever binding', function (): void {
+    $this->app->offsetUnset(ConfigRetrieverInterface::class);
+    $this->app->instance(
+        OAuthConnectionService::class,
+        new OAuthConnectionService(new SocialiteProviderRegistry(static fn (): bool => true)),
+    );
+    OAuthConnection::query()->create([
+        'connection_id' => 'crew-sso',
+        'display_name'  => 'Crew SSO',
+        'provider'      => 'openidconnect',
+        'client_id'     => 'client-id',
+        'client_secret' => 'client-secret',
+        'configuration' => ['base_url' => 'https://issuer.example.com'],
+        'enabled'       => true,
+        'login_enabled' => true,
+    ]);
+
+    expect(fn () => app(OAuthConnectionService::class)->resolve('crew-sso'))
+        ->not->toThrow(BindingResolutionException::class);
 });
 
 test('an unknown subject is never attached by matching email', function (): void {
@@ -488,7 +517,7 @@ test('an unknown identity can prove an existing account with a local sign in', f
         ->exists())->toBeTrue();
 });
 
-test('provider registration follows the normal registration form before linking', function (): void {
+test('provider registration uses the pending identity without asking for a password', function (): void {
     Notification::fake();
     oauthConnection();
     $airline = Airline::factory()->create();
@@ -496,22 +525,40 @@ test('provider registration follows the normal registration form before linking'
 
     $this->withSession(pendingOAuthIdentity())
         ->post('/register', [
-            'name'                  => 'New OAuth Pilot',
-            'email'                 => 'new.oauth@phpvms.net',
-            'airline_id'            => $airline->id,
-            'home_airport_id'       => $airport->id,
-            'password'              => 'secret',
-            'password_confirmation' => 'secret',
-            'toc_accepted'          => true,
-            'oauth_registration'    => 'registration-attempt',
+            'name'               => 'Tampered Name',
+            'email'              => 'tampered@phpvms.net',
+            'airline_id'         => $airline->id,
+            'home_airport_id'    => $airport->id,
+            'toc_accepted'       => true,
+            'oauth_registration' => 'registration-attempt',
         ])
-        ->assertRedirect('/dashboard');
+        ->assertRedirect(route('frontend.profile.index'));
 
-    $user = User::query()->where('email', 'new.oauth@phpvms.net')->firstOrFail();
+    $user = User::query()->where('email', 'oauth.user@phpvms.net')->firstOrFail();
     expect($user->identities()
         ->where('connection_id', 'discord')
         ->where('provider_user_id', 'subject-123')
-        ->exists())->toBeTrue();
+        ->exists())->toBeTrue()
+        ->and($user->name)->toBe('OAuth User')
+        ->and(Hash::check('', $user->password))->toBeFalse();
+});
+
+test('provider registration form shows provider identity as text and hides password fields', function (): void {
+    oauthConnection();
+
+    $this->withSession(pendingOAuthIdentity())
+        ->post(route('oauth.register', ['provider' => 'discord']))
+        ->assertRedirect('/register');
+
+    $this->get('/register')
+        ->assertOk()
+        ->assertSee('Complete the registration to continue your Discord Crew login')
+        ->assertSee('OAuth User')
+        ->assertSee('oauth.user@phpvms.net')
+        ->assertDontSee('name="name"', false)
+        ->assertDontSee('name="email"', false)
+        ->assertDontSee('name="password"', false)
+        ->assertDontSee('name="password_confirmation"', false);
 });
 
 test('OpenID Connect registration records its revocable local session', function (): void {
@@ -536,9 +583,13 @@ test('OpenID Connect registration records its revocable local session', function
         'registration_enabled' => true,
     ]);
 
-    $this->withSession(pendingOAuthIdentity('crew-sso', oidcSid: 'oidc-session'))
+    $this->withSession(pendingOAuthIdentity(
+        'crew-sso',
+        oidcSid: 'oidc-session',
+        email: 'registered.oidc@phpvms.net',
+    ))
         ->post('/register', oauthRegistrationPayload('registered.oidc@phpvms.net'))
-        ->assertRedirect('/dashboard');
+        ->assertRedirect(route('frontend.profile.index'));
 
     $user = User::query()->where('email', 'registered.oidc@phpvms.net')->firstOrFail();
     $externalSession = ExternalAuthSession::query()->where('user_id', $user->id)->firstOrFail();
@@ -649,7 +700,7 @@ test('invite-only provider registration preserves the invite through the full fl
         ...oauthRegistrationPayload('invited.oauth@phpvms.net', (string) $registrationAttempt),
         'invite'       => $invite->id,
         'invite_token' => base64_encode((string) $invite->token),
-    ])->assertRedirect('/dashboard');
+    ])->assertRedirect(route('frontend.profile.index'));
 
     $user = User::query()->where('email', 'invited.oauth@phpvms.net')->firstOrFail();
     expect($user->identities()

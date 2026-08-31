@@ -158,14 +158,24 @@ final readonly class SocialiteProviderRegistry
             'helperText' => 'Shown beside this provider on login and registration buttons.',
             'rules'      => ['url:http,https', 'max:2048'],
         ];
-        $issuer = [
+        $issuerEndpoint = [
             'key'         => 'base_url',
-            'label'       => 'Issuer URL',
+            'label'       => 'Issuer Endpoint',
             'type'        => 'url',
             'required'    => true,
             'placeholder' => 'https://auth.example.com',
-            'helperText'  => 'The issuer must publish an OpenID Connect discovery document.',
+            'helperText'  => 'The issuer endpoint must publish an OpenID Connect discovery document.',
             'rules'       => ['url:http,https', 'max:2048'],
+        ];
+        $emailClaims = [
+            'key'         => 'email_claims',
+            'label'       => 'Email Claims',
+            'type'        => 'tags',
+            'required'    => false,
+            'default'     => ['email'],
+            'placeholder' => 'email',
+            'helperText'  => 'Claims checked for the user email, in order. The first non-empty value is used.',
+            'rules'       => ['array'],
         ];
 
         return [
@@ -210,7 +220,7 @@ final readonly class SocialiteProviderRegistry
                 'fields'         => [
                     ...$oidcCredentials,
                     [
-                        ...$issuer,
+                        ...$issuerEndpoint,
                         'placeholder' => 'https://auth.vacentral.net',
                         'default'     => 'https://auth.vacentral.net',
                     ],
@@ -227,7 +237,8 @@ final readonly class SocialiteProviderRegistry
                 'requiredScopes' => ['openid'],
                 'fields'         => [
                     ...$oidcCredentials,
-                    $issuer,
+                    $issuerEndpoint,
+                    $emailClaims,
                     $logo,
                 ],
             ],

@@ -78,7 +78,52 @@ it('creates a connection and encrypts its client secret', function (): void {
 
     expect($storedSecret)->not->toBe('secret-value')
         ->and($connection->client_secret)->toBe('secret-value')
-        ->and($connection->provider)->toBe('openidconnect');
+        ->and($connection->provider)->toBe('openidconnect')
+        ->and($connection->configuration['email_claims'])->toBe(['email']);
+});
+
+it('shows the callback and OIDC back-channel logout URLs in create and edit drawers', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->actingAs(createAdminUser());
+    $oidcFields = collect(app(SocialiteProviderRegistry::class)->find('openidconnect')['fields'])
+        ->keyBy('key');
+
+    expect($oidcFields['base_url']['label'])->toBe('Issuer Endpoint')
+        ->and($oidcFields['email_claims']['default'])->toBe(['email']);
+
+    Livewire::test(ManageOAuthConnections::class)
+        ->mountAction('create')
+        ->assertSchemaComponentHidden('callback_url', 'mountedActionSchema0')
+        ->assertSchemaComponentHidden('backchannel_logout_url', 'mountedActionSchema0')
+        ->assertActionDataSet([
+            'callback_url'           => url('/oauth/{connection-id}/callback'),
+            'backchannel_logout_url' => url('/oauth/{connection-id}/backchannel-logout'),
+        ])
+        ->set('mountedActions.0.data.protocol', 'oidc')
+        ->assertSchemaComponentVisible('callback_url', 'mountedActionSchema0')
+        ->assertSchemaComponentVisible('backchannel_logout_url', 'mountedActionSchema0')
+        ->assertActionDataSet([
+            'configuration' => ['email_claims' => ['email']],
+        ])
+        ->set('mountedActions.0.data.connection_id', 'crew-login')
+        ->assertActionDataSet([
+            'callback_url'           => route('oauth.callback', ['provider' => 'crew-login']),
+            'backchannel_logout_url' => route('oauth.backchannel-logout', ['provider' => 'crew-login']),
+        ])
+        ->set('mountedActions.0.data.protocol', 'oauth2')
+        ->assertSchemaComponentVisible('callback_url', 'mountedActionSchema0')
+        ->assertSchemaComponentHidden('backchannel_logout_url', 'mountedActionSchema0');
+
+    $connection = app(OAuthConnectionService::class)->create(socialLoginConnectionData());
+
+    Livewire::test(ManageOAuthConnections::class)
+        ->mountTableAction('edit', $connection)
+        ->assertSchemaComponentVisible('callback_url', 'mountedActionSchema0')
+        ->assertSchemaComponentVisible('backchannel_logout_url', 'mountedActionSchema0')
+        ->assertTableActionDataSet([
+            'callback_url'           => route('oauth.callback', ['provider' => 'crew-login']),
+            'backchannel_logout_url' => route('oauth.backchannel-logout', ['provider' => 'crew-login']),
+        ]);
 });
 
 it('creates an OAuth 2.0 connection with the selected provider', function (): void {
@@ -168,14 +213,17 @@ function socialLoginConnectionData(array $overrides = []): array
 {
     return [
         ...[
-            'connection_id'        => 'crew-login',
-            'display_name'         => 'Crew Login',
-            'protocol'             => 'oidc',
-            'provider'             => 'openidconnect',
-            'client_id'            => 'client-id',
-            'client_secret'        => 'secret-value',
-            'scopes'               => ['identify', 'email'],
-            'configuration'        => ['base_url' => 'https://auth.example.com'],
+            'connection_id' => 'crew-login',
+            'display_name'  => 'Crew Login',
+            'protocol'      => 'oidc',
+            'provider'      => 'openidconnect',
+            'client_id'     => 'client-id',
+            'client_secret' => 'secret-value',
+            'scopes'        => ['identify', 'email'],
+            'configuration' => [
+                'base_url'     => 'https://auth.example.com',
+                'email_claims' => ['email'],
+            ],
             'enabled'              => false,
             'login_enabled'        => false,
             'registration_enabled' => false,

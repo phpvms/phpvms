@@ -50,6 +50,11 @@ class OAuthConnectionForm
                 ->maxLength(64)
                 ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                 ->unique(ignoreRecord: true)
+                ->live(debounce: 500)
+                ->afterStateUpdated(function (?string $state, Set $set): void {
+                    $set('callback_url', self::callbackUrl($state));
+                    $set('backchannel_logout_url', self::backchannelLogoutUrl($state));
+                })
                 ->disabledOn('edit'),
 
             TextInput::make('display_name')
@@ -109,6 +114,32 @@ class OAuthConnectionForm
                 ->required(fn (Get $get): bool => $get('protocol') === 'oauth2')
                 ->visible(fn (Get $get): bool => $get('protocol') === 'oauth2')
                 ->disabled(self::managed(...))
+                ->columnSpanFull(),
+
+            TextInput::make('callback_url')
+                ->label(__('social_login.fields.callback_url'))
+                ->helperText(__('social_login.fields.callback_url_help'))
+                ->readOnly()
+                ->copyable(copyMessage: __('social_login.fields.callback_url_copy_message'))
+                ->dehydrated(false)
+                ->afterStateHydrated(function (TextInput $component, Get $get): void {
+                    $connectionId = $get('connection_id');
+                    $component->state(self::callbackUrl(is_string($connectionId) ? $connectionId : null));
+                })
+                ->visible(fn (Get $get): bool => filled($get('protocol')))
+                ->columnSpanFull(),
+
+            TextInput::make('backchannel_logout_url')
+                ->label(__('social_login.fields.backchannel_logout_url'))
+                ->helperText(__('social_login.fields.backchannel_logout_url_help'))
+                ->readOnly()
+                ->copyable(copyMessage: __('social_login.fields.backchannel_logout_url_copy_message'))
+                ->dehydrated(false)
+                ->afterStateHydrated(function (TextInput $component, Get $get): void {
+                    $connectionId = $get('connection_id');
+                    $component->state(self::backchannelLogoutUrl(is_string($connectionId) ? $connectionId : null));
+                })
+                ->visible(fn (Get $get): bool => $get('protocol') === 'oidc')
                 ->columnSpanFull(),
 
             Group::make()
@@ -244,6 +275,10 @@ class OAuthConnectionForm
             $input->helperText($definition['helperText'] ?? null);
         }
 
+        if (in_array($key, ['client_id', 'client_secret', 'base_url', 'logo_url'], true)) {
+            $input->columnSpanFull();
+        }
+
         return $input;
     }
 
@@ -287,5 +322,23 @@ class OAuthConnectionForm
     private static function managed(?OAuthConnection $record): bool
     {
         return $record?->managed_by !== null;
+    }
+
+    private static function callbackUrl(?string $connectionId): string
+    {
+        $connectionId = trim((string) $connectionId);
+
+        return $connectionId === ''
+            ? url('/oauth/{connection-id}/callback')
+            : route('oauth.callback', ['provider' => $connectionId]);
+    }
+
+    private static function backchannelLogoutUrl(?string $connectionId): string
+    {
+        $connectionId = trim((string) $connectionId);
+
+        return $connectionId === ''
+            ? url('/oauth/{connection-id}/backchannel-logout')
+            : route('oauth.backchannel-logout', ['provider' => $connectionId]);
     }
 }

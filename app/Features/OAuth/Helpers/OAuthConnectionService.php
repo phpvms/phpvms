@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use SocialiteProviders\Manager\Contracts\Helpers\ConfigRetrieverInterface;
+use SocialiteProviders\Manager\Helpers\ConfigRetriever;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Throwable;
 
@@ -234,6 +236,10 @@ final readonly class OAuthConnectionService
         $definition = $this->registry->find($connection->provider);
         if ($definition === null || !$definition['installed']) {
             return;
+        }
+
+        if (!app()->bound(ConfigRetrieverInterface::class)) {
+            app()->singleton(ConfigRetrieverInterface::class, ConfigRetriever::class);
         }
 
         app(SocialiteWasCalled::class)->extendSocialite(
