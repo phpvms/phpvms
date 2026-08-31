@@ -131,9 +131,11 @@
                   @endif
                 @endif
                @endif
-                <a href="{{ route('frontend.pireps.create') }}?flight_id={{ $flight->id }}" class="btn btn-sm btn-info">
-                  {{ __('pireps.new_pirep') }}
-                </a>
+                @unless(setting('pireps.disable_manual', false))
+                  <a href="{{ route('frontend.pireps.create') }}?flight_id={{ $flight->id }}" class="btn btn-sm btn-info">
+                    {{ __('pireps.new_pirep') }}
+                  </a>
+                @endunless
                 <button
                     class="btn btn-sm save_flight
                            {{ isset($saved[$flight->id]) ? 'btn-danger' : 'btn-success' }}"

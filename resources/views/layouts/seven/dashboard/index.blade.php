@@ -58,7 +58,10 @@
                 </div>
                 @if ($last_pirep === null)
                     <div class="card-body text-center">
-                        @lang('dashboard.no_reports_yet') <a href="{{ route('frontend.pireps.create') }}">@lang('dashboard.fileonenow')</a>
+                        @lang('dashboard.no_reports_yet')
+                        @unless(setting('pireps.disable_manual', false))
+                            <a href="{{ route('frontend.pireps.create') }}">@lang('dashboard.fileonenow')</a>
+                        @endunless
                     </div>
                 @else
                     @include('dashboard.pirep_card', ['pirep' => $last_pirep])
