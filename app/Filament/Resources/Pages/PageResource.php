@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages;
 
 use App\Enums\NavigationGroup;
+use App\Filament\RelationManagers\PageRevisionsRelationManager;
 use App\Filament\Resources\Pages\Pages\CreatePage;
 use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Filament\Resources\Pages\Pages\ListPages;
@@ -45,7 +46,7 @@ class PageResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            PageRevisionsRelationManager::class,
         ];
     }
 

@@ -3,6 +3,9 @@
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Enums\PageType;
+use App\Models\Page;
+use App\Services\PageService;
+use Closure;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -41,6 +44,19 @@ class PageForm
                             ->columnSpanFull()
                             ->columns(3),
 
+                        TextInput::make('path')
+                            ->label(__('filament.system_pages.path'))
+                            ->helperText(__('filament.system_pages.path_helper'))
+                            ->string()
+                            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state)
+                                ? Page::normalisePath($state)
+                                : null)
+                            ->rules([self::pathIsAvailable()])
+                            ->columnSpanFull()
+                            ->visibleJs(<<<'JS'
+                                    $get('type') == '0'
+                                JS), // Hardcoded PageType::PAGE
+
                         Grid::make()
                             ->schema([
                                 Toggle::make('public')
@@ -64,8 +80,9 @@ class PageForm
 
                 Section::make(__('common.content'))
                     ->schema([
-                        RichEditor::make('body')
-                            ->label(__('common.content'))
+                        RichEditor::make('draft_body')
+                            ->label(__('filament.system_pages.draft_content'))
+                            ->helperText(__('filament.system_pages.draft_helper'))
                             ->requiredIf('type', PageType::PAGE)
                             ->visibleJs(<<<'JS'
                                     $get('type') == '0'
@@ -91,5 +108,37 @@ class PageForm
                     ])
                     ->columnSpanFull(),
             ]);
+    }
+
+    /**
+     * Reject a path the site already answers, or one another published page has
+     * taken. Checked on save rather than discovered at render time, so an author
+     * finds out while they are still looking at the field.
+     *
+     * Wrapped in an outer function because Filament evaluates entries in
+     * `rules()` with its own utility injection; the inner closure is the Laravel
+     * rule and must be handed back untouched.
+     */
+    private static function pathIsAvailable(): Closure
+    {
+        return static fn (?Page $record): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($record): void {
+            if (blank($value)) {
+                return;
+            }
+
+            /** @var PageService $pages */
+            $pages = app(PageService::class);
+            $path = Page::normalisePath((string) $value);
+
+            if ($pages->pathIsReserved($path)) {
+                $fail(__('filament.system_pages.path_taken_route'));
+
+                return;
+            }
+
+            if (!$pages->pathIsAvailable($path, $record)) {
+                $fail(__('filament.system_pages.path_taken_page'));
+            }
+        };
     }
 }

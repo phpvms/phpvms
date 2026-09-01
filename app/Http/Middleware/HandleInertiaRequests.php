@@ -6,6 +6,7 @@ use App\Http\Data\AirlineIdentityData;
 use App\Http\Data\PilotChromeData;
 use App\Models\User;
 use App\Services\MapConfigService;
+use App\Services\NavigationService;
 use App\Services\Theme\ActiveThemeService;
 use App\Support\Skylight\Facades\Skylight;
 use Igaster\LaravelTheme\Facades\Theme;
@@ -31,6 +32,7 @@ class HandleInertiaRequests extends Middleware
     public function __construct(
         private readonly ActiveThemeService $themes,
         private readonly MapConfigService $mapConfig,
+        private readonly NavigationService $navigation,
     ) {}
 
     /**
@@ -111,6 +113,12 @@ class HandleInertiaRequests extends Middleware
             // (design.md D7) — lazy because resolving it queries enabled
             // map_layers rows, and not every SPA page renders a map.
             'map' => $this->mapConfig->resolve(...),
+
+            // The site menu, ordered and nested, filtered for this viewer.
+            // Lazily evaluated so a partial reload that does not ask for it
+            // costs nothing. `PageLinksComposer` still feeds the legacy Blade
+            // theme from the pages table and is untouched by this.
+            'navigation' => fn (): array => $this->navigation->menu($user !== null),
 
             // One-shot flash messages, lazily evaluated so they only read the
             // session when a response is actually built.

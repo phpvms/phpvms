@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AcarsController;
 use App\Http\Controllers\Api\AirlineController;
 use App\Http\Controllers\Api\AirportController;
 use App\Http\Controllers\Api\AssetController;
+use App\Http\Controllers\Api\FallbackController;
 use App\Http\Controllers\Api\FleetController;
 use App\Http\Controllers\Api\FlightController;
 use App\Http\Controllers\Api\MaintenanceController;
@@ -166,3 +167,14 @@ Route::group(['middleware' => ['api.auth']], function (): void {
 
     Route::post('users/simbrief_username', [UserController::class, 'simbrief_username'])->middleware('scope:settings:write')->name('api.users.simbrief_username');
 });
+
+/*
+ * The page fallback in routes/web.php is global, so without this an unmatched
+ * `/api/...` URL would be handled by the web middleware group -- session, theme
+ * and installer checks included -- and answered with an HTML 404 instead of the
+ * API's own. Claiming the prefix here keeps API misses inside the API stack.
+ *
+ * A page cannot claim a path under `/api` anyway: `PageService::pathIsReserved()`
+ * asks the router, and the router now answers for everything below this prefix.
+ */
+Route::fallback(FallbackController::class);
