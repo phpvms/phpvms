@@ -7,19 +7,22 @@ namespace App\Support\Skylight;
 use InvalidArgumentException;
 
 /**
- * Server-side registry of dashboard widgets contributed to the skylight SPA.
+ * Server-side registry of dashboard widgets contributed to the skylight SPA —
+ * and, via the `tag` kind, the component catalog other consumers (e.g. a page
+ * editor's insert menu) read from.
  *
  * This is the SINGLE source of truth for "what widgets can the pilot place on
- * the dashboard board". First-party widgets and addon widgets register the same
- * way. Because an addon only registers from its ServiceProvider::boot(), and a
- * DISABLED addon's provider never boots, a disabled addon's widgets simply never
- * appear here — no catalog edit, no client change, no dead entry. Disable-safety
- * is a property of the registration mechanism, not a runtime `enabled` check.
+ * the dashboard board" and "what custom elements exist to be authored into
+ * markup". First-party widgets and addon widgets register the same way. Because
+ * an addon only registers from its ServiceProvider::boot(), and a DISABLED
+ * addon's provider never boots, a disabled addon's widgets simply never appear
+ * here — no catalog edit, no client change, no dead entry. Disable-safety is a
+ * property of the registration mechanism, not a runtime `enabled` check.
  *
  * The registry is serialized into the Inertia shared props (see
  * HandleInertiaRequests) so the Vue catalog is built from it at runtime.
  *
- * Two widget KINDS are supported:
+ * Three widget KINDS are supported:
  *
  *  - kind 'vue'   → a Vue component. First-party/bundled widgets resolve by
  *                   `component` NAME against the SPA's bundled resolver map.
@@ -30,6 +33,12 @@ use InvalidArgumentException;
  *                   mode (fetch + inject + intercept form posts) or `iframe`
  *                   mode (same-origin iframe, native forms/scripts). The addon's
  *                   logic stays on the server; only rendered HTML ships.
+ *  - kind 'tag'   → a light-DOM custom element (see the `web-component-widget-
+ *                   floor` change), consumable as markup by any frontend, not
+ *                   just the skylight SPA. `module` points at the custom-
+ *                   elements bundle that defines the tag; `attributes`
+ *                   describes each authorable attribute for a catalog consumer
+ *                   (e.g. an insert menu) to offer or validate.
  */
 final class WidgetRegistry
 {
@@ -69,6 +78,18 @@ final class WidgetRegistry
      *   endpoint    string   URL returning the rendered Blade fragment.
      *   mode        string   'island' (default) | 'iframe'.
      *
+     *   -- kind 'tag' --
+     *   tag         string   required. The custom element's tag name
+     *                        (e.g. 'pv-hero'), registered via
+     *                        `customElements.define()` in the bundle at `module`.
+     *   attributes  array    list of {name, type, description} entries
+     *                        describing each authorable attribute, for a
+     *                        catalog consumer building an insert menu or
+     *                        validating stored markup.
+     *   module      string   URL of the custom-elements bundle that defines
+     *                        this tag. Loaded once per consuming document —
+     *                        the custom element registry is per-`Window`.
+     *
      * @param array<string, mixed> $definition
      */
     public function register(array $definition): self
@@ -79,6 +100,14 @@ final class WidgetRegistry
 
         $definition['kind'] ??= 'vue';
         $definition['defaultZone'] ??= 'grid';
+
+        // A 'tag' entry is consumed as markup (a bare custom element tag) by
+        // catalog readers outside this SPA, so — unlike 'vue'/'blade', which the
+        // SPA's own resolver fails visibly for when malformed — a missing tag
+        // name would silently produce an unusable catalog entry. Fail loudly here.
+        if ($definition['kind'] === 'tag' && (empty($definition['tag']) || !is_string($definition['tag']))) {
+            throw new InvalidArgumentException('A Skylight widget definition with kind "tag" requires a string "tag".');
+        }
 
         $this->widgets[$definition['id']] = $definition;
 

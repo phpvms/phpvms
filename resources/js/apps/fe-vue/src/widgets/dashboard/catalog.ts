@@ -15,9 +15,12 @@ export interface WidgetDef {
   id: string;
   /**
    * Widget kind. `vue` (default) resolves to a bundled/async Vue component;
-   * `blade` renders a server-rendered host shell (BladeWidget).
+   * `blade` renders a server-rendered host shell (BladeWidget); `tag` is a
+   * light-DOM custom element (`web-component-widget-floor`) — NOT placeable on
+   * the dashboard board, read instead via {@link tagWidgets} by a catalog
+   * consumer such as a page editor's insert menu.
    */
-  kind?: "vue" | "blade";
+  kind?: "vue" | "blade" | "tag";
   /** Resolver key → Vue component (in src/widgets/dashboard). Used by `vue` kind. */
   component?: string;
   /** Runtime ESM URL for a `vue`-kind widget (e.g. /ext/foo/widget.js). */
@@ -28,6 +31,13 @@ export interface WidgetDef {
   endpoint?: string;
   /** Blade render mode: `island` (default, injected HTML) or `iframe`. */
   mode?: "island" | "iframe";
+  /** The custom element's tag name (e.g. `pv-hero`). Used by `tag` kind. */
+  tag?: string;
+  /**
+   * Catalog description of each authorable attribute, for a `tag`-kind entry.
+   * Used by `tag` kind.
+   */
+  attributes?: Array<{ name: string; type: string; description: string }>;
   /** Human label shown in the Add-widget menu + frame header. */
   title: string;
   /**
@@ -81,6 +91,13 @@ const CATALOG: WidgetDef[] = [
  */
 let serverWidgets: WidgetDef[] = [];
 
+// `tag`-kind entries share the same server list (`Skylight::widgets()->all()`,
+// `app/Support/Skylight/WidgetRegistry.php`) but are NOT dashboard-board
+// widgets — they are the component catalog a DIFFERENT consumer (e.g. a page
+// editor's insert menu) reads via `tagWidgets()`. Kept out of `serverWidgets`/
+// `getCatalog()` so one never leaks into the pilot's "Add widget" menu.
+let serverTagWidgets: WidgetDef[] = [];
+
 /** Register an additional widget (addon extension point). Idempotent by id. */
 export function registerWidget(def: WidgetDef): void {
   if (!CATALOG.some((w) => w.id === def.id)) CATALOG.push(def);
@@ -94,24 +111,38 @@ export function registerWidget(def: WidgetDef): void {
 export function mergeServerWidgets(defs: WidgetDef[] | undefined | null): void {
   if (!defs || !defs.length) {
     serverWidgets = [];
+    serverTagWidgets = [];
     return;
   }
   const byId = new Map<string, WidgetDef>();
+  const tagById = new Map<string, WidgetDef>();
   for (const def of defs) {
-    if (def && typeof def.id === "string") byId.set(def.id, def);
+    if (!def || typeof def.id !== "string") continue;
+    (def.kind === "tag" ? tagById : byId).set(def.id, def);
   }
   serverWidgets = [...byId.values()];
+  serverTagWidgets = [...tagById.values()];
 }
 
 /**
  * The full widget catalog: first-party CATALOG followed by server widgets,
  * deduped by id (a server entry wins if it shares an id with a first-party one).
+ * `tag`-kind entries are excluded — see {@link tagWidgets}.
  */
 export function getCatalog(): WidgetDef[] {
   if (!serverWidgets.length) return CATALOG;
   const serverIds = new Set(serverWidgets.map((w) => w.id));
   const base = CATALOG.filter((w) => !serverIds.has(w.id));
   return [...base, ...serverWidgets];
+}
+
+/**
+ * The `tag`-kind component catalog — every first-party or addon-contributed
+ * custom element, for a consumer that offers or validates authorable tags
+ * (e.g. a page editor's insert menu). Not merged into {@link getCatalog}.
+ */
+export function tagWidgets(): WidgetDef[] {
+  return serverTagWidgets;
 }
 
 /** Look up a def by id in the merged catalog. */
