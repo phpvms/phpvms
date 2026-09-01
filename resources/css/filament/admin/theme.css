@@ -34,6 +34,12 @@
 @source '../../../../resources/js/apps/admin/routeforge/**/*';
 @source '../../../../../acars-plugin/resources/js/sop-planner/src/**/*';
 
+/* Named-utility safelist for authors this scan list never covers — addon
+ * Blade views under modules/ are not, and cannot be, one of the @source
+ * roots above. Lands in `utilities` regardless of import position. See
+ * resources/css/tailwind-safelist.css and design.md D2/D4. */
+@import "../../tailwind-safelist.css";
+
 /* Alpine x-cloak. Used by 24 Filament vendor views, defined by none of them —
  * without this rule, elements flash before Alpine initializes. */
 [x-cloak] {
@@ -3480,10 +3486,21 @@ html[data-density="comfortable"] .tbl tbody td {
 /* ---------------------------------------------------------------------------
  * Add-on catalog (mockups/admin-console-v2/addons.html).
  *
- * Lives in the core theme rather than the module because this is the only file
- * with a Tailwind build: `@source` does not scan modules/, so utilities written
- * in a module Blade view would never compile. Everything the add-on view needs
- * is therefore a named class here, and the view uses no bare utilities.
+ * Lives in the core theme rather than the module. Originally this was
+ * mandatory: `@source` does not scan modules/, so bare utilities written in a
+ * module Blade view would never compile, full stop. That is no longer true —
+ * resources/css/tailwind-safelist.css safelists the default-scale utility
+ * surface (`grid`, `flex`, `items-center`, `gap-3`, `rounded-xl`, `border`,
+ * `px-3`, `py-2.5`, and the rest of what this block itself uses below)
+ * regardless of which file uses them, addon views included.
+ *
+ * The named classes stay here anyway: most of them also lean on this theme's
+ * `--ink`/`--surface`/`--line`-family custom properties and a few arbitrary
+ * values (`text-[12.5px]`, `h-2.25`, `max-w-[34ch]`) that are outside the
+ * safelist's default scale and always will be (see the partial's exclusions).
+ * Converting this catalog view to bare utilities is out of scope here and
+ * would be a visual-regression risk for no benefit — see
+ * openspec/changes/tailwind-utility-safelist/tasks.md 4.3.
  * ------------------------------------------------------------------------- */
 
 /* A degraded-but-working state, stated where the counts are read. Not a toast:

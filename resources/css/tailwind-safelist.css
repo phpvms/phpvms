@@ -1,0 +1,80 @@
+/* ---------------------------------------------------------------------------
+ * Tailwind utility safelist
+ *
+ * Tailwind v4 generates CSS only for classes it can see at build time, via the
+ * files named in `@source` directives. Two groups of authors are never in
+ * those files: addon Blade views under `modules/` (not scanned by either
+ * Tailwind build in this repo), and page bodies stored in the database
+ * (page-authoring). A bare utility they type compiles to nothing.
+ *
+ * This file is that fix: a broad, explicit `@source inline(...)` safelist of
+ * named, scale-based utilities, imported by both Tailwind builds in the repo
+ * (`resources/js/apps/fe-vue/src/app/app.css` for the skylight SPA,
+ * `resources/css/filament/admin/theme.css` for the Filament admin panel) so
+ * the same vocabulary resolves in both. It is a contract: if a class is
+ * listed below, it compiles, in either build, regardless of which file uses
+ * it.
+ *
+ * Covered families, each across the default scale and the
+ * `sm: md: lg: xl: 2xl: hover: focus: dark:` variants:
+ *   - colour: `text-` `bg-` `border-` over all default palettes and shades
+ *   - spacing: `p px py pt pr pb pl m mx my mt mr mb ml gap w h`
+ *   - display & position: `flex grid block inline inline-block hidden
+ *     absolute relative fixed sticky`
+ *   - alignment: `items- justify- content- self-`
+ *   - `rounded shadow border opacity z order basis grow shrink`
+ *   - type scale (`text-xs` … `text-9xl`) and weight (`font-thin` …
+ *     `font-black`)
+ *   - grid: `grid-cols-1` … `grid-cols-12`, `col-span-1` … `col-span-12`
+ *
+ * NOT covered, and this is permanent, not a gap to fill in:
+ *   - arbitrary values, e.g. `w-[347px]`, `bg-[#1a2b3c]` — unbounded by
+ *     construction, no safelist can enumerate them
+ *   - arbitrary variants, e.g. `[&>p]:mt-4`
+ *   - `supports-[...]` and container queries
+ *   - any utility family not listed above
+ * An author needing one of these writes plain CSS instead.
+ *
+ * The compiled size of this file is measured and budget-guarded in isolation
+ * (`@import "tailwindcss" source(none);`) by the script and test described in
+ * `openspec/changes/tailwind-utility-safelist/design.md` (D5). Adding a
+ * family here without raising the recorded budget fails that check.
+ * ------------------------------------------------------------------------- */
+
+/* Every family below repeats the same variant set: responsive breakpoints,
+ * hover/focus interaction states, and dark mode. Written once per line via
+ * brace expansion so the covered set stays visible at a glance. */
+
+/* Colour: text/background/border over every default palette and shade. */
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}{text,bg,border}-{red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone}-{50,{100..900..100},950}');
+
+/* Spacing: padding, margin, gap, width, height over the default scale. */
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}{p,px,py,pt,pr,pb,pl,m,mx,my,mt,mr,mb,ml,gap,w,h}-{0,px,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,44,48,52,56,60,64,72,80,96}');
+
+/* Display & position: bare layout-mode utilities, no scale. */
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}{flex,grid,block,inline,inline-block,hidden,absolute,relative,fixed,sticky}');
+
+/* Alignment: flex/grid item and content alignment. */
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}items-{start,end,center,baseline,stretch}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}justify-{start,end,center,between,around,evenly}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}content-{start,end,center,between,around,evenly,normal}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}self-{auto,start,end,center,stretch,baseline}');
+
+/* Radius, shadow, border width, opacity, z-index, flex order/basis/grow/shrink. */
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}rounded{-none,-sm,-md,-lg,-xl,-2xl,-3xl,-full,}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}shadow{-sm,-md,-lg,-xl,-2xl,-inner,-none,}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}border{-0,-2,-4,-8,}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}opacity-{0..100..5}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}z-{0,10,20,30,40,50,auto}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}order-{1..12,first,last,none}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}basis-{0,px,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,56,64,auto,full}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}grow{,-0}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}shrink{,-0}');
+
+/* Typography: font-size scale and font-weight scale. */
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,8xl,9xl}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}font-{thin,extralight,light,normal,medium,semibold,bold,extrabold,black}');
+
+/* Grid: column count and column span, 1 through 12. */
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}grid-cols-{1..12}');
+@source inline('{sm:,md:,lg:,xl:,2xl:,hover:,focus:,dark:,}col-span-{1..12}');

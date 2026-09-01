@@ -68,6 +68,12 @@ jobs:
       - name: Compile assets
         run: pnpm run build
 
+      # Fails the build (and prints the new size) if the tailwind-safelist
+      # partial's isolated (`source(none)`) brotli size exceeds the recorded
+      # budget — see openspec/changes/tailwind-utility-safelist/design.md D5.
+      - name: Check tailwind-safelist size budget
+        run: pnpm run safelist:check
+
       - name: Run Composer post-autoload scripts
         run: |
           composer dump-autoload -o
