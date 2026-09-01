@@ -7,6 +7,8 @@ use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\Filament\SystemPanelProvider;
+use App\Providers\FirstPartyMetricsServiceProvider;
+use App\Providers\MetricsServiceProvider;
 use App\Providers\PassportServiceProvider;
 use App\Providers\SkylightServiceProvider;
 use App\Providers\TypeScriptTransformerServiceProvider;
@@ -21,6 +23,14 @@ return [
     // Register the skylight extension hub BEFORE the addon engine so the
     // `skylight` binding exists when addon providers boot and register widgets.
     SkylightServiceProvider::class,
+
+    // Same reasoning as SkylightServiceProvider: the `metrics` binding must
+    // exist before any addon ServiceProvider::boot() calls the Metrics
+    // facade. FirstPartyMetricsServiceProvider registers core's own metrics
+    // from boot() the same way an addon would, so it is listed after the hub
+    // and (like the addon engine) after the binding is registered.
+    MetricsServiceProvider::class,
+    FirstPartyMetricsServiceProvider::class,
 
     AddonServiceProvider::class,
     PassportServiceProvider::class,
