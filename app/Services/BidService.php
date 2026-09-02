@@ -82,7 +82,11 @@ class BidService extends Service
     }
 
     /**
-     * Find all of the bids for a given user
+     * Find all of the bids for a given user, most recently briefed first.
+     *
+     * The pilot's own SimBrief for the bid's flight is the ordering key: a bid
+     * is "current" because a briefing was just generated for it, not because it
+     * was clicked on last. Bids with no briefing follow, newest bid first.
      *
      *
      * @return Bid[]
@@ -116,7 +120,17 @@ class BidService extends Service
             ]);
         }
 
-        $bids = Bid::with($with)->where(['user_id' => $user->id])->get();
+        // Newest bid first, tie-broken on the id. This is the base order the
+        // briefing sort below falls back to, and on its own it is already
+        // total: `bids`.`created_at` is a second-precision timestamp, so two
+        // bids placed in the same second compare equal and would otherwise come
+        // back in whatever order the driver returned. The id is auto-increment,
+        // so a higher one is the later bid.
+        $bids = Bid::with($with)
+            ->where(['user_id' => $user->id])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
 
         if ($loadSubfleets) {
             foreach ($bids as $bid) {
@@ -138,7 +152,43 @@ class BidService extends Service
             }
         }
 
-        return $bids;
+        return $this->briefedFirst($bids);
+    }
+
+    /**
+     * Order bids by how recently the pilot briefed them, newest first, leaving
+     * bids with no briefing behind those that have one.
+     *
+     * Sorted here rather than in the query because ordering on the briefing
+     * timestamp means ordering on a nullable correlated value, and the two
+     * databases phpVMS supports disagree about where those nulls land: on a
+     * DESC sort Postgres puts NULLs first and MySQL puts them last. Expressing
+     * "nulls last" portably in SQL means a raw COALESCE with a driver-specific
+     * cast, for a list that is one pilot's bids and already has its simbrief
+     * eager-loaded.
+     *
+     * The sort is stable (PHP 8), so bids that are equal on briefing — which
+     * includes every bid with no briefing at all — keep the query's newest-bid
+     * -first order.
+     *
+     * @param  Collection<int, Bid> $bids
+     * @return Collection<int, Bid>
+     */
+    private function briefedFirst(Collection $bids): Collection
+    {
+        return $bids->sort(function (Bid $a, Bid $b): int {
+            $aAt = $a->flight?->simbrief?->created_at;
+            $bAt = $b->flight?->simbrief?->created_at;
+
+            // No briefing means no recency to compare, so it sorts after every
+            // bid that has one instead of landing at whichever end the
+            // comparison happened to put it.
+            if ($aAt === null || $bAt === null) {
+                return ($aAt === null ? 1 : 0) <=> ($bAt === null ? 1 : 0);
+            }
+
+            return $bAt <=> $aAt;
+        })->values();
     }
 
     /**
