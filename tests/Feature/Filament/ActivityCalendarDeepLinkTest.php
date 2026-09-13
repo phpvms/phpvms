@@ -7,6 +7,7 @@ use App\Filament\Resources\Pireps\Pages\ListPireps;
 use App\Filament\Widgets\ActivityCalendarWidget;
 use App\Models\Pirep;
 use Database\Seeders\RolesPermissionsSeeder;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -54,6 +55,11 @@ it('selects the flights a calendar box counted, including those with no block-of
  * scope on `Pirep::ACTIVITY_AT` rather than filing time.
  */
 it('counts an in-progress flight and lets the list it links to show it', function (): void {
+    // The calendar buckets by calendar day, so within two hours of midnight
+    // `now()->subHours(2)` lands in yesterday's row and today's is empty. Pin
+    // the clock to midday so the flight and the assertion share a day.
+    Carbon::setTestNow(today()->addHours(12));
+
     $flying = Pirep::factory()->create([
         'state'          => PirepState::IN_PROGRESS,
         'submitted_at'   => null,
@@ -88,4 +94,6 @@ it('counts an in-progress flight and lets the list it links to show it', functio
         ->test(ListPireps::class)
         ->assertCanSeeTableRecords([$flying])
         ->assertCanNotSeeTableRecords([$drafted, $cancelled]);
+
+    Carbon::setTestNow();
 });

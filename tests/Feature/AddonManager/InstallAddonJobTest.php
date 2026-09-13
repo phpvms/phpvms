@@ -130,6 +130,53 @@ it('installs a verified addon (happy path)', function (): void {
     expect(DB::table('notifications')->where('notifiable_id', $this->user->id)->count())->toBe(1);
 });
 
+it('autoloads addon classes before running migrations', function (bool $updating): void {
+    if ($updating) {
+        $v1 = buildAddonZip($this->work.'/demo-v1.zip', 'acme/demo', '1.0.0');
+        fakeRegistry('acme/demo', '1.0.0', $v1, $this->secret);
+        runInstall('acme/demo', '1.0.0', false, $this->user->id);
+    }
+
+    $namespace = 'Modules\\MigrationDemo'.str_replace('.', '', uniqid('', true));
+    $zipPath = buildAddonZip($this->work.'/demo.zip', 'acme/demo', '2.0.0');
+    $zip = new ZipArchive();
+    $zip->open($zipPath);
+    $zip->addFromString('composer.json', json_encode([
+        'autoload' => ['psr-4' => [$namespace.'\\' => 'app/']],
+    ]));
+    $zip->addFromString('app/Support/Permissions.php', str_replace('ADDON_NAMESPACE', $namespace, <<<'PHP'
+<?php
+namespace ADDON_NAMESPACE\Support;
+final class Permissions
+{
+    public const ADMIN = 'demo:admin';
+}
+PHP));
+    $zip->addFromString('database/migrations/2026_01_01_000000_create_demo_permissions.php', str_replace('ADDON_NAMESPACE', $namespace, <<<'PHP'
+<?php
+use ADDON_NAMESPACE\Support\Permissions;
+use App\Models\Permission;
+use Illuminate\Database\Migrations\Migration;
+return new class extends Migration {
+    public function up(): void
+    {
+        Permission::firstOrCreate(['name' => Permissions::ADMIN, 'guard_name' => 'web']);
+    }
+};
+PHP));
+    $zip->close();
+    fakeRegistry('acme/demo', '2.0.0', $zipPath, $this->secret);
+
+    expect(class_exists($namespace.'\\Support\\Permissions', false))->toBeFalse();
+
+    runInstall('acme/demo', '2.0.0', true, $this->user->id);
+
+    $progress = InstallProgress::get('acme/demo');
+    expect($progress['status'])->toBe('done', $progress['message']);
+    expect(Addon::where('registry_id', 'acme/demo')->value('version'))->toBe('2.0.0');
+    $this->assertDatabaseHas('permissions', ['name' => 'demo:admin', 'guard_name' => 'web']);
+})->with(['fresh install' => false, 'update' => true]);
+
 it('rejects a bad signature and downloads nothing', function (): void {
     $zip = buildAddonZip($this->work.'/demo.zip', 'acme/demo', '1.0.0');
     $wrongKp = sodium_crypto_sign_keypair();
