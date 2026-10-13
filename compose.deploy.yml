@@ -96,8 +96,13 @@ services:
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     env_file:
       - .env
+
+    # NOTE: /var/www/html/modules is deliberately NOT mounted. A named volume
+    # is populated from the image only when it is first created, so mounting
+    # one here freezes the bundled modules at that moment and no later image
+    # ever updates them. Addons installed at runtime go to storage/addons
+    # (config/addons.php), which the storage volume below already persists.
     volumes:
-      - phpvms_modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
     #    depends_on:
@@ -125,7 +130,6 @@ services:
       start_period: 10s
     env_file: .env
     volumes:
-      - phpvms_modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
 
@@ -143,7 +147,6 @@ services:
       start_period: 10s
     env_file: .env
     volumes:
-      - phpvms_modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
 
@@ -191,7 +194,6 @@ services:
 #      timeout: 5s
 
 volumes:
-  phpvms_modules:
   phpvms_storage:
   phpvms_uploads:
 

@@ -32,8 +32,14 @@ beforeEach(function (): void {
     // …then redirect install targets to a scratch dir.
     $this->work = sys_get_temp_dir().'/addon-install-'.uniqid('', true);
     File::ensureDirectoryExists($this->work.'/modules');
+
+    // install()/update() place files in the writable root, never in the image
+    // root, so that is where this suite's path assertions look.
+    $this->installed = $this->work.'/installed';
+
     config([
         'addons.paths.base'          => $this->work.'/modules',
+        'addons.paths.installed'     => $this->installed,
         'addons.paths.staging'       => $this->work.'/staging',
         'addon-manager.registry_url' => 'https://registry.test',
     ]);
@@ -220,7 +226,7 @@ it('rolls back a fresh install when migrations fail', function (): void {
     runInstall('acme/demo', '1.0.0', true, $this->user->id);
 
     expect(Addon::where('registry_id', 'acme/demo')->exists())->toBeFalse();
-    expect(File::isDirectory($this->work.'/modules/acme-demo'))->toBeFalse();
+    expect(File::isDirectory($this->installed.'/acme-demo'))->toBeFalse();
     expect(InstallProgress::get('acme/demo')['status'])->toBe('error');
 });
 
@@ -240,7 +246,7 @@ it('restores the previous version when an update migration fails', function (): 
     expect($addon)->not->toBeNull();
     expect($addon->version)->toBe('1.0.0');
     expect($addon->enabled)->toBeTrue();
-    expect(File::exists($this->work.'/modules/acme-demo/module.json'))->toBeTrue();
+    expect(File::exists($this->installed.'/acme-demo/module.json'))->toBeTrue();
 });
 
 it('applies WithoutOverlapping per registry id', function (): void {

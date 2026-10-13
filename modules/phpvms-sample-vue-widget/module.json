@@ -4,6 +4,7 @@
     "name": "SampleVueWidget",
     "alias": "sample-vue-widget",
     "registry_id": "phpvms/sample-vue-widget",
+    "version": "1.0.0",
     "type": "module",
     "description": "Reference third-party addon that ships a pre-built Vue (ESM) dashboard widget for the skylight SPA and owns its own data endpoint.",
     "keywords": ["skylight", "widget", "vue", "example"],
