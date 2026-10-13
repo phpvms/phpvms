@@ -258,6 +258,17 @@ class AddonDiscoveryService
             if ($installed) {
                 $this->healLegacyIdentity($installed, $m);
 
+                // Re-point the existing row at whichever copy won precedence.
+                // upsert() leaves `enabled` and `installed_at` alone for a row
+                // that already exists, so this only syncs path/version/
+                // namespace. Skipping it is what made the two roots work only
+                // on an empty database: a row seeded from the image keeps
+                // naming the image directory after a newer copy is installed,
+                // and keeps naming the stale overlay after a deploy ships a
+                // newer bundled version — so delete(), the boot cache and the
+                // admin UI all act on a directory that is not the one loading.
+                $this->upsert($m);
+
                 continue;
             }
 
@@ -341,7 +352,9 @@ class AddonDiscoveryService
      *
      * So the higher version wins, via AddonVersions::installedSupersedesImage(),
      * which hands ties and unversioned copies to the image. The losing copy is
-     * logged: it is inert files on disk, and `addons:prune-shadowed` removes it.
+     * logged and then simply inert — nothing loads it. It is left on disk
+     * rather than deleted during a scan, so removing it is a deliberate
+     * operator action (delete the addon, or clear the directory by hand).
      *
      * De-duplication is on registry_id, which ManifestParser guarantees is
      * present and non-empty (ManifestParser.php:70) — a directory without one

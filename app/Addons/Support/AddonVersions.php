@@ -44,10 +44,9 @@ final class AddonVersions
     /**
      * True when $candidate is a strictly newer semver than $current.
      *
-     * Fails closed when $current carries no parseable version — empty, null, or
-     * non-numeric like "dev-main", which pad() would otherwise coerce to 0.0.0
-     * and report every candidate as newer. A malformed $candidate is harmless:
-     * it pads to 0.0.0 and compares as not-newer.
+     * Fails closed whenever either side is not a clean numeric version — null,
+     * empty, "dev-main", "999.invalid". Both have to parse for the comparison
+     * to mean anything, and every caller reads "cannot compare" as "image wins".
      */
     public static function isNewer(?string $candidate, ?string $current): bool
     {
@@ -55,27 +54,57 @@ final class AddonVersions
             return false;
         }
 
-        if ($current === '' || !preg_match('/\d/', $current)) {
+        $candidateCore = self::normalise($candidate);
+        $currentCore = self::normalise($current);
+
+        if ($candidateCore === null || $currentCore === null) {
             return false;
         }
 
         try {
-            return Version::fromString(self::pad($candidate))
-                ->isGreaterThan(Version::fromString(self::pad($current)));
+            return Version::fromString($candidateCore)
+                ->isGreaterThan(Version::fromString($currentCore));
         } catch (Throwable) {
             return false;
         }
     }
 
     /**
-     * Pad a partial version ("1.2") to a full semver ("1.2.0") and strip any
-     * build/prerelease suffix so nikolaposa/version accepts it.
+     * Normalise a version to `major.minor.patch`, or null when it is not a
+     * version at all.
+     *
+     * Accepts a leading "v", a partial version ("1.2" becomes "1.2.0") and a
+     * build/prerelease suffix, which is stripped — so 2.0.0-rc1 and 2.0.0
+     * compare equal and the image wins the tie.
+     *
+     * Rejects anything whose components are not purely digits, rather than
+     * casting them. A naive (int) cast turns "999.invalid" into "999.0.0",
+     * which would then supersede a real 1.0.0: junk must never win a
+     * comparison that decides which code loads.
      */
-    private static function pad(string $version): string
+    private static function normalise(string $version): ?string
     {
         $core = preg_split('/[-+]/', ltrim(trim($version), 'vV'))[0] ?? '';
-        $parts = array_slice(array_pad(explode('.', $core), 3, '0'), 0, 3);
 
-        return implode('.', array_map(fn ($part): int => (int) $part, $parts));
+        if ($core === '') {
+            return null;
+        }
+
+        $parts = explode('.', $core);
+
+        if (count($parts) > 3) {
+            return null;
+        }
+
+        foreach ($parts as $part) {
+            if (preg_match('/^\d+$/', $part) !== 1) {
+                return null;
+            }
+        }
+
+        return implode('.', array_map(
+            static fn (string $part): int => (int) $part,
+            array_pad($parts, 3, '0'),
+        ));
     }
 }

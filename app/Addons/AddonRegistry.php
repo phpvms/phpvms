@@ -117,15 +117,15 @@ class AddonRegistry
      * keyed on registry_id, not the addon row id, so reinstalling the addon
      * finds the operator's values again instead of resetting them to defaults.
      *
-     * @return bool true when the addon's files and row were removed; false when
-     *              it ships in the image and was only disabled
+     * @return AddonDeleteOutcome which of the three things happened, so the
+     *                            caller can report it without guessing
      */
-    public function delete(string $name, bool $removeTables = false): bool
+    public function delete(string $name, bool $removeTables = false): AddonDeleteOutcome
     {
         $addon = $this->find($name);
 
         if (!$addon instanceof Addon) {
-            return false;
+            return AddonDeleteOutcome::NotFound;
         }
 
         if ($addon->isBundled()) {
@@ -146,7 +146,7 @@ class AddonRegistry
             // removal that did not happen is worse than refusing it.
             $this->setEnabled($name, false);
 
-            return false;
+            return AddonDeleteOutcome::Disabled;
         }
 
         // The loaded copy is a registry update sitting on top of a version the
@@ -157,7 +157,10 @@ class AddonRegistry
         $imageCopy = $this->imageRootCopy($addon->registry_id);
 
         if ($imageCopy instanceof AddonManifest) {
-            $this->removeAddonFiles($addon);
+            // Before any row state changes: a surviving overlay is still the
+            // newer copy, so it would keep winning precedence and the "revert"
+            // would be a lie.
+            $this->removeAddonFilesOrFail($addon);
 
             // Re-point the row at the image copy explicitly. Neither
             // discoverNewAddons() nor rebuildCache() will do it: the first skips
@@ -175,8 +178,13 @@ class AddonRegistry
             $this->bustPanelComponentCache();
             $this->octane->reload();
 
-            return false;
+            return AddonDeleteOutcome::Reverted;
         }
+
+        // Files first, and it throws on failure. Dropping the tables before
+        // knowing the files are gone would leave a discoverable addon whose
+        // schema has been deleted under it.
+        $this->removeAddonFilesOrFail($addon);
 
         if ($removeTables) {
             $this->removeAddonTables($addon);
@@ -186,15 +194,13 @@ class AddonRegistry
 
         $this->assetLinker->unlink($addon->getName());
 
-        $this->removeAddonFiles($addon);
-
         $addon->delete();
 
         app(AddonDiscoveryService::class)->rebuildCache();
         $this->bustPanelComponentCache();
         $this->octane->reload();
 
-        return true;
+        return AddonDeleteOutcome::Removed;
     }
 
     /**
@@ -235,20 +241,30 @@ class AddonRegistry
     }
 
     /**
-     * Delete an addon's files from the writable installed root.
+     * Delete an addon's files from the writable installed root, or throw.
      *
      * Without this, uninstalling is not durable: delete() removes the row, and
      * the next `discoverNewAddons()` pass finds the untouched manifest and
-     * re-adds it (AddonDiscoveryService), with `scan_for_new_on_boot` on by
-     * default. The addon reappears after a restart.
+     * re-adds it, with `scan_for_new_on_boot` on by default. The addon
+     * reappears after a restart.
      *
-     * Containment guard: only paths inside the installed root are removed. The
+     * Verified by re-checking the directory rather than trusting the return
+     * value. `Filesystem::deleteDirectory()` discards the result of its own
+     * recursive calls and uses `@rmdir()`, then returns true unconditionally,
+     * so it reports success even when files survive — a read-only file or a
+     * permissions problem would otherwise leave the addon on disk while its row
+     * disappeared.
+     *
+     * Containment guard: only paths inside the installed root are touched. The
      * caller has already excluded image-managed addons, but `addons.path` is a
      * stored string — a hand-edited or legacy row must not be able to aim a
      * recursive delete at an arbitrary directory. A path outside the root is
-     * logged and left alone.
+     * logged and left alone, and is not an error: there is nothing of ours
+     * there to remove.
+     *
+     * @throws RuntimeException when the directory is still present afterwards
      */
-    private function removeAddonFiles(Addon $addon): void
+    private function removeAddonFilesOrFail(Addon $addon): void
     {
         $path = rtrim($addon->getPath(), '/');
         $root = AddonRoots::installed();
@@ -276,12 +292,16 @@ class AddonRegistry
             return;
         }
 
-        if (!File::deleteDirectory($path)) {
-            // Non-fatal: the row still goes, so the addon stops loading. Say so
-            // loudly, because the leftover directory will be re-discovered as a
-            // new disabled addon on the next scan.
-            Log::error(sprintf(
-                'AddonRegistry: failed to remove addon files for "%s" at %s; the directory will be re-discovered',
+        File::deleteDirectory($path);
+
+        // PHP caches stat results per request, so the check below has to be
+        // told to look at the filesystem again rather than answer from the
+        // cached entry that said the directory existed a moment ago.
+        clearstatcache(true, $path);
+
+        if (file_exists($path)) {
+            throw new RuntimeException(sprintf(
+                'Failed to remove the files for the "%s" addon at %s. Nothing was changed; the addon is still installed.',
                 $addon->getName(),
                 $path,
             ));

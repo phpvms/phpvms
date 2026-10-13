@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Addons\AddonDeleteOutcome;
 use App\Addons\AddonRegistry;
 use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Sources\ZipSource;
@@ -346,9 +347,9 @@ it('treats a symlinked module in the image root as image-managed', function (): 
 
     // Still image-managed: delete() disables and keeps both row and files
     // rather than deleting someone's external checkout.
-    $removed = app(AddonRegistry::class)->delete('Linked');
+    $outcome = app(AddonRegistry::class)->delete('Linked');
 
-    expect($removed)->toBeFalse()
+    expect($outcome)->toBe(AddonDeleteOutcome::Disabled)
         ->and(Addon::query()->where('registry_id', 'acme/linked')->value('enabled'))->toBeFalsy()
         ->and(File::exists($target.'/module.json'))->toBeTrue();
 });
@@ -364,13 +365,60 @@ it('delete() of a registry update reverts to the bundled version', function (): 
     expect(Addon::query()->where('registry_id', 'acme/twin')->value('path'))
         ->toStartWith($this->installedReal);
 
-    $removed = app(AddonRegistry::class)->delete('Twin');
+    $outcome = app(AddonRegistry::class)->delete('Twin');
 
-    expect($removed)->toBeFalse()
+    expect($outcome)->toBe(AddonDeleteOutcome::Reverted)
         ->and(File::isDirectory($installedDir))->toBeFalse()
         ->and(File::isDirectory($imageDir))->toBeTrue()
         ->and(Addon::query()->where('registry_id', 'acme/twin')->exists())->toBeTrue()
         ->and(Addon::query()->where('registry_id', 'acme/twin')->value('path'))
         ->toStartWith($this->imageReal)
         ->and(Addon::query()->where('registry_id', 'acme/twin')->value('version'))->toBe('1.0.0');
+});
+
+it('re-points an existing row when a deploy ships a newer bundled version', function (): void {
+    // The sequence a real deployment actually follows, and the one a fresh-row
+    // test cannot catch: the image copy is discovered first and seeds the row,
+    // the operator installs a newer copy from the registry, then a deploy ships
+    // a newer bundled version again. Each step has to move the row.
+    $imageDir = placeAddonInRoot($this->image, 'Twin', 'acme/twin', '1.0.0');
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+
+    expect(Addon::query()->where('registry_id', 'acme/twin')->value('path'))
+        ->toStartWith($this->imageReal);
+
+    $installedDir = placeAddonInRoot($this->installed, 'Twin', 'acme/twin', '1.1.0');
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+
+    expect(Addon::query()->where('registry_id', 'acme/twin')->value('path'))
+        ->toStartWith($this->installedReal)
+        ->and(Addon::query()->where('registry_id', 'acme/twin')->value('version'))->toBe('1.1.0');
+
+    // Deploy ships 1.2.0: the bundled copy wins again and the row follows it.
+    File::put($imageDir.'/module.json', json_encode([
+        'name'        => 'Twin',
+        'registry_id' => 'acme/twin',
+        'version'     => '1.2.0',
+        'providers'   => [],
+    ]));
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+
+    expect(Addon::query()->where('registry_id', 'acme/twin')->value('path'))
+        ->toStartWith($this->imageReal)
+        ->and(Addon::query()->where('registry_id', 'acme/twin')->value('version'))->toBe('1.2.0')
+        ->and(File::isDirectory($installedDir))->toBeTrue();
+});
+
+it('does not re-enable an addon the operator disabled', function (): void {
+    // Reconciling an existing row must not touch `enabled` (D-12).
+    placeAddonInRoot($this->image, 'Twin', 'acme/twin', '1.0.0');
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+    Addon::query()->where('registry_id', 'acme/twin')->update(['enabled' => false]);
+
+    placeAddonInRoot($this->installed, 'Twin', 'acme/twin', '1.1.0');
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+
+    expect(Addon::query()->where('registry_id', 'acme/twin')->value('enabled'))->toBeFalsy()
+        ->and(Addon::query()->where('registry_id', 'acme/twin')->value('path'))
+        ->toStartWith($this->installedReal);
 });

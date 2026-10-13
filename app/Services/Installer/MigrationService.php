@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Services\Installer;
 
 use App\Addons\AddonRegistry;
+use App\Addons\Models\AddonManifest;
 use App\Addons\Support\AddonRoots;
+use App\Addons\Support\AddonVersions;
+use App\Addons\Support\ManifestParser;
 use App\Contracts\Service;
 use App\Models\Addon;
 use Closure;
@@ -90,16 +93,19 @@ class MigrationService extends Service
      * symlinked to an external checkout); anything that isn't a direct
      * child of the base, or has no module.json, is skipped.
      *
+     * Scans both addon roots and picks the same copy discovery would load, so
+     * the migrations that run belong to the code that will be running.
+     *
      * @return array<string, string> addon directory basename => absolute path
      */
     private function scanAddonPathsOnDisk(): array
     {
-        $paths = [];
+        $parser = app(ManifestParser::class);
+        $image = AddonRoots::image();
 
-        // Both addon roots: the pre-install branch that calls this runs before
-        // any addons row exists, so an addon sitting in the writable root — a
-        // surviving volume against a rebuilt database — would otherwise have
-        // its migrations skipped entirely.
+        /** @var array<string, array{name: string, path: string, version: ?string, fromImage: bool}> $chosen */
+        $chosen = [];
+
         foreach (AddonRoots::all() as $base) {
             if (!is_dir($base)) {
                 continue;
@@ -111,8 +117,11 @@ class MigrationService extends Service
                 continue;
             }
 
+            $fromImage = $base === $image;
+
             foreach (File::directories($base) as $subDir) {
                 $resolved = realpath($subDir);
+
                 if ($resolved === false) {
                     continue;
                 }
@@ -125,10 +134,60 @@ class MigrationService extends Service
                     continue;
                 }
 
-                // Image root is scanned first and wins a basename collision,
-                // matching AddonDiscoveryService::scanAllRoots().
-                $paths[basename($subDir)] ??= $resolved;
+                $manifest = $parser->parse($resolved);
+
+                // `name` is the basename as it appears in the root, NOT of the
+                // resolved path: for a symlinked module (modules/Linked -> an
+                // external checkout) the caller keys migration paths by the name
+                // in the root, while the path itself has to be the resolved one.
+                $incoming = [
+                    'name'      => basename((string) $subDir),
+                    'path'      => $resolved,
+                    'version'   => $manifest?->version,
+                    'fromImage' => $fromImage,
+                ];
+
+                // Keyed on registry_id when there is one, so the same addon in
+                // both roots resolves exactly as
+                // AddonDiscoveryService::scanAllRoots() resolves it: higher
+                // version wins, ties to the image. Keying on directory basename
+                // instead would run the wrong copy's migrations, since the roots
+                // can name one addon differently (modules/Twin vs
+                // storage/addons/acme-twin) — that runs both — and where the
+                // names do match it would run the image copy's even though
+                // discovery loads the newer installed one.
+                //
+                // A manifest with no registry_id has no identity to compare, so
+                // it falls back to its basename and the first root wins. Such a
+                // directory is still included: this scan runs pre-install, where
+                // a manifest predating the registry_id requirement is exactly
+                // what turns up, and dropping it would silently skip its
+                // migrations.
+                $key = $manifest instanceof AddonManifest
+                    ? 'id:'.$manifest->registryId
+                    : 'dir:'.$incoming['name'];
+
+                $held = $chosen[$key] ?? null;
+
+                if ($held === null) {
+                    $chosen[$key] = $incoming;
+
+                    continue;
+                }
+
+                [$imageCopy, $installedCopy] = $held['fromImage'] ? [$held, $incoming] : [$incoming, $held];
+
+                $chosen[$key] = AddonVersions::installedSupersedesImage(
+                    $installedCopy['version'],
+                    $imageCopy['version'],
+                ) ? $installedCopy : $imageCopy;
             }
+        }
+
+        $paths = [];
+
+        foreach ($chosen as $entry) {
+            $paths[$entry['name']] = $entry['path'];
         }
 
         return $paths;
