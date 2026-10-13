@@ -289,7 +289,7 @@ expenses:
 fares:
   - id: 1
     code: "Y"
-    name: Economy
+    name: Economy Flexi
     price: "100.00"
     cost: "0.00"
     capacity: 200
@@ -299,8 +299,8 @@ fares:
     created_at: null
     updated_at: null
   - id: 2
-    code: B
-    name: Business
+    code: J
+    name: Business Flexi
     price: "500.00"
     cost: "0.00"
     capacity: 10
@@ -311,7 +311,7 @@ fares:
     updated_at: null
   - id: 3
     code: F
-    name: First-Class
+    name: First
     price: "800.00"
     cost: "0.00"
     capacity: 5
@@ -756,15 +756,15 @@ pirep_fares:
     pirep_id: pirepid_1
     fare_id: 1
     code: "Y"
-    name: Economy
+    name: Economy Flexi
     count: 300
     price: 100
     type: 0
   - id: 2
     pirep_id: pirepid_1
     fare_id: 2
-    code: B
-    name: Business
+    code: J
+    name: Business Flexi
     count: 25
     price: 500
     type: 0
@@ -772,7 +772,7 @@ pirep_fares:
     pirep_id: pirepid_1
     fare_id:
     code: F
-    name: First-Class
+    name: First
     count: 10
     price: 800
     type: 0
@@ -780,7 +780,7 @@ pirep_fares:
     pirep_id: pirepid_2
     fare_id:
     code: "Y"
-    name: Economy
+    name: Economy Flexi
     count: 200
     price: 800
     type: 0
@@ -788,7 +788,7 @@ pirep_fares:
     pirep_id: pirepid_2
     fare_id:
     code: F
-    name: First-Class
+    name: First
     count: 15
     price: 800
     type: 0
@@ -964,7 +964,7 @@ journal_transactions:
     credit: 1100000
     debit: 0
     currency: USD
-    memo: "Fares B10; price: 1100, cost: 0"
+    memo: "Fares J10; price: 1100, cost: 0"
     tags: "fare"
     ref_model_type: App\Models\Pirep
     ref_model_id: pirepid_1
