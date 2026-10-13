@@ -10,7 +10,25 @@ return [
     'max_download_bytes' => 100 * 1024 * 1024,
 
     'paths' => [
-        'base'       => base_path('modules'),
+        // Addons shipped inside the deployment image, updated only by deploying
+        // a new image. Never written to at runtime: in a container this path is
+        // part of the image layer, so a runtime write is either lost on the next
+        // deploy or — if a volume is mounted over it — freezes the image's copy
+        // forever, which is exactly what the `phpvms_modules` volume used to do.
+        'base' => base_path('modules'),
+
+        // Addons installed at runtime through the addon manager. Under storage/
+        // because that is already a persistent writable volume in
+        // compose.deploy.yml, so installs survive a redeploy without needing a
+        // mount of their own. Deliberately NOT under storage/app, which is a
+        // filesystem disk root.
+        //
+        // Must not be nested inside `base` above. Every addon under it would
+        // then also match the image root, and the lifecycle would treat all of
+        // them as image-managed: updates refused, delete reduced to disable,
+        // reinstall blocked by the existing-row check.
+        'installed' => storage_path('addons'),
+
         'assets'     => public_path('ext'),
         'staging'    => storage_path('app/addon-staging'),
         'boot_cache' => base_path('bootstrap/cache/addons.php'),

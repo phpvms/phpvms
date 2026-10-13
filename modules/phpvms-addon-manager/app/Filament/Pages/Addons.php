@@ -826,10 +826,24 @@ class Addons extends Page
                     ->default(false),
             ])
             ->action(function (array $arguments, array $data): void {
-                app(AddonRegistry::class)->delete(
+                $removed = app(AddonRegistry::class)->delete(
                     (string) $arguments['key'],
                     (bool) ($data['remove_tables'] ?? false),
                 );
+
+                // An addon that ships in the deployment image cannot be removed
+                // from disk at runtime, so delete() only disables it. Say which
+                // happened rather than letting a silent no-op look like success.
+                if ($removed) {
+                    Notification::make()->title(__('addon-manager::addons.addon_deleted'))->success()->send();
+                } else {
+                    Notification::make()
+                        ->title(__('addon-manager::addons.addon_disabled_not_removed'))
+                        ->body(__('addon-manager::addons.addon_ships_with_phpvms'))
+                        ->warning()
+                        ->send();
+                }
+
                 // Clear the selection so the detail pane falls back to the first
                 // row; the component re-renders reactively (no page reload).
                 $this->selectedId = null;

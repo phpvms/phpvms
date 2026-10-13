@@ -53,8 +53,17 @@ pest()
         // path per test is enough to isolate them.
         $kvpStore = sys_get_temp_dir().'/phpvms-kvp-'.uniqid('', true).'.json';
 
+        // Same reasoning again for the writable addon root. install()/update()
+        // place files there for real, so leaving it at its configured default
+        // (storage/addons) means a lifecycle test writes an addon directory
+        // into the working copy and the NEXT run fails on "Addon already
+        // installed". A test that cares about the image/installed split points
+        // this at its own fixture; everything else just needs it off the repo.
+        $installedAddons = sys_get_temp_dir().'/phpvms-addons-installed-'.uniqid('', true);
+
         config([
             'addons.paths.boot_cache' => $bootCache,
+            'addons.paths.installed'  => $installedAddons,
             'phpvms.kvp_storage_path' => $kvpStore,
         ]);
 
@@ -71,15 +80,24 @@ pest()
         // the Application object still exists but its bindings are flushed, so
         // app('config') resolves to the Facade class and config() dies with
         // "Call to undefined method Illuminate\Support\Facades\Config::get()".
-        phpvmsTempPaths([$bootCache, $kvpStore]);
+        phpvmsTempPaths([$bootCache, $kvpStore, $installedAddons]);
     })
     ->afterEach(function (): void {
         // Pure filesystem work -- no container access, so this is safe whatever
         // state the application is in, including a replayed test that never ran.
         foreach (phpvmsTempPaths() as $path) {
-            if (str_starts_with($path, sys_get_temp_dir()) && file_exists($path)) {
-                @unlink($path);
+            if (!str_starts_with($path, sys_get_temp_dir()) || !file_exists($path)) {
+                continue;
             }
+
+            // The installed addon root is a directory tree, not a single file.
+            if (is_dir($path)) {
+                phpvmsDeleteTempTree($path);
+
+                continue;
+            }
+
+            @unlink($path);
         }
     })
     ->in('Unit', 'Feature', 'Arch', '../resources/views');

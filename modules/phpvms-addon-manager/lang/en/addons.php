@@ -92,4 +92,8 @@ return [
     'catalog_refreshed'      => 'Catalog refreshed',
     'registry_unreachable'   => 'Could not reach the registry',
     'showing_cached_catalog' => 'Showing the last cached catalog.',
+
+    'addon_deleted'              => 'Add-on removed',
+    'addon_disabled_not_removed' => 'Add-on disabled, not removed',
+    'addon_ships_with_phpvms'    => 'This add-on ships with phpVMS, so its files cannot be removed here. It has been switched off and stays listed, and its data was left untouched. It will go when you deploy a version of phpVMS that no longer includes it.',
 ];

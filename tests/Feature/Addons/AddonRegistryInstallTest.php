@@ -15,6 +15,11 @@ beforeEach(function (): void {
     File::ensureDirectoryExists($this->modules);
     Config::set('addons.paths.base', $this->modules);
 
+    // install() places files in the writable root, never in the image root,
+    // so that is where this suite asserts they land.
+    $this->installed = $this->work.'/installed';
+    Config::set('addons.paths.installed', $this->installed);
+
     $this->zip = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
@@ -32,7 +37,7 @@ it('install() places the addon and registers a DB row', function (): void {
 
     expect($addon)->toBeInstanceOf(Addon::class)
         ->and($addon->getName())->toBe('Demo')
-        ->and(File::isDirectory($this->modules.'/acme-demo'))->toBeTrue()
+        ->and(File::isDirectory($this->installed.'/acme-demo'))->toBeTrue()
         ->and(Addon::query()->where('name', 'Demo')->exists())->toBeTrue();
 });
 

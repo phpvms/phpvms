@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Installer;
 
 use App\Addons\AddonRegistry;
+use App\Addons\Support\AddonRoots;
 use App\Contracts\Service;
 use App\Models\Addon;
 use Closure;
@@ -93,35 +94,41 @@ class MigrationService extends Service
      */
     private function scanAddonPathsOnDisk(): array
     {
-        $base = config('addons.paths.base');
-
-        if (!is_dir($base)) {
-            return [];
-        }
-
-        $realBase = realpath($base);
-
-        if ($realBase === false) {
-            return [];
-        }
-
         $paths = [];
 
-        foreach (File::directories($base) as $subDir) {
-            $resolved = realpath($subDir);
-            if ($resolved === false) {
+        // Both addon roots: the pre-install branch that calls this runs before
+        // any addons row exists, so an addon sitting in the writable root — a
+        // surviving volume against a rebuilt database — would otherwise have
+        // its migrations skipped entirely.
+        foreach (AddonRoots::all() as $base) {
+            if (!is_dir($base)) {
                 continue;
             }
 
-            if (realpath(dirname((string) $subDir)) !== $realBase) {
+            $realBase = realpath($base);
+
+            if ($realBase === false) {
                 continue;
             }
 
-            if (!file_exists($resolved.'/module.json')) {
-                continue;
-            }
+            foreach (File::directories($base) as $subDir) {
+                $resolved = realpath($subDir);
+                if ($resolved === false) {
+                    continue;
+                }
 
-            $paths[basename($subDir)] = $resolved;
+                if (realpath(dirname((string) $subDir)) !== $realBase) {
+                    continue;
+                }
+
+                if (!file_exists($resolved.'/module.json')) {
+                    continue;
+                }
+
+                // Image root is scanned first and wins a basename collision,
+                // matching AddonDiscoveryService::scanAllRoots().
+                $paths[basename($subDir)] ??= $resolved;
+            }
         }
 
         return $paths;

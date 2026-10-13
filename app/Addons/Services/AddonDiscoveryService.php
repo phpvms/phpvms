@@ -6,6 +6,8 @@ namespace App\Addons\Services;
 
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Models\AddonManifest;
+use App\Addons\Support\AddonRoots;
+use App\Addons\Support\AddonVersions;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
@@ -64,7 +66,7 @@ class AddonDiscoveryService
             return;
         }
 
-        $manifests = $this->scanLocation(config('addons.paths.base'));
+        $manifests = $this->scanAllRoots();
         /** @var list<AddonBootCache> $rows */
         $rows = [];
 
@@ -180,23 +182,26 @@ class AddonDiscoveryService
      */
     private function diskFingerprint(): string
     {
-        $base = config('addons.paths.base');
-
-        if (!is_dir($base)) {
-            return sha1('');
-        }
-
         $parts = [];
 
-        foreach (File::directories($base) as $dir) {
-            foreach (['module.json', 'composer.json'] as $file) {
-                $path = $dir.'/'.$file;
+        // Every root, not just the image one: an addon installed into the
+        // writable root must invalidate the boot cache too, or its files land
+        // on disk and nothing ever loads them.
+        foreach (AddonRoots::all() as $base) {
+            if (!is_dir($base)) {
+                continue;
+            }
 
-                if (!File::exists($path)) {
-                    continue;
+            foreach (File::directories($base) as $dir) {
+                foreach (['module.json', 'composer.json'] as $file) {
+                    $path = $dir.'/'.$file;
+
+                    if (!File::exists($path)) {
+                        continue;
+                    }
+
+                    $parts[] = $path.'|'.filemtime($path).'|'.filesize($path);
                 }
-
-                $parts[] = $path.'|'.filemtime($path).'|'.filesize($path);
             }
         }
 
@@ -233,7 +238,7 @@ class AddonDiscoveryService
     {
         $newAddons = collect();
 
-        $manifests = $this->scanLocation(config('addons.paths.base'));
+        $manifests = $this->scanAllRoots();
         if ($manifests === []) {
             return $newAddons;
         }
@@ -301,7 +306,7 @@ class AddonDiscoveryService
      */
     public function rebuildCache(): void
     {
-        $manifests = $this->scanLocation(config('addons.paths.base'));
+        $manifests = $this->scanAllRoots();
 
         /** @var Collection<int, Addon> $installed */
         $installed = Addon::where('enabled', true)->get();
@@ -321,6 +326,91 @@ class AddonDiscoveryService
         // Stamp the DB and disk fingerprints so a later boot can tell this cache
         // still matches the current addons state (see primeIfNeeded/cacheMatchesDatabase/cacheMatchesDisk).
         $this->bootCache->write($cacheRows, $this->databaseFingerprint(), $this->diskFingerprint());
+    }
+
+    /**
+     * Scan both addon roots and pick which copy of each addon loads.
+     *
+     * An addon can legitimately exist in both roots: phpVMS ships e.g.
+     * `modules/phpvms-dashboard` in the image, and the operator later updates
+     * it from the registry, which places the new version in the writable root.
+     * Something has to decide which one wins, and neither fixed answer works —
+     * image-always makes the registry update a silent no-op, installed-always
+     * lets that copy shadow every future image forever (the staleness bug the
+     * split exists to fix).
+     *
+     * So the higher version wins, via AddonVersions::installedSupersedesImage(),
+     * which hands ties and unversioned copies to the image. The losing copy is
+     * logged: it is inert files on disk, and `addons:prune-shadowed` removes it.
+     *
+     * De-duplication is on registry_id, which ManifestParser guarantees is
+     * present and non-empty (ManifestParser.php:70) — a directory without one
+     * never produces a manifest.
+     *
+     * @return AddonManifest[]
+     */
+    private function scanAllRoots(): array
+    {
+        $image = AddonRoots::image();
+
+        /** @var array<string, array{manifest: AddonManifest, fromImage: bool, root: string}> $chosen */
+        $chosen = [];
+
+        foreach (AddonRoots::all() as $root) {
+            $fromImage = $root === $image;
+
+            foreach ($this->scanLocation($root) as $manifest) {
+                $identity = $manifest->registryId;
+                $incoming = ['manifest' => $manifest, 'fromImage' => $fromImage, 'root' => $root];
+
+                if (!isset($chosen[$identity])) {
+                    $chosen[$identity] = $incoming;
+
+                    continue;
+                }
+
+                $held = $chosen[$identity];
+                $winner = $this->preferredCopy($held, $incoming);
+                $loser = $winner === $held ? $incoming : $held;
+
+                Log::info(sprintf(
+                    'AddonDiscoveryService: "%s" present in both roots — loading %s (%s), ignoring %s (%s)',
+                    $manifest->name,
+                    $winner['manifest']->version ?? 'no version',
+                    $winner['root'],
+                    $loser['manifest']->version ?? 'no version',
+                    $loser['root'],
+                ));
+
+                $chosen[$identity] = $winner;
+            }
+        }
+
+        return array_values(array_map(
+            static fn (array $entry): AddonManifest => $entry['manifest'],
+            $chosen,
+        ));
+    }
+
+    /**
+     * Of two copies of the same addon, the one that should load.
+     *
+     * Both from the same root cannot happen — scanLocation() returns one
+     * manifest per directory and registry_id is the identity — so exactly one
+     * of these is the image copy.
+     *
+     * @param  array{manifest: AddonManifest, fromImage: bool, root: string} $a
+     * @param  array{manifest: AddonManifest, fromImage: bool, root: string} $b
+     * @return array{manifest: AddonManifest, fromImage: bool, root: string}
+     */
+    private function preferredCopy(array $a, array $b): array
+    {
+        [$imageCopy, $installedCopy] = $a['fromImage'] ? [$a, $b] : [$b, $a];
+
+        return AddonVersions::installedSupersedesImage(
+            $installedCopy['manifest']->version,
+            $imageCopy['manifest']->version,
+        ) ? $installedCopy : $imageCopy;
     }
 
     /**
