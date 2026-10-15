@@ -102,7 +102,7 @@
     "arthurpar06/laravel-discord-notifier": "^0.2",
     "andreiio/blade-iconoir": "^4.7",
     "mddev31/filament-dynamic-dashboard": "^1.0.3",
-    "enshrined/svg-sanitize": "^0.22.0",
+    "enshrined/svg-sanitize": "^1.0.0",
     "filafly/filament-phosphor-icons": "^2.2",
     "socialiteproviders/openidconnect": "^1.0"
   },
