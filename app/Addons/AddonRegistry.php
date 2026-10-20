@@ -367,9 +367,7 @@ class AddonRegistry
     public function install(AddonSource $source): Addon
     {
         $staging = $this->freshStagingPath();
-        File::ensureDirectoryExists($staging);
-
-        $extracted = $source->fetch($staging);
+        $extracted = $this->fetchIntoStaging($source, $staging);
 
         try {
             $manifest = $this->validator->validate($extracted);
@@ -446,9 +444,7 @@ class AddonRegistry
         ];
 
         $staging = $this->freshStagingPath();
-        File::ensureDirectoryExists($staging);
-
-        $extracted = $source->fetch($staging);
+        $extracted = $this->fetchIntoStaging($source, $staging);
         $backup = null;
 
         try {
@@ -581,6 +577,33 @@ class AddonRegistry
     private function freshStagingPath(): string
     {
         return $this->stagingPath().'/'.uniqid('op_', true);
+    }
+
+    /**
+     * Fetch a source into a staging directory the caller owns, taking the
+     * directory with it if the fetch fails.
+     *
+     * The directory has to exist before the source runs, and the callers' own
+     * cleanup cannot start until they hold an extracted path — so a fetch that
+     * throws (a 404, an empty or oversized download, an archive that is not a
+     * zip) lands in the gap between the two. One shared staging directory hid
+     * that: the next attempt reused it. One directory per attempt does not, so
+     * the failure path has to clean up after itself or every failure orphans
+     * another directory that nothing ever sweeps.
+     *
+     * @throws Throwable whatever the source raised, unchanged
+     */
+    private function fetchIntoStaging(AddonSource $source, string $staging): string
+    {
+        File::ensureDirectoryExists($staging);
+
+        try {
+            return $source->fetch($staging);
+        } catch (Throwable $throwable) {
+            File::deleteDirectory($staging);
+
+            throw $throwable;
+        }
     }
 
     /**

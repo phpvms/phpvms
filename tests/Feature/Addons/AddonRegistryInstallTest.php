@@ -63,3 +63,23 @@ it('install() cleans up only its own staging directory', function (): void {
     expect(File::isDirectory($concurrent))->toBeTrue()
         ->and(File::directories($staging))->toHaveCount(1);
 });
+
+it('install() leaves no staging directory behind when the fetch fails', function (): void {
+    $staging = $this->work.'/staging';
+    Config::set('addons.paths.staging', $staging);
+
+    $notAZip = $this->work.'/broken.zip';
+    File::put($notAZip, 'not a zip');
+
+    // Three attempts, because the failure mode is accumulation: one directory
+    // per failed attempt, left for nothing to sweep up.
+    foreach (range(1, 3) as $ignored) {
+        try {
+            app(AddonRegistry::class)->install(new ZipSource($notAZip));
+        } catch (AddonInstallException) {
+            // Expected. What matters is what is left on disk afterwards.
+        }
+    }
+
+    expect(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
+});
