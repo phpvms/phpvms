@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\AddonManager\Filament\Pages;
 
+use App\Addons\AddonDeleteOutcome;
 use App\Addons\AddonRegistry;
 use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Sources\ZipSource;
@@ -826,10 +827,34 @@ class Addons extends Page
                     ->default(false),
             ])
             ->action(function (array $arguments, array $data): void {
-                app(AddonRegistry::class)->delete(
+                $outcome = app(AddonRegistry::class)->delete(
                     (string) $arguments['key'],
                     (bool) ($data['remove_tables'] ?? false),
                 );
+
+                // Three outcomes, and they are genuinely different things: an
+                // uninstall, a disable (image files cannot be removed at
+                // runtime), and a revert to the bundled version. Reporting any
+                // of them as another misdescribes what just happened to the
+                // operator's install.
+                match ($outcome) {
+                    AddonDeleteOutcome::Removed => Notification::make()
+                        ->title(__('addon-manager::addons.addon_deleted'))
+                        ->success()
+                        ->send(),
+                    AddonDeleteOutcome::Reverted => Notification::make()
+                        ->title(__('addon-manager::addons.addon_reverted'))
+                        ->body(__('addon-manager::addons.addon_reverted_body'))
+                        ->success()
+                        ->send(),
+                    AddonDeleteOutcome::Disabled => Notification::make()
+                        ->title(__('addon-manager::addons.addon_disabled_not_removed'))
+                        ->body(__('addon-manager::addons.addon_ships_with_phpvms'))
+                        ->warning()
+                        ->send(),
+                    AddonDeleteOutcome::NotFound => null,
+                };
+
                 // Clear the selection so the detail pane falls back to the first
                 // row; the component re-renders reactively (no page reload).
                 $this->selectedId = null;

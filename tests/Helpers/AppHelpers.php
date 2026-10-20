@@ -74,3 +74,40 @@ function phpvmsTempPaths(?array $paths = null): array
 
     return $current;
 }
+
+/**
+ * Recursively remove a temp directory recorded by phpvmsTempPaths().
+ *
+ * Plain PHP rather than Laravel's File facade: this runs in the `afterEach`
+ * hook, which Pest's Tia engine can reach after the application's bindings
+ * have been flushed, so resolving a facade there is not safe (see the comment
+ * in tests/Pest.php).
+ *
+ * Refuses anything outside the system temp directory, so a mis-recorded path
+ * can never aim a recursive delete at the working copy. Symlinked entries are
+ * unlinked, never followed.
+ */
+function phpvmsDeleteTempTree(string $path): void
+{
+    if (!str_starts_with($path, sys_get_temp_dir()) || !is_dir($path)) {
+        return;
+    }
+
+    foreach (scandir($path) ?: [] as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+
+        $child = $path.'/'.$entry;
+
+        if (is_dir($child) && !is_link($child)) {
+            phpvmsDeleteTempTree($child);
+
+            continue;
+        }
+
+        @unlink($child);
+    }
+
+    @rmdir($path);
+}

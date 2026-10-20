@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Addons\Support\AddonRoots;
 use App\Contracts\Factory;
 use App\Models\Addon;
 use Illuminate\Support\Str;
@@ -27,9 +28,27 @@ class AddonFactory extends Factory
             'type'         => 'module',
             'version'      => fake()->optional()->semver(),
             'namespace'    => 'Modules\\'.$name,
-            'path'         => base_path('modules/'.$name),
+            'path'         => AddonRoots::installed().'/'.$name,
             'enabled'      => true,
             'installed_at' => now(),
         ];
+    }
+
+    /**
+     * An addon that ships inside the deployment image.
+     *
+     * Its files belong to the image layer, so the runtime lifecycle treats it
+     * differently: update() refuses it, and delete() disables it instead of
+     * removing anything. Use this state to exercise those branches.
+     *
+     * The default is the writable root instead, because a factory-made addon
+     * stands in for an ordinary installed one and most tests expect the full
+     * lifecycle to apply to it.
+     */
+    public function imageManaged(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'path' => AddonRoots::image().'/'.($attributes['name'] ?? 'Addon'),
+        ]);
     }
 }
