@@ -46,3 +46,20 @@ it('install() rejects a duplicate addon', function (): void {
 
     app(AddonRegistry::class)->install(new ZipSource($this->zip));
 })->throws(AddonInstallException::class);
+
+it('install() cleans up only its own staging directory', function (): void {
+    $staging = $this->work.'/staging';
+    Config::set('addons.paths.staging', $staging);
+
+    // Stands in for a concurrent install/update that has extracted its archive
+    // but not yet placed it. install() must not delete this on its way out.
+    $concurrent = $staging.'/op_concurrent';
+    File::ensureDirectoryExists($concurrent);
+
+    app(AddonRegistry::class)->install(new ZipSource($this->zip));
+
+    // The sibling survived, and install() still removed the directory it owned:
+    // exactly one is left, and it is the other operation's.
+    expect(File::isDirectory($concurrent))->toBeTrue()
+        ->and(File::directories($staging))->toHaveCount(1);
+});

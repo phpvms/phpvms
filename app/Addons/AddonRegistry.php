@@ -366,7 +366,7 @@ class AddonRegistry
      */
     public function install(AddonSource $source): Addon
     {
-        $staging = $this->stagingPath();
+        $staging = $this->freshStagingPath();
         File::ensureDirectoryExists($staging);
 
         $extracted = $source->fetch($staging);
@@ -445,7 +445,7 @@ class AddonRegistry
             'enabled'   => $existing->isEnabled(),
         ];
 
-        $staging = $this->stagingPath();
+        $staging = $this->freshStagingPath();
         File::ensureDirectoryExists($staging);
 
         $extracted = $source->fetch($staging);
@@ -558,7 +558,7 @@ class AddonRegistry
     }
 
     /**
-     * Staging directory for install/update extraction.
+     * Staging root for install/update extraction.
      *
      * Kept outside the scanned addons base so half-extracted archives are never
      * picked up by the discovery scanner.
@@ -566,6 +566,21 @@ class AddonRegistry
     private function stagingPath(): string
     {
         return (string) config('addons.paths.staging', storage_path('app/addon-staging'));
+    }
+
+    /**
+     * A staging directory the calling operation owns outright.
+     *
+     * install() and update() both delete their staging directory when they are
+     * done, so they must not share one. Two concurrent operations against the
+     * staging root — in production, or two Pest processes under --parallel —
+     * would otherwise have the first to finish delete the other's extracted
+     * files, and the rename that places the addon fails with "Failed to place
+     * addon" for reasons that have nothing to do with the addon.
+     */
+    private function freshStagingPath(): string
+    {
+        return $this->stagingPath().'/'.uniqid('op_', true);
     }
 
     /**
