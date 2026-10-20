@@ -11,6 +11,7 @@ use App\Models\Rank;
 use App\Models\Typerating;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class BaseDataSeeder extends Seeder
 {
@@ -68,30 +69,70 @@ class BaseDataSeeder extends Seeder
             return;
         }
 
-        /** The first three codes match the fare IDs in the demo fixture. */
+        /**
+         * Ids are explicit, not auto-increment. The demo fixture joins to these
+         * rows by id — `subfleet_fare.fare_id` and `pirep_fares.fare_id` in
+         * sample.yml — and auto-increment cannot promise the first fare gets id
+         * 1. MySQL leaves AUTO_INCREMENT where it was when a transaction rolls
+         * back, so under a rolled-back test suite these rows land wherever the
+         * counter happens to have reached.
+         *
+         * @var array<int, array{string, string}>
+         */
         $fares = [
-            'Y' => 'Economy Flexi',
-            'J' => 'Business Flexi',
-            'F' => 'First',
-            'V' => 'Economy Lite',
-            'Q' => 'Economy Value',
-            'M' => 'Economy Standard',
-            'R' => 'Premium Economy Lite',
-            'P' => 'Premium Economy Standard',
-            'S' => 'Premium Economy Flexi',
-            'D' => 'Business Lite',
-            'U' => 'Business Standard',
+            1  => ['Y', 'Economy Flexi'],
+            2  => ['J', 'Business Flexi'],
+            3  => ['F', 'First'],
+            4  => ['V', 'Economy Lite'],
+            5  => ['Q', 'Economy Value'],
+            6  => ['M', 'Economy Standard'],
+            7  => ['R', 'Premium Economy Lite'],
+            8  => ['P', 'Premium Economy Standard'],
+            9  => ['S', 'Premium Economy Flexi'],
+            10 => ['D', 'Business Lite'],
+            11 => ['U', 'Business Standard'],
         ];
 
-        foreach ($fares as $code => $name) {
+        foreach ($fares as $id => [$code, $name]) {
             Fare::query()->create([
+                'id'   => $id,
                 'code' => $code,
                 'name' => $name,
                 'type' => FareType::PASSENGER,
             ]);
         }
 
+        $this->syncIdentitySequence('fares');
         $this->setSeeded('fares');
+    }
+
+    /**
+     * Move PostgreSQL's identity sequence past rows inserted with explicit ids.
+     *
+     * An explicit id never advances the sequence, so without this the next
+     * fare an operator creates is handed id 1 and collides. MySQL and SQLite
+     * track the high-water mark themselves and need nothing.
+     */
+    private function syncIdentitySequence(string $table, string $idColumn = 'id'): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        $qualified = DB::getTablePrefix().$table;
+        $sequence = DB::scalar('SELECT pg_get_serial_sequence(?, ?)', [$qualified, $idColumn]);
+
+        if ($sequence === null) {
+            return;
+        }
+
+        DB::statement(sprintf(
+            "SELECT setval('%s', COALESCE(MAX(%s), 1), MAX(%s) IS NOT NULL) FROM %s",
+            $sequence,
+            $idColumn,
+            $idColumn,
+            $qualified
+        ));
     }
 
     /**

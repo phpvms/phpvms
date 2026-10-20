@@ -287,39 +287,38 @@ expenses:
     updated_at: now
 
 fares:
-  - id: 1
-    code: "Y"
-    name: Economy Flexi
-    price: "100.00"
-    cost: "0.00"
-    capacity: 200
-    type: 0
-    notes: null
-    active: 1
-    created_at: null
-    updated_at: null
-  - id: 2
-    code: J
-    name: Business Flexi
-    price: "500.00"
-    cost: "0.00"
-    capacity: 10
-    type: 0
-    notes: null
-    active: 1
-    created_at: null
-    updated_at: null
-  - id: 3
-    code: F
-    name: First
-    price: "800.00"
-    cost: "0.00"
-    capacity: 5
-    type: 0
-    notes: null
-    active: 1
-    created_at: null
-    updated_at: null
+  id_column: code
+  data:
+    - code: "Y"
+      name: Economy Flexi
+      price: "100.00"
+      cost: "0.00"
+      capacity: 200
+      type: 0
+      notes: null
+      active: 1
+      created_at: null
+      updated_at: null
+    - code: J
+      name: Business Flexi
+      price: "500.00"
+      cost: "0.00"
+      capacity: 10
+      type: 0
+      notes: null
+      active: 1
+      created_at: null
+      updated_at: null
+    - code: F
+      name: First
+      price: "800.00"
+      cost: "0.00"
+      capacity: 5
+      type: 0
+      notes: null
+      active: 1
+      created_at: null
+      updated_at: null
 
 subfleets:
   - id: 1

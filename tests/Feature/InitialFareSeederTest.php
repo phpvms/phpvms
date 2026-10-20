@@ -66,3 +66,19 @@ test('demo data uses the seeded fare codes', function (): void {
     $this->assertDatabaseHas('pirep_fares', ['id' => 2, 'fare_id' => 2, 'code' => 'J', 'name' => 'Business Flexi']);
     expect(Fare::query()->count())->toBe(11);
 });
+
+test('a fare added after seeding does not collide with the seeded ids', function (): void {
+    $this->seed(BaseDataSeeder::class);
+
+    // The seeded rows carry explicit ids, which on PostgreSQL leaves the
+    // identity sequence untouched — so without a sequence reset the next fare
+    // an operator creates is handed id 1 and collides with 'Y'.
+    $fare = Fare::query()->create([
+        'code' => 'ZZ',
+        'name' => 'Ad hoc',
+        'type' => FareType::PASSENGER,
+    ]);
+
+    expect($fare->id)->toBeGreaterThan(11)
+        ->and(Fare::query()->count())->toBe(12);
+});
