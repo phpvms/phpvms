@@ -289,6 +289,7 @@ class EditFlight extends EditRecord
         $flights = $query()
             ->where('flight_number', '<=', $record->flight_number)
             ->orderByDesc('flight_number')
+            ->orderByDesc('id')
             ->limit(self::SWITCHER_WINDOW)
             ->get()
             ->reverse()
@@ -296,6 +297,7 @@ class EditFlight extends EditRecord
                 $query()
                     ->where('flight_number', '>', $record->flight_number)
                     ->orderBy('flight_number')
+                    ->orderBy('id')
                     ->limit(self::SWITCHER_WINDOW)
                     ->get()
             );

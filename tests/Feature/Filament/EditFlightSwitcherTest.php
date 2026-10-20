@@ -64,6 +64,41 @@ it('lists only a window of sibling flights around the current one', function ():
         ->assertDontSee(switcherUrl($this->flights[66]), escape: false);
 });
 
+/**
+ * Several flights in a bundle can share a flight number (other airlines, route
+ * codes or legs). Ordering by flight number alone left the rows at the window
+ * edge up to the query plan, so ties are broken by id.
+ */
+it('breaks flight number ties by id at the edge of the window', function (): void {
+    $siblings = collect(range(1, 30))->map(fn (int $leg): Flight => Flight::factory()->create([
+        'bundle_id'     => $this->bundle->id,
+        'airline_id'    => $this->airline->id,
+        'flight_number' => 39,
+        'route_code'    => '',
+        'route_leg'     => $leg,
+    ]))->push($this->flights[39]);
+
+    $byIdDesc = Flight::query()
+        ->whereKey($siblings->pluck('id'))
+        ->orderByDesc('id')
+        ->pluck('id');
+
+    $component = Livewire::test(EditFlight::class, [
+        'record'       => $this->flights[40]->getRouteKey(),
+        'parentRecord' => $this->bundle,
+    ])->assertSuccessful();
+
+    foreach ($byIdDesc->take(25) as $id) {
+        $component->assertSee(switcherUrl($siblings->firstWhere('id', $id)), escape: false);
+    }
+
+    foreach ($byIdDesc->skip(25) as $id) {
+        $component->assertDontSee(switcherUrl($siblings->firstWhere('id', $id)), escape: false);
+    }
+
+    $component->assertDontSee(switcherUrl($this->flights[38]), escape: false);
+});
+
 it('keeps the switcher query count independent of the bundle size', function (): void {
     DB::enableQueryLog();
 
