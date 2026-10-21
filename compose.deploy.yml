@@ -75,20 +75,38 @@ services:
       DB_URL: "${DB_URL}"
       REDIS_URL: "${REDIS_URL}"
 
-    # Delete this line to revert to classic FrankenPHP + PHP-worker mode.
+    # Delete this block to revert to classic FrankenPHP + PHP-worker mode.
+    #
+    # --caddyfile points Octane at the Caddyfile the image ships rather than
+    # Octane's own, which is minimal. Without the flag, worker mode silently
+    # loses the image's trusted proxies, security headers, asset caching, SSL
+    # handling, health-check endpoint and log redaction -- all of which classic
+    # mode has. serversideup/php v5 documents this as the supported way to run
+    # Octane; before it the alternatives were a wrapper script or a second,
+    # hand-maintained Caddyfile. REQUIRES v5: the path does not exist in v4.
+    #
+    # --port must equal CADDY_HTTP_PORT (default 8080), because that is the
+    # port the shipped Caddyfile listens on. It is written out literally since
+    # the exec form does not expand variables. Octane derives its admin port
+    # from this value, so 8080 puts the admin API on 2099, localhost-only.
+    #
+    # --host is deliberately absent: upstream documents it as "not used" for
+    # FrankenPHP, which already listens on all interfaces as in classic mode.
+    # It is only required for the Swoole and RoadRunner servers.
     command:
       [
         "php",
         "/var/www/html/artisan",
         "octane:start",
         "--server=frankenphp",
-        "--host=0.0.0.0",
+        "--port=8080",
+        "--caddyfile=/etc/frankenphp/Caddyfile",
         "--workers=auto",
         "--max-requests=500",
       ]
     ports:
-      # The image binds to 8000/8443 internally (unprivileged); host ports
-      # 8000/8443 are mapped at the Compose layer.
+      # The image binds to 8080/8443 internally (unprivileged), matching
+      # CADDY_HTTP_PORT and the --port above; host ports are mapped here.
       - "${FORWARD_HTTP_PORT:-8080}:8080"
       - "${FORWARD_HTTPS_PORT:-8443}:8443"
 
