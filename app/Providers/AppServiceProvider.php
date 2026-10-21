@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Auth\InstallSafeUserProvider;
+use App\Console\Commands\DataMigrationInstallCommand;
 use App\Contracts\Metar;
 use App\Contracts\Model as BaseModel;
 use App\Enums\ActiveState;
@@ -302,6 +303,17 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SocialiteProviderRegistry::class);
         $this->app->singleton(OAuthConnectionService::class);
 
+        // Takes the data-migration installer back off Laravel's `migrate:install`
+        // name, which it claims through an inherited $signature. See the command's
+        // docblock -- without this, every migrate run builds the wrong table.
+        // Rebinding the package's own container key is enough: ServiceProvider
+        // ::commands() resolves these lazily when the console kernel starts, which
+        // is after every provider has registered.
+        $this->app->singleton(
+            'command.migrate-data.install',
+            fn (Application $app): DataMigrationInstallCommand => new DataMigrationInstallCommand($app['migration.data.repository'])
+        );
+
         // Core settings read/write. Bound as a singleton so the per-request
         // Tier-1 memo ($memo array) is shared across all setting() calls within
         // one request. Registered in config/octane.php 'flush' so Octane
@@ -364,7 +376,6 @@ class AppServiceProvider extends ServiceProvider
         ], 'routeforge.lint_rules');
 
         $this->app->bind(
-            LintRunner::class,
             static function ($app): LintRunner {
                 /** @var iterable<LintRule> $tagged */
                 $tagged = $app->tagged('routeforge.lint_rules');
