@@ -283,6 +283,36 @@ test('airport exporter', function (): void {
         ->and($status['errors'])->toHaveCount(0);
 });
 
+/**
+ * The export is a file people diff and re-import, so the same flight has to
+ * export the same bytes every time. `Flight::fares()` has no ordering of its
+ * own, which left the order to the database -- postgres returned these two
+ * rows one way round on one run and the other way on the next.
+ *
+ * The loaded relation is reversed by hand because that database order is the
+ * thing a test cannot steer: sqlite hands these back in id order however they
+ * were attached, so attaching them backwards proves nothing. Reversing the
+ * collection the exporter actually reads is the same input postgres gave it.
+ */
+test('flight exporter orders fares by id, whatever order it is handed them', function (): void {
+    $fareSvc = app(FareService::class);
+
+    [$airline] = insertFlightsScaffoldData();
+
+    $fareY = Fare::where('code', 'Y')->first();
+    $fareF = Fare::where('code', 'F')->first();
+    expect($fareF->id)->toBeGreaterThan($fareY->id);
+
+    $flight = Flight::factory()->create(['airline_id' => $airline->id]);
+    $fareSvc->setForFlight($flight, $fareY);
+    $fareSvc->setForFlight($flight, $fareF);
+
+    $flight = $flight->fresh();
+    $flight->setRelation('fares', $flight->fares->reverse()->values());
+
+    expect(new FlightExporter()->export($flight)['fares'])->toEqual('Y;F');
+});
+
 test('flight exporter', function (): void {
     $fareSvc = app(FareService::class);
 
