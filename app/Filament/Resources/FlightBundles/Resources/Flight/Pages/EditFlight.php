@@ -35,6 +35,9 @@ class EditFlight extends EditRecord
 
     protected static string $resource = FlightResource::class;
 
+    /** Flights listed on each side of the current one in the jump-bar switcher. */
+    private const int SWITCHER_WINDOW = 25;
+
     /**
      * Keep the form's action row (Save/Cancel) anchored to the right edge
      * instead of Filament's default left-aligned start. Alignment::End maps to
@@ -275,12 +278,29 @@ class EditFlight extends EditRecord
             return [];
         }
 
-        /** @var Collection<int, Flight> $flights */
-        $flights = $bundle->flights()
+        // Only list a window of flights around the current one. Bundles can hold
+        // tens of thousands of flights; loading all of them (plus the airline
+        // behind every `ident`) exhausted memory on large installs.
+        $query = fn () => $bundle->flights()
             ->whereKeyNot($record->getKey())
-            ->with(['dpt_airport', 'arr_airport'])
-            ->orderBy('flight_number')
-            ->get();
+            ->with(['airline', 'dpt_airport', 'arr_airport']);
+
+        /** @var Collection<int, Flight> $flights */
+        $flights = $query()
+            ->where('flight_number', '<=', $record->flight_number)
+            ->orderByDesc('flight_number')
+            ->orderByDesc('id')
+            ->limit(self::SWITCHER_WINDOW)
+            ->get()
+            ->reverse()
+            ->concat(
+                $query()
+                    ->where('flight_number', '>', $record->flight_number)
+                    ->orderBy('flight_number')
+                    ->orderBy('id')
+                    ->limit(self::SWITCHER_WINDOW)
+                    ->get()
+            );
 
         return $flights
             ->map(fn (Flight $flight): array => [
