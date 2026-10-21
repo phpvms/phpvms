@@ -21,40 +21,39 @@ var p = { class: "wx" }, m = { class: "wxid" }, h = { class: "code tnum" }, g = 
 		let o = e, T = u({ status: "idle" }), E = null;
 		async function D() {
 			let e = (o.icao ?? "").trim();
-			if (!e) {
-				T.value = {
-					status: "error",
-					message: "No ICAO available."
-				};
-				return;
-			}
-			E?.abort(), E = new AbortController(), T.value = { status: "loading" };
-			try {
-				let t = await fetch(`/api/phpvms-dashboard/weather/${encodeURIComponent(e)}`, {
-					signal: E.signal,
-					headers: {
-						Accept: "application/json",
-						"X-Requested-With": "XMLHttpRequest"
-					},
-					credentials: "same-origin"
-				}), n = await t.json();
-				if (!t.ok || "error" in n) {
+			if (!e) T.value = {
+				status: "error",
+				message: "No ICAO available."
+			};
+			else {
+				E?.abort(), E = new AbortController(), T.value = { status: "loading" };
+				try {
+					let t = await fetch(`/api/phpvms-dashboard/weather/${encodeURIComponent(e)}`, {
+						signal: E.signal,
+						headers: {
+							Accept: "application/json",
+							"X-Requested-With": "XMLHttpRequest"
+						},
+						credentials: "same-origin"
+					}), n = await t.json();
+					if (!t.ok || "error" in n) {
+						T.value = {
+							status: "error",
+							message: n?.message ?? `Unavailable (HTTP ${t.status})`
+						};
+						return;
+					}
+					T.value = {
+						status: "success",
+						data: n
+					};
+				} catch (e) {
+					if (e instanceof DOMException && e.name === "AbortError") return;
 					T.value = {
 						status: "error",
-						message: n?.message ?? `Unavailable (HTTP ${t.status})`
+						message: e instanceof Error ? e.message : "Fetch error"
 					};
-					return;
 				}
-				T.value = {
-					status: "success",
-					data: n
-				};
-			} catch (e) {
-				if (e instanceof DOMException && e.name === "AbortError") return;
-				T.value = {
-					status: "error",
-					message: e instanceof Error ? e.message : "Fetch error"
-				};
 			}
 		}
 		return c(D), f(() => o.icao, D), s(() => E?.abort()), (e, s) => (l(), r("div", p, [i("div", m, [s[0] ||= i("span", { class: "micro" }, "Station", -1), i("span", h, d(o.icao ?? "—"), 1)]), T.value.status === "loading" || T.value.status === "idle" ? (l(), r("div", g, [...s[1] ||= [i("span", {

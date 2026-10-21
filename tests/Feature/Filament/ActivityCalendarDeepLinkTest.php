@@ -97,3 +97,35 @@ it('counts an in-progress flight and lets the list it links to show it', functio
 
     Carbon::setTestNow();
 });
+
+/**
+ * The table persists its filters in the session, so the hour block a calendar
+ * box set would otherwise follow the pilot around: every later visit to the
+ * list would still be pinned to that one hour with nothing on screen saying
+ * why. Clearing it has to survive the table being built, which is why it runs
+ * from bootedInteractsWithTable() rather than mount().
+ */
+it('drops a calendar-set departed filter on the next direct visit', function (): void {
+    $inBlock = Pirep::factory()->create([
+        'state'          => PirepState::ACCEPTED,
+        'block_off_time' => '2026-08-12 00:30:00',
+    ]);
+
+    $outside = Pirep::factory()->create([
+        'state'          => PirepState::ACCEPTED,
+        'block_off_time' => '2026-08-13 09:00:00',
+    ]);
+
+    Livewire::withQueryParams([
+        'departed_from' => '2026-08-12 00:00:00',
+        'departed_to'   => '2026-08-12 00:59:59',
+    ])
+        ->test(ListPireps::class)
+        ->assertCanNotSeeTableRecords([$outside]);
+
+    // withQueryParams() is held on the Livewire manager for the rest of the
+    // test, so a direct visit has to clear it or this still deep-links.
+    Livewire::withQueryParams([])
+        ->test(ListPireps::class)
+        ->assertCanSeeTableRecords([$inBlock, $outside]);
+});

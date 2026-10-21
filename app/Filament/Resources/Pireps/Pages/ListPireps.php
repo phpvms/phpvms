@@ -27,6 +27,16 @@ class ListPireps extends ListRecords
     protected string $view = 'filament.pireps.pages.list-pireps';
 
     /**
+     * Whether this request arrived without the calendar's deep-link params.
+     *
+     * Set in mount() and read back in bootedInteractsWithTable(), so it is only
+     * ever true on the request that mounted the page. Deliberately not a
+     * Livewire-visible property: a later filter interaction must be able to set
+     * `departed` and keep it.
+     */
+    private bool $mountedWithoutDeepLink = false;
+
+    /**
      * The dashboard activity calendar deep-links here with
      * ?departed_from=...&departed_to=... (one-hour block). Hydrate the
      * `departed` table filter before the table boots so the list is
@@ -47,16 +57,46 @@ class ListPireps extends ListRecords
                 'from' => filled($from) ? $this->parseDateQuery($from) : null,
                 'to'   => filled($to) ? $this->parseDateQuery($to) : null,
             ];
-        } elseif (session()->has($this->getTableFiltersSessionKey())) {
-            // Direct visit (no deep-link params): drop a previously
-            // calendar-set `departed` filter so the list isn't stuck on an
-            // hour block for the rest of the session — and from the hydrated
-            // filters so the current request doesn't render the stale block.
-            $filters = session()->get($this->getTableFiltersSessionKey(), []);
-            unset($filters['departed']);
-            session()->put($this->getTableFiltersSessionKey(), $filters);
 
+            return;
+        }
+
+        $this->mountedWithoutDeepLink = true;
+    }
+
+    /**
+     * Drop a previously calendar-set `departed` filter on a direct visit, so the
+     * list isn't stuck on an hour block for the rest of the session.
+     *
+     * This lives here rather than in mount() because the filters session key is
+     * derived from the table (`InteractsWithTable::getTableSessionKey()` reads
+     * `$this->getTable()`), and the table does not exist until the parent hook
+     * below builds it — mount() runs first, so asking for the key there hits an
+     * uninitialised property. The parent also hydrates the filters from the
+     * session, which is why the stale block has to be cleared from both the
+     * session and the hydrated filters afterwards, and the form refilled so the
+     * current request doesn't render it.
+     */
+    #[Override]
+    public function bootedInteractsWithTable(): void
+    {
+        parent::bootedInteractsWithTable();
+
+        if (!$this->mountedWithoutDeepLink) {
+            return;
+        }
+
+        $sessionKey = $this->getTableFiltersSessionKey();
+
+        if (session()->has($sessionKey)) {
+            $filters = session()->get($sessionKey, []);
+            unset($filters['departed']);
+            session()->put($sessionKey, $filters);
+        }
+
+        if (isset($this->tableFilters['departed'])) {
             unset($this->tableFilters['departed']);
+            $this->getTableFiltersForm()->fill($this->tableFilters);
         }
     }
 
