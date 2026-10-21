@@ -366,10 +366,8 @@ class AddonRegistry
      */
     public function install(AddonSource $source): Addon
     {
-        $staging = $this->stagingPath();
-        File::ensureDirectoryExists($staging);
-
-        $extracted = $source->fetch($staging);
+        $staging = $this->freshStagingPath();
+        $extracted = $this->fetchIntoStaging($source, $staging);
 
         try {
             $manifest = $this->validator->validate($extracted);
@@ -394,7 +392,7 @@ class AddonRegistry
 
             File::ensureDirectoryExists(AddonRoots::installed());
 
-            if (!File::moveDirectory($extracted, $dest)) {
+            if (!$this->placeDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
             }
         } finally {
@@ -445,10 +443,8 @@ class AddonRegistry
             'enabled'   => $existing->isEnabled(),
         ];
 
-        $staging = $this->stagingPath();
-        File::ensureDirectoryExists($staging);
-
-        $extracted = $source->fetch($staging);
+        $staging = $this->freshStagingPath();
+        $extracted = $this->fetchIntoStaging($source, $staging);
         $backup = null;
 
         try {
@@ -474,7 +470,7 @@ class AddonRegistry
                 }
             }
 
-            if (!File::moveDirectory($extracted, $dest)) {
+            if (!$this->placeDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
             }
 
@@ -558,7 +554,7 @@ class AddonRegistry
     }
 
     /**
-     * Staging directory for install/update extraction.
+     * Staging root for install/update extraction.
      *
      * Kept outside the scanned addons base so half-extracted archives are never
      * picked up by the discovery scanner.
@@ -566,6 +562,83 @@ class AddonRegistry
     private function stagingPath(): string
     {
         return (string) config('addons.paths.staging', storage_path('app/addon-staging'));
+    }
+
+    /**
+     * A staging directory the calling operation owns outright.
+     *
+     * install() and update() both delete their staging directory when they are
+     * done, so they must not share one. Two concurrent operations against the
+     * staging root — in production, or two Pest processes under --parallel —
+     * would otherwise have the first to finish delete the other's extracted
+     * files, and the rename that places the addon fails with "Failed to place
+     * addon" for reasons that have nothing to do with the addon.
+     */
+    private function freshStagingPath(): string
+    {
+        return $this->stagingPath().'/'.uniqid('op_', true);
+    }
+
+    /**
+     * Move an extracted addon into place, copying it across if the two paths
+     * are on different filesystems.
+     *
+     * `File::moveDirectory()` is a bare `rename()`, and rename(2) cannot move a
+     * directory across a mount point — it fails with EXDEV. Staging lives under
+     * `storage/`, while the installed root is documented in config/addons.php as
+     * "a persistent writable volume": point it at an actual separate volume and
+     * every install fails with "Failed to place addon" for a reason that has
+     * nothing to do with the addon. The test suite hits the same wall now that
+     * `ubuntu-latest` has moved to the ubuntu-26 image, which mounts /tmp as a
+     * tmpfs: the suite's installed root is a temp directory, staging is in the
+     * ext4 workspace, and the rename crosses between them.
+     *
+     * Copy-then-delete is the standard fallback. A partial copy is removed
+     * rather than left behind, so a failure never half-places an addon that
+     * discovery would then pick up.
+     */
+    private function placeDirectory(string $from, string $to): bool
+    {
+        if (File::moveDirectory($from, $to)) {
+            return true;
+        }
+
+        if (!File::copyDirectory($from, $to)) {
+            File::deleteDirectory($to);
+
+            return false;
+        }
+
+        File::deleteDirectory($from);
+
+        return true;
+    }
+
+    /**
+     * Fetch a source into a staging directory the caller owns, taking the
+     * directory with it if the fetch fails.
+     *
+     * The directory has to exist before the source runs, and the callers' own
+     * cleanup cannot start until they hold an extracted path — so a fetch that
+     * throws (a 404, an empty or oversized download, an archive that is not a
+     * zip) lands in the gap between the two. One shared staging directory hid
+     * that: the next attempt reused it. One directory per attempt does not, so
+     * the failure path has to clean up after itself or every failure orphans
+     * another directory that nothing ever sweeps.
+     *
+     * @throws Throwable whatever the source raised, unchanged
+     */
+    private function fetchIntoStaging(AddonSource $source, string $staging): string
+    {
+        File::ensureDirectoryExists($staging);
+
+        try {
+            return $source->fetch($staging);
+        } catch (Throwable $throwable) {
+            File::deleteDirectory($staging);
+
+            throw $throwable;
+        }
     }
 
     /**
