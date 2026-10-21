@@ -83,3 +83,22 @@ it('install() leaves no staging directory behind when the fetch fails', function
 
     expect(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
 });
+
+it('install() places the addon when it cannot be renamed into the installed root', function (): void {
+    $staging = $this->work.'/staging';
+    Config::set('addons.paths.staging', $staging);
+
+    // Stands in for the installed root being on its own filesystem, which is
+    // what config/addons.php documents it as: rename(2) refuses to move a
+    // directory across a mount point (EXDEV), so placement has to copy instead.
+    // Forcing the return value is the only portable way to get there — a test
+    // cannot mount a second filesystem.
+    File::partialMock()->shouldReceive('moveDirectory')->andReturn(false);
+
+    $addon = app(AddonRegistry::class)->install(new ZipSource($this->zip));
+
+    expect($addon->getName())->toBe('Demo')
+        ->and(File::isFile($this->installed.'/acme-demo/module.json'))->toBeTrue()
+        // The copy is not a leak: the staged original is gone either way.
+        ->and(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
+});

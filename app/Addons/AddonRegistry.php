@@ -392,7 +392,7 @@ class AddonRegistry
 
             File::ensureDirectoryExists(AddonRoots::installed());
 
-            if (!File::moveDirectory($extracted, $dest)) {
+            if (!$this->placeDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
             }
         } finally {
@@ -470,7 +470,7 @@ class AddonRegistry
                 }
             }
 
-            if (!File::moveDirectory($extracted, $dest)) {
+            if (!$this->placeDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
             }
 
@@ -577,6 +577,41 @@ class AddonRegistry
     private function freshStagingPath(): string
     {
         return $this->stagingPath().'/'.uniqid('op_', true);
+    }
+
+    /**
+     * Move an extracted addon into place, copying it across if the two paths
+     * are on different filesystems.
+     *
+     * `File::moveDirectory()` is a bare `rename()`, and rename(2) cannot move a
+     * directory across a mount point — it fails with EXDEV. Staging lives under
+     * `storage/`, while the installed root is documented in config/addons.php as
+     * "a persistent writable volume": point it at an actual separate volume and
+     * every install fails with "Failed to place addon" for a reason that has
+     * nothing to do with the addon. The test suite hits the same wall now that
+     * `ubuntu-latest` has moved to the ubuntu-26 image, which mounts /tmp as a
+     * tmpfs: the suite's installed root is a temp directory, staging is in the
+     * ext4 workspace, and the rename crosses between them.
+     *
+     * Copy-then-delete is the standard fallback. A partial copy is removed
+     * rather than left behind, so a failure never half-places an addon that
+     * discovery would then pick up.
+     */
+    private function placeDirectory(string $from, string $to): bool
+    {
+        if (File::moveDirectory($from, $to)) {
+            return true;
+        }
+
+        if (!File::copyDirectory($from, $to)) {
+            File::deleteDirectory($to);
+
+            return false;
+        }
+
+        File::deleteDirectory($from);
+
+        return true;
     }
 
     /**
