@@ -1,89 +1,72 @@
 <script setup lang="ts">
 import { shallowReactive } from "vue";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
 
 defineProps<{ awards: App.Http.Data.AwardData[] }>();
+
+// Kept hand-rolled rather than delegated to UAvatar: the vitest stub renders
+// Nuxt UI components as passthroughs, so the broken-image fallback would stop
+// being observable to its unit test.
 const failedImages = shallowReactive(new Set<number>());
 </script>
 
 <template>
-  <section class="pv-pilot-awards" aria-label="Awards">
-    <header>
-      <h2>AWARDS &amp; MERITS</h2>
-      <span
-        ><strong>{{ awards.length }}</strong> earned</span
-      >
-    </header>
+  <UPageCard class="pv-pilot-awards" variant="outline" title="Awards & merits" aria-label="Awards">
+    <template #description>
+      <UBadge color="neutral" variant="subtle">{{ awards.length }} earned</UBadge>
+    </template>
+
     <p v-if="!awards.length" class="empty">No awards earned yet.</p>
+
     <div v-else class="grid">
-      <article
+      <UPageCard
         v-for="(award, index) in awards"
         :key="`${award.name}-${index}`"
+        variant="subtle"
         class="award"
         :aria-label="`${award.name}, earned`"
       >
-        <div class="icon-tile">
-          <img
-            v-if="award.image && !failedImages.has(index)"
-            :src="award.image"
-            alt=""
-            @error="failedImages.add(index)"
-          />
-          <svg v-else viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="9" r="6" />
-            <path d="M8.5 14 7 22l5-3 5 3-1.5-8" />
-          </svg>
+        <div class="award-body">
+          <div class="icon-tile">
+            <img
+              v-if="award.image && !failedImages.has(index)"
+              :src="award.image"
+              alt=""
+              @error="failedImages.add(index)"
+            />
+            <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="9" r="6" />
+              <path d="M8.5 14 7 22l5-3 5 3-1.5-8" />
+            </svg>
+          </div>
+
+          <div class="copy">
+            <h3>{{ award.name }}</h3>
+            <p>{{ award.description ?? "Qualifier unavailable" }}</p>
+            <span class="earned">Earned</span>
+          </div>
         </div>
-        <div class="copy">
-          <h3>{{ award.name }}</h3>
-          <p>{{ award.description ?? "Qualifier unavailable" }}</p>
-          <span class="earned">Earned</span>
-        </div>
-      </article>
+      </UPageCard>
     </div>
-  </section>
+  </UPageCard>
 </template>
 
 <style scoped>
 @layer components {
-  .pv-pilot-awards {
-    margin-top: 20px;
-  }
-  .pv-pilot-awards header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-  .pv-pilot-awards h2 {
-    margin: 0;
-    color: var(--pv-ink);
-    font-family: var(--pv-font-mono);
-    font-size: 12px;
-    letter-spacing: 0.06em;
-  }
-  .pv-pilot-awards header span {
-    color: var(--pv-ink-dim);
-    font-family: var(--pv-font-mono);
-    font-size: 12px;
-  }
-  .pv-pilot-awards header strong {
-    color: var(--pv-ink);
-  }
   .grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
   .award {
+    min-width: 0;
+  }
+  .award-body {
     display: flex;
     min-width: 0;
     align-items: center;
     gap: 10px;
-    border: 1px solid var(--pv-line);
-    border-radius: var(--pv-radius-lg);
-    background: var(--pv-panel);
-    padding: 12px;
   }
   .icon-tile {
     display: grid;
@@ -91,10 +74,10 @@ const failedImages = shallowReactive(new Set<number>());
     height: 36px;
     flex: 0 0 36px;
     place-items: center;
-    border: 1px solid color-mix(in srgb, var(--pv-cyan) 35%, var(--pv-line));
+    border: 1px solid color-mix(in srgb, var(--pv-amber) 35%, var(--pv-line));
     border-radius: var(--pv-radius-sm);
-    background: color-mix(in srgb, var(--pv-cyan) 10%, var(--pv-panel));
-    color: var(--pv-cyan);
+    background: color-mix(in srgb, var(--pv-amber) 10%, var(--pv-panel));
+    color: var(--pv-amber);
   }
   .icon-tile img {
     width: 100%;
@@ -107,6 +90,8 @@ const failedImages = shallowReactive(new Set<number>());
     fill: none;
     stroke: currentColor;
     stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
   .copy {
     min-width: 0;

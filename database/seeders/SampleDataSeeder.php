@@ -167,7 +167,7 @@ class SampleDataSeeder extends YamlSeeder
                 'fuel_used'           => 15000 + ($i * 400),
                 'distance'            => $flightTime * 7.5,
                 'planned_distance'    => $flightTime * 7.5,
-                'level'               => 36000,
+                'level'               => 360, // FL360, not 36000 ft -- pireps.level is a flight level (design.md open question 6)
                 'landing_rate'        => -150 - ($i * 10),
                 'score'               => 90 - $i,
                 'source'              => 0,
@@ -215,7 +215,7 @@ class SampleDataSeeder extends YamlSeeder
             'dpt_airport_id'      => 'MMMX',
             'arr_airport_id'      => 'MMAA',
             'alt_airport_id'      => 'MMSM',
-            'level'               => 28000,
+            'level'               => 280, // FL280, not 28000 ft -- pireps.level is a flight level (design.md open question 6)
             'distance'            => 207.03,
             'planned_distance'    => 207.00,
             'flight_time'         => 48,

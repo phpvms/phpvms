@@ -114,7 +114,11 @@ class Updater extends Page
         };
 
         if (count($migrationsPending) !== 0) {
-            $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
+            if ($migrationSvc->runAllMigrationsWithStreaming($streamCallback) !== 0) {
+                $streamCallback(__('installer.failed'));
+
+                return;
+            }
         }
 
         // These run in-process, after streaming has begun. An uncaught throw
@@ -133,13 +137,26 @@ class Updater extends Page
         }
 
         if (count($dataMigrationsPending) !== 0) {
-            $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
+            if ($migrationSvc->runAllDataMigrationsWithStreaming($streamCallback) !== 0) {
+                $streamCallback(__('installer.failed'));
+
+                return;
+            }
         }
 
         $this->streamOutput(__('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
 
-        app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback);
-        app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
+        if (app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback) !== 0) {
+            $streamCallback(__('installer.failed'));
+
+            return;
+        }
+
+        if (app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback) !== 0) {
+            $streamCallback(__('installer.failed'));
+
+            return;
+        }
 
         $this->streamOutput(PHP_EOL.__('installer.update_completed').PHP_EOL);
 

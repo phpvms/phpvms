@@ -5,13 +5,13 @@ namespace App\Providers\Filament;
 use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
+use App\Services\MapConfigService;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\Support\Assets\AlpineComponent;
-use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
@@ -26,9 +26,6 @@ class AdminPanelProvider extends BasePanelProvider
             ->path('admin')
             ->colors(fn (): array => [
                 'primary' => app(Branding::class)->brandPalette(),
-            ])
-            ->assets([
-                Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -91,7 +88,24 @@ class AdminPanelProvider extends BasePanelProvider
             ->plugins([
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
-            ]);
+            ])
+            // Map config to JS (window.filamentData.maps): basemap pair +
+            // enabled overlay layers, resolved by MapConfigService and shared
+            // with the Inertia (skylight) side via HandleInertiaRequests — one
+            // resolver, two transports (design.md D7). Tile API keys carried
+            // in this DTO are not secrets; see MapLayer's docblock.
+            //
+            // bootUsing(), not ServiceProvider::boot(): boot() runs once at
+            // app bootstrap (and, under Octane, once per worker), so a value
+            // read from the settings table there goes stale until the next
+            // restart and an admin's basemap change would never reach
+            // clients. bootUsing() runs per request, after every provider has
+            // booted, so it always reads the current settings row.
+            ->bootUsing(function (): void {
+                FilamentAsset::registerScriptData([
+                    'maps' => app(MapConfigService::class)->resolve()->toArray(),
+                ]);
+            });
 
         return $this->discoverModuleComponents($panel);
     }
@@ -174,16 +188,6 @@ class AdminPanelProvider extends BasePanelProvider
                 'pirep-landing-analysis',
                 resource_path('js/dist/admin/components/pirep-landing-analysis.js'),
             ),
-        ]);
-
-        // Expose map-related config to JS (window.filamentData.maps).
-        // The OpenAIP overlay needs an API key client-side — pulling from
-        // config keeps it out of the bundled JS and lets each install
-        // configure its own key in .env.
-        FilamentAsset::registerScriptData([
-            'maps' => [
-                'openaip_api_key' => config('services.openaip.api_key'),
-            ],
         ]);
     }
 }

@@ -88,6 +88,13 @@ export const lintReport = signal<LintReport | null>(null);
  */
 export const lintError = signal<string | null>(null);
 export const isDirty = signal<boolean>(false);
+/**
+ * True when the target bundle came from a deep link (`?bundle=`) rather than
+ * the picker. BundleConfigSection then renders the bundle read-only with no
+ * "Change" affordance — the admin arrived from that bundle's page and forging
+ * into a different one is not what they asked for.
+ */
+export const bundleLocked = signal<boolean>(false);
 export const draftLoaded = signal<boolean>(false);
 export const lastSavedAt = signal<Date | null>(null);
 
@@ -137,6 +144,7 @@ export function resetStore(): void {
   lintReport.value = null;
   lintError.value = null;
   isDirty.value = false;
+  bundleLocked.value = false;
   draftLoaded.value = false;
   lastSavedAt.value = null;
   airportCache.value = {};

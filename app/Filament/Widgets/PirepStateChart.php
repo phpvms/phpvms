@@ -6,18 +6,17 @@ namespace App\Filament\Widgets;
 
 use App\Enums\PirepState;
 use App\Filament\Concerns\IsDynamicDashboardWidget;
+use App\Filament\Concerns\ReadsPageFilters;
 use App\Models\Pirep;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use MDDev\DynamicDashboard\Contracts\DynamicWidget;
 use Override;
 
 class PirepStateChart extends Widget implements DynamicWidget
 {
-    use InteractsWithPageFilters;
     use IsDynamicDashboardWidget;
+    use ReadsPageFilters;
 
     protected string $view = 'filament.widgets.dashboard.chart';
 
@@ -48,26 +47,20 @@ class PirepStateChart extends Widget implements DynamicWidget
     #[Override]
     protected function getViewData(): array
     {
-        $filters = array_replace([
-            'start_date' => null,
-            'end_date'   => null,
-            'airlines'   => [],
-        ], $this->pageFilters ?? []);
+        $airlines = $this->filterAirlines();
 
+        // Bucketed on when the flight happened, not when it was filed. A
+        // chart of *every* state has to place the states that never reach
+        // filing — in progress, draft, cancelled carry no `submitted_at` — or
+        // those slices are structurally always zero.
         $query = Pirep::query()
+            ->whereRaw(Pirep::ACTIVITY_AT.' BETWEEN ? AND ?', [
+                $this->filterStartDate(),
+                $this->filterEndDate(),
+            ])
             ->when(
-                $filters['start_date'] !== null || $filters['end_date'] !== null,
-                fn (Builder $query): Builder => $query->whereBetween(
-                    'submitted_at',
-                    [
-                        $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear(),
-                        $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now(),
-                    ],
-                ),
-            )
-            ->when(
-                filled($filters['airlines']),
-                fn (Builder $query): Builder => $query->whereIn('airline_id', $filters['airlines']),
+                filled($airlines),
+                fn (Builder $query): Builder => $query->whereIn('airline_id', $airlines),
             );
 
         $counts = $query

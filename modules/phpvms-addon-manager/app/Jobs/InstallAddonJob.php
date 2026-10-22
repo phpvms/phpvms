@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\AddonManager\Jobs;
 
+use App\Addons\AddonAutoLoader;
 use App\Addons\AddonRegistry;
 use App\Addons\Sources\UrlSource;
 use App\Addons\Support\ManifestParser;
@@ -237,6 +238,12 @@ class InstallAddonJob implements ShouldQueue
 
         if (!is_dir($path)) {
             return;
+        }
+
+        $manifest = app(ManifestParser::class)->parse($addon->getPath());
+
+        if ($manifest !== null) {
+            app(AddonAutoLoader::class)->registerClasses($manifest);
         }
 
         $exit = Artisan::call('migrate', [

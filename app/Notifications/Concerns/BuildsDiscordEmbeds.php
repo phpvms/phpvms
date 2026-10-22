@@ -13,6 +13,16 @@ use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbed;
  */
 trait BuildsDiscordEmbeds
 {
+    protected function discordIdentityId(User $user): ?string
+    {
+        $user->loadMissing('identities');
+        $providerUserId = $user->identities
+            ->firstWhere('connection_id', 'discord')
+            ?->provider_user_id;
+
+        return $providerUserId !== null && $providerUserId !== '' ? $providerUserId : null;
+    }
+
     /**
      * An avatar URL Discord accepts as an embed thumbnail.
      *

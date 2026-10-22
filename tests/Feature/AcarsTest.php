@@ -232,9 +232,10 @@ it('can prefile and update a pirep', function (): void {
         ->and($pirep['planned_distance']['mi'])->toEqual(460.31)
         ->and($pirep['planned_distance']['km'])->toEqual(740.8)
         ->and($pirep['planned_distance']['m'])->toEqual(740800)
-        ->and(str_ends_with((string) $pirep['submitted_at'], 'Z'))->toBeTrue();
-
-    // Are date times in UTC?
+        // Are date times in UTC? Checked on created_at, not submitted_at: this
+        // PIREP has only been prefiled, so it has no filing time at all.
+        ->and(str_ends_with((string) $pirep['created_at'], 'Z'))->toBeTrue()
+        ->and($pirep['submitted_at'])->toBeNull();
 
     // See that the fields and fares were set
     $fares = PirepFare::where('pirep_id', $pirep['id'])->get();

@@ -54,7 +54,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Do a lookup, via vaCentral, for the airport information.
+     * Do a lookup, via vacentral, for the airport information.
      */
     public function lookup(string $id): AirportResource
     {

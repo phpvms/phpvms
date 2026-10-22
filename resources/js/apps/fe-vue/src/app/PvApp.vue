@@ -5,6 +5,8 @@ import AppHeader from "./shell/AppHeader.vue";
 import AppNavigation from "./shell/AppNavigation.vue";
 import AppShell from "./shell/AppShell.vue";
 import { useThemeContext } from "@/shared/theme";
+import UApp from "@nuxt/ui/components/App.vue";
+import UTheme from "@nuxt/ui/components/Theme.vue";
 
 provideExtensionContext();
 const { resolved } = useThemeContext();

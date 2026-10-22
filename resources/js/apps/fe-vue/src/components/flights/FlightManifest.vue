@@ -3,6 +3,7 @@ import { Link } from "@inertiajs/vue3";
 import { computed, shallowRef, watch } from "vue";
 import FlightIdentHeader from "./FlightIdentHeader.vue";
 import PvSlot from "@/shared/components/PvSlot.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
 
 const props = defineProps<{
   flights: App.Http.Data.FlightListItemData[];

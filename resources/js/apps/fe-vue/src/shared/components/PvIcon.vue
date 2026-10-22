@@ -5,29 +5,21 @@
  * child markup (legacy path strings that start with `<`). Server-provided widget
  * defs may pass either form, so both are handled here transparently.
  *
+ * A name is looked up in `dynamicIcons`, the explicit map of every icon the
+ * backend may ask for; a name outside it (an addon's own) draws the fallback.
+ *
  * Stroke uses `currentColor` so the icon inherits text color, matching the
  * former hand-rolled `.i` svg usage across the theme.
  */
 import { computed } from "vue";
+import { resolveIcon } from "@/shared/lib/dynamicIcons";
 
 const props = withDefaults(defineProps<{ name: string; size?: number }>(), { size: 18 });
 
 /** True when `name` is raw inline SVG child markup rather than an icon name. */
 const isRaw = computed(() => props.name.trimStart().startsWith("<"));
 
-/** Convert `cloudSun` / `CloudSun` to Iconify's `cloud-sun` name. */
-function toKebabCase(name: string): string {
-  return name
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-    .replace(/[_\s]+/g, "-")
-    .toLowerCase();
-}
-
-const resolvedName = computed(() => {
-  const name = props.name.trim();
-  if (name.startsWith("i-tabler-")) return name;
-  return `i-tabler-${toKebabCase(name.replace(/^i-[^-]+-/, ""))}`;
-});
+const icon = computed(() => resolveIcon(props.name));
 </script>
 
 <template>
@@ -41,5 +33,5 @@ const resolvedName = computed(() => {
     :height="size"
     v-html="name"
   />
-  <UIcon v-else :name="resolvedName" :size="size" />
+  <component :is="icon" v-else :width="size" :height="size" />
 </template>

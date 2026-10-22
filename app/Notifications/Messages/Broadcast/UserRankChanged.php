@@ -34,13 +34,14 @@ class UserRankChanged extends Notification implements ShouldQueue
         $user = $this->user;
 
         $user_avatar = $this->discordAvatarUrl($user);
+        $discordId = $this->discordIdentityId($user);
 
         return DiscordMessage::make()->embed(
             DiscordEmbed::make()
                 ->color(DiscordEmbedColor::Success->value)
                 ->title(__('notifications.discord.rank_changed', ['rank' => $user->rank->name]))
-                ->description($user->discord_id
-                    ? __('notifications.discord.rank_changed_for', ['mention' => '<@'.$user->discord_id.'>'])
+                ->description($discordId
+                    ? __('notifications.discord.rank_changed_for', ['mention' => '<@'.$discordId.'>'])
                     : null)
                 ->thumbnail($user_avatar)
                 ->image($user->rank->image_url)

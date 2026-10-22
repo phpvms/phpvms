@@ -6,6 +6,15 @@ import SimBriefPlanningOptions from "@/components/simbrief/SimBriefPlanningOptio
 import { useSimBriefAttempt } from "@/components/simbrief/useSimBriefAttempt";
 import FlightIdentHeader from "@/components/flights/FlightIdentHeader.vue";
 import PvLoadingState from "@/shared/components/PvLoadingState.vue";
+import IconAlertCircle from "~icons/tabler/alert-circle";
+import IconExternalLink from "~icons/tabler/external-link";
+import UAlert from "@nuxt/ui/components/Alert.vue";
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageBody from "@nuxt/ui/components/PageBody.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 const props = defineProps<{
   planning: App.Http.Data.SimBriefPlanningData | null;
@@ -83,7 +92,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
 </script>
 
 <template>
-  <UPage class="pv-simbrief-planning">
+  <UPage class="pv-simbrief-planning" aria-label="SimBrief flight planning">
     <UPageHeader>
       <template #description>
         <div class="planning-identity">
@@ -130,7 +139,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
             v-if="planning && attempt.state.value === 'waiting-for-popup'"
             color="info"
             variant="subtle"
-            icon="i-tabler-external-link"
+            :icon="IconExternalLink"
             description="SimBrief is open. phpVMS is checking for the completed briefing."
           />
           <PvLoadingState
@@ -141,7 +150,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
             v-else-if="planning && attempt.failure.value"
             color="error"
             variant="subtle"
-            icon="i-tabler-alert-circle"
+            :icon="IconAlertCircle"
             :description="attempt.failure.value"
           />
 
@@ -182,7 +191,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
             v-else-if="assignmentFailure"
             color="error"
             variant="subtle"
-            icon="i-tabler-alert-circle"
+            :icon="IconAlertCircle"
             :description="assignmentFailure"
           />
         </UPageCard>
@@ -192,88 +201,90 @@ async function continueWithAircraft(nextAircraftId: number | null) {
 </template>
 
 <style scoped>
-.pv-simbrief-planning {
-  min-width: 0;
-}
-.planning-identity {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-.planning-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.75fr);
-  gap: 16px;
-}
-.facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 16px 0;
-}
-.facts div {
-  min-width: 0;
-  border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-md);
-  background: var(--pv-panel-inset);
-  padding: 11px;
-}
-dt {
-  color: var(--pv-ink-dim);
-  font-size: calc(0.75rem * var(--pv-type-scale));
-  text-transform: uppercase;
-}
-dd {
-  overflow-wrap: anywhere;
-  margin: 4px 0 0;
-  color: var(--pv-ink);
-  font-family: var(--pv-font-mono);
-  font-size: calc(0.875rem * var(--pv-type-scale));
-}
-.route {
-  overflow-wrap: anywhere;
-  margin: 0;
-  border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-md);
-  background: var(--pv-panel-inset);
-  color: var(--pv-ink);
-  padding: 12px;
-  font-family: var(--pv-font-mono);
-  font-size: calc(0.875rem * var(--pv-type-scale));
-  line-height: 1.55;
-}
-.action-panel {
-  display: grid;
-  align-content: start;
-  gap: 13px;
-}
-.action-panel p {
-  margin: 0;
-  color: var(--pv-ink-dim);
-  font-size: calc(0.875rem * var(--pv-type-scale));
-  line-height: 1.5;
-}
-.muted {
-  font-size: calc(0.75rem * var(--pv-type-scale)) !important;
-}
-.planning-actions {
-  display: grid;
-  gap: 8px;
-  margin-top: 4px;
-}
-@media (max-width: 720px) {
+@layer components {
+  .pv-simbrief-planning {
+    min-width: 0;
+  }
   .planning-identity {
-    align-items: flex-start;
-    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
   }
   .planning-grid {
-    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.75fr);
+    gap: 16px;
   }
-}
-@media (max-width: 390px) {
   .facts {
-    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .facts div {
+    min-width: 0;
+    border: 1px solid var(--pv-line);
+    border-radius: var(--pv-radius-md);
+    background: var(--pv-panel-inset);
+    padding: 11px;
+  }
+  dt {
+    color: var(--pv-ink-dim);
+    font-size: calc(0.75rem * var(--pv-type-scale));
+    text-transform: uppercase;
+  }
+  dd {
+    overflow-wrap: anywhere;
+    margin: 4px 0 0;
+    color: var(--pv-ink);
+    font-family: var(--pv-font-mono);
+    font-size: calc(0.875rem * var(--pv-type-scale));
+  }
+  .route {
+    overflow-wrap: anywhere;
+    margin: 0;
+    border: 1px solid var(--pv-line);
+    border-radius: var(--pv-radius-md);
+    background: var(--pv-panel-inset);
+    color: var(--pv-ink);
+    padding: 12px;
+    font-family: var(--pv-font-mono);
+    font-size: calc(0.875rem * var(--pv-type-scale));
+    line-height: 1.55;
+  }
+  .action-panel {
+    display: grid;
+    align-content: start;
+    gap: 13px;
+  }
+  .action-panel p {
+    margin: 0;
+    color: var(--pv-ink-dim);
+    font-size: calc(0.875rem * var(--pv-type-scale));
+    line-height: 1.5;
+  }
+  .muted {
+    font-size: calc(0.75rem * var(--pv-type-scale)) !important;
+  }
+  .planning-actions {
+    display: grid;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  @media (max-width: 720px) {
+    .planning-identity {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .planning-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 390px) {
+    .facts {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 }
 </style>

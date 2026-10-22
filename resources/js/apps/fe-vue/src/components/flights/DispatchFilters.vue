@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from "vue";
 import type { FlightFilterOptions, FlightFilters } from "./types";
+import IconSearch from "~icons/tabler/search";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UInput from "@nuxt/ui/components/Input.vue";
+import USelect from "@nuxt/ui/components/Select.vue";
 
 const props = defineProps<{
   filters: FlightFilters;
@@ -104,88 +108,106 @@ function clear() {
         <label
           ><span>Airline</span
           ><USelect
-            v-model="form.airlineId"
+            v-model.nullable="form.airlineId"
             :items="optionItems.airlines"
             placeholder="All airlines"
         /></label>
         <label
           ><span>Flight type</span
           ><USelect
-            v-model="form.flightType"
+            v-model.nullable="form.flightType"
             :items="optionItems.flightTypes"
             placeholder="All types"
         /></label>
         <label
           ><span>Flight number</span
-          ><UInput v-model="form.flightNumber" autocomplete="off" placeholder="104"
+          ><UInput v-model.nullable="form.flightNumber" autocomplete="off" placeholder="104"
         /></label>
         <label
           ><span>Route code</span
-          ><UInput v-model="form.routeCode" autocomplete="off" placeholder="A"
+          ><UInput v-model.nullable="form.routeCode" autocomplete="off" placeholder="A"
         /></label>
         <label
           ><span>Departure</span
-          ><UInput v-model="form.depIcao" autocomplete="off" maxlength="8" placeholder="KDFW"
+          ><UInput
+            v-model.nullable="form.depIcao"
+            autocomplete="off"
+            maxlength="8"
+            placeholder="KDFW"
         /></label>
         <label
           ><span>Arrival</span
-          ><UInput v-model="form.arrIcao" autocomplete="off" maxlength="8" placeholder="KORD"
+          ><UInput
+            v-model.nullable="form.arrIcao"
+            autocomplete="off"
+            maxlength="8"
+            placeholder="KORD"
         /></label>
         <label
           ><span>Subfleet</span
           ><USelect
-            v-model="form.subfleetId"
+            v-model.nullable="form.subfleetId"
             :items="optionItems.subfleets"
             placeholder="All subfleets"
         /></label>
         <label
           ><span>Type rating</span
           ><USelect
-            v-model="form.typeRatingId"
+            v-model.nullable="form.typeRatingId"
             :items="optionItems.typeRatings"
             placeholder="All ratings"
         /></label>
         <label
           ><span>ICAO type</span
           ><USelect
-            v-model="form.icaoType"
+            v-model.nullable="form.icaoType"
             :items="optionItems.icaoTypes"
             placeholder="All aircraft"
         /></label>
         <label
           ><span>Free text</span
-          ><UInput v-model="form.search" autocomplete="off" placeholder="Airport, route, callsign"
+          ><UInput
+            v-model.nullable="form.search"
+            autocomplete="off"
+            placeholder="Airport, route, callsign"
         /></label>
         <label
           ><span>Minimum distance</span
-          ><UInput v-model="form.distanceGreaterThan" inputmode="numeric" placeholder="0"
+          ><UInput v-model.nullable="form.distanceGreaterThan" inputmode="numeric" placeholder="0"
         /></label>
         <label
           ><span>Maximum distance</span
-          ><UInput v-model="form.distanceLessThan" inputmode="numeric" placeholder="Any"
+          ><UInput v-model.nullable="form.distanceLessThan" inputmode="numeric" placeholder="Any"
         /></label>
         <label
           ><span>Minimum time</span
-          ><UInput v-model="form.timeGreaterThan" inputmode="numeric" placeholder="Minutes"
+          ><UInput
+            v-model.nullable="form.timeGreaterThan"
+            inputmode="numeric"
+            placeholder="Minutes"
         /></label>
         <label
           ><span>Maximum time</span
-          ><UInput v-model="form.timeLessThan" inputmode="numeric" placeholder="Minutes"
+          ><UInput v-model.nullable="form.timeLessThan" inputmode="numeric" placeholder="Minutes"
         /></label>
         <label
           ><span>Sort by</span
-          ><USelect v-model="form.orderBy" :items="optionItems.sort" placeholder="Default"
+          ><USelect v-model.nullable="form.orderBy" :items="optionItems.sort" placeholder="Default"
         /></label>
         <label
           ><span>Direction</span
-          ><USelect v-model="form.sortedBy" :items="optionItems.direction" placeholder="Default"
+          ><USelect
+            v-model.nullable="form.sortedBy"
+            :items="optionItems.direction"
+            placeholder="Default"
         /></label>
         <label
-          ><span>Page size</span><UInput v-model="form.limit" inputmode="numeric" placeholder="25"
+          ><span>Page size</span
+          ><UInput v-model.nullable="form.limit" inputmode="numeric" placeholder="25"
         /></label>
 
         <div class="filter-actions">
-          <UButton type="submit" icon="i-tabler-search" :loading="loading" :disabled="loading">{{
+          <UButton type="submit" :icon="IconSearch" :loading="loading" :disabled="loading">{{
             loading ? "Updating results" : "Apply filters"
           }}</UButton>
           <UButton type="button" color="neutral" variant="ghost" :disabled="loading" @click="clear"

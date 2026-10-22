@@ -71,9 +71,12 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
                 ),
             ],
 
-            'origins'        => ['required', 'array', 'min:1'],
-            'origins.*'      => ['string', 'max:8', 'alpha', 'exists:airports,id'],
-            'destinations'   => ['required', 'array', 'min:1'],
+            'origins'   => ['required', 'array', 'min:1'],
+            'origins.*' => ['string', 'max:8', 'alpha', 'exists:airports,id'],
+            // 'present' (not 'required'): a tour batch has no destinations —
+            // its chain is origins alone. A non-tour batch with an empty list
+            // generates zero rows and still fails on `rows.required`.
+            'destinations'   => ['present', 'array'],
             'destinations.*' => ['string', 'max:8', 'alpha', 'exists:airports,id'],
 
             'bundle'                    => ['required', 'array'],

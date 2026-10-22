@@ -177,16 +177,17 @@ class PirepArchiveService extends Service
     }
 
     /**
-     * @return array<int, array{ident: ?string, type: ?string, pos_lat: mixed, pos_long: mixed}>
+     * @return array<int, array{ident: ?string, type: ?string, pos_lat: mixed, pos_long: mixed, altitude_feet: ?int}>
      */
     private function buildNavlog(SimBriefOfp $ofp): array
     {
         return array_map(
             static fn (SimBriefOfpNavlog $fix): array => [
-                'ident'    => $fix->ident,
-                'type'     => $fix->type,
-                'pos_lat'  => $fix->pos_lat,
-                'pos_long' => $fix->pos_long,
+                'ident'         => $fix->ident,
+                'type'          => $fix->type,
+                'pos_lat'       => $fix->pos_lat,
+                'pos_long'      => $fix->pos_long,
+                'altitude_feet' => $fix->altitude_feet,
             ],
             $ofp->navlog,
         );

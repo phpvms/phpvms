@@ -48,10 +48,41 @@ test('trims a full simbrief OFP down to the archive shape', function (): void {
             'est_time_enroute', 'sched_time_enroute', 'sched_block', 'est_block', 'reserve_time',
         ]);
 
-    // The full OFP has 41 keys per navlog fix; the archive keeps only 4.
+    // The full OFP has 41 keys per navlog fix; the archive keeps only 5.
     expect($data['navlog'])->not->toBeEmpty();
     foreach ($data['navlog'] as $fix) {
-        expect(array_keys($fix))->toEqual(['ident', 'type', 'pos_lat', 'pos_long']);
+        expect(array_keys($fix))->toEqual(['ident', 'type', 'pos_lat', 'pos_long', 'altitude_feet']);
+    }
+});
+
+test('build() retains per-fix planned altitude in the navlog', function (): void {
+    $pirep = Pirep::factory()->create(['state' => PirepState::IN_PROGRESS]);
+    attachSimBriefOfp($pirep);
+
+    $data = app(PirepArchiveService::class)->build($pirep->fresh());
+
+    foreach ($data['navlog'] as $fix) {
+        expect($fix['altitude_feet'])->not->toBeNull();
+    }
+});
+
+test('a navlog archived before altitude retention still loads without error', function (): void {
+    $pirep = Pirep::factory()->create(['state' => PirepState::ACCEPTED]);
+
+    // Pre-change shape: no `altitude_feet` key at all.
+    PirepArchive::create([
+        'pirep_id' => $pirep->id,
+        'navlog'   => [
+            ['ident' => 'FIXA', 'type' => 'wpt', 'pos_lat' => 10.0, 'pos_long' => 20.0],
+        ],
+    ]);
+
+    $archive = PirepArchive::find($pirep->id);
+
+    expect($archive->navlog)->not->toBeNull();
+
+    foreach ($archive->navlog as $fix) {
+        expect($fix['altitude_feet'] ?? null)->toBeNull();
     }
 });
 

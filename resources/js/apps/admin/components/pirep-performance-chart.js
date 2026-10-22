@@ -53,12 +53,18 @@ function cssVar(name, fallback) {
 
 let colorProbe;
 let colorCanvas;
-function toRgb(value, fallback) {
+
+/**
+ * Paint `value` into the 1x1 probe canvas and read its channels back, letting
+ * the browser do the colour-space conversion. `undefined` when there is no 2D
+ * context at all.
+ */
+function rgbChannels(value) {
   if (colorCanvas === undefined) {
     colorCanvas =
       document.createElement("canvas").getContext("2d", { willReadFrequently: true }) ?? null;
   }
-  if (!colorCanvas) return value;
+  if (!colorCanvas) return undefined;
 
   // Reset first: an unparseable value leaves fillStyle at its previous
   // setting rather than throwing, which would silently reuse another series'
@@ -67,10 +73,61 @@ function toRgb(value, fallback) {
   colorCanvas.fillStyle = value;
   colorCanvas.fillRect(0, 0, 1, 1);
 
-  const [r, g, b, a] = colorCanvas.getImageData(0, 0, 1, 1).data;
+  return colorCanvas.getImageData(0, 0, 1, 1).data;
+}
+
+function toRgb(value, fallback) {
+  const channels = rgbChannels(value);
+  if (channels === undefined) return value;
+
+  const [r, g, b, a] = channels;
   if (a === 0 && value !== "transparent") return fallback;
 
   return `rgb(${r}, ${g}, ${b})`;
+}
+
+/** The translucency the area fill under each series line is drawn at. */
+const FILL_ALPHA = 34 / 255;
+
+/**
+ * Build a translucent fill from a resolved series colour.
+ *
+ * Exported for testing. Replaces the old append-two-hex-digits idiom, which
+ * only yields a valid colour when its input is 6-digit hex. `cssVar` resolves
+ * through `toRgb`, which returns an `rgb(r, g, b)` string whenever the CSS
+ * variable actually RESOLVES, so the fill came out as `rgb(6, 126, 193)` with
+ * two stray digits glued on — which no parser accepts, and Chart.js paints as
+ * solid black.
+ *
+ * The failure mode was inverted from the obvious one, which is why it shipped:
+ * the fill looked CORRECT exactly when the theme variable was MISSING and the
+ * hex fallback was used, and broke on the normal path where it resolved.
+ * `34 / 255` is the alpha the old two-digit suffix meant.
+ */
+export function withAlpha(color, alpha = FILL_ALPHA) {
+  // Parsed directly rather than through the canvas probe: these two forms are
+  // the only ones `cssVar` ever produces — `rgb(r, g, b)` from `toRgb` when
+  // the theme variable resolves, or one of this file's own 6-digit hex
+  // fallbacks when it does not. The probe stays as the fallback for anything
+  // else, but is not on the common path (and is unavailable wherever there is
+  // no 2D canvas context, which is also what makes this unit-testable).
+  const channels = parseRgbOrHex(color) ?? rgbChannels(color);
+  if (channels === undefined) return color;
+
+  const [r, g, b] = channels;
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/** `[r, g, b]` from `rgb()`/`rgba()` or 6-digit hex; `undefined` for anything else. */
+function parseRgbOrHex(color) {
+  const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(color);
+  if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+
+  const hex = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(color);
+  if (hex) return [parseInt(hex[1], 16), parseInt(hex[2], 16), parseInt(hex[3], 16)];
+
+  return undefined;
 }
 
 /**
@@ -239,7 +296,7 @@ export default function pirepPerformanceChart(payload) {
         const ds = chartInstance.data.datasets[0];
         ds.label = cfg.label;
         ds.borderColor = cfg.color;
-        ds.backgroundColor = `${cfg.color}22`;
+        ds.backgroundColor = withAlpha(cfg.color);
         ds.data = data.map(([t, v]) => ({ x: t * 1000, y: v }));
 
         chartInstance.options.scales.y.ticks.callback = (v) =>
@@ -259,7 +316,7 @@ export default function pirepPerformanceChart(payload) {
             {
               label: cfg.label,
               borderColor: cfg.color,
-              backgroundColor: `${cfg.color}22`,
+              backgroundColor: withAlpha(cfg.color),
               data: data.map(([t, v]) => ({ x: t * 1000, y: v })),
               fill: true,
               tension: 0.25,

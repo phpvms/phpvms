@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Filament\Widgets;
 
 use App\Enums\PirepState;
+use App\Filament\Concerns\ReadsPageFilters;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Reports\PilotsReport;
 use App\Models\Pirep;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -20,7 +19,7 @@ use Override;
  */
 class PilotHoursChart extends Widget
 {
-    use InteractsWithPageFilters;
+    use ReadsPageFilters;
 
     protected string $view = 'filament.widgets.dashboard.chart';
 
@@ -31,15 +30,9 @@ class PilotHoursChart extends Widget
     #[Override]
     protected function getViewData(): array
     {
-        $filters = $this->pageFilters ?? [
-            'start_date' => null,
-            'end_date'   => null,
-            'airlines'   => [],
-        ];
-
-        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
-        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
-        $airlines = $filters['airlines'];
+        $start_date = $this->filterStartDate();
+        $end_date = $this->filterEndDate();
+        $airlines = $this->filterAirlines();
 
         $pilots = Pirep::query()
             ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED])

@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\PirepState;
 use App\Filament\Concerns\IsDynamicDashboardWidget;
+use App\Filament\Concerns\ReadsPageFilters;
 use App\Models\Pirep;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,6 +15,7 @@ use MDDev\DynamicDashboard\Contracts\DynamicWidget;
 abstract class DashboardStatWidget extends Widget implements DynamicWidget
 {
     use IsDynamicDashboardWidget;
+    use ReadsPageFilters;
 
     protected string $view = 'filament.widgets.dashboard.stat-card';
 
@@ -50,11 +52,25 @@ abstract class DashboardStatWidget extends Widget implements DynamicWidget
         return static::getDynamicDashboardDefaultHeight();
     }
 
-    /** @return Builder<Pirep> */
+    /**
+     * Every filed report in the page's selected period.
+     *
+     * Scoped to `submitted_at` rather than `created_at` because a PIREP is
+     * created at prefile and only becomes a *report* when it is filed, which
+     * can be days later.
+     *
+     * @return Builder<Pirep>
+     */
     protected function recentReports(): Builder
     {
+        $airlines = $this->filterAirlines();
+
         return Pirep::query()
-            ->where('submitted_at', '>=', now()->subDays(6)->startOfDay())
-            ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]);
+            ->whereBetween('submitted_at', [$this->filterStartDate(), $this->filterEndDate()])
+            ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED])
+            ->when(
+                filled($airlines),
+                fn (Builder $query): Builder => $query->whereIn('airline_id', $airlines),
+            );
     }
 }

@@ -4,6 +4,7 @@
     "name": "PhpvmsDashboard",
     "alias": "phpvms-dashboard",
     "registry_id": "phpvms/dashboard",
+    "version": "1.0.0",
     "type": "module",
     "description": "First-party home for phpVMS skylight dashboard widgets. Ships the weather (METAR) widget as a pre-built Vue (ESM) widget that owns its own data endpoint.",
     "keywords": ["skylight", "dashboard", "widget", "weather", "metar"],

@@ -84,7 +84,7 @@ it('always returns null for home_airport (v1 has no airline-level home)', functi
 it('returns the documented array shape with the three expected keys', function (): void {
     $stats = new AirlineStatsService()->buildFor(Airline::factory()->create());
 
-    expect(array_keys($stats))->toBe([
+    expect($stats)->toHaveKeys([
         'existing_active_flights_count',
         'hub_airports',
         'home_airport',

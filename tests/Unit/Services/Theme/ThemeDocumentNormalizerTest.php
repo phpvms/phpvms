@@ -126,7 +126,7 @@ it('resolves nested schema refs and rejects nested additional properties', funct
 it('returns a transient preview without durable theme data', function (): void {
     $preview = app(ThemePublicationService::class)->preview(rawThemeFixture());
 
-    expect(array_keys($preview))->toBe(['document', 'diagnostics', 'css', 'resolvedInput', 'targets'])
+    expect($preview)->toHaveKeys(['document', 'diagnostics', 'css', 'resolvedInput', 'targets'])
         ->and($preview['document']['version'])->toBe(1)
         ->and($preview['diagnostics'])->toBe([])
         ->and($preview['resolvedInput'])->toBe([

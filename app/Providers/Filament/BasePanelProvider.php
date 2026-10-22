@@ -96,6 +96,14 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn (): string => view('filament.auth.login-hero')->render(),
             )
+            // Social sign-in, below the credentials form. Same connections the
+            // pilot-facing login offers -- OAuthConnectionService is the single
+            // source of truth -- so enabling a provider lights it up on both
+            // surfaces at once.
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn (): string => view('filament.auth.oauth-buttons')->render(),
+            )
             // Resolves the sidebar's collapse state from localStorage before the
             // rail paints, so it does not blink out while Alpine boots. Must stay
             // ahead of the clock: it wants to run as early inside the <aside> as

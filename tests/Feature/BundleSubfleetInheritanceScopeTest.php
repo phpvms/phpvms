@@ -841,7 +841,7 @@ test('an inherited subfleet carries a flight pivot, not the bundle pivot it was 
     expect($subfleet->pivot)->toBeInstanceOf(Pivot::class)
         ->and($subfleet->pivot->flight_id)->toBe($flight->id)
         ->and($subfleet->pivot->subfleet_id)->toBe($bundled->id)
-        ->and(array_keys($subfleet->pivot->getAttributes()))->toBe(['flight_id', 'subfleet_id'])
+        ->and($subfleet->pivot->getAttributes())->toHaveKeys(['flight_id', 'subfleet_id'])
         ->and($subfleet->pivot->getAttributes())->not->toHaveKey('bundle_id');
 });
 

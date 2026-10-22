@@ -38,6 +38,43 @@ test('admin view-pirep page renders detail layout', function (): void {
         ->assertSee($pirep->ident);
 });
 
+/**
+ * Regression: $record->level is already a flight level (vmsACARS serializes
+ * it from a property named FlightLevel; PirepFactory generates 20-400), not
+ * feet. A stray "/ 100" previously rendered FL350 as "FL003".
+ */
+test('admin view-pirep page shows the cruise level unconverted', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+    $pirep = Pirep::factory()->create(['state' => PirepState::PENDING, 'level' => 350]);
+
+    $this->actingAs($admin)
+        ->get(PirepResource::getUrl('view', ['record' => $pirep]))
+        ->assertSuccessful()
+        ->assertSee('FL350')
+        ->assertDontSee('FL003');
+});
+
+/**
+ * The route map (tasks.md 6.2) fetches its own data client-side from
+ * GET api/map/pirep/{id} — there is no server-injected GeoJSON left to
+ * assert on, so this locks in the one thing Blade actually controls: the
+ * container the JS mounts into, unconditionally (no more $hasRouteMap gate).
+ */
+test('admin view-pirep page renders the maplibre route map container', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+    $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
+
+    $this->actingAs($admin)
+        ->get(PirepResource::getUrl('view', ['record' => $pirep]))
+        ->assertSuccessful()
+        ->assertSee('id="pirep-route-map-'.$pirep->id.'"', false)
+        ->assertSee('render_pirep_map_from_api', false);
+});
+
 test('admin pirep list links each card to view-pirep page', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
 

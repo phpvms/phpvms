@@ -85,6 +85,77 @@ test('parses an OFP with an empty TLR takeoff/landing section', function (): voi
     expect(fn (): SimBriefOfpTlr => SimBriefOfpTlr::from([]))->not->toThrow(Exception::class);
 });
 
+test('parses a landing runway with no performance figures', function (): void {
+    // Verbatim from a real OFP (KRAL, a 2850 ft strip the airframe cannot use):
+    // SimBrief sends '' rather than a number for such a runway, and an empty
+    // string will not coerce to int. One of them used to abort hydration of the
+    // entire OFP with a TypeError on max_weight_dry.
+    $tlr = SimBriefOfpTlr::from([
+        'takeoff' => [],
+        'landing' => [
+            'conditions' => [
+                'airport_icao'      => 'KRAL',
+                'planned_runway'    => '27',
+                'planned_weight'    => '91894',
+                'flap_setting'      => '30',
+                'wind_direction'    => '346',
+                'wind_speed'        => '0',
+                'temperature'       => '23',
+                'altimeter'         => '30.00',
+                'surface_condition' => 'dry',
+            ],
+            'distance_dry' => [
+                'weight'            => '92000',
+                'flap_setting'      => '30',
+                'brake_setting'     => 'MAX MAN',
+                'reverser_credit'   => 'YES',
+                'speeds_vref'       => '120',
+                'actual_distance'   => '2610',
+                'factored_distance' => '3483',
+            ],
+            'distance_wet' => [
+                'weight'            => '92000',
+                'flap_setting'      => '30',
+                'brake_setting'     => 'MAX MAN',
+                'reverser_credit'   => 'YES',
+                'speeds_vref'       => '120',
+                'actual_distance'   => '3669',
+                'factored_distance' => '4700',
+            ],
+            'runway' => [
+                [
+                    'identifier'          => '16',
+                    'length'              => '2850',
+                    'length_tora'         => '2850',
+                    'length_toda'         => '2850',
+                    'length_asda'         => '2850',
+                    'length_lda'          => '2850',
+                    'elevation'           => '775',
+                    'gradient'            => '-0.84',
+                    'true_course'         => '179',
+                    'magnetic_course'     => '167',
+                    'headwind_component'  => '0',
+                    'crosswind_component' => '0',
+                    'ils_frequency'       => '',
+                    'max_weight_dry'      => '',
+                    'max_weight_wet'      => '',
+                ],
+            ],
+        ],
+    ]);
+
+    $runway = $tlr->landing->runway[0];
+
+    expect($runway->identifier)->toBe('16')
+        ->and($runway->max_weight_dry)->toBe('')
+        ->and($runway->max_weight_wet)->toBe('')
+        // The numeric neighbours still coerce, so widening those two did not
+        // quietly turn the rest of the runway into strings.
+        ->and($runway->length)->toBe(2850)
+        ->and($runway->elevation)->toBe(775)
+        ->and($runway->gradient)->toBe(-0.84);
+});
+
 test('read simbrief', function (): void {
     $userinfo = createUserData();
     $user = $userinfo['user'];

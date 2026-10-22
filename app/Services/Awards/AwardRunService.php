@@ -10,6 +10,7 @@ use App\Models\Award;
 use App\Models\User;
 use App\Models\UserAward;
 use App\Services\Awards\Constraints\PirepConstraint;
+use App\Services\Awards\Constraints\TourConstraint;
 use Filament\QueryBuilder\Constraints\Constraint;
 use Illuminate\Support\Collection;
 
@@ -82,8 +83,8 @@ class AwardRunService
     }
 
     /**
-     * The award vocabulary: every `users` column, every saved snippet, and
-     * the one PIREP constraint.
+     * The award vocabulary: every `users` column, every saved snippet, the
+     * PIREP constraint, and the tour constraint.
      *
      * The triggering-PIREP scope is offered only to `pirep`-triggered awards,
      * and applies nothing unless an id is bound -- a nightly run has no PIREP
@@ -100,6 +101,7 @@ class AwardRunService
             PirepConstraint::make()
                 ->allowTriggeringPirepScope($award->trigger === AwardTrigger::Pirep)
                 ->triggeringPirep($triggeringPirepId),
+            TourConstraint::make(),
         ];
     }
 

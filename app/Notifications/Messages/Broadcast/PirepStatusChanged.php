@@ -50,6 +50,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
         $pirep = $this->pirep;
 
         $user_avatar = $this->discordAvatarUrl($pirep->user);
+        $discordId = $this->discordIdentityId($pirep->user);
 
         // Pirep Filed > success, normals > warning, non-normals > error
         $color = in_array($pirep->status, self::DANGER_STATUSES, true)
@@ -62,8 +63,8 @@ class PirepStatusChanged extends Notification implements ShouldQueue
                 'ident' => $pirep->ident,
                 'verb'  => __('notifications.discord.status.'.$pirep->status->value),
             ]))
-            ->description($pirep->user->discord_id
-                ? __('notifications.discord.flight_by', ['mention' => '<@'.$pirep->user->discord_id.'>'])
+            ->description($discordId
+                ? __('notifications.discord.flight_by', ['mention' => '<@'.$discordId.'>'])
                 : null)
             ->thumbnail($user_avatar)
             ->author(DiscordEmbedAuthor::make($pirep->user->ident.' - '.$pirep->user->name_private)

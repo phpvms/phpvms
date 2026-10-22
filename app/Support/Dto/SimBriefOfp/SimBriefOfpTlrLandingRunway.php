@@ -22,7 +22,12 @@ final class SimBriefOfpTlrLandingRunway extends Dto
         public int $headwind_component,
         public int $crosswind_component,
         public float|string $ils_frequency,
-        public int $max_weight_dry,
-        public int $max_weight_wet
+        // SimBrief sends '' for a runway it has no landing performance figure
+        // for — a short strip the aircraft cannot use. Same reason
+        // `ils_frequency` above and `max_weight` on the takeoff runway are
+        // widened: an empty string cannot coerce to int and blows up
+        // hydration for the whole OFP.
+        public int|string $max_weight_dry,
+        public int|string $max_weight_wet
     ) {}
 }

@@ -134,7 +134,9 @@ it('runs an award test and names who matches', function (): void {
 
     fakeRunService(collect([$match]), expectGrant: false);
 
-    expect(AwardForm::runTestResults($award)->render())->toContain($match->name);
+    // e(): the results render escapes the name, so a faker name carrying an
+    // apostrophe ("O'Conner") never matched raw and failed at random.
+    expect(AwardForm::runTestResults($award)->render())->toContain(e($match->name));
 });
 
 it('still saves an unchanged legacy award through the edit form', function (): void {

@@ -4,6 +4,7 @@ import FlightIdentHeader from "./FlightIdentHeader.vue";
 import PvSlot from "@/shared/components/PvSlot.vue";
 import AirportWeather from "./AirportWeather.vue";
 import FlightRouteMap from "./FlightRouteMap.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
 
 defineProps<{
   flight: App.Http.Data.FlightDetailData;

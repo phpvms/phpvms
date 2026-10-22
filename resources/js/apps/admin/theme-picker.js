@@ -44,7 +44,13 @@ function apply(state) {
 // DOM, so reading it is more reliable than racing its Alpine.effect for the
 // <html class="dark"> toggle. Falls back to the applied class for the
 // 'system' case, where 'theme' doesn't say light or dark directly.
-function currentMode() {
+//
+// Exported (not just used internally) so app.js can expose it as
+// `window.phpvms.theme.current()` for the maplibre admin surfaces
+// (route-performance.blade.php, components/admin/live-map.blade.php), which
+// need to pick light/dark once at map construction and again on
+// `theme-changed` — one implementation, not a second copy of this logic.
+export function currentMode() {
   const stored = localStorage.getItem("theme");
   return stored === "dark" || stored === "light"
     ? stored

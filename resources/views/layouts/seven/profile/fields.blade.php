@@ -108,7 +108,7 @@
         <div class="row mb-3">
             <div class="col-md-12">
                 <div class="form-check {{ $errors->has('opt_in') ? ' is-invalid' : ' ' }}">
-                    <input class="form-check-input" type="checkbox" checked="{{ $user->opt_in }}" name="opt_in"
+                    <input class="form-check-input" type="checkbox" value="1" @checked($user->opt_in) name="opt_in"
                         id="opt_in">
                     <label class="form-check-label" for="opt_in">
                         {{ __('profile.opt-in') }}

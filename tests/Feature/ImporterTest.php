@@ -283,6 +283,45 @@ test('airport exporter', function (): void {
         ->and($status['errors'])->toHaveCount(0);
 });
 
+/**
+ * The export is a file people diff and re-import, so the same flight has to
+ * export the same bytes every time. `Flight::fares()` has no ordering of its
+ * own, which left the order to the database -- postgres returned these two
+ * rows one way round on one run and the other way on the next.
+ *
+ * The loaded relation is put into descending id order by hand because that
+ * database order is the thing a test cannot steer: sqlite hands these back in
+ * id order however they were attached, so attaching them backwards proves
+ * nothing. Sorting rather than reversing matters -- reverse() is relative to
+ * whatever the driver returned, so on the driver that returned `F;Y` it would
+ * hand the exporter `Y;F` and pass without the exporter sorting anything.
+ */
+test('flight exporter orders fares and subfleets by id, whatever order it is handed them', function (): void {
+    $fareSvc = app(FareService::class);
+
+    [$airline, $subfleet] = insertFlightsScaffoldData();
+    $subfleet2 = Subfleet::factory()->create(['type' => 'B74X']);
+
+    $fareY = Fare::where('code', 'Y')->first();
+    $fareF = Fare::where('code', 'F')->first();
+    expect($fareF->id)->toBeGreaterThan($fareY->id)
+        ->and($subfleet2->id)->toBeGreaterThan($subfleet->id);
+
+    $flight = Flight::factory()->create(['airline_id' => $airline->id]);
+    $fareSvc->setForFlight($flight, $fareY);
+    $fareSvc->setForFlight($flight, $fareF);
+    $flight->subfleets()->syncWithoutDetaching([$subfleet->id, $subfleet2->id]);
+
+    $flight = $flight->fresh();
+    $flight->setRelation('fares', $flight->fares->sortByDesc('id')->values());
+    $flight->setRelation('subfleets', $flight->subfleets->sortByDesc('id')->values());
+
+    $exported = new FlightExporter()->export($flight);
+
+    expect($exported['fares'])->toEqual('Y;F')
+        ->and($exported['subfleets'])->toEqual($subfleet->type.';B74X');
+});
+
 test('flight exporter', function (): void {
     $fareSvc = app(FareService::class);
 

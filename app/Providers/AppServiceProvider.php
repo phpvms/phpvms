@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Auth\InstallSafeUserProvider;
+use App\Console\Commands\DataMigrationInstallCommand;
 use App\Contracts\Metar;
 use App\Contracts\Model as BaseModel;
 use App\Enums\ActiveState;
@@ -10,7 +11,10 @@ use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
 use App\Enums\UserState;
+use App\Features\Assets\AssetService;
 use App\Features\Assets\AssetTypes;
+use App\Features\OAuth\Helpers\OAuthConnectionService;
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
 use App\Models\Role;
@@ -73,7 +77,6 @@ use Override;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature;
-use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\Yaml\Yaml;
@@ -84,7 +87,7 @@ class AppServiceProvider extends ServiceProvider
      * @throws UnknownUnitOfMeasure
      * @throws NonStringUnitName
      */
-    public function boot(): void
+    public function boot(OAuthConnectionService $oauthConnections): void
     {
         Schema::defaultStringLength(191);
 
@@ -276,13 +279,12 @@ class AppServiceProvider extends ServiceProvider
             config('phpvms.metar_lookup')
         );
 
-        /**
-         * OAuth providers events registration
-         */
-        Event::listen(function (SocialiteWasCalled $event): void {
-            $event->extendSocialite('discord', Provider::class);
-            $event->extendSocialite('ivao', \SocialiteProviders\Ivao\Provider::class);
-            $event->extendSocialite('vatsim', \SocialiteProviders\Vatsim\Provider::class);
+        $oauthConnections->loadRuntimeConfiguration();
+
+        Event::listen(function (SocialiteWasCalled $event) use ($oauthConnections): void {
+            foreach ($oauthConnections->providerClasses() as $driver => $providerClass) {
+                $event->extendSocialite($driver, $providerClass);
+            }
         });
     }
 
@@ -298,6 +300,19 @@ class AppServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(ModuleService::class);
+        $this->app->singleton(SocialiteProviderRegistry::class);
+        $this->app->singleton(OAuthConnectionService::class);
+
+        // Takes the data-migration installer back off Laravel's `migrate:install`
+        // name, which it claims through an inherited $signature. See the command's
+        // docblock -- without this, every migrate run builds the wrong table.
+        // Rebinding the package's own container key is enough: ServiceProvider
+        // ::commands() resolves these lazily when the console kernel starts, which
+        // is after every provider has registered.
+        $this->app->singleton(
+            'command.migrate-data.install',
+            fn (Application $app): DataMigrationInstallCommand => new DataMigrationInstallCommand($app['migration.data.repository'])
+        );
 
         // Core settings read/write. Bound as a singleton so the per-request
         // Tier-1 memo ($memo array) is shared across all setting() calls within
@@ -328,6 +343,13 @@ class AppServiceProvider extends ServiceProvider
         // is a registry.
         $this->app->singleton(AssetTypes::class);
 
+        // Memoises find() per (slot, key) for the life of a request (see
+        // AssetService::$findMemo). Scoped, not singleton: OperationTerminated
+        // already flushes scoped bindings (config/octane.php), so Octane
+        // starts every request with an empty memo instead of one worker's
+        // lookups leaking into the next request it serves.
+        $this->app->scoped(AssetService::class);
+
         $this->app->singleton(PirepViewTabRegistry::class);
 
         // RouteForge lint catalog: tag every concrete rule class so adding a
@@ -354,7 +376,6 @@ class AppServiceProvider extends ServiceProvider
         ], 'routeforge.lint_rules');
 
         $this->app->bind(
-            LintRunner::class,
             static function ($app): LintRunner {
                 /** @var iterable<LintRule> $tagged */
                 $tagged = $app->tagged('routeforge.lint_rules');

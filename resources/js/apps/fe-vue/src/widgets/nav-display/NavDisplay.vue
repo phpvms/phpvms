@@ -1,17 +1,28 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useGlobe } from "@/shared/lib/useGlobe";
-import { bearing, distanceNm, type LngLat } from "@/shared/lib/geo";
+import { ref, computed, watch } from "vue";
+import { useMap, useRoute } from "@phpvms/map/adapters/vue";
+import { frameToRoute } from "@phpvms/map";
+import type { RoutePoint } from "@phpvms/map";
+import { useMapContext } from "@/shared/lib/useMapContext";
+import { useRouteMarkers } from "@/shared/lib/useRouteMarkers";
+import { greatCircle, bearing, distanceNm, type LngLat } from "@/shared/lib/geo";
 
 /**
- * Nav Display — a tile-free MapLibre globe with a blue great-circle route,
- * framed like an EFIS ND (mono header + bottom readout). Colors are driven by
- * `--pv-globe-*` / `--pv-accent` tokens. Falls back to origin-only when no
- * destination is known.
+ * Nav Display — Tier 0 (design.md D13: no three.js) globe over the shared
+ * `@phpvms/map` package, framed like an EFIS ND (mono header + bottom
+ * readout). Colors are driven by `--pv-globe-*` / `--pv-accent` tokens.
+ * Falls back to origin-only when no destination is known.
+ *
+ * Previously drew its own tile-free globe via `useGlobe` (Natural Earth
+ * topojson land + DOM markers, no basemap). That helper is retired
+ * (maplibre-map-platform design.md D12) — the configured basemap now renders
+ * under the same great-circle line, and `useRouteMarkers` draws the same
+ * origin/destination ring markers + plane glyph (`.mk-*` classes below) it
+ * used to, so the visuals carry over.
  *
  * @unused Not yet wired to a page slot. The dashboard RouteWidget embeds the
- * globe via @/shared/lib/useGlobe directly. Retained as a reusable standalone
- * component for future page or addon use.
+ * package directly. Retained as a reusable standalone component for future
+ * page or addon use.
  */
 const props = defineProps<{
   from: LngLat;
@@ -21,14 +32,42 @@ const props = defineProps<{
   fl?: string;
 }>();
 
-const mapEl = ref<HTMLElement | null>(null);
+const mapEl = ref<HTMLElement | undefined>(undefined);
+const { config, theme } = useMapContext();
+const { map } = useMap(mapEl, { config: config.value, theme: theme.value });
 
-useGlobe(mapEl, {
-  from: props.from,
-  to: props.to ?? null,
-  fromLabel: props.fromIcao,
-  toLabel: props.toIcao ?? undefined,
-});
+/** Densified great circle so it curves smoothly under the globe projection — a raw 2-point line would render as a mercator-straight chord. */
+const points = computed<RoutePoint[]>(() =>
+  props.to
+    ? greatCircle(props.from, props.to).map(([lon, lat]) => ({ lat, lon, altitude: 0 }))
+    : [],
+);
+
+useRoute(map, 0, points);
+useRouteMarkers(
+  map,
+  computed(() => ({
+    from: props.from,
+    to: props.to ?? null,
+    fromLabel: props.fromIcao,
+    toLabel: props.toIcao ?? undefined,
+  })),
+);
+
+watch(
+  map,
+  (mapInstance) => {
+    if (!mapInstance) return;
+    frameToRoute(
+      mapInstance,
+      points.value.length ? points.value : [{ lat: props.from[1], lon: props.from[0] }],
+      {
+        pitch: 0,
+      },
+    );
+  },
+  { immediate: true },
+);
 
 const hasRoute = computed(() => !!props.to);
 const trk = computed(() =>
@@ -128,38 +167,5 @@ const ete = computed(() => {
 }
 .readout .mag {
   color: var(--pv-accent);
-}
-</style>
-
-<!-- Global: imperative MapLibre DOM markers live outside scoped-style reach. -->
-<style>
-.mk-apt {
-  font-family: var(--pv-font-mono);
-  font-size: calc(11px * var(--pv-type-scale));
-  color: var(--pv-accent);
-  white-space: nowrap;
-  transform: translateY(-14px);
-  pointer-events: none;
-}
-.mk-ring {
-  width: 12px;
-  height: 12px;
-  border: 1.6px solid var(--pv-accent);
-  border-radius: 50%;
-  position: relative;
-}
-.mk-ring::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  background: var(--pv-accent);
-  border-radius: 50%;
-}
-.mk-plane {
-  color: var(--pv-accent);
-}
-.maplibregl-ctrl-attrib {
-  font-size: calc(8px * var(--pv-type-scale));
-  opacity: 0.5;
 }
 </style>

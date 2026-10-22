@@ -175,6 +175,18 @@ class Pirep extends Model
     use SoftDeletes;
     use Sortable;
 
+    /**
+     * When a flight happened: its block-off, or failing that when the report
+     * was created. Plenty of PIREPs carry no `block_off_time` — it is filled by
+     * ACARS — and on `block_off_time` alone those would vanish from any
+     * activity-based query.
+     *
+     * Distinct from `submitted_at`, which is when a report was *filed*: a
+     * flight still in the air has never been filed and has no `submitted_at`,
+     * so anything meant to include in-progress flights has to bucket on this.
+     */
+    public const string ACTIVITY_AT = 'COALESCE(block_off_time, created_at)';
+
     public $table = 'pireps';
 
     /** The form wants this */

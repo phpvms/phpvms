@@ -9,16 +9,45 @@ use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\FleetController;
 use App\Http\Controllers\Api\FlightController;
 use App\Http\Controllers\Api\MaintenanceController;
+use App\Http\Controllers\Api\MapController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\PirepController;
 use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StatusController::class, 'status']);
 
 Route::get('acars', [AcarsController::class, 'live_flights']);
 Route::get('acars/geojson', [AcarsController::class, 'pireps_geojson']);
+
+// Public and unauthenticated, deliberately: the live index genuinely
+// matches the `acars` routes above (design.md D10).
+Route::get('map/live', [MapController::class, 'live']);
+
+// NOT fully public, despite living outside the `scope:` group below: cookie
+// + session middleware boots so `Auth::check()` inside MapController::pirep()
+// reflects an admin-panel or skylight browser login. Anonymous callers are
+// still let through, but only for a PIREP on the live map — MapController
+// enforces that, not this route. See design.md D10, "Auth posture —
+// corrected 2026-09-01 after review".
+//
+// Deliberately NOT the app's `web` middleware *alias* — bootstrap/app.php's
+// appendToGroup('web', ...) also puts InstalledCheck, SetActiveTheme, and
+// SetActiveLanguage on it. The latter two skip `api/*` paths; InstalledCheck
+// doesn't, so it redirected this JSON route to /system/install whenever
+// `User::count()` was 0 — wrong for a route that must always answer with
+// 401/404 JSON, never a redirect. What's listed below is the exact
+// framework middleware the `web` alias itself is built from, nothing
+// app-specific.
+Route::middleware([
+    EncryptCookies::class,
+    AddQueuedCookiesToResponse::class,
+    StartSession::class,
+])->get('map/pirep/{pirep_id}', [MapController::class, 'pirep']);
 
 Route::get('airports/hubs', [AirportController::class, 'index_hubs']);
 Route::get('airports/search', [AirportController::class, 'search']);

@@ -25,16 +25,6 @@ class ActivityCalendarWidget extends Widget implements DynamicWidget
 {
     use IsDynamicDashboardWidget;
 
-    /**
-     * When a flight happened: its block-off, or failing that when the report
-     * was created. Plenty of PIREPs carry no block_off_time — it is filled by
-     * ACARS — and on block_off_time alone those would vanish from the chart.
-     *
-     * PirepsTable's `departed` filter queries this same expression, so the
-     * deep link from a box selects exactly the rows that box counted.
-     */
-    public const string ACTIVITY_AT = 'COALESCE(block_off_time, created_at)';
-
     protected string $view = 'filament.widgets.dashboard.chart';
 
     protected int|string|array $columnSpan = 'full';
@@ -78,11 +68,13 @@ class ActivityCalendarWidget extends Widget implements DynamicWidget
         // expression the list's `departed` filter queries — a box and the page
         // it deep-links to have to be counting the same thing, or clicking one
         // lands on an empty list. Same state exclusions as PirepsTable's base
-        // query for the same reason.
+        // query for the same reason: a flight still in the air is activity and
+        // appears in both; a draft or a cancellation is not and appears in
+        // neither.
         Pirep::query()
-            ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED])
-            ->whereRaw(self::ACTIVITY_AT.' >= ?', [now()->subDays(6)->startOfDay()])
-            ->selectRaw(self::ACTIVITY_AT.' as activity_at')
+            ->whereNotIn('state', [PirepState::DRAFT, PirepState::CANCELLED])
+            ->whereRaw(Pirep::ACTIVITY_AT.' >= ?', [now()->subDays(6)->startOfDay()])
+            ->selectRaw(Pirep::ACTIVITY_AT.' as activity_at')
             ->pluck('activity_at')
             ->each(function (mixed $activityAt) use (&$days): void {
                 // selectRaw bypasses the model's casts, so this arrives as a

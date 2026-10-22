@@ -25,17 +25,20 @@ use App\Notifications\Messages\UserRegistered;
 use App\Notifications\Messages\UserRejected;
 use App\Notifications\Notifiables\PublicBroadcast;
 use App\Notifications\Notifiables\StaffBroadcast;
-use Exception;
+use App\Services\EmailFailureReporter;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 /**
  * Listen for different events and map them to different notifications
  */
 class NotificationsSubscriber
 {
+    public function __construct(private readonly EmailFailureReporter $emailFailureReporter) {}
+
     /**
      * Send a notification to all of the admins
      */
@@ -53,8 +56,8 @@ class NotificationsSubscriber
             try {
                 // $this->notifyUser($user, $notification);
                 Notification::send([$user], $notification);
-            } catch (Exception $e) {
-                Log::emergency('Error emailing admin ('.$user->email.'). Error='.$e->getMessage());
+            } catch (Throwable $exception) {
+                $this->emailFailureReporter->report($exception, $user->email);
             }
         }
     }
@@ -67,8 +70,8 @@ class NotificationsSubscriber
 
         try {
             $user->notify($notification);
-        } catch (Exception $exception) {
-            Log::emergency('Error emailing user, '.$user->ident.'='.$user->email.', error='.$exception->getMessage());
+        } catch (Throwable $throwable) {
+            $this->emailFailureReporter->report($throwable, $user->email);
         }
     }
 

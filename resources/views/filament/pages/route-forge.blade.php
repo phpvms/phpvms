@@ -11,6 +11,11 @@
     renders. No PHP-rendered data envelope, no window.* globals — the only
     server-injected payload in the HTML is the boot URL itself.
 
+    A second attribute, data-prefill, appears only when the page was reached
+    by a bundle-page deep link (?topology=&bundle=&bundle_name=&fresh=). It
+    carries the whitelisted params as JSON; see the Page's readPrefill() and
+    resources/js/apps/admin/routeforge/lib/prefill.ts.
+
     See resources/js/apps/admin/routeforge/main.tsx for the boot-fetch flow.
 --}}
 <x-filament-panels::page>
@@ -18,6 +23,9 @@
         id="routeforge-root"
         class="rf-root"
         data-boot-url="{{ $this->bootUrl }}"
+        @if ($this->prefill !== [])
+            data-prefill="{{ json_encode($this->prefill) }}"
+        @endif
     ></div>
 
     @vite('resources/js/apps/admin/routeforge/main.tsx')

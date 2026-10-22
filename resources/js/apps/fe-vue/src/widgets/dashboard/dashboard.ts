@@ -5,8 +5,9 @@ import RouteWidget from "./RouteWidget.vue";
  * Resolver map: catalog `component` NAME → Vue component. Kept out of the
  * headless catalog so the catalog stays serializable.
  *
- * Only `route` (RouteWidget) stays bundled here — it imports @/shared/lib/useGlobe
- * + @/shared/lib/geo, which are core-internal and can't ride the ESM addon path.
+ * Only `route` (RouteWidget) stays bundled here — it imports @phpvms/map (Tier 0,
+ * design.md D13) + @/shared/lib/geo, which are core-internal and can't ride the
+ * ESM addon path.
  *
  * `PvActivityFeed` registers in the APP layer (PvApp.vue) so the dashboard slice
  * doesn't import a sibling widget slice. Other widgets moved to the

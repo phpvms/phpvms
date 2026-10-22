@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { MetarState } from "./useMetar";
+import UButton from "@nuxt/ui/components/Button.vue";
 
 const props = defineProps<{ state: MetarState }>();
 const emit = defineEmits<{ retry: [] }>();

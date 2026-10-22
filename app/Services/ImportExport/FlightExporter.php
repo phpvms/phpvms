@@ -103,11 +103,17 @@ class FlightExporter extends ImportExport
 
     /**
      * Return any custom fares that have been made to this flight
+     *
+     * Ordered by fare id because `Flight::fares()` carries no ordering of its
+     * own, which leaves the order to the database: postgres is free to hand
+     * back the same two rows either way round, and did, so the same flight
+     * exported twice produced two different files. An export is meant to be
+     * diffed and re-imported, so the order has to come from the data.
      */
     protected function getFares(Flight $flight): string
     {
         $fares = [];
-        foreach ($flight->fares as $fare) {
+        foreach ($flight->fares->sortBy('id') as $fare) {
             $fare_export = [];
             if ($fare->pivot->price) {
                 $fare_export['price'] = $fare->pivot->price;
@@ -142,11 +148,14 @@ class FlightExporter extends ImportExport
 
     /**
      * Create the list of subfleets that are associated here
+     *
+     * Ordered by id for the same reason as getFares() above: the relation has
+     * no ordering of its own, so without this the database picks.
      */
     protected function getSubfleets(Flight $flight): string
     {
         $subfleets = [];
-        foreach ($flight->subfleets as $subfleet) {
+        foreach ($flight->subfleets->sortBy('id') as $subfleet) {
             $subfleets[] = $subfleet->type;
         }
 

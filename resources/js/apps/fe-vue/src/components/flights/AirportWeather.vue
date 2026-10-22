@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMetar } from "@/app/shell/useMetar";
+import UButton from "@nuxt/ui/components/Button.vue";
 
 const props = defineProps<{
   label: string;

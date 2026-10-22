@@ -47,6 +47,18 @@ export type AirportRefData = {
 icao: string,
 name: string,
 };
+export type ApiConnectionsData = {
+personalTokens: App.Http.Data.ApiTokenData[],
+authorizedApps: App.Http.Data.AuthorizedAppData[],
+scopes: App.Http.Data.SelectOptionData[],
+};
+export type ApiTokenData = {
+id: string,
+name: string,
+scopes: string[],
+createdAt: string | null,
+expiresAt: string | null,
+};
 export type AssetData = {
 id: string,
 key: string,
@@ -55,6 +67,13 @@ type: string,
 content_type: string,
 url: string,
 last_update: string,
+};
+export type AuthorizedAppData = {
+clientId: string,
+name: string,
+scopes: string[],
+tokenCount: number,
+lastAuthorizedAt: string | null,
 };
 export type AwardData = {
 name: string,
@@ -69,6 +88,7 @@ export type BidData = {
 id: number,
 flightId: string,
 aircraftId: number | null,
+userTourId: string | null,
 };
 export type BidRowData = {
 bid: App.Http.Data.BidData,
@@ -78,6 +98,10 @@ state: string,
 expiresAt: string | null,
 canGenerateSimBrief: boolean,
 canRemove: boolean,
+tourName: string | null,
+tourId: number | null,
+tourLeg: number | null,
+ofpUrl: string | null,
 };
 export type BidSelectionData = {
 bid: App.Http.Data.BidData,
@@ -207,6 +231,108 @@ arr_airport: App.Http.Data.AirportPointData | null,
 aircraft: App.Http.Data.AircraftRefData | null,
 comments: App.Http.Data.PirepCommentData[],
 };
+export type MapConfigData = {
+basemapLight: string,
+basemapDark: string,
+customStyleUrl: string | null,
+customStyleApiKey: string | null,
+layers: App.Http.Data.MapLayerData[],
+};
+export type MapDetailAirportsData = {
+dpt: App.Http.Data.AirportPointData | null,
+arr: App.Http.Data.AirportPointData | null,
+alt: App.Http.Data.AirportPointData | null,
+};
+export type MapEventData = {
+type: string | null,
+phase: string | null,
+lat: number | null,
+lon: number | null,
+altitude: number | null,
+occurredAt: string | null,
+};
+export type MapFlownData = {
+points: App.Http.Data.MapTrackPointData[],
+};
+export type MapLayerData = {
+id: number,
+name: string,
+type: string,
+urlTemplate: string,
+attribution: string | null,
+minZoom: number,
+maxZoom: number,
+opacity: number,
+apiKey: string | null,
+surfaces: string[] | null,
+};
+export type MapLiveFlightData = {
+pirepId: string,
+ident: string,
+status: string | null,
+phase: string | null,
+progress: number,
+pilot: App.Http.Data.MapPilotRefData | null,
+airline: App.Http.Data.AirlineRefData | null,
+aircraft: App.Http.Data.AircraftRefData | null,
+dptAirport: App.Http.Data.AirportRefData | null,
+arrAirport: App.Http.Data.AirportRefData | null,
+position: App.Http.Data.MapPositionData,
+};
+export type MapPilotRefData = {
+id: number,
+name: string | null,
+ident: string,
+};
+export type MapPirepDetailData = {
+pirepId: string,
+ident: string,
+callsign: string | null,
+status: string | null,
+phase: string | null,
+pilot: App.Http.Data.MapPilotRefData | null,
+airline: App.Http.Data.AirlineRefData | null,
+aircraft: App.Http.Data.AircraftRefData | null,
+airports: App.Http.Data.MapDetailAirportsData,
+scheduledArrivalAt: string | null,
+blockOffTime: string | null,
+blockOnTime: string | null,
+plannedFlightTime: number | null,
+flightTime: number | null,
+fuelUsed: string | null,
+blockFuel: string | null,
+distance: string | null,
+plannedDistance: string | null,
+cruiseLevel: number | null,
+remarks: string | null,
+flown: App.Http.Data.MapFlownData,
+planned: App.Http.Data.MapPlannedRouteData,
+events: App.Http.Data.MapEventData[],
+};
+export type MapPlannedFixData = {
+ident: string | null,
+lat: number,
+lon: number,
+altitudeFt: number | null,
+viaAirway: string | null,
+isSidStar: boolean,
+};
+export type MapPlannedRouteData = {
+fixes: App.Http.Data.MapPlannedFixData[],
+fallbackAltitudeFt: number | null,
+};
+export type MapPositionData = {
+lat: number,
+lon: number,
+altitude: number,
+heading: number,
+};
+export type MapTrackPointData = {
+lat: number,
+lon: number,
+altitude: number | null,
+phase: string | null,
+};
 export type OFPPlanningSelectionData = {
 flight: App.Http.Data.FlightDetailData,
 dispatchUrl: string,
@@ -291,6 +417,13 @@ value: number,
 label: string,
 color: string,
 };
+export type ProfileConnectionData = {
+connectionId: string,
+displayName: string,
+linked: boolean,
+linkable: boolean,
+providerUserId: string | null,
+};
 export type ProfileData = {
 id: number,
 name: string,
@@ -306,7 +439,42 @@ state: App.Http.Data.StateBadgeData,
 awards: App.Http.Data.AwardData[],
 typeRatings: App.Http.Data.TypeRatingData[],
 fields: App.Http.Data.UserFieldData[],
+tours: App.Http.Data.ProfileTourData[],
 acars: boolean,
+isOwnProfile: boolean,
+};
+export type ProfileEditData = {
+name: string,
+email: string,
+airlineId: string,
+homeAirport: App.Http.Data.SelectOptionData | null,
+country: string | null,
+timezone: string | null,
+simbriefUsername: string | null,
+optIn: boolean,
+hubsOnly: boolean,
+apiKey: string | null,
+avatarWidth: number,
+avatarHeight: number,
+airlines: App.Http.Data.SelectOptionData[],
+countries: App.Http.Data.SelectOptionData[],
+timezones: App.Http.Data.SelectOptionData[],
+fields: App.Http.Data.ProfileEditFieldData[],
+connections: App.Http.Data.ProfileConnectionData[],
+};
+export type ProfileEditFieldData = {
+slug: string,
+name: string,
+value: string | null,
+required: boolean,
+};
+export type ProfileTourData = {
+id: string,
+name: string,
+description: string | null,
+image: string | null,
+legs: number,
+completedAt: string | null,
 };
 export type RankData = {
 name: string,
@@ -329,6 +497,10 @@ name: string | null,
 lat: number,
 lon: number,
 };
+export type SelectOptionData = {
+value: string,
+label: string,
+};
 export type SimBriefAttemptData = {
 staticId: string,
 flightId: string,
@@ -342,8 +514,12 @@ flight: App.Http.Data.FlightDetailData,
 bid: App.Http.Data.BidData | null,
 aircraft: App.Http.Data.EligibleAircraftData,
 route: string,
+plannedFixes: App.Http.Data.MapPlannedFixData[],
 atcPlan: string,
-textOfp: string,
+textSections: {
+title: string,
+html: string,
+}[],
 weather: Record<string, string>,
 downloads: {
 name: string,
@@ -371,6 +547,27 @@ embedGenerationAllowed: boolean,
 export type StateBadgeData = {
 label: string,
 color: string,
+};
+export type TourLegData = {
+flightId: string,
+routeLeg: number | null,
+ident: string,
+dpt: string,
+arr: string,
+flown: boolean,
+};
+export type TourListItemData = {
+id: number,
+name: string,
+description: string | null,
+image: string | null,
+startDate: string | null,
+endDate: string | null,
+valid: boolean,
+legs: App.Http.Data.TourLegData[],
+status: string | null,
+legsCompleted: number,
+activeLegFlightId: string | null,
 };
 export type TypeRatingData = {
 name: string,

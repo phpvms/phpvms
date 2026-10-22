@@ -6,7 +6,7 @@ namespace App\Cron\Nightly;
 
 use App\Contracts\Listener;
 use App\Events\CronNightly;
-use App\Services\OAuthService;
+use App\Features\OAuth\OAuthService;
 
 class RefreshOAuthTokens extends Listener
 {

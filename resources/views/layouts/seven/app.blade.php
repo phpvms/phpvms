@@ -94,15 +94,10 @@
 
         </div>
         <footer class="py-3 mt-4 border-top">
-            <div class="container d-flex flex-wrap justify-content-between align-items-center">
-
-                <div class="col-md-4 d-flex align-items-center">
+            <div class="container d-flex flex-wrap">
+                <div class="justify-content-end">
                     <span class="mb-3 mb-md-0 text-body-secondary">Copyright {{ date('Y') }}
                         {{ $branding->name() }}</span>
-                </div>
-                <div class="col-md-4 d-flex align-items-center justify-content-end">
-                    <span class="mb-3 mb-md-0 text-body-secondary text-end">Powered by <a href="https://www.phpvms.net"
-                            target="_blank">phpVMS</a></span>
                 </div>
             </div>
         </footer>

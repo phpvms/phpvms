@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Pireps\Tables;
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
-use App\Filament\Widgets\ActivityCalendarWidget;
 use App\Models\Airport;
 use App\Models\Pirep;
 use App\Support\Units\Time;
@@ -46,7 +45,7 @@ class PirepsTable
             'dpt_airport:id,icao,name',
             'arr_airport:id,icao,name',
         ])
-            ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]))
+            ->whereNotIn('state', [PirepState::DRAFT, PirepState::CANCELLED]))
             ->columns([
                 TextColumn::make('ident')
                     ->label(trans_choice('common.flight', 1))
@@ -152,7 +151,7 @@ class PirepsTable
                     ->options(
                         collect(PirepState::cases())->reject(fn (PirepState $state): bool => in_array(
                             $state,
-                            [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED],
+                            [PirepState::DRAFT, PirepState::CANCELLED],
                             true,
                         ))
                             ->mapWithKeys(fn (PirepState $state): array => [$state->value => $state->getLabel()])
@@ -221,13 +220,13 @@ class PirepsTable
                     // never got one from ACARS.
                     ->query(fn (Builder $query, array $data): Builder => $query->when(
                         filled($data['from'] ?? null),
-                        fn (Builder $query): Builder => $query->whereRaw(ActivityCalendarWidget::ACTIVITY_AT.' >= ?', [
+                        fn (Builder $query): Builder => $query->whereRaw(Pirep::ACTIVITY_AT.' >= ?', [
                             $data['from'],
                         ]),
                     )
                         ->when(
                             filled($data['to'] ?? null),
-                            fn (Builder $query): Builder => $query->whereRaw(ActivityCalendarWidget::ACTIVITY_AT
+                            fn (Builder $query): Builder => $query->whereRaw(Pirep::ACTIVITY_AT
                             .' <= ?', [$data['to']]),
                         )),
             ])

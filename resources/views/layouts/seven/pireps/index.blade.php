@@ -4,10 +4,12 @@
 @section('content')
   <div class="row">
     <div class="col-md-12">
-      <div class="float-end">
-        <a class="btn btn-info pull-end"
-           href="{{ route('frontend.pireps.create') }}">@lang('pireps.file_new_pirep')</a>
-      </div>
+      @unless(setting('pireps.disable_manual', false))
+        <div class="float-end">
+          <a class="btn btn-info pull-end"
+             href="{{ route('frontend.pireps.create') }}">@lang('pireps.file_new_pirep')</a>
+        </div>
+      @endunless
       <h2>{{ trans_choice('pireps.pilotreport', 2) }}</h2>
       @include('flash::message')
       @include('pireps.table')
@@ -15,4 +17,3 @@
   </div>
   
 @endsection
-

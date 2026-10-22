@@ -7,9 +7,11 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Enums\AircraftState;
 use App\Enums\AircraftStatus;
+use App\Enums\BundleType;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
+use App\Features\Tour\TourService;
 use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Flight;
@@ -80,7 +82,11 @@ class BidService extends Service
     }
 
     /**
-     * Find all of the bids for a given user
+     * Find all of the bids for a given user, most recently briefed first.
+     *
+     * The pilot's own SimBrief for the bid's flight is the ordering key: a bid
+     * is "current" because a briefing was just generated for it, not because it
+     * was clicked on last. Bids with no briefing follow, newest bid first.
      *
      *
      * @return Bid[]
@@ -114,7 +120,17 @@ class BidService extends Service
             ]);
         }
 
-        $bids = Bid::with($with)->where(['user_id' => $user->id])->get();
+        // Newest bid first, tie-broken on the id. This is the base order the
+        // briefing sort below falls back to, and on its own it is already
+        // total: `bids`.`created_at` is a second-precision timestamp, so two
+        // bids placed in the same second compare equal and would otherwise come
+        // back in whatever order the driver returned. The id is auto-increment,
+        // so a higher one is the later bid.
+        $bids = Bid::with($with)
+            ->where(['user_id' => $user->id])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
 
         if ($loadSubfleets) {
             foreach ($bids as $bid) {
@@ -136,7 +152,43 @@ class BidService extends Service
             }
         }
 
-        return $bids;
+        return $this->briefedFirst($bids);
+    }
+
+    /**
+     * Order bids by how recently the pilot briefed them, newest first, leaving
+     * bids with no briefing behind those that have one.
+     *
+     * Sorted here rather than in the query because ordering on the briefing
+     * timestamp means ordering on a nullable correlated value, and the two
+     * databases phpVMS supports disagree about where those nulls land: on a
+     * DESC sort Postgres puts NULLs first and MySQL puts them last. Expressing
+     * "nulls last" portably in SQL means a raw COALESCE with a driver-specific
+     * cast, for a list that is one pilot's bids and already has its simbrief
+     * eager-loaded.
+     *
+     * The sort is stable (PHP 8), so bids that are equal on briefing — which
+     * includes every bid with no briefing at all — keep the query's newest-bid
+     * -first order.
+     *
+     * @param  Collection<int, Bid> $bids
+     * @return Collection<int, Bid>
+     */
+    private function briefedFirst(Collection $bids): Collection
+    {
+        return $bids->sort(function (Bid $a, Bid $b): int {
+            $aAt = $a->flight?->simbrief?->created_at;
+            $bAt = $b->flight?->simbrief?->created_at;
+
+            // No briefing means no recency to compare, so it sorts after every
+            // bid that has one instead of landing at whichever end the
+            // comparison happened to put it.
+            if ($aAt === null || $bAt === null) {
+                return ($aAt === null ? 1 : 0) <=> ($bAt === null ? 1 : 0);
+            }
+
+            return $bAt <=> $aAt;
+        })->values();
     }
 
     /**
@@ -150,10 +202,21 @@ class BidService extends Service
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null): Bid
     {
+        // A tour is bid as a unit, so the whole chain is created at once and the
+        // bid handed back is still this flight's. Resolved from the container
+        // rather than injected: TourService depends on this service.
+        if ($flight->bundle?->type === BundleType::Tour) {
+            $bid = app(TourService::class)->start($flight, $user, $aircraft);
+
+            $flight->refresh();
+
+            return $this->getBid($user, $bid->id) ?? $bid;
+        }
+
         $bid = DB::transaction(function () use ($flight, $user, $aircraft): Bid {
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
             $lockedFlight = Flight::query()->whereKey($flight->id)->lockForUpdate()->firstOrFail();
-            $lockedAircraft = $aircraft === null
+            $lockedAircraft = !$aircraft instanceof Aircraft
                 ? null
                 : Aircraft::query()->whereKey($aircraft->id)->lockForUpdate()->firstOrFail();
 
@@ -291,6 +354,10 @@ class BidService extends Service
 
     public function removeBidsForUser(User $user): void
     {
+        // The pilot is going away, so their live tours end rather than sitting
+        // at in_progress with no bids left. This drops the tour bids too.
+        app(TourService::class)->cancelLiveToursFor($user);
+
         foreach (Bid::query()->where('user_id', $user->id)->with('flight')->get() as $bid) {
             if ($bid->flight) {
                 $this->removeBid($bid->flight, $user);
@@ -314,7 +381,11 @@ class BidService extends Service
         $this->removeBid($flight, $pirep->user);
     }
 
-    private function assertFlightMayBeBid(Flight $flight, User $user): void
+    /**
+     * Public so the tour path can run the identical guard against leg 1 rather
+     * than reimplementing it. Not part of the ordinary bid API.
+     */
+    public function assertFlightMayBeBid(Flight $flight, User $user): void
     {
         if ((bool) setting('pilots.restrict_to_company', false)
             && $flight->airline_id !== $user->airline_id) {
@@ -332,10 +403,14 @@ class BidService extends Service
 
     }
 
-    private function assertAircraftMayBeBid(Flight $flight, User $user, Aircraft $aircraft): void
+    /** Public for the same reason as assertFlightMayBeBid(). */
+    public function assertAircraftMayBeBid(Flight $flight, User $user, Aircraft $aircraft): void
     {
         if ((bool) setting('bids.block_aircraft', false)
-            && Bid::query()->where('aircraft_id', $aircraft->id)->exists()) {
+            && Bid::query()
+                ->where('aircraft_id', $aircraft->id)
+                ->where('user_id', '!=', $user->id)
+                ->exists()) {
             throw new BidExistsForAircraft($aircraft);
         }
 
@@ -358,7 +433,8 @@ class BidService extends Service
         ]);
     }
 
-    private function recomputeFlightBidState(Flight $flight): void
+    /** Public so the tour path can settle `has_bid` across all N legs it creates. */
+    public function recomputeFlightBidState(Flight $flight): void
     {
         $hasBid = Bid::query()->where('flight_id', $flight->id)->exists();
         if ($flight->has_bid !== $hasBid) {

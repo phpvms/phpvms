@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Tables;
 
+use App\Filament\Resources\FlightBundles\Resources\Flight\Schemas\FlightForm;
 use App\Jobs\RecomputeBundleVisibility;
 use App\Models\Airport;
 use App\Models\Flight;
@@ -20,8 +21,8 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -43,23 +44,27 @@ class FlightsTable
 
                 TextColumn::make('dpt_airport_id')
                     ->label(__('flights.dep'))
+                    ->alignCenter()
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('arr_airport_id')
                     ->label(__('flights.arr'))
+                    ->alignCenter()
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('departure_time')
                     ->label(__('flights.departuretime'))
                     ->time('H:i')
+                    ->alignCenter()
                     ->sortable()
                     ->toggleable(),
 
                 TextColumn::make('arrival_time')
                     ->label(__('flights.arrivaltime'))
                     ->time('H:i')
+                    ->alignCenter()
                     ->sortable()
                     ->toggleable(),
 
@@ -67,10 +72,16 @@ class FlightsTable
                     ->label(__('common.notes'))
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                IconColumn::make('enabled')
+                // Self-saving. `visible` is a cron-managed derivative of `enabled`,
+                // so the toggle queues the same recompute the enable/disable bulk
+                // actions do rather than leaving the status badge stale.
+                ToggleColumn::make('enabled')
                     ->label(__('common.enabled'))
-                    ->boolean()
-                    ->sortable(),
+                    ->alignCenter()
+                    ->sortable()
+                    ->afterStateUpdated(function (Flight $record): void {
+                        RecomputeBundleVisibility::dispatch((int) $record->bundle_id);
+                    }),
 
                 TextColumn::make('status_badge')
                     ->label(__('common.status'))
@@ -104,7 +115,11 @@ class FlightsTable
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
-                    DeleteAction::make(),
+                    // Deleting a leg out from under a live tour strands it, so
+                    // the confirmation says who it affects. A null falls back to
+                    // Filament's own confirmation text.
+                    DeleteAction::make()
+                        ->modalDescription(fn (Flight $record): ?string => FlightForm::liveTourWarning($record->bundle)),
                     ForceDeleteAction::make(),
                     RestoreAction::make(),
                 ]),

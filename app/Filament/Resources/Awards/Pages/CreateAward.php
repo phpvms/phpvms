@@ -25,12 +25,6 @@ class CreateAward extends CreateRecord
     #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data = AwardForm::mutateTypeFields($data);
-
-        if (!empty($data['image_file'])) {
-            $data['image_url'] = $data['image_file'];
-        }
-
-        return $data;
+        return AwardForm::mutateTypeFields($data);
     }
 }

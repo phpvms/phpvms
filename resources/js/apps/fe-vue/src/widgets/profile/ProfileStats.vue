@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import StatTile from "@/shared/components/stats/StatTile.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
 
 defineProps<{ profile: App.Http.Data.ProfileData }>();
 </script>
 
 <template>
-  <section aria-label="Statistics" class="profile-section pv-profile-stats">
-    <p class="pv-eyebrow">RECORD</p>
+  <UPageCard class="pv-profile-stats" variant="outline" title="Record" aria-label="Statistics">
     <div class="stat-grid">
       <StatTile label="Total Hours" :value="profile.flightTimeMinutes" mono accent="cyan" />
       <StatTile label="Flights" :value="profile.flights" accent="green" />
@@ -19,14 +19,11 @@ defineProps<{ profile: App.Http.Data.ProfileData }>();
         accent="amber"
       />
     </div>
-  </section>
+  </UPageCard>
 </template>
 
 <style scoped>
 @layer components {
-  .profile-section {
-    margin-top: 20px;
-  }
   .stat-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

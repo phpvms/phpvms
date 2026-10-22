@@ -3,6 +3,7 @@ import { shallowRef, useTemplateRef } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import PvIcon from "@/shared/components/PvIcon.vue";
 import type { WidgetDef } from "./catalog";
+import UButton from "@nuxt/ui/components/Button.vue";
 
 defineProps<{ availableWidgets: WidgetDef[]; editing: boolean }>();
 const emit = defineEmits<{ addWidget: [id: string]; reset: []; toggleEditing: [] }>();

@@ -24,12 +24,6 @@ use Illuminate\Support\Str;
  */
 return new class() extends Migration
 {
-    /**
-     * Pinned registry Ed25519 public key (base64 of the raw 32-byte key) — the
-     * registry's own response-signing key, which signs the download-mint JSON
-     * that InstallAddonJob verifies. NOT the Keygen account key (registry.phpvms.net
-     * fronts Keygen for the catalog but re-signs downloads with this key).
-     */
     private const string REGISTRY_PUBLIC_KEY = '+SDNBf6LCATJElc5yi2mrhpJwGh5So/s1Hi3jCUETic=';
 
     public function up(): void
@@ -68,12 +62,12 @@ return new class() extends Migration
             return;
         }
 
-        $ulid = (string) Str::ulid();
-        $this->setSettingValue('va_global_id', $ulid);
+        $id = Str::random(12);
+        $this->setSettingValue('va_global_id', $id);
 
         // Write the same value to kvp so the ACARS plugin's lazy read agrees.
         if (Schema::hasTable('kvp') && DB::table('kvp')->where('key', 'va_global_id')->doesntExist()) {
-            DB::table('kvp')->insert(['key' => 'va_global_id', 'value' => $ulid]);
+            DB::table('kvp')->insert(['key' => 'va_global_id', 'value' => $id]);
         }
     }
 

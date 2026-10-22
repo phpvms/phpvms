@@ -286,6 +286,21 @@ class SettingsSeeder extends Seeder
             'description' => 'How often the live map updates its data',
         ],
 
+        // Map. The basemap pair and any custom style URL live in the
+        // `map_layers` table as a row of type `basemap`, edited from the
+        // "Base Maps" drawer on the Map Layers page — not here. Only the
+        // custom-style API key remains a setting, since MapConfigData still
+        // carries it for a caller injecting a key into a custom style.
+        [
+            'key'         => 'map.custom_style_api_key',
+            'name'        => 'Custom Style API Key',
+            'group'       => 'map',
+            'value'       => '',
+            'type'        => 'text',
+            'options'     => '',
+            'description' => 'API key applied to the custom style URL tile requests, if it requires one',
+        ],
+
         // Airports
         [
             'key'         => 'airports.default_ground_handling_cost',
@@ -360,6 +375,17 @@ class SettingsSeeder extends Seeder
             'type'        => 'int',
             'options'     => '',
             'description' => 'Number of hours to expire bids after',
+        ],
+
+        // Tours
+        [
+            'key'         => 'tours.max_in_progress',
+            'name'        => 'Max tours in progress',
+            'group'       => 'tours',
+            'value'       => '1',
+            'type'        => 'int',
+            'options'     => '',
+            'description' => 'How many tours a pilot can have in progress at once. 0 for unlimited',
         ],
 
         // Flights
@@ -529,6 +555,15 @@ class SettingsSeeder extends Seeder
         ],
 
         // PIREPs
+        [
+            'key'         => 'pireps.disable_manual',
+            'name'        => 'Disable Manual PIREPs',
+            'group'       => 'pireps',
+            'value'       => 'false',
+            'type'        => 'boolean',
+            'options'     => 'true,false',
+            'description' => 'Prevent pilots from filing PIREPs through the frontend',
+        ],
         [
             'key'         => 'pireps.duplicate_check_time',
             'name'        => 'PIREP duplicate time check',

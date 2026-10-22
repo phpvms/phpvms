@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\Users\RelationManagers;
 
-use App\Filament\Resources\Typeratings\Tables\TyperatingsTable;
-use App\Models\Typerating;
-use Filament\Forms\Components\Select;
+use Filament\Actions\AttachAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DetachAction;
+use Filament\Actions\DetachBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Override;
@@ -20,16 +22,41 @@ class TypeRatingsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Select::make('typerating_id')
-                    ->label(__('common.typerating'))
-                    ->searchable()
-                    ->options(Typerating::pluck('name', 'id')->toArray()),
+                //
             ]);
     }
 
+    /**
+     * Its own table rather than the shared `TyperatingsTable`: that one belongs
+     * to the standalone resource, so its edit and delete actions operate on the
+     * `Typerating` record itself. On a user's page the only meaningful
+     * operations are attaching and detaching the pivot row.
+     */
     public function table(Table $table): Table
     {
-        return TyperatingsTable::configure($table);
+        return $table
+            ->recordTitleAttribute('name')
+            ->columns([
+                TextColumn::make('type')
+                    ->label(__('common.type')),
+
+                TextColumn::make('name')
+                    ->label(__('common.name')),
+            ])
+            ->filters([
+                //
+            ])
+            ->headerActions([
+                AttachAction::make(),
+            ])
+            ->recordActions([
+                DetachAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make(),
+                ]),
+            ]);
     }
 
     #[Override]

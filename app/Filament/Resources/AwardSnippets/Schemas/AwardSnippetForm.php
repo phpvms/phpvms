@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\AwardSnippets\Schemas;
 
 use App\Services\Awards\Constraints\PirepConstraint;
+use App\Services\Awards\Constraints\TourConstraint;
 use App\Services\Awards\UserConstraints;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -55,6 +56,7 @@ class AwardSnippetForm
                     ->constraints([
                         ...UserConstraints::make(),
                         PirepConstraint::make(),
+                        TourConstraint::make(),
                     ])
                     ->columnSpanFull(),
             ]);

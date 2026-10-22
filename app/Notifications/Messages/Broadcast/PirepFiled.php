@@ -35,12 +35,13 @@ class PirepFiled extends Notification implements ShouldQueue
         $pirep = $this->pirep;
 
         $user_avatar = $this->discordAvatarUrl($pirep->user);
+        $discordId = $this->discordIdentityId($pirep->user);
 
         $embed = DiscordEmbed::make()
             ->color(DiscordEmbedColor::Success->value)
             ->title(__('notifications.discord.pirep_filed', ['ident' => $pirep->ident]))
-            ->description($pirep->user->discord_id
-                ? __('notifications.discord.flight_by', ['mention' => '<@'.$pirep->user->discord_id.'>'])
+            ->description($discordId
+                ? __('notifications.discord.flight_by', ['mention' => '<@'.$discordId.'>'])
                 : null)
             ->thumbnail($user_avatar)
             ->image($pirep->airline->logo)

@@ -648,6 +648,39 @@ test('pirep create returns not found for missing flight', function (): void {
         ->assertNotFound();
 });
 
+test('manual PIREP filing can be disabled', function (): void {
+    updateSetting('pireps.disable_manual', true);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('frontend.pireps.create'))
+        ->assertStatus(405);
+
+    $this->post(route('frontend.pireps.store'))
+        ->assertStatus(405);
+});
+
+test('manual PIREP filing links are hidden when disabled', function (): void {
+    updateSetting('pireps.disable_manual', true);
+    updateSetting('general.theme', 'seven');
+    $user = User::factory()->create();
+    Flight::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('frontend.pireps.index'))
+        ->assertOk()
+        ->assertDontSee(route('frontend.pireps.create'))
+        ->assertDontSee(__('pireps.file_new_pirep'));
+
+    $this->get(route('frontend.dashboard.index'))
+        ->assertOk()
+        ->assertDontSee(__('dashboard.fileonenow'));
+
+    $this->get(route('frontend.flights.index'))
+        ->assertOk()
+        ->assertDontSee(__('pireps.new_pirep'));
+});
+
 test('pirep progress percent', function (): void {
     updateSetting('units.distance', 'km');
 

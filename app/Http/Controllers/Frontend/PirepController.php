@@ -27,9 +27,11 @@ use App\Services\FareService;
 use App\Services\GeoService;
 use App\Services\PirepService;
 use App\Services\SimBriefService;
+use App\Support\PirepLevelNormalizer;
 use App\Support\Units\Fuel;
 use App\Support\Units\Time;
 use Carbon\Carbon;
+use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -49,7 +51,13 @@ class PirepController extends Controller
         private readonly GeoService $geoSvc,
         private readonly PirepSearchQuery $pirepSearchQuery,
         private readonly PirepService $pirepSvc,
-    ) {}
+    ) {
+        $this->middleware(function (Request $request, Closure $next) {
+            abort_if(setting('pireps.disable_manual', false), 405, 'Manual PIREP filing is disabled.');
+
+            return $next($request);
+        })->only(['create', 'store']);
+    }
 
     /**
      * Dropdown with aircraft grouped by subfleet
@@ -194,6 +202,9 @@ class PirepController extends Controller
                     'currentPage' => $pireps->currentPage(),
                     'lastPage'    => $pireps->lastPage(),
                     'total'       => $pireps->total(),
+                    // UPagination derives its page count from total/perPage, so
+                    // the page size has to travel with the rest of the metadata.
+                    'perPage' => $pireps->perPage(),
                 ],
             ],
         );
@@ -334,7 +345,7 @@ class PirepController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $pirep = new Pirep($request->post());
+        $pirep = new Pirep(PirepLevelNormalizer::normalize($request->post()));
         $pirep->user_id = $user->id;
 
         $attrs = $request->all();
@@ -561,7 +572,7 @@ class PirepController extends Controller
         $attrs['block_fuel'] = Fuel::make((float) $attrs['block_fuel'], setting('units.fuel'));
         $attrs['fuel_used'] = Fuel::make((float) $attrs['fuel_used'], setting('units.fuel'));
 
-        $pirep->update($attrs);
+        $pirep->update(PirepLevelNormalizer::normalize($attrs));
         $pirep->refresh();
 
         // A route change in the PIREP, so update the saved points in the ACARS table

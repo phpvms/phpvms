@@ -5,8 +5,15 @@ namespace App\Http\Controllers\Frontend;
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Events\ProfileUpdated;
+use App\Features\OAuth\Helpers\OAuthConnectionService;
+use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
+use App\Features\Tour\Enums\TourStatus;
+use App\Http\Data\ApiConnectionsData;
+use App\Http\Data\ProfileConnectionData;
 use App\Http\Data\ProfileData;
+use App\Http\Data\ProfileEditData;
 use App\Models\Airline;
+use App\Models\Award;
 use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
@@ -25,6 +32,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Intervention\Image\Facades\Image;
 use Laracasts\Flash\Flash;
@@ -36,6 +44,8 @@ class ProfileController extends Controller
      */
     public function __construct(
         private readonly UserService $userSvc,
+        private readonly OAuthConnectionService $oauthConnections,
+        private readonly SocialiteProviderRegistry $socialiteProviders,
     ) {}
 
     /**
@@ -69,8 +79,15 @@ class ProfileController extends Controller
             'current_airport',
             'fields.field',
             'home_airport',
+            'identities',
             'last_pirep',
             'rank',
+            // `bundle` comes along because both render paths reach for the
+            // bundle image. The run's own columns carry everything else --
+            // a bundle that has since been deleted still renders.
+            'tours' => fn ($query) => $query->with('bundle')
+                ->where('status', TourStatus::Completed)
+                ->orderByDesc('completed_at'),
             'typeratings',
         ];
         /** @var ?User $user */
@@ -84,6 +101,16 @@ class ProfileController extends Controller
 
         $userFields = $this->userSvc->getUserFields($user, true);
 
+        // Server-decided, never client-supplied: this route has no `auth`
+        // middleware (any pilot's profile is publicly viewable), so a guest
+        // or another pilot never counts as the owner.
+        $isOwnProfile = Auth::check() && Auth::id() === $user->id;
+
+        // One query for every award's badge instead of one per award — the
+        // SPA DTO and the Blade awards loop below both read from this same
+        // loaded collection, so they share the preload.
+        Award::preloadAssetUrls($user->awards);
+
         return response()->themed(
             'Profile',
             'profile.index',
@@ -92,8 +119,69 @@ class ProfileController extends Controller
                 'userFields' => $userFields,
                 'acars'      => $this->acarsEnabled(),
             ],
-            spa: fn (): array => ['profile' => ProfileData::fromModel($user, $userFields, $this->acarsEnabled())],
+            spa: fn (): array => [
+                'profile' => ProfileData::fromModel($user, $userFields, $this->acarsEnabled(), $isOwnProfile),
+                // Only the pilot's own profile carries the edit payload -- it
+                // holds their email, so attaching it unconditionally would leak
+                // it to anyone viewing the page. Built inside the closure so a
+                // Blade install never pays for the country/timezone lists.
+                //
+                // A second getUserFields() call, without $only_public_fields:
+                // the display DTO above wants public fields only, the form
+                // wants every non-internal one, exactly as the Blade edit()
+                // does.
+                'profileEdit' => $isOwnProfile
+                    ? ProfileEditData::fromModel(
+                        $user,
+                        $this->userSvc->getUserFields($user),
+                        $this->profileConnections($user),
+                    )
+                    : null,
+
+                // Optional, not lazy-by-default: the API connections drawer
+                // asks for this by name on open. Building it sweeps every live
+                // token and the scope catalog, which no one viewing a profile
+                // should pay for.
+                'apiConnections' => Inertia::optional(
+                    fn (): ?ApiConnectionsData => $isOwnProfile
+                        ? ApiConnectionsData::fromUser($user)
+                        : null,
+                ),
+            ],
         );
+    }
+
+    /**
+     * The social login providers the profile's "Connected accounts" card lists:
+     * every provider the pilot has already linked, plus every one that is
+     * enabled for linking and whose Socialite package is installed. Same filter
+     * the Blade edit page applies to $oauthConnections.
+     *
+     * @return list<ProfileConnectionData>
+     */
+    private function profileConnections(User $user): array
+    {
+        $identities = $user->identities->keyBy('connection_id');
+        $connections = $this->oauthConnections->all();
+
+        $connectableIds = $connections
+            ->filter(fn ($connection): bool => $connection->enabled
+                && $connection->linking_enabled
+                && $this->socialiteProviders->isInstalled($connection->provider))
+            ->pluck('connection_id');
+
+        return $connections
+            ->filter(fn ($connection): bool => $identities->has($connection->connection_id)
+                || $connectableIds->contains($connection->connection_id))
+            ->map(fn ($connection): ProfileConnectionData => new ProfileConnectionData(
+                connectionId: $connection->connection_id,
+                displayName: $connection->display_name,
+                linked: $identities->has($connection->connection_id),
+                linkable: $connectableIds->contains($connection->connection_id),
+                providerUserId: $identities->get($connection->connection_id)?->provider_user_id,
+            ))
+            ->values()
+            ->all();
     }
 
     /**
@@ -105,7 +193,7 @@ class ProfileController extends Controller
     public function edit(Request $request): RedirectResponse|View
     {
         /** @var ?User $user */
-        $user = User::with('fields.field', 'home_airport')->where('id', Auth::id())->first();
+        $user = User::with('fields.field', 'home_airport', 'identities')->where('id', Auth::id())->first();
 
         if (empty($user)) {
             Flash::error('User not found!');
@@ -117,15 +205,28 @@ class ProfileController extends Controller
 
         $airlines = Airline::selectList();
         $userFields = $this->userSvc->getUserFields($user);
+        $linkedConnectionIds = $user->identities->pluck('connection_id');
+        $oauthConnections = $this->oauthConnections->all();
+        $connectableConnectionIds = $oauthConnections
+            ->filter(fn ($connection): bool => $connection->enabled
+                && $connection->linking_enabled
+                && $this->socialiteProviders->isInstalled($connection->provider))
+            ->pluck('connection_id');
+        $oauthConnections = $oauthConnections
+            ->filter(fn ($connection): bool => $linkedConnectionIds->contains($connection->connection_id)
+                || $connectableConnectionIds->contains($connection->connection_id));
 
         return view('profile.edit', [
-            'user'       => $user,
-            'airlines'   => $airlines,
-            'airports'   => $airports,
-            'hubs_only'  => setting('pilots.home_hubs_only'),
-            'countries'  => Countries::getSelectList(),
-            'timezones'  => Timezonelist::toArray(),
-            'userFields' => $userFields,
+            'user'                     => $user,
+            'airlines'                 => $airlines,
+            'airports'                 => $airports,
+            'hubs_only'                => setting('pilots.home_hubs_only'),
+            'countries'                => Countries::getSelectList(),
+            'timezones'                => Timezonelist::toArray(),
+            'userFields'               => $userFields,
+            'oauthConnections'         => $oauthConnections,
+            'linkedConnectionIds'      => $linkedConnectionIds,
+            'connectableConnectionIds' => $connectableConnectionIds,
         ]);
     }
 
@@ -150,6 +251,7 @@ class ProfileController extends Controller
             'country'           => 'nullable|string',
             'timezone'          => 'nullable|string',
             'home_airport_id'   => 'nullable|exists:airports,id',
+            'opt_in'            => 'boolean',
         ];
 
         $userFields = UserField::where(
@@ -159,8 +261,14 @@ class ProfileController extends Controller
             $rules['field_'.$field->slug] = 'required';
         }
 
+        // opt_in was previously absent from $rules, so it never reached
+        // $validated and never saved -- the checkbox did nothing. Coercing here
+        // rather than in the rules is what makes UNchecking work: an unchecked
+        // box is simply absent from the payload, so a `nullable|boolean` rule
+        // would leave the stored value untouched.
         $request->merge([
-            'email' => mb_strtolower(trim((string) $request->input('email'))),
+            'email'  => mb_strtolower(trim((string) $request->input('email'))),
+            'opt_in' => $request->boolean('opt_in'),
         ]);
 
         $validated = $request->validate($rules);

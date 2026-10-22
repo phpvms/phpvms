@@ -3,21 +3,22 @@
 namespace App\Filament\Resources\Awards\Schemas;
 
 use App\Enums\AwardTrigger;
+use App\Filament\Forms\Components\AssetImagePicker;
+use App\Models\Asset;
 use App\Models\Award;
 use App\Services\Awards\AwardRunService;
 use App\Services\Awards\Constraints\PirepConstraint;
+use App\Services\Awards\Constraints\TourConstraint;
 use App\Services\Awards\CriteriaCompilationFailed;
 use App\Services\Awards\SnippetConstraints;
 use App\Services\Awards\UserConstraints;
 use App\Services\AwardService;
-use App\Services\ImageUploadService;
 use Closure;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
@@ -31,7 +32,6 @@ use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Throwable;
 
 class AwardForm
@@ -54,6 +54,15 @@ class AwardForm
         'clock-light', 'clock-afternoon-light', 'calendar-light', 'target-light', 'rocket-light', 'lightning-light',
         'moon-light', 'sun-light', 'flame-light', 'mountains-light', 'anchor-light', 'bank-light',
     ];
+
+    /**
+     * Award badges render on the public profile page, so they are fetched
+     * without a session — same call as the rank badge.
+     */
+    public static function imageDisk(): string
+    {
+        return (string) config('filesystems.public_files');
+    }
 
     public static function configure(Schema $schema): Schema
     {
@@ -144,6 +153,7 @@ class AwardForm
             ->constraints([
                 ...UserConstraints::make(),
                 PirepConstraint::make()->allowTriggeringPirepScope($isPirepTriggered),
+                TourConstraint::make(),
                 ...SnippetConstraints::make(),
             ])
             ->rules(fn (): array => [
@@ -251,33 +261,23 @@ class AwardForm
                 // the options yet -- nothing is saved until the award is.
                 ->getOptionLabelUsing(fn (?string $value): ?string => $value),
 
-            // The badge comes from an upload, a remote URL, or an icon, never
-            // more than one — tabs make that either/or explicit instead of
-            // three live fields.
+            // The badge comes from an asset (upload or remote URL) or an icon,
+            // never more than one — tabs make that either/or explicit instead
+            // of live fields. AssetImagePicker owns the upload-vs-URL choice
+            // itself, so the two former tabs collapse into the one it needs.
             Tabs::make()
                 ->tabs([
                     Tab::make(__('common.image'))
                         ->schema([
-                            FileUpload::make('image_file')
-                                ->hiddenLabel()
-                                ->image()
-                                ->imageEditor()
-                                ->disk(config('filesystems.public_files'))
-                                ->directory('awards')
-                                // Converts to WebP through the shared upload
-                                // service instead of storing whatever format
-                                // was dropped; see ImageUploadService.
-                                ->saveUploadedFileUsing(
-                                    fn (FileUpload $component, TemporaryUploadedFile $file): string => app(ImageUploadService::class)->storeFilamentUpload($component, $file)
-                                ),
-                        ]),
-
-                    Tab::make(__('common.image_url'))
-                        ->schema([
-                            TextInput::make('image_url')
-                                ->hiddenLabel()
-                                ->url(),
-                        ]),
+                            AssetImagePicker::make(
+                                Asset::SLOT_AWARD,
+                                fn (?Award $record): ?int => $record?->id,
+                                self::imageDisk(),
+                            ),
+                        ])
+                        // The picker is edit-only, so on create the tab would
+                        // be an empty pane.
+                        ->hidden(fn (string $operation): bool => $operation === 'create'),
 
                     Tab::make(__('common.icon'))
                         ->schema([
@@ -306,9 +306,11 @@ class AwardForm
                 ])
                 ->columnSpanFull(),
 
-            RichEditor::make('description')
+            // Plain text, matching the snippet form. `Award::description()`
+            // flattens anything that still arrives as markup.
+            Textarea::make('description')
                 ->label(__('common.description'))
-                ->extraAttributes(['class' => 'rich-editor-hover-toolbar'])
+                ->rows(3)
                 ->columnSpanFull(),
         ];
     }

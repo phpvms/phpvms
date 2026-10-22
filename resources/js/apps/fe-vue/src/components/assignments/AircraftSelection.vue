@@ -3,6 +3,9 @@ import { computed, shallowRef, watch } from "vue";
 import PvLoadingState from "@/shared/components/PvLoadingState.vue";
 import AircraftCard from "./AircraftCard.vue";
 import type { EligibleAircraftResponse } from "./types";
+import IconClockHour3 from "~icons/tabler/clock-hour-3";
+import UButton from "@nuxt/ui/components/Button.vue";
+import USelectMenu from "@nuxt/ui/components/SelectMenu.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -36,6 +39,8 @@ const selectedAircraftId = computed({
   get: () => props.aircraftId,
   set: (aircraftId: number | null) => emit("update:aircraftId", aircraftId),
 });
+/** USelectMenu's `items` is a mutable array; the prop arrives readonly. */
+const subfleetOptions = computed(() => [...props.subfleets]);
 const selectedSubfleetCard = computed(
   () => props.subfleets.find((subfleet) => subfleet.id === subfleetId.value) ?? null,
 );
@@ -145,7 +150,8 @@ defineExpose({ loadAircraft });
       <USelectMenu
         id="bid-subfleet"
         :model-value="subfleetId"
-        :items="subfleets"
+        :model-modifiers="{ nullable: true }"
+        :items="subfleetOptions"
         value-key="id"
         label-key="displayName"
         :search-input="{ placeholder: 'Search subfleets' }"
@@ -209,6 +215,7 @@ defineExpose({ loadAircraft });
         <USelectMenu
           id="bid-aircraft"
           :model-value="selectedAircraftId"
+          :model-modifiers="{ nullable: true }"
           :items="aircraft"
           value-key="id"
           label-key="registration"
@@ -267,7 +274,7 @@ defineExpose({ loadAircraft });
       v-if="!required"
       color="neutral"
       variant="soft"
-      icon="i-tabler-clock-hour-3"
+      :icon="IconClockHour3"
       @click="chooseLater"
     >
       Choose later

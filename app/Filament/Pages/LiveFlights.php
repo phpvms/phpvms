@@ -19,6 +19,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\TextSize;
@@ -99,14 +100,35 @@ class LiveFlights extends Page implements HasTable
     public function content(Schema $schema): Schema
     {
         return $schema->components([
+            // An addition alongside the table, not a replacement of it — the
+            // table is the deliberate membership-management view (see class
+            // docblock); the map is a visual overview of the same rows.
+            Section::make(__('filament.live_flights.map_section_title'))
+                ->description(__('filament.live_flights.map_section_description'))
+                ->icon(Phosphor::GlobeLight)
+                ->collapsible()
+                ->persistCollapsed()
+                ->schema([
+                    View::make('components.admin.live-map')
+                        ->viewData([
+                            // Same clock livemap.blade.php (seven) polls on
+                            // (Context 3) — the admin and public maps cannot
+                            // disagree about how often "live" means live.
+                            'pollIntervalMs' => (int) setting('livemap.update_interval', 60) * 1000,
+                        ]),
+                ]),
+
             Section::make(__('filament.live_flights.section_title'))
                 ->description(__('filament.live_flights.section_description'))
                 ->icon(Phosphor::BroadcastLight)
                 ->collapsible()
                 ->persistCollapsed()
-                // Scopes the theme rule that flattens the embedded table's own
-                // `.fi-ta-ctn` card, so this Section is the only card on the
-                // page and the table's paginator closes it as its footer.
+                // Scopes the theme rule (`.live-flights .fi-ta-ctn`) that
+                // flattens the embedded table's own card, so the table's
+                // paginator closes THIS Section as its footer rather than
+                // nesting a second card inside it. Unaffected by the map
+                // Section above — the CSS rule only matches descendants of
+                // this element.
                 ->extraAttributes(['class' => 'live-flights'])
                 ->schema([
                     EmbeddedTable::make(),

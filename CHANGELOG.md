@@ -318,7 +318,7 @@
 - Update CSS Libraries [\#387](https://github.com/nabeelio/phpvms/issues/387)
 - Laravel 6 [\#384](https://github.com/nabeelio/phpvms/issues/384)
 - Profile menu dropdown [\#383](https://github.com/nabeelio/phpvms/issues/383)
-- Update vaCentral Library [\#380](https://github.com/nabeelio/phpvms/issues/380)
+- Update vacentral Library [\#380](https://github.com/nabeelio/phpvms/issues/380)
 - Implement Laravel 5.7 Notifications [\#378](https://github.com/nabeelio/phpvms/issues/378)
 - Generate random cache prefix on install [\#374](https://github.com/nabeelio/phpvms/issues/374)
 - Move transaction/journal code out of controller [\#370](https://github.com/nabeelio/phpvms/issues/370)

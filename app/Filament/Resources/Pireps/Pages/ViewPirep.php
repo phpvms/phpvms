@@ -8,7 +8,6 @@ use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Pirep;
 use App\Models\PirepEvent;
 use App\Services\Finance\PirepFinanceService;
-use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
 use App\Support\PirepView\PirepViewTabRegistry;
 use Closure;
@@ -35,19 +34,6 @@ use Throwable;
 class ViewPirep extends ViewRecord
 {
     protected static string $resource = PirepResource::class;
-
-    /**
-     * GeoJSON feature collections for the route map, serialized to plain arrays
-     * so Livewire can hydrate them between requests. GeoService returns
-     * \GeoJson\Feature\FeatureCollection value objects which Livewire cannot
-     * serialize; we convert to associative arrays in mount().
-     *
-     * Shape: ['planned_rte_points' => [...], 'planned_rte_line' => [...],
-     *         'actual_route_points' => [...], 'actual_route_line' => [...]]
-     *
-     * @var array<string, mixed>
-     */
-    public array $mapFeatures = [];
 
     /**
      * Chart.js payload for the Performance card. Null when the PIREP has no
@@ -327,42 +313,10 @@ class ViewPirep extends ViewRecord
             'metadata',
         ]);
 
-        // GeoService returns FeatureCollection value objects; convert to plain
-        // arrays so Livewire can serialize the property between requests.
-        //
-        // A malformed ACARS sample (non-numeric lat/lon, missing airport
-        // relation) should not 500 the entire view — log + render without
-        // the map. The blade's $hasRouteMap guard hides the map when
-        // mapFeatures stays empty.
-        try {
-            $features = app(GeoService::class)->pirepGeoJson($this->record);
-            $this->mapFeatures = json_decode((string) json_encode($features), true) ?? [];
-        } catch (Throwable $throwable) {
-            Log::warning('PIREP map build failed', [
-                'pirep_id' => $this->record->id,
-                'error'    => $throwable->getMessage(),
-            ]);
-            $this->mapFeatures = [];
-        }
-
-        // Archived planned route (from the pirep_archive SimBrief navlog),
-        // drawn as a distinct line from the live planned/actual routes above.
-        // Same fail-soft contract as the map build.
-        try {
-            $navlog = $this->record->metadata->navlog ?? [];
-            if ($navlog !== []) {
-                $archivedLine = app(GeoService::class)->archivedRouteLine($navlog);
-                $this->mapFeatures['archived_rte_line'] = json_decode((string) json_encode($archivedLine), true) ?? [];
-            }
-        } catch (Throwable $throwable) {
-            Log::warning('PIREP archived route build failed', [
-                'pirep_id' => $this->record->id,
-                'error'    => $throwable->getMessage(),
-            ]);
-        }
-
-        // Build chart payload (null when no ACARS data). Same fail-soft
-        // contract: bad samples should not break the page, just hide the chart.
+        // Build chart payload (null when no ACARS data). Fail-soft: bad
+        // samples should not break the page, just hide the chart. The route
+        // map has no equivalent server-side build any more — it fetches its
+        // own data client-side from GET api/map/pirep/{id}.
         try {
             $this->performance = app(PerformanceChartService::class)
                 ->buildDatasets($this->record);

@@ -24,13 +24,12 @@ use App\Support\Units\Time;
 use App\Support\Utils;
 use Carbon\Carbon;
 use Exception;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class UserService extends Service
@@ -44,7 +43,7 @@ class UserService extends Service
      */
     public function getUser(int $user_id, bool $with_subfleets = true): ?User
     {
-        $with = ['airline', 'bids', 'rank'];
+        $with = ['airline', 'bids', 'identities', 'rank'];
 
         if ($with_subfleets) {
             $with[] = 'rank.subfleets';
@@ -623,30 +622,40 @@ class UserService extends Service
         return $user;
     }
 
-    public function retrieveDiscordPrivateChannelId(User $user): void
+    public function retrieveDiscordPrivateChannelId(User $user, ?string $discordId = null): void
     {
         if (is_null(config('services.discord.bot_token'))) {
             return;
         }
 
+        if (blank($discordId)) {
+            $user->loadMissing('identities');
+            $discordId = $user->identities
+                ->firstWhere('connection_id', 'discord')
+                ?->provider_user_id;
+        }
+
+        if (blank($discordId)) {
+            return;
+        }
+
         try {
-            $httpClient = new Client();
+            $privateChannel = Http::withToken((string) config('services.discord.bot_token'), 'Bot')
+                ->post('https://discord.com/api/users/@me/channels', [
+                    'recipient_id' => $discordId,
+                ])
+                ->throw()
+                ->json('id');
 
-            $response = $httpClient->post('https://discord.com/api/users/@me/channels', [
-                'headers' => [
-                    'Authorization' => 'Bot '.config('services.discord.bot_token'),
-                ],
-                'json' => [
-                    'recipient_id' => $user->discord_id,
-                ],
-            ]);
+            if (blank($privateChannel)) {
+                return;
+            }
 
-            $privateChannel = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR)['id'];
             $user->update([
                 'discord_private_channel_id' => $privateChannel,
             ]);
-        } catch (Exception|GuzzleException $e) {
-            Log::error('Discord OAuth Error: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Discord OAuth Error: '.$exception->getMessage());
         }
     }
 }

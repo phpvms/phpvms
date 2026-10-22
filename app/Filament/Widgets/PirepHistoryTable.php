@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Filament\Widgets;
 
 use App\Enums\PirepState;
+use App\Filament\Concerns\ReadsPageFilters;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Reports\FlightsReport;
 use App\Models\Pirep;
 use App\Support\Units\Time;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -23,7 +22,7 @@ use Override;
  */
 class PirepHistoryTable extends TableWidget
 {
-    use InteractsWithPageFilters;
+    use ReadsPageFilters;
 
     protected static ?string $pollingInterval = null;
 
@@ -32,15 +31,9 @@ class PirepHistoryTable extends TableWidget
     #[Override]
     public function table(Table $table): Table
     {
-        $filters = $this->pageFilters ?? [
-            'start_date' => null,
-            'end_date'   => null,
-            'airlines'   => [],
-        ];
-
-        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
-        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
-        $airlines = $filters['airlines'];
+        $start_date = $this->filterStartDate();
+        $end_date = $this->filterEndDate();
+        $airlines = $this->filterAirlines();
 
         return $table
             ->query(

@@ -5,7 +5,8 @@
 #     oxlint/oxfmt, tailwind) driven by the root vite.config.js + bin/build.js.
 #   - resources/js/apps/fe-vue — the Vue SPA (@phpvms/skylight) + its @phpvms/skylight-tests
 #     package. Builds itself via its own vite.config.ts → public/build/skylight.
-#   - resources/js/packages/* — future shared packages (empty for now).
+#   - resources/js/packages/* — shared packages consumed by both the root pipeline
+#     and fe-vue (e.g. @phpvms/simbrief, @phpvms/map).
 #
 # admin/ and seven/ under resources/js/apps have no package.json, so they are NOT
 # workspace packages — just source built by the root pipeline.
@@ -19,3 +20,6 @@ allowBuilds:
   "@parcel/watcher": true
   esbuild: true
   vue-demi: true
+
+minimumReleaseAgeExclude:
+  - maplibre-gl@6.7.0

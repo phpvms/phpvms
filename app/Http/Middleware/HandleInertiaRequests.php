@@ -5,11 +5,13 @@ namespace App\Http\Middleware;
 use App\Http\Data\AirlineIdentityData;
 use App\Http\Data\PilotChromeData;
 use App\Models\User;
+use App\Services\MapConfigService;
 use App\Services\Theme\ActiveThemeService;
 use App\Support\Skylight\Facades\Skylight;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Inertia\Middleware;
 use Override;
 
@@ -26,7 +28,10 @@ use Override;
  */
 class HandleInertiaRequests extends Middleware
 {
-    public function __construct(private readonly ActiveThemeService $themes) {}
+    public function __construct(
+        private readonly ActiveThemeService $themes,
+        private readonly MapConfigService $mapConfig,
+    ) {}
 
     /**
      * The Inertia root template. A dedicated view that points to the Skylight
@@ -101,13 +106,56 @@ class HandleInertiaRequests extends Middleware
 
             'pilotChrome' => fn (): ?PilotChromeData => $user ? PilotChromeData::fromUser($user) : null,
 
+            // Basemap + overlay config for every skylight map surface. One
+            // resolver shared with the admin panel's window.filamentData.maps
+            // (design.md D7) — lazy because resolving it queries enabled
+            // map_layers rows, and not every SPA page renders a map.
+            'map' => $this->mapConfig->resolve(...),
+
             // One-shot flash messages, lazily evaluated so they only read the
             // session when a response is actually built.
+            //
+            // Two sources: a plain session('success'/'error'), and the
+            // laracasts/flash notifier the frontend controllers actually use
+            // (Flash::success(), flash()->error()). The notifier writes a
+            // collection of Message objects under 'flash_notification'
+            // (FlashNotifier::flash()), which nothing here read -- so every
+            // Flash::success() in the app was silently invisible to the SPA.
             'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error'   => fn () => $request->session()->get('error'),
+                'success' => fn (): ?string => $request->session()->get('success')
+                    ?? $this->flashNotification($request, 'success'),
+                'error' => fn (): ?string => $request->session()->get('error')
+                    ?? $this->flashNotification($request, 'danger'),
+
+                // Passport returns a personal access token's plaintext exactly
+                // once, at issue time (ProfileController::store_token flashes
+                // it), so the API connections drawer has one chance to show it.
+                'plainTextToken' => fn (): ?string => $request->session()->get('plain_text_token'),
             ],
         ];
+    }
+
+    /**
+     * First laracasts/flash message at the given level, as plain text.
+     *
+     * Levels are the Bootstrap names the notifier uses: success() writes
+     * 'success', error() writes 'danger'.
+     */
+    private function flashNotification(Request $request, string $level): ?string
+    {
+        $messages = $request->session()->get('flash_notification');
+
+        if (!$messages instanceof Collection) {
+            return null;
+        }
+
+        $match = $messages->first(
+            fn (mixed $message): bool => is_object($message)
+                && ($message->level ?? null) === $level
+                && filled($message->message ?? null),
+        );
+
+        return $match === null ? null : (string) $match->message;
     }
 
     /**

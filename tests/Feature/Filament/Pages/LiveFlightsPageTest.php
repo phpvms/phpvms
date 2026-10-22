@@ -203,3 +203,17 @@ it('denies access to a user without the view permission', function (): void {
 
     expect(LiveFlights::canAccess())->toBeFalse();
 });
+
+/**
+ * The live map (tasks.md 6.3) is an addition alongside the table, not a
+ * replacement — assert both render, and that the map polls on the same
+ * clock as the public live map (livemap.update_interval).
+ */
+it('renders the live map container alongside the table', function (): void {
+    setting_save('livemap.update_interval', 45);
+
+    Livewire::test(LiveFlights::class)
+        ->assertSuccessful()
+        ->assertSee('id="live-flights-map"', false)
+        ->assertSee('45000', false);
+});

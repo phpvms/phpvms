@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>@phpvms/map — route-line harness</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0b1420;
+      }
+      #map {
+        position: absolute;
+        inset: 0;
+      }
+      #hud {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        z-index: 10;
+        background: rgba(11, 20, 32, 0.85);
+        color: #f4f4f5;
+        font:
+          12px/1.4 ui-monospace,
+          "SF Mono",
+          Menlo,
+          monospace;
+        padding: 10px 12px;
+        border-radius: 6px;
+        max-width: 560px;
+        white-space: pre-wrap;
+      }
+      #hud button {
+        font: inherit;
+        margin: 2px 4px 2px 0;
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+      #results {
+        margin-top: 8px;
+        max-height: 40vh;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="hud">
+      <div>
+        <strong>@phpvms/map — route-line harness</strong><br />
+        JFK→LHR, ~5,540 km great circle, climb/cruise/descent, colour per phase.
+      </div>
+      <div>
+        <button id="pose-whole">Pose: whole route</button>
+        <button id="pose-low-cruise">Pose: low, near cruise</button>
+        <button id="pose-low-climb">Pose: low, near climb/descent boundary</button>
+        <button id="measure">Measure line width (readPixels)</button>
+      </div>
+      <div>
+        <button id="zoom-out">LOD: step zoom out</button>
+        <button id="zoom-in">LOD: step zoom in</button>
+      </div>
+      <div id="status">loading…</div>
+      <pre id="results"></pre>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

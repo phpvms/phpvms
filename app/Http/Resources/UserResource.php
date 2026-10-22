@@ -16,6 +16,9 @@ class UserResource extends Resource
     #[Override]
     public function toArray($request)
     {
+        $this->resource->loadMissing('identities');
+        $identityIds = $this->resource->identities->pluck('provider_user_id', 'connection_id');
+
         $res = [
             'id'                => $this->id,
             'pilot_id'          => $this->pilot_id,
@@ -23,9 +26,9 @@ class UserResource extends Resource
             'name'              => $this->name_private,
             'name_private'      => $this->name_private,
             'avatar'            => $this->resolveAvatarUrl(),
-            'discord_id'        => $this->discord_id,
-            'vatsim_id'         => $this->vatsim_id,
-            'ivao_id'           => $this->ivao_id,
+            'discord_id'        => $identityIds->get('discord'),
+            'vatsim_id'         => $identityIds->get('vatsim'),
+            'ivao_id'           => $identityIds->get('ivao'),
             'simbrief_username' => $this->simbrief_username,
             'rank_id'           => $this->rank_id,
             'home_airport'      => $this->home_airport_id,

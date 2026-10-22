@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Features\Tour\Models\UserTour;
 use Database\Factories\BidFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,11 +16,13 @@ use Override;
  * @property int         $user_id
  * @property string      $flight_id
  * @property int|null    $aircraft_id
+ * @property string|null $user_tour_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Aircraft|null $aircraft
  * @property-read Flight|null $flight
  * @property-read User|null $user
+ * @property-read UserTour|null $userTour
  *
  * @method static BidFactory          factory($count = null, $state = [])
  * @method static Builder<static>|Bid newModelQuery()
@@ -45,6 +48,7 @@ class Bid extends Model
         'user_id',
         'flight_id',
         'aircraft_id',
+        'user_tour_id',
     ];
 
     /**
@@ -63,6 +67,17 @@ class Bid extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * The tour run this bid belongs to, or null for an ordinary bid.
+     *
+     * Set only by the tour path, which creates every leg's bid at once; it is
+     * what makes cancelling or expiring a whole run one statement.
+     */
+    public function userTour(): BelongsTo
+    {
+        return $this->belongsTo(UserTour::class, 'user_tour_id');
     }
 
     #[Override]

@@ -35,13 +35,14 @@ class AwardAwarded extends Notification implements ShouldQueue
         $user = $this->userAward->user;
 
         $user_avatar = $this->discordAvatarUrl($user);
+        $discordId = $this->discordIdentityId($user);
 
         return DiscordMessage::make()->embed(
             DiscordEmbed::make()
                 ->color(DiscordEmbedColor::Success->value)
                 ->title(__('notifications.discord.award_received', ['award' => $award->name]))
-                ->description($user->discord_id
-                    ? __('notifications.discord.awarded_to', ['mention' => '<@'.$user->discord_id.'>'])
+                ->description($discordId
+                    ? __('notifications.discord.awarded_to', ['mention' => '<@'.$discordId.'>'])
                     : null)
                 ->thumbnail($user_avatar)
                 ->image($award->image_url)

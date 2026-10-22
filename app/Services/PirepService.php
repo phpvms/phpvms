@@ -43,6 +43,7 @@ use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
 use App\Notifications\Notifiables\PublicBroadcast;
 use App\Services\Finance\PirepFinanceService;
+use App\Support\PirepLevelNormalizer;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -86,6 +87,8 @@ class PirepService extends Service
         if (!array_key_exists('flight_type', $attrs)) {
             $attrs['flight_type'] = FlightType::SCHED_PAX;
         }
+
+        $attrs = PirepLevelNormalizer::normalize($attrs);
 
         $pirep = new Pirep($attrs);
 
@@ -281,7 +284,7 @@ class PirepService extends Service
     {
         /** @var Pirep $pirep */
         $pirep = Pirep::findOrFail($pirep_id);
-        $pirep->update($attrs);
+        $pirep->update(PirepLevelNormalizer::normalize($attrs));
         $pirep->refresh();
         $this->snapshotScheduledArrival($pirep);
 
@@ -289,6 +292,22 @@ class PirepService extends Service
         $this->fareSvc->saveToPirep($pirep, $fares);
 
         return $pirep;
+    }
+
+    /**
+     * When the last ACARS position report for this PIREP came in, or null if
+     * the flight carries no telemetry at all — a manually filed report, or one
+     * whose client never connected.
+     *
+     * `Pirep::acars()` is the flight path ordered oldest-first; `reorder()`
+     * drops that ordering so the database returns the maximum directly instead
+     * of this loading every point to read one timestamp off the end.
+     */
+    private function lastAcarsReportAt(Pirep $pirep): ?Carbon
+    {
+        $lastReport = $pirep->acars()->reorder()->max('created_at');
+
+        return $lastReport === null ? null : Carbon::parse($lastReport);
     }
 
     /**
@@ -321,7 +340,7 @@ class PirepService extends Service
         $attrs['status'] = PirepPhase::ARRIVED;
         $attrs['submitted_at'] = Carbon::now('UTC');
 
-        $pirep->update($attrs);
+        $pirep->update(PirepLevelNormalizer::normalize($attrs));
         $pirep->refresh();
 
         // Check if there is a simbrief_id, change it to be set to the PIREP
@@ -334,11 +353,26 @@ class PirepService extends Service
             }
         }
 
-        // Check the block times. If a block on (arrival) time isn't
-        // specified, then use the time that it was submitted. It won't
-        // be the most accurate, but that might be OK
+        // Check the block times. If a block on (arrival) time isn't specified,
+        // the last ACARS position report is when the flight actually ended.
+        // Filing can happen long after the aircraft is on the gate, so the
+        // submit time is only the fallback for a PIREP with no telemetry.
         if (!$pirep->block_on_time) {
-            $pirep->block_on_time = $pirep->submitted_at ?: Carbon::now('UTC');
+            $pirep->block_on_time = $this->lastAcarsReportAt($pirep)
+                ?? $pirep->submitted_at
+                ?? Carbon::now('UTC');
+        }
+
+        // The departure is the arrival less the block time — the same fallback
+        // `create()` applies. Derived rather than read off the first ACARS
+        // report, because that one lands wherever the client happened to
+        // connect, which is not necessarily block off.
+        //
+        // `copy()` because the cast hands back a cached Carbon and
+        // `subMinutes()` mutates in place, which would drag block_on_time
+        // backwards with it.
+        if (!$pirep->block_off_time && $pirep->flight_time > 0) {
+            $pirep->block_off_time = $pirep->block_on_time->copy()->subMinutes($pirep->flight_time);
         }
 
         // Check that there's a submit time

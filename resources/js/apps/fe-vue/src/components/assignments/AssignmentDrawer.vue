@@ -6,6 +6,9 @@ import AircraftSelection from "./AircraftSelection.vue";
 import AssignmentOverview from "./AssignmentOverview.vue";
 import FlightIdentHeader from "@/components/flights/FlightIdentHeader.vue";
 import { useAssignmentDrawer } from "./useAssignmentDrawer";
+import IconX from "~icons/tabler/x";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UDrawer from "@nuxt/ui/components/Drawer.vue";
 
 const emit = defineEmits<{ closed: [] }>();
 const heading = useTemplateRef<HTMLElement>("heading");
@@ -81,7 +84,7 @@ defineExpose({ show });
             type="button"
             color="neutral"
             variant="ghost"
-            icon="i-tabler-x"
+            :icon="IconX"
             aria-label="Close flight bid"
             :disabled="state === 'submitting'"
             @click="updateOpen(false)"

@@ -1,41 +1,42 @@
 <script setup lang="ts">
+import UBadge from "@nuxt/ui/components/Badge.vue";
+import UPageCard from "@nuxt/ui/components/PageCard.vue";
+
 defineProps<{ profile: App.Http.Data.ProfileData }>();
 </script>
 
 <template>
-  <section
+  <UPageCard
     v-if="profile.typeRatings.length"
+    class="pv-profile-type-ratings"
+    variant="outline"
+    title="Type ratings"
     aria-label="Type ratings"
-    class="profile-section pv-profile-type-ratings"
   >
-    <p class="pv-eyebrow">TYPE RATINGS</p>
-    <div class="chips">
-      <span v-for="rating in profile.typeRatings" :key="rating.type" class="chip">
-        <b>{{ rating.type }}</b> {{ rating.name }}
-      </span>
+    <div class="ratings">
+      <UBadge
+        v-for="rating in profile.typeRatings"
+        :key="rating.type"
+        color="neutral"
+        variant="subtle"
+        size="lg"
+      >
+        <span class="rating-type">{{ rating.type }}</span>
+        {{ rating.name }}
+      </UBadge>
     </div>
-  </section>
+  </UPageCard>
 </template>
 
 <style scoped>
 @layer components {
-  .profile-section {
-    margin-top: 20px;
-  }
-  .chips {
+  .ratings {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
-  .chip {
-    font-size: 12px;
-    color: var(--pv-ink);
-    border: 1px solid var(--pv-line);
-    border-radius: var(--pv-radius-md);
-    padding: 6px 10px;
-    background: var(--pv-panel-inset);
-  }
-  .chip b {
+  /* Data font for the ICAO type code, per THEMING.md's mono-for-data rule. */
+  .rating-type {
     font-family: var(--pv-font-mono);
     color: var(--pv-cyan);
     margin-right: 6px;

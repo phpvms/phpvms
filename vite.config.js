@@ -6,6 +6,11 @@ import preact from "@preact/preset-vite";
 // import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
+  // maplibre v6 constructs its worker with `{ type: "module" }` (it only falls back to a classic
+  // worker if that constructor throws), so the worker Vite emits for `?worker&url` in
+  // `@phpvms/map`'s base-map.ts must be a real ES module. Vite's default worker format is `iife`.
+  worker: { format: "es" },
+
   plugins: [
     tailwindcss(),
     preact(),

@@ -165,3 +165,28 @@ it('bulk-detaches subfleets from selected flights', function (): void {
         expect($attached)->toContain($subfleets->last()->id);
     });
 });
+
+it('toggles a flight enabled from the table and dispatches visibility recompute', function (): void {
+    $bundle = FlightBundle::factory()->create(['enabled' => true]);
+    $flight = Flight::factory()->create([
+        'bundle_id' => $bundle->id,
+        'enabled'   => false,
+    ]);
+
+    // Fake the queue AFTER factories so observer-dispatched jobs don't count.
+    Queue::fake();
+
+    Livewire::test(FlightsRelationManager::class, [
+        'ownerRecord' => $bundle,
+        'pageClass'   => EditFlightBundle::class,
+    ])
+        ->call('updateTableColumnState', 'enabled', (string) $flight->id, true)
+        ->assertHasNoErrors();
+
+    expect($flight->fresh()->enabled)->toBeTrue();
+
+    Queue::assertPushed(
+        RecomputeBundleVisibility::class,
+        fn (RecomputeBundleVisibility $job): bool => $job->bundleId === $bundle->id,
+    );
+});

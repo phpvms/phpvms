@@ -3,9 +3,6 @@
     /** @var \App\Models\Pirep $record */
     $record = $record ?? (isset($getRecord) ? $getRecord() : null);
 
-    /** @var array<string, mixed> $mapFeatures */
-    $mapFeatures = $mapFeatures ?? [];
-
     /** @var array<string, mixed>|null $performance */
     $performance = $performance ?? null;
 
@@ -89,7 +86,6 @@
         <div id="tab-flight" role="tabpanel" aria-labelledby="t-flight" x-show="activeTab === 'flight'" x-cloak>
             @include('filament.pireps.partials.detail.route-performance', [
                 'record'      => $record,
-                'mapFeatures' => $mapFeatures,
                 'performance' => $performance,
             ])
         </div>

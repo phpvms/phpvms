@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { nextTick, useTemplateRef, watch } from "vue";
+import IconX from "~icons/tabler/x";
+import UButton from "@nuxt/ui/components/Button.vue";
+import UModal from "@nuxt/ui/components/Modal.vue";
 
 const props = defineProps<{
   open: boolean;
@@ -58,7 +61,7 @@ function markLoaded() {
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-tabler-x"
+            :icon="IconX"
             aria-label="Close OFP editor"
             @click="close"
           />

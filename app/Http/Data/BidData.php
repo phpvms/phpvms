@@ -20,6 +20,9 @@ final class BidData extends Data
         public int $id,
         public string $flightId,
         public ?int $aircraftId,
+        // Set when this bid is one leg of a tour run; removing it cancels
+        // the whole run (FlightController::destroyBid).
+        public ?string $userTourId,
     ) {}
 
     public static function fromModel(Bid $bid): self
@@ -28,6 +31,7 @@ final class BidData extends Data
             id: $bid->id,
             flightId: $bid->flight_id,
             aircraftId: $bid->aircraft_id,
+            userTourId: $bid->user_tour_id,
         );
     }
 }

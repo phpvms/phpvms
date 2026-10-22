@@ -4,6 +4,7 @@ import { computed } from "vue";
 import AircraftCard from "./AircraftCard.vue";
 import FlightIdentHeader from "@/components/flights/FlightIdentHeader.vue";
 import PvSlot from "@/shared/components/PvSlot.vue";
+import UButton from "@nuxt/ui/components/Button.vue";
 
 const props = defineProps<{ selection: App.Http.Data.BidSelectionData }>();
 

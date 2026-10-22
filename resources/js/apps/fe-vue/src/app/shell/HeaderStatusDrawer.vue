@@ -5,6 +5,7 @@ import HeaderMetar from "./HeaderMetar.vue";
 import HeaderSector from "./HeaderSector.vue";
 import type { ActiveSector, DutyState, HeaderUser } from "./headerTypes";
 import type { MetarState } from "./useMetar";
+import UDrawer from "@nuxt/ui/components/Drawer.vue";
 
 defineProps<{
   duty: DutyState;

@@ -5,6 +5,8 @@
  *
  *   1. Locate `#routeforge-root` (rendered by the Filament Blade view).
  *      Missing → render diagnostic, abort. Indicates a broken Blade view.
+ *      Its `data-prefill` attribute, when present, carries the bundle-page
+ *      deep link — applied to the store before the App renders.
  *
  *   2. Fetch `/admin/route-forge/api/boot` via `getBoot()`. The URL itself
  *      lives on the mount element's `data-boot-url` attribute so route
@@ -28,12 +30,37 @@ import { render } from "preact";
 import { App } from "./App";
 import { BootError } from "./components/BootError";
 import { ApiError, getBoot } from "./lib/api";
+import { applyPrefill, parsePrefill } from "./lib/prefill";
 import { hydrateBoot } from "./state/boot";
+import { clearDraft } from "./state/persistence";
+import { bundleLocked, form } from "./state/store";
 
 const root = document.getElementById("routeforge-root");
 
 if (root !== null) {
+  applyDeepLink(root);
   void bootstrap(root);
+}
+
+/**
+ * Fold `data-prefill` into the store before `<App />` mounts.
+ *
+ * Ordering matters twice over. The draft is cleared *before* the render so
+ * App's mount-time `loadDraft()` finds nothing and the resume banner never
+ * appears — an explicit navigation outranks a stale draft. And the form is
+ * written before the first render, so no component ever sees the default
+ * topology.
+ */
+function applyDeepLink(mount: HTMLElement): void {
+  const prefill = parsePrefill(mount.dataset.prefill);
+  if (prefill === null) {
+    return;
+  }
+  if (prefill.fresh) {
+    clearDraft();
+  }
+  form.value = applyPrefill(form.value, prefill);
+  bundleLocked.value = prefill.bundle_id !== null;
 }
 
 async function bootstrap(mount: HTMLElement): Promise<void> {

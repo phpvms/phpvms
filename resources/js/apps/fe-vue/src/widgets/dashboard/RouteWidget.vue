@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import { useGlobe } from "@/shared/lib/useGlobe";
-import { bearing, distanceNm, type LngLat } from "@/shared/lib/geo";
+import { useMap, useRoute } from "@phpvms/map/adapters/vue";
+import { frameToRoute } from "@phpvms/map";
+import type { RoutePoint } from "@phpvms/map";
+import { useMapContext } from "@/shared/lib/useMapContext";
+import { useRouteMarkers } from "@/shared/lib/useRouteMarkers";
+import { greatCircle, bearing, distanceNm, type LngLat } from "@/shared/lib/geo";
 
 interface Airport {
   icao: string;
@@ -24,15 +28,46 @@ const to = computed<LngLat | null>(() =>
   route.value.to ? [route.value.to.lon, route.value.to.lat] : null,
 );
 
-const mapEl = ref<HTMLElement | null>(null);
-if (from.value) {
-  useGlobe(mapEl, {
-    from: from.value,
-    to: to.value,
-    fromLabel: route.value.from?.icao,
-    toLabel: route.value.to?.icao ?? undefined,
-  });
-}
+const mapEl = ref<HTMLElement | undefined>(undefined);
+const { config, theme } = useMapContext();
+const { map } = useMap(mapEl, { config: config.value, theme: theme.value });
+
+/** Densified great circle so it curves smoothly under the globe projection — a raw 2-point line would render as a mercator-straight chord. */
+const points = computed<RoutePoint[]>(() =>
+  from.value && to.value
+    ? greatCircle(from.value, to.value).map(([lon, lat]) => ({ lat, lon, altitude: 0 }))
+    : [],
+);
+
+useRoute(map, 0, points);
+useRouteMarkers(
+  map,
+  computed(() =>
+    from.value
+      ? {
+          from: from.value,
+          to: to.value,
+          fromLabel: route.value.from?.icao,
+          toLabel: route.value.to?.icao ?? undefined,
+        }
+      : null,
+  ),
+);
+
+watch(
+  map,
+  (mapInstance) => {
+    if (!mapInstance || !from.value) return;
+    frameToRoute(
+      mapInstance,
+      points.value.length ? points.value : [{ lat: from.value[1], lon: from.value[0] }],
+      {
+        pitch: 0,
+      },
+    );
+  },
+  { immediate: true },
+);
 
 const hasDest = computed(() => !!to.value);
 const trk = computed(() =>

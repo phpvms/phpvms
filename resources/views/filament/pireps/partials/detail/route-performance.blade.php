@@ -3,10 +3,8 @@
     use Filament\Support\Facades\FilamentAsset;
 
     /** @var \App\Models\Pirep $record */
-    /** @var array<string,mixed> $mapFeatures */
     /** @var array<string,mixed>|null $performance */
 
-    $hasRouteMap = ! empty($mapFeatures);
     $mapElementId = 'pirep-route-map-'.$record->id;
 
     $blockOff = $record->block_off_time?->format('H:i');
@@ -17,8 +15,16 @@
         ? sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) $record->flight_time)))
         : null;
 
-    $cruiseFt = $record->level ?? 0;
-    $cruiseFL = $cruiseFt > 0 ? 'FL'.str_pad((string) (int) ($cruiseFt / 100), 3, '0', STR_PAD_LEFT) : null;
+    // $record->level is display metadata only (design.md open question 6):
+    // it's contractually a flight level (e.g. 350 for FL350), but ~93% of
+    // live vmsACARS-sourced rows actually hold feet with no way to tell
+    // which from the column alone, so this label is best-effort, not
+    // authoritative. Nothing that draws geometry reads it — the route map
+    // above gets its planned-route altitude from MapPirepDetailData's
+    // altitude_msl-derived fallback instead. A stray "* 100" here
+    // previously rendered FL350 as "FL003"; formatting only, no conversion.
+    $cruiseFlightLevel = $record->level ?? 0;
+    $cruiseFL = $cruiseFlightLevel > 0 ? 'FL'.str_pad((string) (int) $cruiseFlightLevel, 3, '0', STR_PAD_LEFT) : null;
 @endphp
 
 {{-- Route bar --}}
@@ -57,51 +63,60 @@
     <p class="route-string"><b>{{ $record->dpt_airport_id }}</b> {{ $record->route }} <b>{{ $record->arr_airport_id }}</b></p>
 @endif
 
-{{-- Map (lazy-loaded Leaflet + phpvms admin maps) --}}
-@if ($hasRouteMap)
-    {{-- wire:ignore: Leaflet owns this subtree. Any Livewire re-render of the
-         page (accepting/rejecting the PIREP, a header action) would otherwise
-         morph the tiles away, and Alpine's init() won't re-run on the
-         surviving element to rebuild it. --}}
-    <div
-        wire:ignore
-        class="route-map"
-        x-data="{
-            async init() {
-                // window.phpvms is set by resources/js/apps/admin/app.js,
-                // which is injected into every admin page via the
-                // HEAD_END render hook in AdminPanelProvider. Vite
-                // serves it as `<script type=module>`, so it runs
-                // after DOM parsing — Alpine's init() can land
-                // before window.phpvms exists. Await the ready
-                // signal (a resolved Promise once app.js finishes;
-                // a one-shot event listener while it's loading).
-                const phpvms = await (window.phpvmsReady ?? new Promise(resolve => {
-                    window.addEventListener('phpvms:ready', e => resolve(e.detail), { once: true });
-                }));
+{{-- Map (lazy-loaded maplibre globe via the phpvms map package, Tier 1
+     at-altitude — design.md D13). Fetches its own data from GET
+     api/map/pirep/{id} client-side rather than receiving server-injected
+     GeoJSON features. --}}
+{{-- wire:ignore: the map owns this subtree. Any Livewire re-render of the
+     page (accepting/rejecting the PIREP, a header action) would otherwise
+     morph the WebGL canvas away, and Alpine's init() won't re-run on the
+     surviving element to rebuild it. --}}
+<div
+    wire:ignore
+    class="route-map"
+    x-data="{
+        handle: null,
+        onThemeChanged: null,
+        onNavigating: null,
+        async build(theme) {
+            const phpvms = await (window.phpvmsReady ?? new Promise(resolve => {
+                window.addEventListener('phpvms:ready', e => resolve(e.detail), { once: true });
+            }));
 
-                // map.render_route_map dynamic-imports ./maps, so
-                // Leaflet only loads here, not on every admin page.
-                phpvms.map.render_route_map({
-                    render_elem: @js($mapElementId),
-                    route_points:        @js($mapFeatures['planned_rte_points'] ?? null),
-                    planned_route_line:  @js($mapFeatures['planned_rte_line'] ?? null),
-                    actual_route_line:   @js($mapFeatures['actual_route_line'] ?? null),
-                    actual_route_points: @js($mapFeatures['actual_route_points'] ?? null),
-                    archived_route_line: @js($mapFeatures['archived_rte_line'] ?? null),
-                    flown_route_color: '#067ec1',
-                    circle_color: '#056093',
-                    flightplan_route_color: '#8B008B',
-                    archived_route_color: '#9ca3af',
-                    leafletOptions: { scrollWheelZoom: false },
-                });
-            }
-        }"
-        x-load-css="[@js(FilamentAsset::getStyleHref('leaflet'))]"
-    >
-        <div id="{{ $mapElementId }}" style="width:100%;height:320px;"></div>
-    </div>
-@endif
+            // maplibre style is fixed at construction (no setTheme()), so a
+            // theme flip tears down and rebuilds rather than mutating in place.
+            this.handle?.destroy();
+            this.handle = await phpvms.map.render_pirep_map_from_api(@js($mapElementId), {
+                pirepId: @js((string) $record->id),
+                config: window.filamentData.maps,
+                theme,
+                fallback: {
+                    from: { icao: @js($record->dpt_airport_id) },
+                    to: { icao: @js($record->arr_airport_id) },
+                },
+            });
+        },
+        async init() {
+            const phpvms = await (window.phpvmsReady ?? new Promise(resolve => {
+                window.addEventListener('phpvms:ready', e => resolve(e.detail), { once: true });
+            }));
+
+            await this.build(phpvms.theme.current());
+
+            this.onThemeChanged = (e) => this.build(e.detail);
+            window.addEventListener('theme-changed', this.onThemeChanged);
+
+            // wire:ignore keeps this subtree out of Livewire's own morph, but
+            // SPA navigation away from the page (Livewire.navigate) replaces
+            // the whole document body — free the WebGL context (design.md D16
+            // context budget) rather than leak it.
+            this.onNavigating = () => this.handle?.destroy();
+            document.addEventListener('livewire:navigating', this.onNavigating, { once: true });
+        },
+    }"
+>
+    <div id="{{ $mapElementId }}" style="width:100%;height:320px;"></div>
+</div>
 
 {{-- Performance: empty stub when no ACARS --}}
 @if ($performance === null)

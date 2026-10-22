@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Concerns\ReadsPageFilters;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Reports\AircraftReport;
 use App\Models\Subfleet;
@@ -12,7 +13,6 @@ use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class FleetUtilizationTable extends TableWidget
 {
-    use InteractsWithPageFilters;
+    use ReadsPageFilters;
 
     protected static ?string $pollingInterval = null;
 
@@ -82,7 +82,7 @@ class FleetUtilizationTable extends TableWidget
      */
     private function baseQuery(): Builder
     {
-        $airlines = $this->pageFilters['airlines'] ?? [];
+        $airlines = $this->filterAirlines();
 
         return Subfleet::query()
             ->when(

@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import ui from "@nuxt/ui/vite";
+import icons from "unplugin-icons/vite";
 import { phpTypescriptTransform } from "./dev/php-typescript-transform";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -191,6 +192,11 @@ function bundleApplicationCss(): import("vite").Plugin {
 export default defineConfig(({ command }) => ({
   root: WORKSPACE_ROOT,
 
+  // maplibre v6 constructs its worker with `{ type: "module" }` (it only falls back to a classic
+  // worker if that constructor throws), so the worker Vite emits for `?worker&url` in
+  // `@phpvms/map`'s base-map.ts must be a real ES module. Vite's default worker format is `iife`.
+  worker: { format: "es" },
+
   // Built assets are web-served under /build/<theme>/, so production chunk URLs
   // (incl. dynamic-import page chunks + preloaded CSS) must be prefixed with it.
   // Dev serves from the Vite dev-server root.
@@ -207,6 +213,12 @@ export default defineConfig(({ command }) => ({
     ui({
       router: "inertia",
       dts: false,
+      // No magic imports: every U* control and every composable is imported by
+      // name at its call site. Nuxt UI's own runtime keeps working — the plugin
+      // still serves `#imports`, `#build/*` and the Vue-compatible Icon/Link
+      // overrides its internals resolve to.
+      components: false,
+      autoImport: false,
       ui: { icons: tablerIcons },
       icon: {
         clientBundle: {
@@ -215,6 +227,10 @@ export default defineConfig(({ command }) => ({
         },
       },
     }),
+    // `import X from "~icons/tabler/name"` compiles the Tabler SVG straight into
+    // a Vue component at build time, from the @iconify-json/tabler collection
+    // already installed. No network fetch, no runtime icon resolution.
+    icons({ compiler: "vue3", autoInstall: false }),
     tailwindcss(),
     // Dev-only: regenerate SPA types from PHP DTOs on change (no-op on build).
     phpTypescriptTransform({ repoRoot: REPO_ROOT }),

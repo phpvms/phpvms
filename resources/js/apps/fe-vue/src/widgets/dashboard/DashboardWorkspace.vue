@@ -6,6 +6,8 @@ import DashboardBoard from "./DashboardBoard.vue";
 import DashboardPilotHeader from "./DashboardPilotHeader.vue";
 import DashboardToolbar from "./DashboardToolbar.vue";
 import { useDashboardLayout } from "./useDashboardLayout";
+import UPage from "@nuxt/ui/components/Page.vue";
+import UPageHeader from "@nuxt/ui/components/PageHeader.vue";
 
 type DashboardPageProps = App.Http.Data.DashboardData &
   Record<string, unknown> & {
@@ -29,7 +31,7 @@ const { layout, editing, availableToAdd, addWidget, removeWidget, resetLayout, t
 </script>
 
 <template>
-  <UPage class="pv-dashboard">
+  <UPage class="pv-dashboard" aria-label="Dashboard">
     <UPageHeader>
       <DashboardPilotHeader :dashboard :initials :user />
     </UPageHeader>

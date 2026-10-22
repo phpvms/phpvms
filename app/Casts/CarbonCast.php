@@ -24,6 +24,15 @@ class CarbonCast implements CastsAttributes
             return $value;
         }
 
+        // `new Carbon(null)` is *now*, not null — so without this an unset
+        // column reads back as the current time. It went unnoticed while the
+        // only nullable one, `pireps.submitted_at`, was never shown for an
+        // unfiled PIREP: a flight still in the air reported itself as filed
+        // this second.
+        if ($value === null) {
+            return null;
+        }
+
         return new Carbon($value);
     }
 

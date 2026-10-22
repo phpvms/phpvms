@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Pages\ListPireps;
+use App\Filament\Widgets\ActivityCalendarWidget;
 use App\Models\Pirep;
 use Database\Seeders\RolesPermissionsSeeder;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -45,4 +47,85 @@ it('selects the flights a calendar box counted, including those with no block-of
         ->test(ListPireps::class)
         ->assertCanSeeTableRecords([$withBlockOff, $withoutBlockOff])
         ->assertCanNotSeeTableRecords([$outside]);
+});
+
+/**
+ * A flight still in the air is activity: it flew, it just has not been filed.
+ * It has no `submitted_at` at all, which is why the calendar and this list both
+ * scope on `Pirep::ACTIVITY_AT` rather than filing time.
+ */
+it('counts an in-progress flight and lets the list it links to show it', function (): void {
+    // The calendar buckets by calendar day, so within two hours of midnight
+    // `now()->subHours(2)` lands in yesterday's row and today's is empty. Pin
+    // the clock to midday so the flight and the assertion share a day.
+    Carbon::setTestNow(today()->addHours(12));
+
+    $flying = Pirep::factory()->create([
+        'state'          => PirepState::IN_PROGRESS,
+        'submitted_at'   => null,
+        'block_off_time' => now()->subHours(2),
+    ]);
+
+    $drafted = Pirep::factory()->create([
+        'state'          => PirepState::DRAFT,
+        'submitted_at'   => null,
+        'block_off_time' => now()->subHours(2),
+    ]);
+
+    $cancelled = Pirep::factory()->create([
+        'state'          => PirepState::CANCELLED,
+        'submitted_at'   => null,
+        'block_off_time' => now()->subHours(2),
+    ]);
+
+    $widget = new ActivityCalendarWidget();
+    $data = json_decode(new ReflectionMethod($widget, 'getViewData')->invoke($widget)['json'], true);
+
+    $today = collect($data['days'])->firstWhere('date', now()->toDateString());
+
+    // The in-progress flight, and only it, lands in its block-off hour.
+    expect($today['values'][now()->subHours(2)->hour])->toBe(1)
+        ->and($data['max'])->toBe(1);
+
+    Livewire::withQueryParams([
+        'departed_from' => now()->subHours(2)->startOfHour()->toDateTimeString(),
+        'departed_to'   => now()->subHours(2)->endOfHour()->toDateTimeString(),
+    ])
+        ->test(ListPireps::class)
+        ->assertCanSeeTableRecords([$flying])
+        ->assertCanNotSeeTableRecords([$drafted, $cancelled]);
+
+    Carbon::setTestNow();
+});
+
+/**
+ * The table persists its filters in the session, so the hour block a calendar
+ * box set would otherwise follow the pilot around: every later visit to the
+ * list would still be pinned to that one hour with nothing on screen saying
+ * why. Clearing it has to survive the table being built, which is why it runs
+ * from bootedInteractsWithTable() rather than mount().
+ */
+it('drops a calendar-set departed filter on the next direct visit', function (): void {
+    $inBlock = Pirep::factory()->create([
+        'state'          => PirepState::ACCEPTED,
+        'block_off_time' => '2026-08-12 00:30:00',
+    ]);
+
+    $outside = Pirep::factory()->create([
+        'state'          => PirepState::ACCEPTED,
+        'block_off_time' => '2026-08-13 09:00:00',
+    ]);
+
+    Livewire::withQueryParams([
+        'departed_from' => '2026-08-12 00:00:00',
+        'departed_to'   => '2026-08-12 00:59:59',
+    ])
+        ->test(ListPireps::class)
+        ->assertCanNotSeeTableRecords([$outside]);
+
+    // withQueryParams() is held on the Livewire manager for the rest of the
+    // test, so a direct visit has to clear it or this still deep-links.
+    Livewire::withQueryParams([])
+        ->test(ListPireps::class)
+        ->assertCanSeeTableRecords([$inBlock, $outside]);
 });

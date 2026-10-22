@@ -61,6 +61,14 @@ class SimBrief extends Model
 
     public $table = 'simbrief';
 
+    /**
+     * The primary key is SimBrief's own OFP id, a string. Without this the model
+     * inherits Eloquent's default int key type and casts the id on read, which
+     * breaks any consumer typed against the `@property string $id` above —
+     * `SimBriefBriefingData` among them. `SimBriefAttempt` already declares this.
+     */
+    protected $keyType = 'string';
+
     protected $fillable = [
         'id',
         'static_id',

@@ -18,8 +18,8 @@ php = "https://github.com/verzly/mise-php#latest"
 [hooks]
 postinstall = "composer install"
 
-[settings]
-task_output = "interleave"
+#[task]
+#output = "interleave"
 
 # -----------------------------------------------
 # Local tasks

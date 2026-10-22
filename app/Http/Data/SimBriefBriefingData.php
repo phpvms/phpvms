@@ -6,6 +6,9 @@ namespace App\Http\Data;
 
 use App\Models\Bid;
 use App\Models\SimBrief;
+use App\Support\Dto\SimBriefOfp\SimBriefOfp;
+use App\Support\Dto\SimBriefOfp\SimBriefOfpNavlog;
+use App\Support\SimBriefPlanHtml;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,7 +19,9 @@ final class SimBriefBriefingData extends Data
      * @param array<string, string>                        $weather
      * @param array<int, array{name: string, url: string}> $downloads
      * @param array<int, array{name: string, url: string}> $images
+     * @param list<array{title: string, html: string}>     $textSections
      * @param array<string, string>                        $prefileLinks
+     * @param list<MapPlannedFixData>                      $plannedFixes
      */
     public function __construct(
         public string $id,
@@ -24,8 +29,9 @@ final class SimBriefBriefingData extends Data
         public ?BidData $bid,
         public EligibleAircraftData $aircraft,
         public string $route,
+        public array $plannedFixes,
         public string $atcPlan,
-        public string $textOfp,
+        public array $textSections,
         public array $weather,
         public array $downloads,
         public array $images,
@@ -46,8 +52,9 @@ final class SimBriefBriefingData extends Data
             bid: $bid ? BidData::fromModel($bid) : null,
             aircraft: EligibleAircraftData::fromModel($briefing->aircraft),
             route: $ofp?->general->route ?? '',
+            plannedFixes: self::plannedFixes($ofp),
             atcPlan: $ofp?->atc->flightplan_text ?? '',
-            textOfp: $ofp?->text->plan_html ?? '',
+            textSections: SimBriefPlanHtml::sections($ofp?->text->plan_html ?? ''),
             weather: [
                 'departureMetar' => $ofp?->weather->orig_metar ?? '',
                 'departureTaf'   => $ofp?->weather->orig_taf ?? '',
@@ -67,6 +74,35 @@ final class SimBriefBriefingData extends Data
                 : null,
             canCancel: $briefing->pirep_id === null,
             canRegenerate: true,
+        );
+    }
+
+    /**
+     * Planned route fixes for the briefing map, straight from the live OFP's
+     * navlog — no `buildNavlog()`/archive dependency, so per-fix altitude is
+     * always present here (map-api spec, "Planned fixes carry altitude").
+     * Reuses `MapPlannedFixData`, the same shape the PIREP detail payload
+     * uses: one fix type across both consumers rather than two near-identical
+     * ones (D10).
+     *
+     * @return list<MapPlannedFixData>
+     */
+    private static function plannedFixes(?SimBriefOfp $ofp): array
+    {
+        if (!$ofp instanceof SimBriefOfp) {
+            return [];
+        }
+
+        return array_map(
+            static fn (SimBriefOfpNavlog $fix): MapPlannedFixData => new MapPlannedFixData(
+                ident: $fix->ident,
+                lat: $fix->pos_lat,
+                lon: $fix->pos_long,
+                altitudeFt: $fix->altitude_feet,
+                viaAirway: $fix->via_airway,
+                isSidStar: $fix->is_sid_star,
+            ),
+            $ofp->navlog,
         );
     }
 }

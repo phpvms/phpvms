@@ -7,11 +7,11 @@
  * at HTTP render time (never during console boot — see provider for full
  * rationale).
  *
- * The `maps` module statically imports Leaflet + its plugins (~150kB), so
- * it's loaded via dynamic `import()` here. Vite code-splits it into its own
- * chunk that the browser only fetches when an admin blade actually calls
- * `window.phpvms.map.render_route_map(...)` etc. Admin pages without a map
- * pay no cost beyond this thin entry.
+ * The `@phpvms/map` maplibre package (~three.js on Tier 1) is loaded via
+ * dynamic `import()` here, through `./phpvms-map.js`. Vite code-splits it
+ * into its own chunk that the browser only fetches when an admin blade
+ * actually calls `window.phpvms.map.render_pirep_map_from_api(...)` etc.
+ * Admin pages without a map pay no cost beyond this thin entry.
  */
 
 // The console rail is fixed collapsed on desktop; the collapse controls are
@@ -29,25 +29,33 @@ import config from "./config";
 import request from "./request";
 import Storage from "./storage";
 import "./rail-nav";
-import "./theme-picker";
+import { currentMode } from "./theme-picker";
 import "./utc-clock";
 import "./autosave-indicator";
 
 window.axios = axios;
 
-// Lazy-load the maps chunk on first call. Subsequent calls reuse the
-// resolved module via the cached promise (ES module spec dedupes by URL).
-// `import.meta.glob` (not a bare `import("./maps")`) is used so Vite rewrites
-// the chunk URL correctly in dev AND build: a bare dynamic import becomes an
-// absolute path that the browser resolves against the document origin, which
-// 404s when the page is served behind a proxy different from the dev server.
-let mapsModulePromise = null;
-const loadMaps = () => {
-  if (!mapsModulePromise) {
-    mapsModulePromise = import.meta.glob("./maps/index.js")["./maps/index.js"]();
+// The @phpvms/map package's imperative adapter, re-exported locally by
+// `./phpvms-map.js` (see that file for why: `import.meta.glob`'s pattern and
+// object-key arguments must match exactly, and the package's own path is too
+// long to keep that single-line after formatting — a wrapped call is NOT
+// transformed, same trap the dashboard loader's own NOTE below warns about).
+// `import.meta.glob` (not a bare `import("./phpvms-map.js")`) is used so
+// Vite rewrites the chunk URL correctly in dev AND build: a bare dynamic
+// import becomes an absolute path that the browser resolves against the
+// document origin, which 404s when the page is served behind a proxy
+// different from the dev server.
+//
+// This replaced the Leaflet-based `./maps/index.js` chunk (tasks.md 6.2/6.5)
+// — that module and its `render_route_map`/`render_base_map` entries are
+// gone, confirmed by grep with no remaining caller in resources/views.
+let phpvmsMapModulePromise = null;
+const loadPhpvmsMap = () => {
+  if (!phpvmsMapModulePromise) {
+    phpvmsMapModulePromise = import.meta.glob("./phpvms-map.js")["./phpvms-map.js"]();
   }
 
-  return mapsModulePromise;
+  return phpvmsMapModulePromise;
 };
 
 window.phpvms = {
@@ -55,16 +63,45 @@ window.phpvms = {
   request,
   Storage,
   map: {
-    render_route_map: async (...args) => {
-      const maps = await loadMaps();
+    render_pirep_map: async (...args) => {
+      const phpvmsMap = await loadPhpvmsMap();
 
-      return maps.render_route_map(...args);
+      return phpvmsMap.renderPirepMap(...args);
     },
-    render_base_map: async (...args) => {
-      const maps = await loadMaps();
+    render_live_map: async (...args) => {
+      const phpvmsMap = await loadPhpvmsMap();
 
-      return maps.render_base_map(...args);
+      return phpvmsMap.renderLiveMap(...args);
     },
+    // The PIREP detail globe and the live-flights globe (tasks.md 6.2/6.3)
+    // fetch their own data client-side from GET api/map/pirep/{id} and GET
+    // api/map/live rather than receiving server-injected features — these
+    // wrap that fetch + the DTO-to-adapter-shape transform, kept in
+    // ./phpvms-map.js alongside the raw adapter re-export above.
+    render_pirep_map_from_api: async (...args) => {
+      const phpvmsMap = await loadPhpvmsMap();
+
+      return phpvmsMap.renderPirepMapFromApi(...args);
+    },
+    render_live_map_from_api: async (...args) => {
+      const phpvmsMap = await loadPhpvmsMap();
+
+      return phpvmsMap.renderLiveMapFromApi(...args);
+    },
+    // Used by the live map's poll loop to refresh marker positions on the
+    // same handle `render_live_map_from_api` returned, without re-fetching
+    // through a whole new renderLiveMap() call.
+    fetch_live_flights: async (...args) => {
+      const phpvmsMap = await loadPhpvmsMap();
+
+      return phpvmsMap.fetchLiveFlights(...args);
+    },
+  },
+  // `window.phpvms.theme.current()` — light/dark, per theme-picker.js. The
+  // maplibre admin surfaces need this once at map construction and again on
+  // `theme-changed`, since a basemap style is fixed at createMap() time.
+  theme: {
+    current: currentMode,
   },
 };
 

@@ -10,7 +10,7 @@
             lockup (`logo_blue_bg.svg`) -- so the unconfigured case keeps the
             original asset, and only an uploaded logo overrides it. --}}
             <img src="{{ $branding->hasLogo() ? $branding->logo() : public_asset('/assets/img/logo_blue_bg.svg') }}"
-                width="135px" alt="{{ $branding->name() }} Logo" />
+                height="60px" alt="{{ $branding->name() }} Logo" />
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,6 +69,12 @@
                         <a class="nav-link d-flex gap-1" href="{{ route('frontend.flights.index') }}">
                             <i class="bi bi-airplane"></i>
                             {{ trans_choice('common.flight', 2) }}
+                        </a>
+                    </li>
+                    <li class="nav-item d-flex align-items-center">
+                        <a class="nav-link d-flex gap-1" href="{{ route('frontend.tours.index') }}">
+                            <i class="bi bi-signpost-split"></i>
+                            {{ __('ui.nav_tours') }}
                         </a>
                     </li>
                     <li class="nav-item d-flex align-items-center">

@@ -31,6 +31,11 @@ use Override;
  */
 class SearchUsersRequest extends FormRequest
 {
+    public const array IDENTITY_ORDER_FIELDS = [
+        'vatsim_id' => 'vatsim',
+        'ivao_id'   => 'ivao',
+    ];
+
     public const array ORDERABLE_FIELDS = [
         'id',
         'name',

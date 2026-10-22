@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Data;
 
+use App\Features\Tour\Models\UserTour;
+use App\Models\Award;
 use App\Models\User;
 use App\Models\UserField;
 use App\Support\Units\Time;
@@ -19,9 +21,10 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class ProfileData extends Data
 {
     /**
-     * @param list<AwardData>      $awards
-     * @param list<TypeRatingData> $typeRatings
-     * @param list<UserFieldData>  $fields
+     * @param list<AwardData>       $awards
+     * @param list<TypeRatingData>  $typeRatings
+     * @param list<UserFieldData>   $fields
+     * @param list<ProfileTourData> $tours
      */
     public function __construct(
         public int $id,
@@ -38,17 +41,21 @@ final class ProfileData extends Data
         public array $awards,
         public array $typeRatings,
         public array $fields,
+        public array $tours,
         public bool $acars,
+        public bool $isOwnProfile,
     ) {}
 
     /**
      * @param Collection<int, UserField> $userFields resolved public UserField models (name + value)
      */
-    public static function fromModel(User $u, Collection $userFields, bool $acars): self
+    public static function fromModel(User $u, Collection $userFields, bool $acars, bool $isOwnProfile): self
     {
         return new self(
             id: $u->id,
-            name: $u->name,
+            // A stranger sees the GDPR-shortened name, same as the Blade path
+            // (`$user->name_private`); the owner sees their own full name.
+            name: $isOwnProfile ? $u->name : $u->name_private,
             avatar: $u->resolveAvatarUrl(),
             airline: $u->airline ? new AirlineRefData(icao: $u->airline->icao, name: $u->airline->name) : null,
             rank: $u->rank ? new RankData(name: $u->rank->name) : null,
@@ -62,7 +69,7 @@ final class ProfileData extends Data
                 color: self::colorToken($u->state->getColor()),
             ),
             awards: $u->awards
-                ->map(fn ($a): AwardData => new AwardData(name: $a->name, description: $a->description, image: $a->image_url))
+                ->map(fn (Award $a): AwardData => AwardData::fromModel($a))
                 ->values()
                 ->all(),
             typeRatings: $u->typeratings
@@ -73,7 +80,12 @@ final class ProfileData extends Data
                 ->map(fn ($f): UserFieldData => new UserFieldData(name: $f->name, value: $f->value ?? null))
                 ->values()
                 ->all(),
+            tours: $u->tours
+                ->map(fn (UserTour $t): ProfileTourData => ProfileTourData::fromModel($t))
+                ->values()
+                ->all(),
             acars: $acars,
+            isOwnProfile: $isOwnProfile,
         );
     }
 

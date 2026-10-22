@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Schemas;
 
+use App\Enums\BundleType;
 use App\Enums\FlightType;
+use App\Features\Tour\Enums\TourStatus;
+use App\Features\Tour\Models\UserTour;
 use App\Filament\Forms\Components\AirportSelect;
 use App\Filament\Forms\StateCasts\DaysMaskStateCast;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
@@ -25,6 +28,7 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -32,6 +36,8 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 use Throwable;
 
 class FlightForm
@@ -274,10 +280,87 @@ class FlightForm
                 ->string()
                 ->maxLength(5),
 
+            // A tour is bid as an ordered chain, so its legs must be numbered
+            // 1..N with no repeats. `flights` bundles keep route_leg exactly as
+            // permissive as it has always been -- both rules go quiet there.
             TextInput::make('route_leg')
                 ->label(__('flights.routeleg'))
-                ->integer(),
+                ->integer()
+                ->required(fn (?Flight $record, ?Page $livewire): bool => self::parentBundleIsTour($record, $livewire))
+                ->rules(fn (?Flight $record, ?Page $livewire): array => self::tourLegRules($record, $livewire))
+                ->validationMessages([
+                    'required' => __('filament.flights.tour_leg_required'),
+                    'unique'   => __('filament.flights.tour_leg_duplicate'),
+                ])
+                ->helperText(fn (?Flight $record, ?Page $livewire): ?string => self::parentBundleIsTour($record, $livewire)
+                    ? __('filament.flights.tour_leg_hint')
+                    : null)
+                // Warns, never blocks: the admin decides whether a live run is
+                // worth disturbing. See design.md, "Admins are warned about leg
+                // edits, not blocked".
+                ->hint(fn (?Flight $record, ?Page $livewire): ?string => self::liveTourWarning(
+                    self::resolveParentBundle($record, $livewire),
+                ))
+                ->hintColor('warning')
+                ->hintIcon(Phosphor::WarningLight),
         ];
+    }
+
+    /**
+     * How many pilots are mid-tour on this bundle, phrased for an admin about
+     * to change a leg, or null when nobody is or the bundle is not a tour.
+     *
+     * Counted off the (bundle_id, status) index on `user_tours`.
+     */
+    public static function liveTourWarning(?FlightBundle $bundle): ?string
+    {
+        if (!$bundle instanceof FlightBundle || $bundle->type !== BundleType::Tour) {
+            return null;
+        }
+
+        $count = UserTour::query()
+            ->where('bundle_id', $bundle->id)
+            ->where('status', TourStatus::InProgress)
+            ->count();
+
+        if ($count === 0) {
+            return null;
+        }
+
+        return trans_choice('filament.flights.tour_live_runs_warning', $count, ['count' => $count]);
+    }
+
+    /**
+     * Uniqueness of the leg within its own tour, and nothing at all for a
+     * `flights` bundle.
+     *
+     * Soft-deleted flights are excluded so the rule agrees with
+     * FlightBundle::tourLegSequence(), which reads through the soft-delete
+     * scope: a deleted flight is not occupying its leg, and blocking on one
+     * would leave a gap nobody can fill.
+     *
+     * @return array<int, Unique>
+     */
+    private static function tourLegRules(?Flight $record, ?Page $livewire): array
+    {
+        $bundle = self::resolveParentBundle($record, $livewire);
+
+        if (!$bundle instanceof FlightBundle || $bundle->type !== BundleType::Tour) {
+            return [];
+        }
+
+        $rule = Rule::unique('flights', 'route_leg')
+            ->where('bundle_id', $bundle->id)
+            ->whereNull('deleted_at');
+
+        return [$record instanceof Flight ? $rule->ignore($record) : $rule];
+    }
+
+    private static function parentBundleIsTour(?Flight $record, ?Page $livewire): bool
+    {
+        $bundle = self::resolveParentBundle($record, $livewire);
+
+        return $bundle instanceof FlightBundle && $bundle->type === BundleType::Tour;
     }
 
     /**
@@ -478,7 +561,12 @@ class FlightForm
     }
 
     /**
-     * Resolve the parent FlightBundle from the record or route.
+     * Resolve the parent FlightBundle from the record, the nested resource
+     * page, or the route.
+     *
+     * The page is consulted because the create page has no record yet and,
+     * under Livewire, no route parameter either -- `parentRecord` is how
+     * Filament carries the bundle there, and how the tests mount it.
      *
      * Per-request memoization is provided by Laravel's container; we register
      * a shared instance keyed by the route parameter on first lookup so the 4
@@ -487,7 +575,7 @@ class FlightForm
      * job, so stale-instance leaks (the bug a `static` cache would cause when
      * PKs are reused across tests) are not possible.
      */
-    private static function resolveParentBundle(?Flight $record = null): ?FlightBundle
+    private static function resolveParentBundle(?Flight $record = null, ?Page $livewire = null): ?FlightBundle
     {
         if ($record instanceof Flight) {
             if ($record->relationLoaded('bundle')) {
@@ -499,6 +587,14 @@ class FlightForm
 
             if ($record->bundle_id !== null) {
                 return $record->bundle;
+            }
+        }
+
+        if ($livewire instanceof Page) {
+            $parent = $livewire->getParentRecord();
+
+            if ($parent instanceof FlightBundle) {
+                return $parent;
             }
         }
 

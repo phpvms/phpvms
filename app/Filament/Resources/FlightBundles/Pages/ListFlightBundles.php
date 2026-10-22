@@ -16,6 +16,9 @@ class ListFlightBundles extends ListRecords
 {
     protected static string $resource = FlightBundleResource::class;
 
+    /** Set by the tours page, whose create drawer presets the type instead. */
+    protected static bool $forTours = false;
+
     #[Override]
     protected function getHeaderActions(): array
     {
@@ -29,7 +32,7 @@ class ListFlightBundles extends ListRecords
 
                         return $data;
                     }),
-                FlightBundleForm::fields(),
+                FlightBundleForm::fields(static::$forTours),
             ),
         ];
     }

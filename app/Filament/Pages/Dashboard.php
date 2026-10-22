@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\AuthorizesAccess;
+use App\Filament\Concerns\HasPeriodFilter;
 use App\Filament\Widgets\ActivityCalendarWidget;
 use App\Filament\Widgets\BlockHoursStatWidget;
 use App\Filament\Widgets\DistanceStatWidget;
@@ -28,6 +29,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\View as ViewComponent;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -42,8 +44,12 @@ use Override;
 class Dashboard extends DynamicDashboard
 {
     use AuthorizesAccess;
+    use HasPeriodFilter;
 
     private const string LEGACY_STATS_WIDGET = 'App\\Filament\\Widgets\\StatsStripWidget';
+
+    /** Separate from the Reports hub's key: the two selections are unrelated. */
+    private const string SESSION_KEY = 'dashboard_filters';
 
     protected static string|array $routeMiddleware = [UpdatePending::class];
 
@@ -114,6 +120,8 @@ class Dashboard extends DynamicDashboard
 
         $this->currentDashboardId = $dashboard->id;
 
+        $this->restorePeriodFilterState(session(self::SESSION_KEY));
+
         parent::mount();
     }
 
@@ -138,7 +146,7 @@ class Dashboard extends DynamicDashboard
             ->viewData(fn (): array => [
                 'template'         => $template,
                 'widgetsBySection' => $this->buildWidgetsViewData($template),
-                'pageFilters'      => $this->filters ?? [],
+                'pageFilters'      => $this->resolvedPeriodFilters(),
                 'canEdit'          => static::canEdit(),
                 'canDrag'          => false,
             ]);
@@ -178,6 +186,32 @@ class Dashboard extends DynamicDashboard
         }
 
         return view('filament.dashboard.partials.welcome-meta', ['segments' => $segments]);
+    }
+
+    /**
+     * The widget grid lives inside a `wire:ignore` element (GridStack owns that
+     * DOM), so a parent re-render cannot push new `#[Reactive]` props down to
+     * the widgets. Livewire events reach them regardless of DOM morphing, which
+     * is why the period change is announced rather than simply re-rendered.
+     */
+    protected function refreshFilters(): void
+    {
+        session()->put(self::SESSION_KEY, $this->periodFilterState());
+
+        $this->dispatch('dashboard-period-changed', filters: $this->resolvedPeriodFilters());
+    }
+
+    /**
+     * Filament's own header markup, with the period picker dropped into the
+     * actions slot ahead of Edit layout — the same arrangement the Reports
+     * pages use.
+     */
+    #[Override]
+    public function getHeader(): ?View
+    {
+        return view('filament.dashboard.partials.header', [
+            'headerActions' => $this->getCachedHeaderActions(),
+        ]);
     }
 
     #[Renderless]

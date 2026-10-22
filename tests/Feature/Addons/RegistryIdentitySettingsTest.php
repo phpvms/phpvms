@@ -28,13 +28,13 @@ it('migrates an existing kvp va_global_id and is idempotent', function (): void 
     expect(DB::table('kvp')->where('key', 'va_global_id')->count())->toBe(1);
 });
 
-it('mints a ULID into both settings and kvp when none exists', function (): void {
+it('mints an id into both settings and kvp when none exists', function (): void {
     expect(DB::table('kvp')->where('key', 'va_global_id')->exists())->toBeFalse();
 
     runIdentityMigration();
 
     $value = settingValue('va_global_id');
-    expect($value)->toHaveLength(26);
+    expect($value)->toHaveLength(12);
     expect(DB::table('kvp')->where('key', 'va_global_id')->value('value'))->toBe($value);
 });
 
