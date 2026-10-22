@@ -3,7 +3,7 @@
 #
 # I highly recommend using the Railpack instead!
 #
-# PINNED TO v5.0.1, not the floating `8.5-cli` / `8.5-frankenphp` tags.
+# PINNED TO v5.0.2, not the floating `8.5-cli` / `8.5-frankenphp` tags.
 # compose.deploy.yml passes --caddyfile=/etc/frankenphp/Caddyfile to
 # octane:start, and that path only exists from serversideup/php v5. On a v4
 # image the container fails to start, so the dependency is pinned rather than
