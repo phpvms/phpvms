@@ -29,11 +29,16 @@ final class PreviewAirportsRequest extends SearchAirportsRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
+            // Neither 'size:4' nor 'alpha' belongs on a value the next rule
+            // looks up as an airport id. Ids are not fixed at four characters
+            // and are not letters-only, so between them the two rules rejected
+            // airports that exist -- any id with a digit, and any that is not
+            // exactly four long. 'exists' is the check that matters; the width
+            // just matches the column.
             'near' => [
                 'sometimes',
                 'string',
-                'size:4',
-                'alpha',
+                'max:16',
                 'exists:airports,id',
             ],
             'max_range_nm' => [
@@ -55,8 +60,7 @@ final class PreviewAirportsRequest extends SearchAirportsRequest
     public function messages(): array
     {
         return [
-            'near.size'            => __('filament.routeforge.validation.near_invalid'),
-            'near.alpha'           => __('filament.routeforge.validation.near_invalid'),
+            'near.max'             => __('filament.routeforge.validation.near_invalid'),
             'near.exists'          => __('filament.routeforge.validation.near_invalid'),
             'max_range_nm.integer' => __('filament.routeforge.validation.max_range_nm_invalid'),
             'max_range_nm.min'     => __('filament.routeforge.validation.max_range_nm_invalid'),
