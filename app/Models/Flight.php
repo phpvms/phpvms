@@ -318,31 +318,34 @@ class Flight extends Model
     }
 
     /**
-     * Normalize departure airport ICAO at write time: uppercase + trim.
-     * Single-row write paths (admin form, FlightImporter, manual save) flow
-     * through this mutator; the RouteForge bulk-insert path normalizes
-     * explicitly in `RouteForgeService::buildFlightAttrs()` because
-     * `Model::insert()` bypasses Eloquent's attribute machinery.
+     * Trim the departure airport id at write time.
+     *
+     * This used to upper-case it as well, on the assumption that the column
+     * holds an ICAO code. It holds a foreign key to `airports.id`, and an id
+     * is matched as given -- folding its case mangled any id that was not
+     * already upper-case, so the row stopped matching the airport it names.
+     * Trimming stays: no id has leading or trailing whitespace, and callers
+     * pass values straight out of a form or a CSV.
      */
     protected function dptAirportId(): Attribute
     {
         return Attribute::make(
             set: fn (?string $value): ?string => $value === null
                 ? null
-                : strtoupper(trim($value)),
+                : trim($value),
         );
     }
 
     /**
-     * Normalize arrival airport ICAO at write time: uppercase + trim.
-     * Same single-row-vs-bulk caveat as `dptAirportId()`.
+     * Trim the arrival airport id at write time. Same reasoning as
+     * `dptAirportId()`.
      */
     protected function arrAirportId(): Attribute
     {
         return Attribute::make(
             set: fn (?string $value): ?string => $value === null
                 ? null
-                : strtoupper(trim($value)),
+                : trim($value),
         );
     }
 
