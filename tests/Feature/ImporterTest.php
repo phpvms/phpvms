@@ -932,3 +932,31 @@ test('airport special chars importer', function (): void {
     expect($airport)->not->toBeNull()
         ->and($airport->name)->toEqual('Adolfo Suárez Madrid–Barajas Airport');
 });
+
+/**
+ * The importer supplies the airport id itself, from the ICAO column, so it has
+ * to normalize the case on its own now that the `icao` mutator no longer
+ * rewrites the id. Without it a lower-case row imports under a lower-case id,
+ * which on a case-sensitive database is a second airport rather than the one
+ * already there.
+ */
+test('airport importer upper-cases the id of a lower-case icao row', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'airports').'.csv';
+    file_put_contents($path, <<<'CSV'
+        icao,iata,name,location,region,country,timezone,hub,lat,lon,elevation,ground_handling_cost,fuel_100ll_cost,fuel_jeta_cost,fuel_mogas_cost,notes
+        kaus,aus,Austin-Bergstrom,"Austin","Texas",US,America/Chicago,1,30.1945,-97.6699,148,0,,,,
+        CSV);
+
+    $status = app(ImportService::class)->importAirports($path, delete_previous: false);
+    unlink($path);
+
+    // The stored id is read back rather than looked up: mysql's default
+    // `utf8mb4_unicode_ci` would match a lower-case row for `find('KAUS')`
+    // on its own, so only the value itself tells us the case was normalized.
+    $airport = Airport::find('KAUS');
+
+    expect($status['errors'])->toHaveCount(0)
+        ->and($airport)->not->toBeNull()
+        ->and($airport->id)->toBe('KAUS')
+        ->and($airport->icao)->toBe('KAUS');
+});
