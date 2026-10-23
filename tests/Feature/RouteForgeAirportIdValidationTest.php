@@ -16,9 +16,10 @@ use Tests\Support\RouteForgeTestHelpers as RF;
  * could only reject one that `exists` had already accepted.
  *
  * Posted to the endpoint rather than handed to `Validator::make($rules)`,
- * because `BaseRouteForgeBatchRequest::prepareForValidation()` runs first and
- * rewrites these values. A test that reads `rules()` on its own skips that
- * step and can claim a payload is accepted when a real client's would not be.
+ * because `BaseRouteForgeBatchRequest::prepareForValidation()` runs first. A
+ * test that reads `rules()` on its own skips that step and can claim a payload
+ * is accepted when a real client's would not be -- which is exactly how the
+ * uppercasing that used to live in there went unnoticed here.
  */
 beforeEach(function (): void {
     $this->seed(RolesPermissionsSeeder::class);
@@ -44,27 +45,17 @@ it('accepts an existing airport id that carries digits', function (): void {
     expect(lintErrors('K6L3', 'K7M4'))->toBe([]);
 });
 
+/**
+ * Mixed case on purpose: a nanoid carries both, and the request no longer
+ * folds what it is given, so this is the shape a generated id actually has.
+ */
 it('accepts an existing airport id at the full column width', function (): void {
-    Airport::factory()->create(['id' => 'V1A2B3C4D5E6F7G8', 'icao' => 'KJFK']);
-    Airport::factory()->create(['id' => 'W1A2B3C4D5E6F7G8', 'icao' => 'KLAX']);
+    Airport::factory()->create(['id' => 'V1a2B3c4D5e6F7g8', 'icao' => 'KJFK']);
+    Airport::factory()->create(['id' => 'W1a2B3c4D5e6F7g8', 'icao' => 'KLAX']);
 
-    expect(lintErrors('V1A2B3C4D5E6F7G8', 'W1A2B3C4D5E6F7G8'))->toBe([]);
+    expect(lintErrors('V1a2B3c4D5e6F7g8', 'W1a2B3c4D5e6F7g8'))->toBe([]);
 });
 
 it('still rejects an airport that does not exist', function (): void {
     expect(lintErrors('ZZZZ', 'ZZZY'))->not->toBe([]);
-});
-
-/**
- * Pinned because it is the gap this PR does not close, not because it is
- * wanted: `prepareForValidation()` still upper-cases these values, so a
- * generated id that carries lower case is folded into one that does not exist
- * and `exists` rejects it. Delete this test when that normaliser goes -- the
- * case above it will then cover the mixed-case id directly.
- */
-it('rejects a mixed-case airport id because the request folds it', function (): void {
-    Airport::factory()->create(['id' => 'V1a2B3c4D5e6F7g8', 'icao' => 'KJFK']);
-    Airport::factory()->create(['id' => 'W1a2B3c4D5e6F7g8', 'icao' => 'KLAX']);
-
-    expect(lintErrors('V1a2B3c4D5e6F7g8', 'W1a2B3c4D5e6F7g8'))->not->toBe([]);
 });

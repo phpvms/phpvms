@@ -209,10 +209,14 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
     }
 
     /**
-     * Normalize all ICAO-bearing fields to uppercase before validation runs.
-     * Mirrors the at-rest convention enforced by the `Flight` model's
-     * `dptAirportId` / `arrAirportId` mutators so `exists` + Rule::in
-     * checks succeed regardless of casing on the wire.
+     * Trim the airport id fields before validation runs.
+     *
+     * These used to be upper-cased too, mirroring a `Flight` mutator that no
+     * longer folds case either. They carry ids, not codes -- `exists` and
+     * Rule::in match them against `airports.id` as given -- so folding them
+     * turned a generated id that carries lower case into one that does not
+     * exist. Trimming stays: the values arrive from a form or a CSV, and no
+     * id has leading or trailing whitespace.
      */
     #[Override]
     protected function prepareForValidation(): void
@@ -223,7 +227,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
             $values = $this->input($field);
             if (is_array($values)) {
                 $merge[$field] = array_map(
-                    fn ($v): mixed => is_string($v) ? strtoupper(trim($v)) : $v,
+                    fn ($v): mixed => is_string($v) ? trim($v) : $v,
                     $values,
                 );
             }
@@ -238,7 +242,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
 
                 foreach (['dpt_airport_id', 'arr_airport_id'] as $col) {
                     if (isset($row[$col]) && is_string($row[$col])) {
-                        $rows[$index][$col] = strtoupper(trim($row[$col]));
+                        $rows[$index][$col] = trim($row[$col]);
                     }
                 }
             }
