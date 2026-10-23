@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Http\Requests\RouteForge\LintRequest;
 use App\Models\Airport;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -31,16 +30,8 @@ it('accepts an existing airport id that carries digits', function (): void {
     expect(airportListPasses(['K6L3']))->toBeTrue();
 });
 
-/**
- * Written through the query builder rather than the model because
- * Airport::icao() still derives `id` from the ICAO, and `icao` is 8 wide --
- * so the model cannot yet produce an id that uses the full column. That
- * coupling is what the eventual move to generated ids has to undo; until
- * then this is the only way to prove the rule accepts the full width.
- */
 it('accepts an existing airport id at the full column width', function (): void {
-    $airport = Airport::factory()->create();
-    DB::table('airports')->where('id', $airport->id)->update(['id' => 'V1a2B3c4D5e6F7g8']);
+    Airport::factory()->create(['id' => 'V1a2B3c4D5e6F7g8', 'icao' => 'KJFK']);
 
     expect(airportListPasses(['V1a2B3c4D5e6F7g8']))->toBeTrue();
 });
