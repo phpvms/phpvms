@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Auth\InstallSafeUserProvider;
-use App\Console\Commands\DataMigrationInstallCommand;
+use App\Console\DataMigrationInstallCommand;
 use App\Contracts\Metar;
 use App\Contracts\Model as BaseModel;
 use App\Enums\ActiveState;

@@ -71,13 +71,18 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
                 ),
             ],
 
-            'origins'   => ['required', 'array', 'min:1'],
-            'origins.*' => ['string', 'max:8', 'alpha', 'exists:airports,id'],
+            'origins' => ['required', 'array', 'min:1'],
+            // No 'alpha': an airport id is not restricted to letters. Plenty
+            // of ICAO identifiers carry digits, and the generated ids these
+            // columns are being widened for will carry digits, '-' and '_' --
+            // so the rule could only ever reject an airport that the
+            // 'exists' check right next to it would have accepted.
+            'origins.*' => ['string', 'max:16', 'exists:airports,id'],
             // 'present' (not 'required'): a tour batch has no destinations —
             // its chain is origins alone. A non-tour batch with an empty list
             // generates zero rows and still fails on `rows.required`.
             'destinations'   => ['present', 'array'],
-            'destinations.*' => ['string', 'max:8', 'alpha', 'exists:airports,id'],
+            'destinations.*' => ['string', 'max:16', 'exists:airports,id'],
 
             'bundle'                    => ['required', 'array'],
             'bundle.existing_bundle_id' => [
@@ -101,8 +106,8 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
             'rows.*.callsign'       => ['nullable', 'string', 'max:32'],
             'rows.*.route_code'     => ['nullable', 'string', 'max:5'],
             'rows.*.route_leg'      => ['nullable', 'integer', 'min:0', 'max:255'],
-            'rows.*.dpt_airport_id' => ['required', 'string', 'max:8', 'alpha', Rule::in($allowedIcaos)],
-            'rows.*.arr_airport_id' => ['required', 'string', 'max:8', 'alpha', Rule::in($allowedIcaos)],
+            'rows.*.dpt_airport_id' => ['required', 'string', 'max:16', Rule::in($allowedIcaos)],
+            'rows.*.arr_airport_id' => ['required', 'string', 'max:16', Rule::in($allowedIcaos)],
             'rows.*.departure_time' => ['nullable', 'string', 'date_format:H:i'],
             'rows.*.arrival_time'   => ['nullable', 'string', 'date_format:H:i'],
             'rows.*.distance_nm'    => ['nullable', 'numeric', 'min:0'],
@@ -204,10 +209,14 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
     }
 
     /**
-     * Normalize all ICAO-bearing fields to uppercase before validation runs.
-     * Mirrors the at-rest convention enforced by the `Flight` model's
-     * `dptAirportId` / `arrAirportId` mutators so `exists` + Rule::in
-     * checks succeed regardless of casing on the wire.
+     * Trim the airport id fields before validation runs.
+     *
+     * These used to be upper-cased too, mirroring a `Flight` mutator that no
+     * longer folds case either. They carry ids, not codes -- `exists` and
+     * Rule::in match them against `airports.id` as given -- so folding them
+     * turned a generated id that carries lower case into one that does not
+     * exist. Trimming stays: the values arrive from a form or a CSV, and no
+     * id has leading or trailing whitespace.
      */
     #[Override]
     protected function prepareForValidation(): void
@@ -218,7 +227,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
             $values = $this->input($field);
             if (is_array($values)) {
                 $merge[$field] = array_map(
-                    fn ($v): mixed => is_string($v) ? strtoupper(trim($v)) : $v,
+                    fn ($v): mixed => is_string($v) ? trim($v) : $v,
                     $values,
                 );
             }
@@ -233,7 +242,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
 
                 foreach (['dpt_airport_id', 'arr_airport_id'] as $col) {
                     if (isset($row[$col]) && is_string($row[$col])) {
-                        $rows[$index][$col] = strtoupper(trim($row[$col]));
+                        $rows[$index][$col] = trim($row[$col]);
                     }
                 }
             }

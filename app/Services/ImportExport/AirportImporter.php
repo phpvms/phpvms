@@ -43,7 +43,10 @@ class AirportImporter extends ImportExport
      */
     public function import(array $row, int $index): bool
     {
-        $row['id'] = $row['icao'];
+        // Upper-cased because the id is stored as given now that the `icao`
+        // mutator no longer writes it: a lower-case code in the CSV would
+        // otherwise import under an id that does not match the existing row.
+        $row['id'] = strtoupper(trim((string) $row['icao']));
         $row['hub'] = get_truth_state($row['hub']);
 
         if (!is_numeric($row['ground_handling_cost'])) {
@@ -64,7 +67,7 @@ class AirportImporter extends ImportExport
 
         try {
             Airport::updateOrCreate([
-                'id' => $row['icao'],
+                'id' => $row['id'],
             ], $row);
         } catch (Exception $exception) {
             $this->errorLog('Error in row '.($index + 1).': '.$exception->getMessage());

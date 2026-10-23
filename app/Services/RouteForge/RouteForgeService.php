@@ -154,7 +154,7 @@ final readonly class RouteForgeService
      *
      * Each input row flows through `Flight::fill()` so Eloquent attribute
      * casts (datetime, FlightType enum, DistanceCast, ...) and mutators
-     * (the new `dpt_airport_id` / `arr_airport_id` ICAO uppercase-trim) run
+     * (the `dpt_airport_id` / `arr_airport_id` trim) run
      * exactly once per row. The resulting `getAttributes()` payload contains
      * DB-format values ready for the query builder, since cast SET hooks
      * serialize Carbons, enums, etc. into their column representation.

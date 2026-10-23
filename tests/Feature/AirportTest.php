@@ -376,3 +376,50 @@ it('creates an airport from a faked vacentral lookup', function (): void {
     $this->assertDatabaseHas('airports', ['icao' => 'KORD']);
     Http::assertSentCount(1);
 });
+
+/**
+ * An airport id used to be a second copy of the ICAO: the `icao` mutator wrote
+ * both columns, so the widened `airports.id` could not actually hold anything
+ * wider than the 8-character `icao` column, and `AirportObserver::updating()`
+ * re-derived the primary key from the ICAO on every save. Ids are becoming
+ * generated values, so the three cases below pin what the model now does with
+ * one: takes it, keeps it, and still fills it in when nobody supplies it.
+ */
+it('keeps an airport id that does not come from the icao', function (): void {
+    $airport = Airport::factory()->create([
+        'id'   => 'V1a2B3c4D5e6F7g8',
+        'icao' => 'KJFK',
+    ]);
+
+    expect($airport->id)->toBe('V1a2B3c4D5e6F7g8')
+        ->and($airport->icao)->toBe('KJFK');
+
+    $this->assertDatabaseHas('airports', [
+        'id'   => 'V1a2B3c4D5e6F7g8',
+        'icao' => 'KJFK',
+    ]);
+});
+
+it('does not re-derive the airport id from the icao on update', function (): void {
+    $airport = Airport::factory()->create([
+        'id'   => 'V1a2B3c4D5e6F7g8',
+        'icao' => 'KJFK',
+    ]);
+
+    $airport->update(['name' => 'Renamed', 'icao' => 'KLAX']);
+
+    expect($airport->fresh()->id)->toBe('V1a2B3c4D5e6F7g8');
+});
+
+it('still fills the airport id from the icao when none is given', function (): void {
+    $airport = new Airport([
+        'icao' => 'kord',
+        'name' => "O'Hare",
+        'lat'  => 0,
+        'lon'  => 0,
+    ]);
+
+    $airport->save();
+
+    expect($airport->id)->toBe('KORD');
+});
