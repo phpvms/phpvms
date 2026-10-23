@@ -30,12 +30,22 @@ it('holds 16 characters and keeps its nullability', function (string $table, str
     $definition = collect(Schema::getColumns($table))
         ->firstWhere('name', $column);
 
-    expect($definition)->not->toBeNull();
+    expect($definition)->not->toBeNull()
+        ->and($definition['nullable'])->toBe($nullable);
 
-    // The driver spells the type differently -- `character varying(16)` on
-    // postgres, `varchar(16)` on mysql -- so read the width back out of it.
+    // SQLite has no varchar length: `SQLiteGrammar::typeString()` emits a bare
+    // `varchar` whatever length the migration asked for, and the engine
+    // neither stores nor enforces one. There is no width to read back, so the
+    // nullability above is all this driver can tell us. The default phpunit
+    // connection is sqlite, so without this the whole dataset fails locally.
+    if (Schema::getConnection()->getDriverName() === 'sqlite') {
+        return;
+    }
+
+    // The remaining drivers spell the type differently -- `character
+    // varying(16)` on postgres, `varchar(16)` on mysql -- so read the width
+    // back out of it.
     preg_match('/\((\d+)\)/', (string) $definition['type'], $matches);
 
-    expect($matches[1] ?? null)->toBe('16')
-        ->and($definition['nullable'])->toBe($nullable);
+    expect($matches[1] ?? null)->toBe('16');
 })->with('airport id columns');

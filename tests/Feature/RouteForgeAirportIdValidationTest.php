@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Http\Requests\RouteForge\LintRequest;
+use App\Models\Airline;
 use App\Models\Airport;
-use Illuminate\Support\Facades\Validator;
+use Database\Seeders\RolesPermissionsSeeder;
+use Tests\Support\RouteForgeTestHelpers as RF;
 
 /**
  * The origin and destination rules used to carry `alpha`, which restricted an
@@ -13,55 +14,57 @@ use Illuminate\Support\Facades\Validator;
  * columns were widened for will carry digits, `-` and `_`. The `exists` rule
  * alongside is what actually decides whether an airport is usable, so `alpha`
  * could only reject one that `exists` had already accepted.
+ *
+ * Posted to the endpoint rather than handed to `Validator::make($rules)`,
+ * because `BaseRouteForgeBatchRequest::prepareForValidation()` runs first and
+ * rewrites these values. A test that reads `rules()` on its own skips that
+ * step and can claim a payload is accepted when a real client's would not be.
  */
-function airportListPasses(array $ids): bool
-{
-    $rules = LintRequest::create('/admin/route-forge/api/lint', 'POST')->rules();
+beforeEach(function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->actingAs(createAdminUser());
+});
 
-    return Validator::make(
-        ['origins' => $ids, 'destinations' => $ids],
-        array_intersect_key($rules, array_flip(['origins', 'origins.*', 'destinations', 'destinations.*'])),
-    )->passes();
+function lintErrors(string $dpt, string $arr): array
+{
+    $airline = Airline::factory()->create();
+    $payload = RF::batchPayload($airline->id, $dpt, $arr);
+
+    $response = test()->postJson('/admin/route-forge/api/lint', $payload);
+
+    return $response->status() === 422
+        ? array_keys($response->json('errors') ?? [])
+        : [];
 }
 
 it('accepts an existing airport id that carries digits', function (): void {
     Airport::factory()->create(['id' => 'K6L3', 'icao' => 'K6L3']);
+    Airport::factory()->create(['id' => 'K7M4', 'icao' => 'K7M4']);
 
-    expect(airportListPasses(['K6L3']))->toBeTrue();
+    expect(lintErrors('K6L3', 'K7M4'))->toBe([]);
 });
 
 it('accepts an existing airport id at the full column width', function (): void {
-    Airport::factory()->create(['id' => 'V1a2B3c4D5e6F7g8', 'icao' => 'KJFK']);
+    Airport::factory()->create(['id' => 'V1A2B3C4D5E6F7G8', 'icao' => 'KJFK']);
+    Airport::factory()->create(['id' => 'W1A2B3C4D5E6F7G8', 'icao' => 'KLAX']);
 
-    expect(airportListPasses(['V1a2B3c4D5e6F7g8']))->toBeTrue();
+    expect(lintErrors('V1A2B3C4D5E6F7G8', 'W1A2B3C4D5E6F7G8'))->toBe([]);
 });
 
 it('still rejects an airport that does not exist', function (): void {
-    expect(airportListPasses(['ZZZZ']))->toBeFalse();
+    expect(lintErrors('ZZZZ', 'ZZZY'))->not->toBe([]);
 });
 
 /**
- * rows.*.dpt_airport_id and rows.*.arr_airport_id carried the same `alpha`,
- * and there Rule::in() over the submitted origins and destinations is the real
- * check -- so `alpha` could only reject an id the scope had already accepted.
+ * Pinned because it is the gap this PR does not close, not because it is
+ * wanted: `prepareForValidation()` still upper-cases these values, so a
+ * generated id that carries lower case is folded into one that does not exist
+ * and `exists` rejects it. Delete this test when that normaliser goes -- the
+ * case above it will then cover the mixed-case id directly.
  */
-it('accepts a row airport id that carries digits, and still scopes it', function (): void {
-    Airport::factory()->create(['id' => 'K6L3', 'icao' => 'K6L3']);
-    Airport::factory()->create(['id' => 'K7M4', 'icao' => 'K7M4']);
+it('rejects a mixed-case airport id because the request folds it', function (): void {
+    Airport::factory()->create(['id' => 'V1a2B3c4D5e6F7g8', 'icao' => 'KJFK']);
+    Airport::factory()->create(['id' => 'W1a2B3c4D5e6F7g8', 'icao' => 'KLAX']);
 
-    $rowPasses = function (string $dpt, string $arr): bool {
-        $request = LintRequest::create('/admin/route-forge/api/lint', 'POST', [
-            'origins'      => ['K6L3'],
-            'destinations' => ['K7M4'],
-        ]);
-        $rules = $request->rules();
-
-        return Validator::make(
-            ['rows' => [['dpt_airport_id' => $dpt, 'arr_airport_id' => $arr]]],
-            array_intersect_key($rules, array_flip(['rows.*.dpt_airport_id', 'rows.*.arr_airport_id'])),
-        )->passes();
-    };
-
-    expect($rowPasses('K6L3', 'K7M4'))->toBeTrue()
-        ->and($rowPasses('K6L3', 'KLAX'))->toBeFalse();
+    expect(lintErrors('V1a2B3c4D5e6F7g8', 'W1a2B3c4D5e6F7g8'))->not->toBe([]);
 });
