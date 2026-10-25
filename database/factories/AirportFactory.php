@@ -69,7 +69,13 @@ class AirportFactory extends Factory
 
                 return $airport;
             },
-            'icao' => fn (array $apt) => $apt['id'],
+            // Only when it fits: `icao` is 8 wide, so an id at the airport
+            // id column's full 16 would overflow it. A wider id gets a
+            // generated ICAO instead, which is the right shape anyway -- a
+            // generated id has no ICAO to be.
+            'icao' => fn (array $apt) => strlen((string) $apt['id']) <= 8
+                ? $apt['id']
+                : $this->createFactoryICAO(),
             // From the ICAO, not the id: an id wide enough for its own column
             // would not fit in `iata`.
             'iata'                 => fn (array $apt) => $apt['icao'],

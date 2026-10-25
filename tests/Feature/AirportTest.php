@@ -423,3 +423,17 @@ it('still fills the airport id from the icao when none is given', function (): v
 
     expect($airport->id)->toBe('KORD');
 });
+
+/**
+ * The factory mirrors whichever of `id`/`icao` it was given into the other, so
+ * a test can name one and get a coherent airport. A full-width id is where
+ * that stops being possible: `icao` and `iata` are 8 wide, so mirroring a
+ * 16-character id into them overflows both columns.
+ */
+it('does not mirror a full-width airport id into the icao column', function (): void {
+    $airport = Airport::factory()->create(['id' => 'V1a2B3c4D5e6F7g8']);
+
+    expect($airport->id)->toBe('V1a2B3c4D5e6F7g8')
+        ->and(strlen((string) $airport->icao))->toBeLessThanOrEqual(8)
+        ->and(strlen((string) $airport->iata))->toBeLessThanOrEqual(8);
+});
