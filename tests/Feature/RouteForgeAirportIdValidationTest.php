@@ -33,9 +33,16 @@ function lintErrors(string $dpt, string $arr): array
 
     $response = test()->postJson('/admin/route-forge/api/lint', $payload);
 
-    return $response->status() === 422
-        ? array_keys($response->json('errors') ?? [])
-        : [];
+    if ($response->status() === 422) {
+        return array_keys($response->json('errors') ?? []);
+    }
+
+    // Anything else has to be a success before an empty list can mean "no
+    // validation errors" -- a 500 or a 403 would otherwise read as acceptance
+    // and the two accepting tests below would pass on a broken endpoint.
+    $response->assertSuccessful();
+
+    return [];
 }
 
 it('accepts an existing airport id that carries digits', function (): void {
