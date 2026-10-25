@@ -13,8 +13,11 @@ class AircraftObserver
      */
     public function creating(Aircraft $aircraft): void
     {
+        // Trimmed, not folded: `airport_id` holds an airport id, and an id is
+        // matched as it was stored. Upper-casing it was safe only while an
+        // airport id was its ICAO -- it would mangle a generated one.
         if (!empty($aircraft->airport_id)) {
-            $aircraft->airport_id = strtoupper((string) $aircraft->airport_id);
+            $aircraft->airport_id = trim((string) $aircraft->airport_id);
         }
 
         if (empty($aircraft->hex_code)) {

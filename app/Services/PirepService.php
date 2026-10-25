@@ -95,8 +95,18 @@ class PirepService extends Service
         // Check if the airports listed actually exist or not. If they're not in the local DB
         // throw an error which should bubble up to say that they don't
         if (setting('general.allow_unadded_airports', false) === true) {
-            $this->airportSvc->lookupAirportIfNotFound($pirep->dpt_airport_id);
-            $this->airportSvc->lookupAirportIfNotFound($pirep->arr_airport_id);
+            // Same as flight creation: the lookup may store the airport under
+            // the catalog's id, so the PIREP takes the id it resolved to
+            // rather than the value it asked about.
+            $dptApt = $this->airportSvc->lookupAirportIfNotFound($pirep->dpt_airport_id);
+            if ($dptApt instanceof Airport) {
+                $pirep->dpt_airport_id = $dptApt->id;
+            }
+
+            $arrApt = $this->airportSvc->lookupAirportIfNotFound($pirep->arr_airport_id);
+            if ($arrApt instanceof Airport) {
+                $pirep->arr_airport_id = $arrApt->id;
+            }
         } else {
             $dptApt = Airport::find($pirep->dpt_airport_id);
             if (!$dptApt) {

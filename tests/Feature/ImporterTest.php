@@ -960,3 +960,35 @@ test('airport importer upper-cases the id of a lower-case icao row', function ()
         ->and($airport->id)->toBe('KAUS')
         ->and($airport->icao)->toBe('KAUS');
 });
+
+/**
+ * The flight exporter writes `dpt_airport_id` out verbatim, so the importer
+ * has to read it back the same way. It used to upper-case the column, which
+ * was invisible while an airport id was its ICAO and rewrites a generated one.
+ */
+test('flight importer keeps the case of a mixed-case airport id', function (): void {
+    insertFlightsScaffoldData();
+
+    Airport::factory()->create(['id' => 'dRFXpqlxMeoq', 'icao' => 'KORD']);
+    Airport::factory()->create(['id' => 'Wm4kZ2tQ8bYn', 'icao' => 'KAUS']);
+
+    $path = tempnam(sys_get_temp_dir(), 'flights').'.csv';
+    file_put_contents($path, <<<'CSV'
+        airline,flight_number,route_code,callsign,route_leg,dpt_airport,arr_airport,alt_airport,days,dpt_time,arr_time,level,distance,flight_time,flight_type,load_factor,load_factor_variance,pilot_pay,route,notes,start_date,end_date,active,subfleets,fares,fields,event_id,user_id
+        VMS,2200,,,,dRFXpqlxMeoq,Wm4kZ2tQ8bYn,,,0800 CST,1100 CST,350,500,180,J,,,,,,,,1,A32X,,,,
+        CSV);
+
+    $status = app(ImportService::class)->importFlights($path);
+    unlink($path);
+
+    $flight = Flight::where('flight_number', 2200)->first();
+
+    // Read off the stored row rather than through the relation: mysql's
+    // `utf8mb4_unicode_ci` would resolve an upper-cased id back to the same
+    // airport, so only the value itself shows the case survived.
+    expect($status['errors'])->toHaveCount(0)
+        ->and($flight)->not->toBeNull()
+        ->and($flight->dpt_airport_id)->toBe('dRFXpqlxMeoq')
+        ->and($flight->arr_airport_id)->toBe('Wm4kZ2tQ8bYn')
+        ->and(Airport::count())->toBe(2);
+});

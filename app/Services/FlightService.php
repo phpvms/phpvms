@@ -8,6 +8,7 @@ use App\Contracts\Service;
 use App\Enums\PirepPhase;
 use App\Enums\PirepState;
 use App\Exceptions\DuplicateFlight;
+use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
 use App\Models\Navdata;
@@ -44,8 +45,12 @@ class FlightService extends Service
 
         $fields = $this->syncNormalizedAirportIds($fields, $flightTmp);
 
-        $this->airportSvc->lookupAirportIfNotFound($fields['dpt_airport_id']);
-        $this->airportSvc->lookupAirportIfNotFound($fields['arr_airport_id']);
+        // The lookup can store an airport under the catalog's id rather than
+        // under the ICAO it was asked about, so the flight has to take the id
+        // it resolved to. Done before `transformFlightFields`, which reads
+        // these two back out to compute the distance.
+        $fields = $this->resolveAirportId($fields, 'dpt_airport_id');
+        $fields = $this->resolveAirportId($fields, 'arr_airport_id');
 
         $fields = $this->transformFlightFields($fields);
 
@@ -78,6 +83,24 @@ class FlightService extends Service
         $flight->update($fields);
 
         return $flight->refresh();
+    }
+
+    /**
+     * Point one airport field at the airport it actually resolves to, adding
+     * that airport first if it is not here yet.
+     *
+     * @param  array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    private function resolveAirportId(array $fields, string $key): array
+    {
+        $airport = $this->airportSvc->lookupAirportIfNotFound($fields[$key]);
+
+        if ($airport instanceof Airport) {
+            $fields[$key] = $airport->id;
+        }
+
+        return $fields;
     }
 
     /**

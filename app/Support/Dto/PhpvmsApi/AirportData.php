@@ -22,5 +22,12 @@ class AirportData extends Data
         public int $elevation,
         public float $lat,
         public float $lon,
+        /**
+         * The id the catalog keeps this airport under -- a generated value,
+         * not a code. Nullable and last because an older api_url may not
+         * return one; `AirportObserver` then seeds the id from the ICAO as
+         * before.
+         */
+        public ?string $id = null,
     ) {}
 }

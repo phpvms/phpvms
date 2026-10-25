@@ -111,26 +111,38 @@ class FlightImporter extends ImportExport
         // Get the airline ID from the ICAO code
         $airline = $this->getAirline($row['airline']);
 
+        // The airport columns hold ids, so the CSV value is taken as given.
+        // Folding it was safe only while an airport id was its ICAO: the
+        // exporter writes `dpt_airport_id` out verbatim, so upper-casing it
+        // back on the way in rewrites any id that carries lower case and the
+        // round trip stops being one.
+        // Resolved before the flight is matched or saved. A lookup can store
+        // an airport under the catalog's id rather than the ICAO the row
+        // named, and both the `firstOrNew` match below and the saved row have
+        // to carry whichever id it ended up under.
+        $row['dpt_airport'] = $this->resolveAirportId($row['dpt_airport']);
+        $row['arr_airport'] = $this->resolveAirportId($row['arr_airport']);
+        if (filled($row['alt_airport'])) {
+            $row['alt_airport'] = $this->resolveAirportId($row['alt_airport']);
+        }
+
         // Try to find this flight
         /** @var Flight $flight */
         $flight = Flight::withTrashed()->firstOrNew([
             'airline_id'     => $airline->id,
             'flight_number'  => $row['flight_number'],
-            'dpt_airport_id' => strtoupper((string) $row['dpt_airport']),
-            'arr_airport_id' => strtoupper((string) $row['arr_airport']),
+            'dpt_airport_id' => $row['dpt_airport'],
+            'arr_airport_id' => $row['arr_airport'],
             'route_code'     => filled($row['route_code']) ? $row['route_code'] : null,
             'route_leg'      => filled($row['route_leg']) ? $row['route_leg'] : null,
             'days'           => filled($row['days']) ? $this->setDays($row['days']) : 0,
         ], $row);
 
-        $row['dpt_airport'] = strtoupper((string) $row['dpt_airport']);
-        $row['arr_airport'] = strtoupper((string) $row['arr_airport']);
-
         // Airport attributes
         $flight->setAttribute('dpt_airport_id', $row['dpt_airport']);
         $flight->setAttribute('arr_airport_id', $row['arr_airport']);
         if (filled($row['alt_airport'])) {
-            $flight->setAttribute('alt_airport_id', strtoupper((string) $row['alt_airport']));
+            $flight->setAttribute('alt_airport_id', $row['alt_airport']);
         }
 
         // Handle schedule details (days)
@@ -219,13 +231,6 @@ class FlightImporter extends ImportExport
             return false;
         }
 
-        // Create/check that they exist
-        $this->processAirport($row['dpt_airport']);
-        $this->processAirport($row['arr_airport']);
-        if ($row['alt_airport']) {
-            $this->processAirport($row['alt_airport']);
-        }
-
         $this->processSubfleets($flight, $row['subfleets'] ?? '');
         $this->processFares($flight, $row['fares'] ?? '');
         $this->processFields($flight, $row['fields'] ?? '');
@@ -294,11 +299,20 @@ class FlightImporter extends ImportExport
     }
 
     /**
-     * Process the airport
+     * Add the airport if it is not here yet, and return the id it resolved to.
+     *
+     * Not always the value passed in: the lookup stores an airport under the
+     * catalog's own id, so a row that names an ICAO has to follow the id that
+     * comes back. Falls back to the given value when the lookup finds nothing
+     * -- the save then fails on that row rather than on a null id.
      */
-    protected function processAirport($airport): Airport
+    protected function resolveAirportId(mixed $airport): string
     {
-        return $this->airportSvc->lookupAirportIfNotFound($airport);
+        $value = trim((string) $airport);
+
+        $airport = $this->airportSvc->lookupAirportIfNotFound($value);
+
+        return $airport instanceof Airport ? $airport->id : $value;
     }
 
     /**
