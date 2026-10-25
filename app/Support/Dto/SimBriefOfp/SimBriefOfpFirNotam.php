@@ -17,7 +17,7 @@ final class SimBriefOfpFirNotam extends Dto
         public ?string $xoveraccountid,
         public ?string $xovernotamid,
         public string $icao_id,
-        public string $icao_name,
+        public ?string $icao_name,
         public int $total_parts,
         public int $notam_created_dtg,
         public int $notam_effective_dtg,
