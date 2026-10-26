@@ -8,6 +8,7 @@ use App\Contracts\Service;
 use App\Enums\PirepPhase;
 use App\Enums\PirepState;
 use App\Exceptions\DuplicateFlight;
+use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
 use App\Models\Navdata;
@@ -37,15 +38,23 @@ class FlightService extends Service
      */
     public function createFlight(array $fields): Flight
     {
+        $fields = $this->syncNormalizedAirportIds($fields, new Flight($fields));
+
+        // The lookup can store an airport under the catalog's id rather than
+        // under the ICAO it was asked about, so the flight has to take the id
+        // it resolved to. Done before `transformFlightFields`, which reads
+        // these two back out to compute the distance.
+        $fields = $this->resolveAirportId($fields, 'dpt_airport_id');
+        $fields = $this->resolveAirportId($fields, 'arr_airport_id');
+
+        // Built from the resolved fields, not the ones that came in: the
+        // duplicate check has to compare the ids the flight will be stored
+        // under. A caller naming two ICAOs would otherwise miss an existing
+        // flight that holds the generated ids those ICAOs resolve to.
         $flightTmp = new Flight($fields);
         if ($this->isFlightDuplicate($flightTmp)) {
             throw new DuplicateFlight($flightTmp);
         }
-
-        $fields = $this->syncNormalizedAirportIds($fields, $flightTmp);
-
-        $this->airportSvc->lookupAirportIfNotFound($fields['dpt_airport_id']);
-        $this->airportSvc->lookupAirportIfNotFound($fields['arr_airport_id']);
 
         $fields = $this->transformFlightFields($fields);
 
@@ -63,6 +72,12 @@ class FlightService extends Service
      */
     public function updateFlight(Flight $flight, array $fields): Flight
     {
+        // Resolved first, for the same reason as `createFlight`: an update that
+        // names an ICAO has to be compared and stored under the id that ICAO
+        // resolves to, or the flight ends up holding a value no airport has.
+        $fields = $this->resolveAirportId($fields, 'dpt_airport_id');
+        $fields = $this->resolveAirportId($fields, 'arr_airport_id');
+
         // apply the updates here temporarily, don't save
         // the duplicate check uses the in-memory state
         $flight->fill($fields);
@@ -78,6 +93,33 @@ class FlightService extends Service
         $flight->update($fields);
 
         return $flight->refresh();
+    }
+
+    /**
+     * Point one airport field at the airport it actually resolves to, adding
+     * that airport first if it is not here yet.
+     *
+     * A missing or blank value is left alone rather than resolved. Both
+     * callers do supply the airport keys -- `transformFlightFields` reads them
+     * unconditionally -- but a blank one would otherwise be looked up, and with
+     * `general.auto_airport_lookup` off that invents an airport named ''.
+     *
+     * @param  array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    private function resolveAirportId(array $fields, string $key): array
+    {
+        if (blank($fields[$key] ?? null)) {
+            return $fields;
+        }
+
+        $airport = $this->airportSvc->lookupAirportIfNotFound($fields[$key]);
+
+        if ($airport instanceof Airport) {
+            $fields[$key] = $airport->id;
+        }
+
+        return $fields;
     }
 
     /**

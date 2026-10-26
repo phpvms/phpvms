@@ -40,8 +40,13 @@ class FlightImporter extends BaseImporter
             $flight_num = trim((string) $row->flightnum);
 
             $attrs = [
-                'dpt_airport_id' => $row->depicao,
-                'arr_airport_id' => $row->arricao,
+                // Upper-cased to match what `AirportImporter` stored as the
+                // airport id. The `dpt_airport_id` setter used to fold the
+                // case here; it only trims now, so a legacy install holding
+                // lower-case codes would otherwise point at an airport that
+                // does not exist on a case-sensitive driver.
+                'dpt_airport_id' => strtoupper(trim((string) $row->depicao)),
+                'arr_airport_id' => strtoupper(trim((string) $row->arricao)),
                 'route'          => $row->route ?: '',
                 'distance'       => round($row->distance ?: 0, 2),
                 'level'          => $row->flightlevel ?: 0,

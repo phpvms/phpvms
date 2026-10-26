@@ -151,15 +151,19 @@ class Airport extends Model
     ];
 
     /**
-     * Capitalize the ICAO
+     * Capitalize the ICAO.
+     *
+     * This used to write `id` as well, which made an airport id a copy of its
+     * ICAO and nothing else -- an id wider than the `icao` column could not be
+     * created through the model at all, and `AirportObserver::updating()`
+     * re-derived the primary key from the ICAO on every save. Seeding the id
+     * from the ICAO is a create-time default and lives in the observer now, so
+     * an id supplied by the caller survives both the create and later edits.
      */
     public function icao(): Attribute
     {
         return Attribute::make(
-            set: fn ($icao): array => [
-                'id'   => strtoupper((string) $icao),
-                'icao' => strtoupper((string) $icao),
-            ]
+            set: fn ($icao): string => strtoupper((string) $icao)
         );
     }
 

@@ -348,13 +348,20 @@ it('bulk-inserts the batch inside a bounded query count (≤5 INSERTs for 100 ro
         ->and(count($insertQueries))->toBeLessThanOrEqual(5);
 });
 
-it('normalizes ICAO codes during bulk insert (mixed case + whitespace persists uppercase + trimmed)', function (): void {
+/**
+ * The bulk-insert path shares the model's airport id mutators, because
+ * `buildFlightAttrs()` fills each row through a Flight before handing the
+ * attributes to the query builder. Those mutators trim and no longer fold
+ * case -- the ids are foreign keys to `airports.id`, not ICAO codes -- so the
+ * airports here carry the same mixed-case ids the rows reference.
+ */
+it('trims airport ids during bulk insert without folding their case', function (): void {
     $airline = Airline::factory()->create();
     $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
-    Airport::factory()->create(['id' => 'KSFO']);
-    Airport::factory()->create(['id' => 'KLAX']);
+    Airport::factory()->create(['id' => 'kSfO', 'icao' => 'KSFO']);
+    Airport::factory()->create(['id' => 'kLaX', 'icao' => 'KLAX']);
 
-    $row = svcRow(100, $airline, ' ksfo ', 'klax');
+    $row = svcRow(100, $airline, ' kSfO ', 'kLaX');
     $input = makeCommitInput($airline, $subfleet, [$row]);
 
     $result = svc()->commit($input);
@@ -362,8 +369,8 @@ it('normalizes ICAO codes during bulk insert (mixed case + whitespace persists u
     /** @var Flight $flight */
     $flight = Flight::query()->findOrFail($result->flightIds[0]);
 
-    expect($flight->dpt_airport_id)->toBe('KSFO')
-        ->and($flight->arr_airport_id)->toBe('KLAX');
+    expect($flight->dpt_airport_id)->toBe('kSfO')
+        ->and($flight->arr_airport_id)->toBe('kLaX');
 });
 
 it('dispatches RecomputeBundleVisibility instead of calling SetVisibleFlights synchronously', function (): void {

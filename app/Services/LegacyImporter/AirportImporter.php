@@ -31,7 +31,9 @@ class AirportImporter extends BaseImporter
         $rows = $this->db->readRows($this->table, $this->idField, $start);
         foreach ($rows as $row) {
             $attrs = [
-                'id'      => trim((string) $row->icao),
+                // Upper-cased because the `icao` mutator no longer writes
+                // the id, and a legacy install may hold a lower-case code.
+                'id'      => strtoupper(trim((string) $row->icao)),
                 'icao'    => trim((string) $row->icao),
                 'name'    => $row->name,
                 'country' => $row->country,
