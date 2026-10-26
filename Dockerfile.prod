@@ -3,7 +3,7 @@
 #
 # I highly recommend using the Railpack instead!
 #
-# PINNED TO v5.0.1, not the floating `8.5-cli` / `8.5-frankenphp` tags.
+# PINNED TO v5.0.2, not the floating `8.5-cli` / `8.5-frankenphp` tags.
 # compose.deploy.yml passes --caddyfile=/etc/frankenphp/Caddyfile to
 # octane:start, and that path only exists from serversideup/php v5. On a v4
 # image the container fails to start, so the dependency is pinned rather than
@@ -13,7 +13,7 @@
 # the floating tags pick up automatically) now need a deliberate bump here.
 # Bump both FROM lines together and re-check the upstream release notes --
 # v5.0.0 changed the OPcache defaults and TRUSTED_PROXY behaviour.
-FROM serversideup/php:8.5-cli-v5.0.1 AS build
+FROM serversideup/php:8.5-cli-v5.0.2 AS build
 
 LABEL org.opencontainers.image.description="The official phpvms image"
 
@@ -50,7 +50,7 @@ RUN pnpm install --frozen-lockfile && pnpm run build \
 #
 
 # Pinned for the same reason as the build stage above -- see that comment.
-FROM serversideup/php:8.5-frankenphp-v5.0.1
+FROM serversideup/php:8.5-frankenphp-v5.0.2
 
 # https://serversideup.net/open-source/docker-php/docs/getting-started/default-configurations
 ARG WWWUSER=1000
