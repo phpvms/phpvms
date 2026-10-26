@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Schema;
  * range phpVMS supports -- MySQL's `utf8mb4_0900_as_cs` does not exist on
  * MariaDB, which is what most installs run.
  *
- * Applied to all twelve referencing columns as well as `airports.id`: MySQL
+ * Applied to all eleven referencing columns as well as `airports.id`: MySQL
  * raises "Illegal mix of collations" when a comparison puts two differently
  * collated columns on either side, so these have to move together.
  *
