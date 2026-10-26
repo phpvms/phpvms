@@ -16,6 +16,13 @@ class AirportObserver
         }
 
         $airport->icao = strtoupper(trim($airport->icao));
+
+        // An airport id is its own value, not a second copy of the ICAO -- it
+        // just has no other source yet. Seed it from the ICAO only when the
+        // caller gave us nothing, so a caller that supplies an id keeps it.
+        if (blank($airport->id)) {
+            $airport->id = $airport->icao;
+        }
     }
 
     public function updating(Airport $airport): void

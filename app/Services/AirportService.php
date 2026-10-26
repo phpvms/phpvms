@@ -160,12 +160,33 @@ class AirportService extends Service
             ->all();
     }
 
+    /**
+     * Resolve a value that names an airport, by id first and then by ICAO.
+     *
+     * Callers hand this either an id or an ICAO and cannot always tell which:
+     * a flight row's `dpt_airport_id` holds whichever one was typed into it.
+     * The ICAO fallback is what keeps a caller that names `KJFK` from creating
+     * a second airport when the catalog already stored that one under a
+     * generated id. Compared through `UPPER()` rather than on the column so
+     * the match does not depend on the connection's collation.
+     *
+     * Public because the paths that only want to *validate* that an airport is
+     * already here -- `PirepService::prefile()` with
+     * `general.allow_unadded_airports` off -- need the same id-or-ICAO
+     * resolution as the paths that are allowed to add one.
+     */
+    public function findAirport(string $value): ?Airport
+    {
+        return Airport::find($value)
+            ?? Airport::whereRaw('UPPER(icao) = ?', [strtoupper($value)])->first();
+    }
+
     public function addAirportFromVacentral(string $icao): ?Airport
     {
-        $icao = strtoupper($icao);
-        $airport = Airport::find($icao);
+        $icao = strtoupper(trim($icao));
+        $airport = $this->findAirport($icao);
 
-        if ($airport !== null) {
+        if ($airport instanceof Airport) {
             return $airport;
         }
 
@@ -175,6 +196,9 @@ class AirportService extends Service
             return null;
         }
 
+        // `$lookup` carries the catalog's own id, so the row lands under that
+        // rather than under a second copy of its ICAO. A response without one
+        // leaves `id` null and `AirportObserver` fills it from the ICAO.
         $airport = new Airport($lookup);
         $airport->save();
 
@@ -182,24 +206,42 @@ class AirportService extends Service
     }
 
     /**
-     * Lookup an airport and save it if it hasn't been found
+     * Lookup an airport and save it if it hasn't been found.
+     *
+     * Returns the airport the value actually resolves to, which is not always
+     * the value passed in: a lookup stores the catalog's id, so a caller that
+     * named an ICAO has to read the id back off the returned airport before it
+     * stores a reference to it.
      *
      * @param string $icao
      */
     public function lookupAirportIfNotFound($icao): ?Airport
     {
-        $icao = strtoupper($icao);
-        $airport = Airport::find($icao);
-        if ($airport !== null) {
+        // Trimmed, not folded. The value may be an id, and an id is matched as
+        // it was stored; `findAirport()` handles the case of an ICAO itself.
+        $value = trim((string) $icao);
+
+        $airport = $this->findAirport($value);
+        if ($airport instanceof Airport) {
             return $airport;
         }
 
         // Don't lookup the airport, so just add in something generic
         if (!setting('general.auto_airport_lookup')) {
+            // The generic row names itself after the value, and `icao` is
+            // varchar(8) while an id now holds 16. A value too wide to be an
+            // ICAO is a generated id we know nothing about, and there is no
+            // honest ICAO to put beside it -- so refuse rather than hand the
+            // database a value it has to reject or truncate. Callers already
+            // handle the null this method has always been able to return.
+            if (strlen($value) > 8) {
+                return null;
+            }
+
             $airport = new Airport([
-                'id'   => $icao,
-                'icao' => $icao,
-                'name' => $icao,
+                'id'   => $value,
+                'icao' => $value,
+                'name' => $value,
                 'lat'  => 0,
                 'lon'  => 0,
             ]);
@@ -209,7 +251,7 @@ class AirportService extends Service
             return $airport;
         }
 
-        return $this->addAirportFromVacentral($icao);
+        return $this->addAirportFromVacentral($value);
     }
 
     /**

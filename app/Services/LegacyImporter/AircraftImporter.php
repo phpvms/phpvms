@@ -60,7 +60,11 @@ class AircraftImporter extends BaseImporter
             ];
 
             if (!empty($row->location)) {
-                $cols['airport_id'] = $row->location;
+                // Uppercased to match what `AirportImporter` stored: it writes
+                // the airport row under `strtoupper(trim($row->icao))`, and a
+                // legacy `location` that carries lower case would otherwise
+                // leave this aircraft pointing at an id no airport has.
+                $cols['airport_id'] = strtoupper(trim((string) $row->location));
             }
 
             $aircraft = Aircraft::firstOrCreate($where, $cols);

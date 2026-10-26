@@ -87,7 +87,7 @@ jobs:
         if: false
         run: vendor/bin/rector process --dry-run
 
-  # ── Test matrix: PHP 8.5 × {sqlite, mysql, postgres} ────────────────────
+  # ── Test matrix: PHP 8.5 × {sqlite, mysql, mariadb, postgres} ───────────
   test:
     name: "Tests — ${{ matrix.db }}"
     runs-on: ubuntu-latest
@@ -98,11 +98,12 @@ jobs:
         db:
           # - sqlite
           - mysql
+          - mariadb
           - postgres
 
-    # Both service containers start for every matrix shard. The sqlite shard
+    # Every service container starts for every matrix shard. The sqlite shard
     # ignores them — ~5s overhead per run is negligible compared to the
-    # alternative of maintaining three separate job definitions.
+    # alternative of maintaining four separate job definitions.
     services:
       mysql:
         image: mysql:8.4
@@ -113,6 +114,27 @@ jobs:
           - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      # Most phpVMS installs run MariaDB rather than MySQL, and it is a
+      # different server: Laravel gives it its own driver and grammar, and the
+      # two disagree on collation availability. 11.4 is the current LTS.
+      #
+      # On 3307 because the MySQL service above already holds 3306 on the
+      # runner, and both start for every shard.
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: phpvms
+        ports:
+          - 3307:3306
+        # Its own healthcheck helper, not `mysqladmin ping`: the MariaDB image
+        # ships no `mysqladmin` at all, only `mariadb-admin`.
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -148,7 +170,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.5"
-          extensions: ${{ matrix.db == 'mysql' && 'intl, pcov, mbstring, pdo_mysql, mysqli' || matrix.db == 'postgres' && 'intl, pcov, mbstring, pdo_pgsql, pgsql' || 'intl, pcov, mbstring' }}
+          extensions: ${{ (matrix.db == 'mysql' || matrix.db == 'mariadb') && 'intl, pcov, mbstring, pdo_mysql, mysqli' || matrix.db == 'postgres' && 'intl, pcov, mbstring, pdo_pgsql, pgsql' || 'intl, pcov, mbstring' }}
           ini-values: post_max_size=256M, short_open_tag=On
           coverage: xdebug
 
@@ -210,6 +232,27 @@ jobs:
           sed -i 's|DB_CONNECTION="sqlite"|DB_CONNECTION="mysql"|' .env
           echo 'DB_HOST="127.0.0.1"' >> .env
           echo 'DB_PORT="3306"' >> .env
+          echo 'DB_DATABASE="phpvms"' >> .env
+          echo 'DB_USERNAME="root"' >> .env
+          echo 'DB_PASSWORD="root"' >> .env
+
+      - name: Configure environment (mariadb)
+        if: matrix.db == 'mariadb'
+        run: |
+          cp .github/scripts/env.test .env
+          cp .github/scripts/phpunit.xml phpunit.xml
+          # Override the phpunit.xml DB vars for the MariaDB service container.
+          # `mariadb` rather than `mysql` throughout: config/database.php has a
+          # separate `mariadb` connection, and `ConfigurationUrlParser` has no
+          # alias for the scheme, so the driver stays `mariadb` -- which is what
+          # DatabaseDriverGuardTest asserts against the matrix name.
+          sed -i 's|name="DB_CONNECTION" value="sqlite"|name="DB_CONNECTION" value="mariadb"|' phpunit.xml
+          sed -i 's|name="DB_DATABASE" value=":memory:"|name="DB_DATABASE" value="phpvms"|' phpunit.xml
+          sed -i 's|name="DB_URL" value=""|name="DB_URL" value="mariadb://root:root@127.0.0.1:3307/phpvms"|' phpunit.xml
+          # Also update .env so artisan commands see the right DB
+          sed -i 's|DB_CONNECTION="sqlite"|DB_CONNECTION="mariadb"|' .env
+          echo 'DB_HOST="127.0.0.1"' >> .env
+          echo 'DB_PORT="3307"' >> .env
           echo 'DB_DATABASE="phpvms"' >> .env
           echo 'DB_USERNAME="root"' >> .env
           echo 'DB_PASSWORD="root"' >> .env
