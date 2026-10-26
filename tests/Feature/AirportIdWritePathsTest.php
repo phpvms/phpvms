@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\AirportNotFound;
+use App\Exceptions\DuplicateFlight;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
+use App\Models\Flight;
 use App\Models\FlightBundle;
 use App\Models\User;
 use App\Services\AirportService;
@@ -203,3 +206,82 @@ it('still invents a generic airport for a value that fits the icao column', func
         ->and($airport->id)->toBe('KXYZ')
         ->and($airport->icao)->toBe('KXYZ');
 });
+
+/**
+ * The duplicate check has to run on the resolved ids. A caller naming two
+ * ICAOs is describing the same flight as an existing row that holds the
+ * generated ids those ICAOs resolve to, and `isFlightDuplicate()` compares
+ * `dpt_airport_id` / `arr_airport_id` directly.
+ */
+it('detects a duplicate flight named by icao', function (): void {
+    $dpt = Airport::factory()->create(['id' => 'dRFXpqlxMeoq', 'icao' => 'KORD']);
+    $arr = Airport::factory()->create(['id' => 'Wm4kZ2tQ8bYn', 'icao' => 'KAUS']);
+    $airline = Airline::factory()->create();
+
+    Flight::factory()->create([
+        'airline_id'     => $airline->id,
+        'flight_number'  => 100,
+        'dpt_airport_id' => $dpt->id,
+        'arr_airport_id' => $arr->id,
+        'route_code'     => null,
+        'route_leg'      => null,
+        'days'           => 0,
+    ]);
+
+    app(FlightService::class)->createFlight([
+        'airline_id'     => $airline->id,
+        'bundle_id'      => FlightBundle::factory()->create()->id,
+        'flight_number'  => 100,
+        'dpt_airport_id' => 'KORD',
+        'arr_airport_id' => 'KAUS',
+        'hours'          => 2,
+        'minutes'        => 0,
+        'active'         => true,
+    ]);
+})->throws(DuplicateFlight::class);
+
+/**
+ * `updateFlight()` resolves too. An update that names an ICAO would otherwise
+ * store it verbatim and leave the relation pointing at nothing.
+ */
+it('points an updated flight at the id the lookup resolved to', function (): void {
+    Airport::factory()->create(['id' => 'dRFXpqlxMeoq', 'icao' => 'KORD']);
+    $flight = Flight::factory()->create();
+
+    $updated = app(FlightService::class)->updateFlight($flight, [
+        'dpt_airport_id' => 'KORD',
+        // `transformFlightFields` reads all of these unconditionally, so
+        // `updateFlight` has never taken a partial field set.
+        'arr_airport_id' => $flight->arr_airport_id,
+        'hours'          => 2,
+        'minutes'        => 0,
+        'active'         => true,
+    ]);
+
+    expect($updated->dpt_airport_id)->toBe('dRFXpqlxMeoq')
+        ->and($updated->dpt_airport->icao)->toBe('KORD');
+});
+
+/**
+ * The permissive prefile branch is allowed to *add* an airport, not to accept
+ * one it could not add. There is no foreign key on `pireps.dpt_airport_id`, so
+ * keeping the submitted value would save a PIREP whose airport relation is
+ * null for the rest of its life.
+ */
+it('refuses to prefile a pirep against an airport it cannot add', function (): void {
+    updateSetting('general.allow_unadded_airports', true);
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    expect(setting('general.auto_airport_lookup'))->toBeFalsy();
+
+    $user = User::factory()->create();
+    $aircraft = Aircraft::factory()->create();
+
+    app(PirepService::class)->prefile($user, [
+        'airline_id'     => $aircraft->subfleet->airline_id ?? Airline::factory()->create()->id,
+        'aircraft_id'    => $aircraft->id,
+        'dpt_airport_id' => 'V1a2B3c4D5e6F7g8',
+        'arr_airport_id' => 'KAUS',
+        'flight_time'    => 120,
+        'source_name'    => 'phpunit',
+    ]);
+})->throws(AirportNotFound::class);

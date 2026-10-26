@@ -98,15 +98,27 @@ class PirepService extends Service
             // Same as flight creation: the lookup may store the airport under
             // the catalog's id, so the PIREP takes the id it resolved to
             // rather than the value it asked about.
+            //
+            // `AirportNotFound` when it resolves to nothing, rather than
+            // keeping the submitted value: the lookup returns null when the
+            // catalog has no such airport and when the value is too wide to
+            // invent one for, and there is no foreign key on this column to
+            // catch what that would otherwise write. Saving a PIREP whose
+            // departure airport does not exist is the worse outcome -- the
+            // relation reads null for the rest of its life.
             $dptApt = $this->airportSvc->lookupAirportIfNotFound($pirep->dpt_airport_id);
-            if ($dptApt instanceof Airport) {
-                $pirep->dpt_airport_id = $dptApt->id;
+            if (!$dptApt instanceof Airport) {
+                throw new AirportNotFound($pirep->dpt_airport_id);
             }
 
+            $pirep->dpt_airport_id = $dptApt->id;
+
             $arrApt = $this->airportSvc->lookupAirportIfNotFound($pirep->arr_airport_id);
-            if ($arrApt instanceof Airport) {
-                $pirep->arr_airport_id = $arrApt->id;
+            if (!$arrApt instanceof Airport) {
+                throw new AirportNotFound($pirep->arr_airport_id);
             }
+
+            $pirep->arr_airport_id = $arrApt->id;
         } else {
             // Resolved by id *or* ICAO, not by id alone: an airport the
             // catalog added is stored under a generated id, so a client that

@@ -120,10 +120,25 @@ class FlightImporter extends ImportExport
         // an airport under the catalog's id rather than the ICAO the row
         // named, and both the `firstOrNew` match below and the saved row have
         // to carry whichever id it ended up under.
-        $row['dpt_airport'] = $this->resolveAirportId($row['dpt_airport']);
-        $row['arr_airport'] = $this->resolveAirportId($row['arr_airport']);
+        $airportColumns = ['dpt_airport', 'arr_airport'];
         if (filled($row['alt_airport'])) {
-            $row['alt_airport'] = $this->resolveAirportId($row['alt_airport']);
+            $airportColumns[] = 'alt_airport';
+        }
+
+        foreach ($airportColumns as $airportColumn) {
+            $resolved = $this->resolveAirportId($row[$airportColumn]);
+
+            // Failed rather than written through. There is no foreign key on
+            // the airport columns, and they are wide enough now to take a
+            // 16-character value, so an unresolved id would save clean and
+            // leave the flight pointing at an airport that does not exist.
+            if ($resolved === null) {
+                $this->errorLog('Error in row '.($index + 1).': no airport found for '.$row[$airportColumn]);
+
+                return false;
+            }
+
+            $row[$airportColumn] = $resolved;
         }
 
         // Try to find this flight
@@ -303,16 +318,16 @@ class FlightImporter extends ImportExport
      *
      * Not always the value passed in: the lookup stores an airport under the
      * catalog's own id, so a row that names an ICAO has to follow the id that
-     * comes back. Falls back to the given value when the lookup finds nothing
-     * -- the save then fails on that row rather than on a null id.
+     * comes back. Null when the lookup resolves to nothing at all, which the
+     * caller turns into a failed row.
      */
-    protected function resolveAirportId(mixed $airport): string
+    protected function resolveAirportId(mixed $airport): ?string
     {
         $value = trim((string) $airport);
 
         $airport = $this->airportSvc->lookupAirportIfNotFound($value);
 
-        return $airport instanceof Airport ? $airport->id : $value;
+        return $airport instanceof Airport ? $airport->id : null;
     }
 
     /**
