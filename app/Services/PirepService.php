@@ -108,15 +108,24 @@ class PirepService extends Service
                 $pirep->arr_airport_id = $arrApt->id;
             }
         } else {
-            $dptApt = Airport::find($pirep->dpt_airport_id);
-            if (!$dptApt) {
+            // Resolved by id *or* ICAO, not by id alone: an airport the
+            // catalog added is stored under a generated id, so a client that
+            // names it by its ICAO would otherwise be told an airport that is
+            // right here does not exist. The id it resolved to is what the
+            // PIREP stores, same as the branch above.
+            $dptApt = $this->airportSvc->findAirport((string) $pirep->dpt_airport_id);
+            if (!$dptApt instanceof Airport) {
                 throw new AirportNotFound($pirep->dpt_airport_id);
             }
 
-            $arrApt = Airport::find($pirep->arr_airport_id);
-            if (!$arrApt) {
+            $pirep->dpt_airport_id = $dptApt->id;
+
+            $arrApt = $this->airportSvc->findAirport((string) $pirep->arr_airport_id);
+            if (!$arrApt instanceof Airport) {
                 throw new AirportNotFound($pirep->arr_airport_id);
             }
+
+            $pirep->arr_airport_id = $arrApt->id;
         }
 
         // See if this user is at the current airport

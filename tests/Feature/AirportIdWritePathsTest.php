@@ -145,3 +145,61 @@ it('trims an aircraft airport id instead of folding its case', function (): void
     expect($aircraft->airport_id)->toBe('dRFXpqlxMeoq')
         ->and($aircraft->airport->icao)->toBe('KORD');
 });
+
+/**
+ * `prefile()` with `general.allow_unadded_airports` off only validates that
+ * the airports are already here -- it is not allowed to add one. It still has
+ * to accept the same id-or-ICAO value the adding branch accepts, or an airport
+ * the catalog stored under a generated id becomes unreachable by its own ICAO.
+ */
+it('prefiles a pirep against an icao when unadded airports are not allowed', function (): void {
+    updateSetting('general.allow_unadded_airports', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+
+    Airport::factory()->create(['id' => 'dRFXpqlxMeoq', 'icao' => 'KORD']);
+    Airport::factory()->create(['id' => 'Wm4kZ2tQ8bYn', 'icao' => 'KAUS']);
+
+    $user = User::factory()->create();
+    $aircraft = Aircraft::factory()->create();
+
+    $pirep = app(PirepService::class)->prefile($user, [
+        'airline_id'     => $aircraft->subfleet->airline_id ?? Airline::factory()->create()->id,
+        'aircraft_id'    => $aircraft->id,
+        'dpt_airport_id' => 'KORD',
+        'arr_airport_id' => 'KAUS',
+        'flight_time'    => 120,
+        'source_name'    => 'phpunit',
+    ]);
+
+    // Resolved, not just accepted: the PIREP has to hold the ids, or both
+    // airport relations come back null.
+    expect($pirep->dpt_airport_id)->toBe('dRFXpqlxMeoq')
+        ->and($pirep->arr_airport_id)->toBe('Wm4kZ2tQ8bYn')
+        ->and($pirep->dpt_airport->icao)->toBe('KORD')
+        ->and($pirep->arr_airport->icao)->toBe('KAUS');
+});
+
+/**
+ * With `general.auto_airport_lookup` off the lookup invents a generic airport
+ * named after the value it was given. `airports.icao` is varchar(8) and an id
+ * now holds 16, so a value too wide to be an ICAO has no ICAO to be given and
+ * the row cannot be written honestly.
+ */
+it('refuses to invent an airport for an id too wide to be an icao', function (): void {
+    expect(setting('general.auto_airport_lookup'))->toBeFalsy();
+
+    $airport = app(AirportService::class)->lookupAirportIfNotFound('V1a2B3c4D5e6F7g8');
+
+    expect($airport)->toBeNull()
+        ->and(Airport::count())->toBe(0);
+});
+
+it('still invents a generic airport for a value that fits the icao column', function (): void {
+    expect(setting('general.auto_airport_lookup'))->toBeFalsy();
+
+    $airport = app(AirportService::class)->lookupAirportIfNotFound('KXYZ');
+
+    expect($airport)->not->toBeNull()
+        ->and($airport->id)->toBe('KXYZ')
+        ->and($airport->icao)->toBe('KXYZ');
+});
