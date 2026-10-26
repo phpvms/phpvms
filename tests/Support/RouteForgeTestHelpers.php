@@ -115,9 +115,12 @@ final class RouteForgeTestHelpers
     }
 
     /**
-     * Persist an Airport with a deterministic 4-letter alpha ICAO. The
-     * default AirportFactory generates 5-char alphanumeric strings, which
-     * fail `size:4, alpha` validation in BaseRouteForgeBatchRequest.
+     * Persist an Airport under a deterministic ICAO, so a test can name the
+     * airport it is asserting against instead of reading back whatever the
+     * factory's 5-char random string came out as. It used to be load-bearing:
+     * the RouteForge requests validated airport ids with `size:4, alpha`, so
+     * a factory id was rejected. Those rules are gone -- a plain factory
+     * airport works now -- and this remains only for the determinism.
      *
      * @param array<string, mixed> $overrides
      */

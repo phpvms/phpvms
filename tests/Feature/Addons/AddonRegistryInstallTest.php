@@ -15,6 +15,11 @@ beforeEach(function (): void {
     File::ensureDirectoryExists($this->modules);
     Config::set('addons.paths.base', $this->modules);
 
+    // install() places files in the writable root, never in the image root,
+    // so that is where this suite asserts they land.
+    $this->installed = $this->work.'/installed';
+    Config::set('addons.paths.installed', $this->installed);
+
     $this->zip = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
@@ -32,7 +37,7 @@ it('install() places the addon and registers a DB row', function (): void {
 
     expect($addon)->toBeInstanceOf(Addon::class)
         ->and($addon->getName())->toBe('Demo')
-        ->and(File::isDirectory($this->modules.'/acme-demo'))->toBeTrue()
+        ->and(File::isDirectory($this->installed.'/acme-demo'))->toBeTrue()
         ->and(Addon::query()->where('name', 'Demo')->exists())->toBeTrue();
 });
 
@@ -41,3 +46,59 @@ it('install() rejects a duplicate addon', function (): void {
 
     app(AddonRegistry::class)->install(new ZipSource($this->zip));
 })->throws(AddonInstallException::class);
+
+it('install() cleans up only its own staging directory', function (): void {
+    $staging = $this->work.'/staging';
+    Config::set('addons.paths.staging', $staging);
+
+    // Stands in for a concurrent install/update that has extracted its archive
+    // but not yet placed it. install() must not delete this on its way out.
+    $concurrent = $staging.'/op_concurrent';
+    File::ensureDirectoryExists($concurrent);
+
+    app(AddonRegistry::class)->install(new ZipSource($this->zip));
+
+    // The sibling survived, and install() still removed the directory it owned:
+    // exactly one is left, and it is the other operation's.
+    expect(File::isDirectory($concurrent))->toBeTrue()
+        ->and(File::directories($staging))->toHaveCount(1);
+});
+
+it('install() leaves no staging directory behind when the fetch fails', function (): void {
+    $staging = $this->work.'/staging';
+    Config::set('addons.paths.staging', $staging);
+
+    $notAZip = $this->work.'/broken.zip';
+    File::put($notAZip, 'not a zip');
+
+    // Three attempts, because the failure mode is accumulation: one directory
+    // per failed attempt, left for nothing to sweep up.
+    foreach (range(1, 3) as $ignored) {
+        try {
+            app(AddonRegistry::class)->install(new ZipSource($notAZip));
+        } catch (AddonInstallException) {
+            // Expected. What matters is what is left on disk afterwards.
+        }
+    }
+
+    expect(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
+});
+
+it('install() places the addon when it cannot be renamed into the installed root', function (): void {
+    $staging = $this->work.'/staging';
+    Config::set('addons.paths.staging', $staging);
+
+    // Stands in for the installed root being on its own filesystem, which is
+    // what config/addons.php documents it as: rename(2) refuses to move a
+    // directory across a mount point (EXDEV), so placement has to copy instead.
+    // Forcing the return value is the only portable way to get there — a test
+    // cannot mount a second filesystem.
+    File::partialMock()->shouldReceive('moveDirectory')->andReturn(false);
+
+    $addon = app(AddonRegistry::class)->install(new ZipSource($this->zip));
+
+    expect($addon->getName())->toBe('Demo')
+        ->and(File::isFile($this->installed.'/acme-demo/module.json'))->toBeTrue()
+        // The copy is not a leak: the staged original is gone either way.
+        ->and(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
+});

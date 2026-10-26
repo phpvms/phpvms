@@ -21,6 +21,14 @@ class LookupAction
                 $airport = app(AirportService::class)->lookupAirport($get('icao'));
 
                 foreach ($airport as $key => $value) {
+                    // The lookup carries the catalog's own id. This form has no
+                    // id field -- it is keyed on the ICAO the admin typed -- so
+                    // setting one would put a stray key into the form state and,
+                    // on an edit, offer to rewrite the airport's primary key.
+                    if ($key === 'id') {
+                        continue;
+                    }
+
                     if ($key === 'city') {
                         $key = 'location';
                     }

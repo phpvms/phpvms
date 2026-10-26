@@ -465,7 +465,10 @@ test('flight search api departure airport', function (): void {
         'dpt_airport_id' => 'KAUS',
     ]);
 
-    $query = 'dpt_airport_id=kaus';
+    // Uppercase: dpt_airport_id names an id and is matched as given. The
+    // lowercase form belongs to dep_icao, which names a code and is still
+    // folded -- covered in FlightSearchAirportFilterTest.
+    $query = 'dpt_airport_id=KAUS';
     $req = $this->get('/api/flights/search?'.$query);
     $body = $req->json();
 

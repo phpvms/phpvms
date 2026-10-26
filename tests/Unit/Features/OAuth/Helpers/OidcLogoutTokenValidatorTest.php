@@ -80,6 +80,31 @@ function oidcLogoutPayload(array $overrides = []): array
     ];
 }
 
+/**
+ * Sign a logout token by hand, without going through JWT::encode().
+ *
+ * firebase/php-jwt validates the payload while encoding it (JWT.php:232 rejects
+ * a non-numeric `iat`), so the encoder can no longer produce the malformed
+ * tokens the validator exists to reject. An issuer is under no such constraint,
+ * which is the case being covered.
+ *
+ * @param array<string, mixed> $payload
+ */
+function oidcLogoutForgedToken(array $payload, string $privatePem, string $keyId = 'logout-key'): string
+{
+    $segments = [
+        oidcLogoutBase64Url((string) json_encode(['typ' => 'JWT', 'alg' => 'RS256', 'kid' => $keyId], JSON_UNESCAPED_SLASHES)),
+        oidcLogoutBase64Url((string) json_encode($payload, JSON_UNESCAPED_SLASHES)),
+    ];
+
+    $signed = openssl_sign(implode('.', $segments), $signature, $privatePem, OPENSSL_ALGO_SHA256);
+    expect($signed)->toBeTrue();
+
+    $segments[] = oidcLogoutBase64Url($signature);
+
+    return implode('.', $segments);
+}
+
 /** @param array<string, array<int, array<string, string>>> $jwks */
 function fakeOidcLogoutIssuer(array $jwks, bool $includeAlgorithms = true): void
 {
@@ -227,7 +252,9 @@ it('rejects missing and invalid required token identifiers and times', function 
         $payload[$claim] = $value;
     }
 
-    $token = JWT::encode($payload, $material['private'], 'RS256', 'logout-key');
+    // Forged rather than encoded: a non-numeric `iat` is one JWT::encode() now
+    // refuses to build, and what the validator does with it is the point.
+    $token = oidcLogoutForgedToken($payload, $material['private']);
 
     expect(fn () => app(OidcLogoutTokenValidator::class)->validate(oidcLogoutConnection(), $token))
         ->toThrow(InvalidOidcLogoutToken::class);

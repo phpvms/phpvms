@@ -8,6 +8,7 @@ use App\Addons\Models\AddonManifest;
 use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Sources\AddonSource;
 use App\Addons\Support\AddonAssetLinker;
+use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonValidator;
 use App\Addons\Support\ManifestParser;
 use App\Addons\Support\OctaneReloader;
@@ -98,8 +99,15 @@ class AddonRegistry
     }
 
     /**
-     * Delete an addon's DB row and regenerate the boot cache.
-     * Does NOT remove files on disk. No-op when the addon is unknown.
+     * Uninstall an addon, and report whether it was actually removed.
+     *
+     * What this does depends on which root the addon lives in. In the writable
+     * installed root it is a real uninstall: row, asset links and files all go,
+     * and it returns true. In the image root nothing can be removed — the files
+     * belong to the image layer — so it is disabled instead, keeps its row, and
+     * returns false. Callers must use the return value to describe the outcome;
+     * telling an operator an addon was deleted when it was only switched off is
+     * the misreport this return exists to prevent. Unknown addon: false.
      *
      * When $removeTables is true, the addon's schema migrations are rolled back
      * (dropping its tables), its seed markers are cleared, and its saved
@@ -108,18 +116,75 @@ class AddonRegistry
      * When it is false the settings rows are deliberately left behind: they are
      * keyed on registry_id, not the addon row id, so reinstalling the addon
      * finds the operator's values again instead of resetting them to defaults.
+     *
+     * @return AddonDeleteOutcome which of the three things happened, so the
+     *                            caller can report it without guessing
      */
-    public function delete(string $name, bool $removeTables = false): void
+    public function delete(string $name, bool $removeTables = false): AddonDeleteOutcome
     {
         $addon = $this->find($name);
 
         if (!$addon instanceof Addon) {
-            return;
+            return AddonDeleteOutcome::NotFound;
         }
 
         if ($addon->isBundled()) {
             throw new RuntimeException(sprintf('The "%s" addon is bundled with phpVMS and cannot be deleted.', $name));
         }
+
+        // An addon shipped in the image cannot be removed from disk at runtime:
+        // the files belong to the image layer, and the next deploy restores
+        // them regardless. Deleting the row alone would be worse than useless —
+        // discoverNewAddons() re-adds any manifest without one, so the addon
+        // would silently come back. Disable it instead and keep the row, so it
+        // stays listed and stays switchable.
+        if (AddonRoots::isImageManaged($addon->getPath())) {
+            // $removeTables is deliberately ignored here. The files stay, so the
+            // addon can be re-enabled at any time; dropping its tables would
+            // leave it re-enableable with no schema. The false return is how the
+            // caller knows to say "disabled" rather than "removed" — reporting a
+            // removal that did not happen is worse than refusing it.
+            $this->setEnabled($name, false);
+
+            return AddonDeleteOutcome::Disabled;
+        }
+
+        // The loaded copy is a registry update sitting on top of a version the
+        // image still ships. Removing it is a revert, not an uninstall: the
+        // image's copy takes over on the rebuild below, so the row stays (now
+        // pointing at the image path) and the addon's tables and settings must
+        // survive — the addon is still installed, just at the bundled version.
+        $imageCopy = $this->imageRootCopy($addon->registry_id);
+
+        if ($imageCopy instanceof AddonManifest) {
+            // Before any row state changes: a surviving overlay is still the
+            // newer copy, so it would keep winning precedence and the "revert"
+            // would be a lie.
+            $this->removeAddonFilesOrFail($addon);
+
+            // Re-point the row at the image copy explicitly. Neither
+            // discoverNewAddons() nor rebuildCache() will do it: the first skips
+            // addons that already have a row, and the second only regenerates
+            // the boot cache. Left alone, the row would still name the directory
+            // just deleted and the addon would stop loading entirely.
+            $addon->path = $imageCopy->path;
+            $addon->version = $imageCopy->version;
+            $addon->namespace = $imageCopy->namespace;
+            $addon->save();
+
+            $this->assetLinker->link($addon->getName(), $addon->getPath());
+
+            app(AddonDiscoveryService::class)->rebuildCache();
+            $this->bustPanelComponentCache();
+            $this->octane->reload();
+
+            return AddonDeleteOutcome::Reverted;
+        }
+
+        // Files first, and it throws on failure. Dropping the tables before
+        // knowing the files are gone would leave a discoverable addon whose
+        // schema has been deleted under it.
+        $this->removeAddonFilesOrFail($addon);
 
         if ($removeTables) {
             $this->removeAddonTables($addon);
@@ -134,6 +199,113 @@ class AddonRegistry
         app(AddonDiscoveryService::class)->rebuildCache();
         $this->bustPanelComponentCache();
         $this->octane->reload();
+
+        return AddonDeleteOutcome::Removed;
+    }
+
+    /**
+     * The deployment image's copy of this addon, if it ships one.
+     *
+     * Read off disk rather than from the addons table: the table holds one row
+     * per addon, pointing at whichever copy currently wins precedence, so it
+     * cannot say whether a second copy exists in the other root.
+     */
+    private function imageRootCopy(?string $registryId): ?AddonManifest
+    {
+        if ($registryId === null || $registryId === '' || !File::isDirectory(AddonRoots::image())) {
+            return null;
+        }
+
+        $parser = app(ManifestParser::class);
+
+        foreach (File::directories(AddonRoots::image()) as $directory) {
+            // Parse the resolved path, exactly as
+            // AddonDiscoveryService::scanLocation() does, so the manifest path
+            // written back to the row matches what discovery would store. A
+            // mix of resolved and unresolved paths in that column is what made
+            // symlinked modules misclassify in the first place.
+            $resolved = realpath($directory);
+
+            if ($resolved === false) {
+                continue;
+            }
+
+            $manifest = $parser->parse($resolved);
+
+            if ($manifest?->registryId === $registryId) {
+                return $manifest;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Delete an addon's files from the writable installed root, or throw.
+     *
+     * Without this, uninstalling is not durable: delete() removes the row, and
+     * the next `discoverNewAddons()` pass finds the untouched manifest and
+     * re-adds it, with `scan_for_new_on_boot` on by default. The addon
+     * reappears after a restart.
+     *
+     * Verified by re-checking the directory rather than trusting the return
+     * value. `Filesystem::deleteDirectory()` discards the result of its own
+     * recursive calls and uses `@rmdir()`, then returns true unconditionally,
+     * so it reports success even when files survive — a read-only file or a
+     * permissions problem would otherwise leave the addon on disk while its row
+     * disappeared.
+     *
+     * Containment guard: only paths inside the installed root are touched. The
+     * caller has already excluded image-managed addons, but `addons.path` is a
+     * stored string — a hand-edited or legacy row must not be able to aim a
+     * recursive delete at an arbitrary directory. A path outside the root is
+     * logged and left alone, and is not an error: there is nothing of ours
+     * there to remove.
+     *
+     * @throws RuntimeException when the directory is still present afterwards
+     */
+    private function removeAddonFilesOrFail(Addon $addon): void
+    {
+        $path = rtrim($addon->getPath(), '/');
+        $root = AddonRoots::installed();
+
+        // Resolved on both sides, for the same reason AddonRoots::isImageManaged()
+        // resolves: discovery stores realpath()s, and the configured root may
+        // itself contain a symlinked component. Resolving also closes the
+        // direction that matters for a recursive delete — a symlink inside the
+        // writable root pointing elsewhere resolves outside it and is refused.
+        $path = realpath($path) ?: $path;
+        $root = realpath($root) ?: $root;
+
+        if ($path === '' || $root === '' || !str_starts_with($path, $root.'/')) {
+            Log::warning(sprintf(
+                'AddonRegistry: not removing files for "%s" — path %s is outside the installed addon root %s',
+                $addon->getName(),
+                $path === '' ? '(empty)' : $path,
+                $root,
+            ));
+
+            return;
+        }
+
+        if (!File::isDirectory($path)) {
+            return;
+        }
+
+        File::deleteDirectory($path);
+
+        // PHP caches stat results per request, so the check below has to be
+        // told to look at the filesystem again rather than answer from the
+        // cached entry that said the directory existed a moment ago.
+        clearstatcache(true, $path);
+
+        if (file_exists($path)) {
+            throw new RuntimeException(sprintf(
+                'Failed to remove the files for the "%s" addon at %s. Nothing was changed; the addon is still installed.',
+                $addon->getName(),
+                $path,
+            ));
+        }
     }
 
     /**
@@ -194,20 +366,33 @@ class AddonRegistry
      */
     public function install(AddonSource $source): Addon
     {
-        $staging = $this->stagingPath();
-        File::ensureDirectoryExists($staging);
-
-        $extracted = $source->fetch($staging);
+        $staging = $this->freshStagingPath();
+        $extracted = $this->fetchIntoStaging($source, $staging);
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$this->safeName($manifest);
+            $safeName = $this->safeName($manifest);
+            $dest = AddonRoots::installed().'/'.$safeName;
 
+            // Identity, not directory name. A second copy in the writable root
+            // would be ignored by discovery in favour of the image one, leaving
+            // files nothing ever loads — but the image root's directories are
+            // named arbitrarily (modules/Awards, modules/phpvms-addon-manager),
+            // so comparing $safeName against them would miss the duplicate.
+            // registry_id is the identity discovery itself de-duplicates on.
+            if (Addon::query()->where('registry_id', $manifest->registryId)->exists()) {
+                throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
+            }
+
+            // Belt and braces for a directory with no row behind it, e.g. a
+            // previous install that failed after placing files.
             if (File::exists($dest)) {
                 throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
             }
 
-            if (!File::moveDirectory($extracted, $dest)) {
+            File::ensureDirectoryExists(AddonRoots::installed());
+
+            if (!$this->placeDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
             }
         } finally {
@@ -258,15 +443,23 @@ class AddonRegistry
             'enabled'   => $existing->isEnabled(),
         ];
 
-        $staging = $this->stagingPath();
-        File::ensureDirectoryExists($staging);
-
-        $extracted = $source->fetch($staging);
+        $staging = $this->freshStagingPath();
+        $extracted = $this->fetchIntoStaging($source, $staging);
         $backup = null;
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$this->safeName($manifest);
+            $dest = AddonRoots::installed().'/'.$this->safeName($manifest);
+
+            File::ensureDirectoryExists(AddonRoots::installed());
+
+            // Updating a copy that lives in the image root places the new
+            // version in the writable root for the first time, so there is
+            // nothing at $dest to move aside and $backup stays null. Record
+            // that, or restorePreviousVersion() leaves the failed new version
+            // sitting there — and a newer-looking broken copy would then win
+            // precedence over the working image one.
+            $destWasCreated = !File::isDirectory($dest);
 
             // Move the current version aside instead of deleting it.
             if (File::isDirectory($dest)) {
@@ -277,7 +470,7 @@ class AddonRegistry
                 }
             }
 
-            if (!File::moveDirectory($extracted, $dest)) {
+            if (!$this->placeDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
             }
 
@@ -293,7 +486,7 @@ class AddonRegistry
                 $afterPlace($existing);
             }
         } catch (Throwable $throwable) {
-            $this->restorePreviousVersion($existing, $prior, $dest ?? null, $backup);
+            $this->restorePreviousVersion($existing, $prior, $dest ?? null, $backup, $destWasCreated ?? false);
             File::deleteDirectory($staging);
 
             throw $throwable instanceof AddonInstallException
@@ -324,8 +517,15 @@ class AddonRegistry
      *
      * @param array{version: ?string, namespace: string, path: string, enabled: bool} $prior
      */
-    private function restorePreviousVersion(Addon $addon, array $prior, ?string $dest, ?string $backup): void
+    private function restorePreviousVersion(Addon $addon, array $prior, ?string $dest, ?string $backup, bool $destWasCreated = false): void
     {
+        // Nothing was moved aside because nothing was there: the addon is still
+        // whole in the image root, and all that has to go is the half-placed
+        // new copy. Leaving it would shadow the working one on version.
+        if ($destWasCreated && $backup === null && $dest !== null) {
+            File::deleteDirectory($dest);
+        }
+
         if ($backup !== null && $dest !== null && File::isDirectory($backup)) {
             File::deleteDirectory($dest);
 
@@ -354,7 +554,7 @@ class AddonRegistry
     }
 
     /**
-     * Staging directory for install/update extraction.
+     * Staging root for install/update extraction.
      *
      * Kept outside the scanned addons base so half-extracted archives are never
      * picked up by the discovery scanner.
@@ -362,6 +562,83 @@ class AddonRegistry
     private function stagingPath(): string
     {
         return (string) config('addons.paths.staging', storage_path('app/addon-staging'));
+    }
+
+    /**
+     * A staging directory the calling operation owns outright.
+     *
+     * install() and update() both delete their staging directory when they are
+     * done, so they must not share one. Two concurrent operations against the
+     * staging root — in production, or two Pest processes under --parallel —
+     * would otherwise have the first to finish delete the other's extracted
+     * files, and the rename that places the addon fails with "Failed to place
+     * addon" for reasons that have nothing to do with the addon.
+     */
+    private function freshStagingPath(): string
+    {
+        return $this->stagingPath().'/'.uniqid('op_', true);
+    }
+
+    /**
+     * Move an extracted addon into place, copying it across if the two paths
+     * are on different filesystems.
+     *
+     * `File::moveDirectory()` is a bare `rename()`, and rename(2) cannot move a
+     * directory across a mount point — it fails with EXDEV. Staging lives under
+     * `storage/`, while the installed root is documented in config/addons.php as
+     * "a persistent writable volume": point it at an actual separate volume and
+     * every install fails with "Failed to place addon" for a reason that has
+     * nothing to do with the addon. The test suite hits the same wall now that
+     * `ubuntu-latest` has moved to the ubuntu-26 image, which mounts /tmp as a
+     * tmpfs: the suite's installed root is a temp directory, staging is in the
+     * ext4 workspace, and the rename crosses between them.
+     *
+     * Copy-then-delete is the standard fallback. A partial copy is removed
+     * rather than left behind, so a failure never half-places an addon that
+     * discovery would then pick up.
+     */
+    private function placeDirectory(string $from, string $to): bool
+    {
+        if (File::moveDirectory($from, $to)) {
+            return true;
+        }
+
+        if (!File::copyDirectory($from, $to)) {
+            File::deleteDirectory($to);
+
+            return false;
+        }
+
+        File::deleteDirectory($from);
+
+        return true;
+    }
+
+    /**
+     * Fetch a source into a staging directory the caller owns, taking the
+     * directory with it if the fetch fails.
+     *
+     * The directory has to exist before the source runs, and the callers' own
+     * cleanup cannot start until they hold an extracted path — so a fetch that
+     * throws (a 404, an empty or oversized download, an archive that is not a
+     * zip) lands in the gap between the two. One shared staging directory hid
+     * that: the next attempt reused it. One directory per attempt does not, so
+     * the failure path has to clean up after itself or every failure orphans
+     * another directory that nothing ever sweeps.
+     *
+     * @throws Throwable whatever the source raised, unchanged
+     */
+    private function fetchIntoStaging(AddonSource $source, string $staging): string
+    {
+        File::ensureDirectoryExists($staging);
+
+        try {
+            return $source->fetch($staging);
+        } catch (Throwable $throwable) {
+            File::deleteDirectory($staging);
+
+            throw $throwable;
+        }
     }
 
     /**

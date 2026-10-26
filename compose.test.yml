@@ -16,6 +16,28 @@ services:
       timeout: 5s
       start_period: 15s
 
+  # Not a duplicate of the mysql service above. Laravel drives MariaDB through
+  # its own driver and schema grammar, and the two servers do not offer the same
+  # collations, so a schema change can pass on one and fail on the other. Most
+  # phpVMS installs run MariaDB. 11.4 is the current LTS, matching CI.
+  mariadb:
+    image: mariadb:11.4
+    ports:
+      - "13307:3306"
+    environment:
+      MARIADB_DATABASE: testing
+      MARIADB_ROOT_PASSWORD: password
+    volumes:
+      - mariadb-test-data:/var/lib/mysql
+      - ./vendor/laravel/sail/database/mariadb/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh:ro
+    # `healthcheck.sh`, not `mysqladmin ping`: the MariaDB image ships no
+    # `mysqladmin` at all, only `mariadb-admin`.
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      retries: 5
+      timeout: 5s
+      start_period: 15s
+
   pgsql:
     image: postgres:18-alpine
     ports:
@@ -36,4 +58,5 @@ services:
 
 volumes:
   mysql-test-data:
+  mariadb-test-data:
   pgsql-test-data:

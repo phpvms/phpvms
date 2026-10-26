@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Runs the suite against the MariaDB 11.4 service in compose.test.yml, which the
+    default sqlite config never exercises.
+
+        docker compose -f compose.test.yml up -d mariadb
+        bin/test-db.sh mariadb
+
+    Use the script rather than `pest -c` directly. It creates the scratch
+    database `phpvms_suite` for the run and drops it afterwards. Do not aim this
+    at the `testing` database compose.test.yml ships: a local .env may point the
+    development app at that same name on the same container, and the suite runs
+    RefreshDatabase, which would drop the schema out from under a running app.
+
+    MariaDB is not MySQL and this is not a duplicate shard. Laravel gives it a
+    separate driver and schema grammar, and the servers disagree on which
+    collations exist at all. MySQL's `utf8mb4_0900_as_cs` is not there. Most
+    phpVMS installs run MariaDB, so it is the driver least worth guessing at.
+
+    Worth doing before shipping anything schema-shaped. sqlite silently accepts
+    things a real server rejects: it does not enforce TRUNCATE against a
+    foreign-key-referenced table, and it has no collation or jsonb behaviour to
+    disagree with. Credentials match compose.test.yml.
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <!-- The Arch suite is disabled: six tests that cost ~3s alone but add
+             ~1750s when they run in a process that has already loaded the rest
+             of the suite, because every `toBeUsed`/`toOnlyBeUsedIn` walks every
+             class the process can see. Run it on its own when you want it:
+             `vendor/bin/pest` with the entry restored. -->
+        <testsuite name="Components">
+            <directory suffix=".test.php">resources/views</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <server name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="BROADCAST_CONNECTION" value="null" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <!-- A cached bootstrap/cache/config.php (written by `artisan optimize`,
+             which the updater runs) is loaded verbatim at boot and BYPASSES all
+             of the env forcing below, pointing the whole suite at the real
+             dev database. Pin the cache lookup to a path that never exists so
+             tests always resolve config from files + these env values. -->
+        <server name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
+        <env name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
+        <server name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
+        <env name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
+        <!-- Both blocks are required. Laravel resolves env() through a repository
+             that reads $_SERVER before $_ENV, and the CLI SAPI copies exported
+             shell variables into $_SERVER, so an exported DB_CONNECTION silently
+             redirects the whole suite at a real database. <env force> alone does
+             not stop it; the <server> entries do. Same reason APP_ENV above is
+             declared twice. -->
+        <server name="DB_CONNECTION" value="mariadb" force="true"/>
+        <server name="DB_DATABASE" value="phpvms_suite" force="true"/>
+        <server name="DB_URL" value="mariadb://root:password@127.0.0.1:13307/phpvms_suite" force="true"/>
+        <env name="DB_CONNECTION" value="mariadb" force="true"/>
+        <env name="DB_DATABASE" value="phpvms_suite" force="true"/>
+        <env name="DB_URL" value="mariadb://root:password@127.0.0.1:13307/phpvms_suite" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="PULSE_ENABLED" value="false" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
+        <env name="NIGHTWATCH_ENABLED" value="false" force="true"/>
+    </php>
+</phpunit>

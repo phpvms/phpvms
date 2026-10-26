@@ -24,7 +24,6 @@ class AirportImporter extends Importer
             ImportColumn::make('iata'),
             ImportColumn::make('icao')
                 ->fillRecordUsing(function (Airport $record, string $state): void {
-                    $record->id = $state;
                     $record->icao = $state;
                 })
                 ->requiredMapping()
@@ -72,8 +71,12 @@ class AirportImporter extends Importer
     #[Override]
     public function resolveRecord(): Airport
     {
+        // Upper-cased here because the id is matched and stored as given: the
+        // `icao` mutator no longer writes the id for us, so a lower-case code
+        // in the CSV would otherwise miss the existing row and import a second
+        // airport under a differently cased id.
         return Airport::withTrashed()->firstOrNew([
-            'id' => $this->data['icao'],
+            'id' => strtoupper(trim($this->data['icao'])),
         ]);
     }
 

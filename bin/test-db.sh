@@ -4,6 +4,7 @@
 # is created for the run and dropped afterwards.
 #
 #   bin/test-db.sh pgsql
+#   bin/test-db.sh mariadb
 #   bin/test-db.sh mysql tests/Feature/ImporterTest.php
 #
 # The scratch database matters. compose.test.yml ships a database called
@@ -22,7 +23,7 @@ DB=phpvms_suite
 
 driver="${1:-}"
 if [ -z "$driver" ]; then
-    echo "usage: bin/test-db.sh <mysql|pgsql> [pest arguments...]" >&2
+    echo "usage: bin/test-db.sh <mysql|mariadb|pgsql> [pest arguments...]" >&2
     exit 2
 fi
 shift
@@ -42,8 +43,20 @@ case "$driver" in
         create() { my -e "DROP DATABASE IF EXISTS \`$DB\`; CREATE DATABASE \`$DB\`;"; }
         cleanup() { my -e "DROP DATABASE IF EXISTS \`$DB\`;" >/dev/null 2>&1 || true; }
         ;;
+    mariadb)
+        # Worth running separately from mysql rather than assuming the two
+        # agree: Laravel drives MariaDB through its own driver and schema
+        # grammar, the servers do not offer the same collations, and most
+        # phpVMS installs run MariaDB.
+        container=phpvms-test-mariadb-1
+        # `mariadb`, not `mysql`: the MariaDB image dropped the `mysql` client
+        # name, so the compatibility symlink cannot be relied on.
+        my() { docker exec "$container" mariadb -uroot -ppassword "$@"; }
+        create() { my -e "DROP DATABASE IF EXISTS \`$DB\`; CREATE DATABASE \`$DB\`;"; }
+        cleanup() { my -e "DROP DATABASE IF EXISTS \`$DB\`;" >/dev/null 2>&1 || true; }
+        ;;
     *)
-        echo "unknown driver '$driver' (expected mysql or pgsql)" >&2
+        echo "unknown driver '$driver' (expected mysql, mariadb or pgsql)" >&2
         exit 2
         ;;
 esac

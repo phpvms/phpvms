@@ -4,6 +4,7 @@
     "name": "SampleBladeWidget",
     "alias": "sample-blade-widget",
     "registry_id": "phpvms/sample-blade-widget",
+    "version": "1.0.0",
     "type": "module",
     "description": "Reference addon: contributes a native-looking Blade dashboard widget to the skylight SPA (no Vue, no build).",
     "keywords": ["sample", "skylight", "widget", "blade"],
