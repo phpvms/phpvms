@@ -18,3 +18,14 @@ it('parses an OFP whose FIR NOTAM has no icao_name', function (): void {
     expect($parsed->notams[0]->icao_name)->toBeNull()
         ->and($parsed->notams[0]->notam_id)->toBe($ofp['notams'][0]['notam_id']);
 });
+
+it('keeps the decimals of the average passenger and bag weights', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['weights']['pax_weight'] = '85.729';
+    $ofp['weights']['bag_weight'] = '24.948';
+
+    $weights = SimBriefOfp::from($ofp)->weights;
+
+    expect($weights->pax_weight)->toBe(85.729)
+        ->and($weights->bag_weight)->toBe(24.948);
+});
