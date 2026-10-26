@@ -49,3 +49,26 @@ it('holds 16 characters and keeps its nullability', function (string $table, str
 
     expect($matches[1] ?? null)->toBe('16');
 })->with('airport id columns');
+
+/**
+ * The width is only half of what a generated id needs. These tables are
+ * created `utf8mb4_unicode_ci`, which folds case, so without this `kjfk` and
+ * `KJFK` are one id on MySQL and MariaDB while Postgres treats them as two --
+ * and a nanoid carries mixed case by construction.
+ */
+it('compares an airport id case-sensitively', function (string $table, string $column): void {
+    $driver = Schema::getConnection()->getDriverName();
+
+    if (!in_array($driver, ['mysql', 'mariadb'], true)) {
+        // Postgres compares case-sensitively already and SQLite's default is
+        // BINARY, so neither has a collation for this to set.
+        expect(true)->toBeTrue();
+
+        return;
+    }
+
+    $collation = collect(Schema::getColumns($table))
+        ->firstWhere('name', $column)['collation'] ?? null;
+
+    expect($collation)->toBe('utf8mb4_bin');
+})->with('airport id columns');
