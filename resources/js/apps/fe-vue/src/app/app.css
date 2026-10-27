@@ -4,6 +4,12 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "@nuxt/ui";
+/* Named-utility safelist for authors Tailwind's `@source` scan never sees
+ * (module Blade views, database-stored page bodies). Lands in `utilities`
+ * regardless of import position — layer order is set by the `@layer`
+ * declaration above, not by where an `@import` sits. See
+ * resources/css/tailwind-safelist.css and design.md D4. */
+@import "../../../../../css/tailwind-safelist.css";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
 /* Nuxt UI reserves `neutral`; keep the upstream Tailwind palette available to runtime themes. */

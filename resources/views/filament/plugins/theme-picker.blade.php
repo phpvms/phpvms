@@ -5,7 +5,7 @@
     colour moved to the Branding admin page (site-wide, not per-user), so only
     appearance and density remain here.
 --}}
-<x-filament::dropdown placement="bottom-end" width="none" class="fi-theme-picker">
+<x-filament::dropdown placement="bottom-end" width="none" :menu="false" class="fi-theme-picker">
     <x-slot name="trigger">
         <button type="button" class="fi-icon-btn fi-theme-picker-btn" aria-label="Theme settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

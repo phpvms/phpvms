@@ -4,31 +4,21 @@ import { usePage } from "@inertiajs/vue3";
 import NavigationBrand from "./NavigationBrand.vue";
 import NavigationLinks from "./NavigationLinks.vue";
 import PilotStatus from "./PilotStatus.vue";
-import { navigationDestinations } from "./navigation";
+import { activeMenuPath, type NavigationMenuItem } from "./navigation";
 import { useAppChrome } from "./useAppChrome";
 
-const page = usePage();
+const page = usePage<{ navigation?: NavigationMenuItem[] }>();
 const { appName, initials, user } = useAppChrome();
-const activeHref = computed<string | null>(() => {
-  const url = page.url.split("?")[0];
-  let bestMatch: string | null = null;
-
-  for (const destination of navigationDestinations) {
-    if (url === destination.href || url.startsWith(`${destination.href}/`)) {
-      if (bestMatch === null || destination.href.length > bestMatch.length) {
-        bestMatch = destination.href;
-      }
-    }
-  }
-
-  return bestMatch;
-});
+const items = computed<NavigationMenuItem[]>(() => page.props.navigation ?? []);
+const activePath = computed<string | null>(() =>
+  activeMenuPath(items.value, page.url.split("?")[0].replace(/\/$/, "") || "/"),
+);
 </script>
 
 <template>
   <div class="rail pv-navigation scroll-thin">
     <NavigationBrand :app-name="appName" />
-    <NavigationLinks :active-href="activeHref" :destinations="navigationDestinations" />
+    <NavigationLinks :active-path="activePath" :items="items" />
     <PilotStatus :initials :user />
   </div>
 </template>

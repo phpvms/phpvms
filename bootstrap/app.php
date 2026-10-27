@@ -10,6 +10,7 @@ use App\Http\Middleware\ApiAuth;
 use App\Http\Middleware\CheckApiScope;
 use App\Http\Middleware\DisableActivityLoggingByDefault;
 use App\Http\Middleware\InstalledCheck;
+use App\Http\Middleware\RespectAlternateVerbs;
 use App\Http\Middleware\SetActiveLanguage;
 use App\Http\Middleware\SetActiveTheme;
 use App\Http\Middleware\UpdatePending;
@@ -43,6 +44,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // openspec/changes/switch-to-frankenphp-image/design.md.
         $middleware->prependToGroup('web', DisableActivityLoggingByDefault::class);
         $middleware->prependToGroup('api', DisableActivityLoggingByDefault::class);
+
+        // Must come before everything else in both groups. The page fallback
+        // route hides 405s (fallbacks are matched before Laravel's
+        // alternate-verb check), and 405 is a routing answer -- deciding it
+        // after InstalledCheck has run means a bare install replies 302.
+        $middleware->prependToGroup('web', RespectAlternateVerbs::class);
+        $middleware->prependToGroup('api', RespectAlternateVerbs::class);
 
         $middleware->appendToGroup('web', [
             InstalledCheck::class,

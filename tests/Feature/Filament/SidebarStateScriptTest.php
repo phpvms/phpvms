@@ -23,7 +23,7 @@ test('the sidebar state script renders inside the sidebar, ahead of the rail clo
     $html = $this->get(Dashboard::getUrl())->assertSuccessful()->getContent();
 
     $sidebar = strpos($html, 'class="fi-sidebar fi-main-sidebar"');
-    $script = strpos($html, 'isOpenDesktop');
+    $script = strpos($html, 'filament:sidebar:desktop_open');
     $clock = strpos($html, 'fi-rail-clock');
 
     expect($sidebar)->not->toBeFalse()
@@ -43,6 +43,6 @@ test('the sidebar state script reads the key the Filament store persists', funct
     // drives the layout through .fi-sidebar-open. Reading a different key, or
     // setting a different class, restores the flash without breaking anything
     // else.
-    expect($html)->toContain("localStorage.getItem('isOpenDesktop')")
+    expect($html)->toContain("localStorage.getItem('filament:sidebar:desktop_open')")
         ->and($html)->toContain("classList.toggle('fi-sidebar-open'");
 });

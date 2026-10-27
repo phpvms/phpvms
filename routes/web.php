@@ -196,4 +196,32 @@ Route::middleware(['web', 'auth', 'permission:edit:flight'])
             ->name('commit');
     });
 
+/*
+ * Draft preview for page authors. Registered before the page fallback so it is
+ * never mistaken for a claimable path; the permission is the one that gates
+ * editing a page.
+ */
+Route::middleware(['web', 'auth', 'permission:edit:page', HandleInertiaRequests::class])
+    ->get('admin/pages/{page}/preview', [PageController::class, 'preview'])
+    ->name('frontend.pages.preview');
+
 Route::get('/update', fn (): Redirector|RedirectResponse => redirect('/system/update'));
+
+/*
+ * Pages claim their own paths, so the last word on an unmatched URL belongs to
+ * the page table rather than to a 404.
+ *
+ * A fallback and not a set of registered routes: `route:cache` snapshots routes
+ * at build time and Octane boots the application once per worker, so a route
+ * built from stored data would be stale the moment an admin added a page.
+ * Laravel defers fallback matching until every real route has failed, which
+ * gives the ordering guarantee for free -- an existing route always wins.
+ *
+ * When nothing claims the path this throws exactly what an unmatched request
+ * threw before the fallback existed, so 404 behaviour is unchanged.
+ */
+Route::middleware([HandleInertiaRequests::class])
+    ->name('frontend.')
+    ->group(function (): void {
+        Route::fallback([PageController::class, 'showByPath'])->name('pages.show.path');
+    });

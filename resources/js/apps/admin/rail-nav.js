@@ -131,10 +131,10 @@ function openFlyout(group) {
 
   suppressTooltip(group);
 
-  // dropdown.js's open()/x-float's panel.open() both read `event.currentTarget`
-  // as the anchor to position against — the same element Filament's own
-  // `x-on:mousedown="toggle($event)"` would pass.
-  dropdown.open({ currentTarget: trigger });
+  // dropdown.js anchors the panel to its own trigger. It must be a real
+  // MouseEvent: since 5.10, open() treats anything else as a keyboard open and
+  // moves focus to the first menu item.
+  dropdown.open(new MouseEvent("mouseenter"));
   openGroup = group;
 }
 

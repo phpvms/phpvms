@@ -1,33 +1,68 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import PvIcon from "@/shared/components/PvIcon.vue";
-import type { NavigationDestination } from "./navigation";
+import { menuPath, type NavigationMenuItem } from "./navigation";
 
 const props = defineProps<{
-  activeHref: string | null;
-  destinations: readonly NavigationDestination[];
+  activePath: string | null;
+  items: readonly NavigationMenuItem[];
 }>();
 
-function isActive(href: string) {
-  return props.activeHref === href;
+interface Row {
+  key: string;
+  item: NavigationMenuItem;
+  depth: number;
+  active: boolean;
 }
+
+/** The menu tree flattened in render order, children indented under parents. */
+const rows = computed<Row[]>(() => {
+  const out: Row[] = [];
+
+  const walk = (entries: readonly NavigationMenuItem[], depth: number, prefix: string): void => {
+    entries.forEach((item, index) => {
+      const key = `${prefix}${index}`;
+      const path = menuPath(item.url);
+
+      out.push({ key, item, depth, active: path !== null && path === props.activePath });
+      walk(item.children, depth + 1, `${key}.`);
+    });
+  };
+
+  walk(props.items, 0, "");
+
+  return out;
+});
 </script>
 
 <template>
   <nav class="nav pv-navigation-links">
     <div class="micro sect">{{ $t("ui.nav_section") }}</div>
-    <component
-      :is="destination.spa ? Link : 'a'"
-      v-for="destination in destinations"
-      :key="destination.href"
-      :href="destination.href"
-      class="item"
-      :class="{ active: isActive(destination.href) }"
-      :aria-current="isActive(destination.href) ? 'page' : undefined"
-    >
-      <PvIcon :name="destination.icon" :size="17" class="i" />
-      <span class="lbl">{{ $t(destination.label) }}</span>
-    </component>
+    <template v-for="row in rows" :key="row.key">
+      <span
+        v-if="row.item.url === ''"
+        class="item group"
+        :style="{ paddingInlineStart: `${10 + row.depth * 16}px` }"
+      >
+        <PvIcon v-if="row.item.icon" :name="row.item.icon" :size="17" class="i" />
+        <span class="lbl">{{ row.item.label }}</span>
+      </span>
+      <component
+        :is="row.item.spa && !row.item.new_window ? Link : 'a'"
+        v-else
+        :href="row.item.url"
+        :target="row.item.new_window ? '_blank' : undefined"
+        :rel="row.item.new_window ? 'noopener noreferrer' : undefined"
+        class="item"
+        :class="{ active: row.active }"
+        :style="{ paddingInlineStart: `${10 + row.depth * 16}px` }"
+        :aria-current="row.active ? 'page' : undefined"
+      >
+        <PvIcon v-if="row.item.icon" :name="row.item.icon" :size="17" class="i" />
+        <span class="lbl">{{ row.item.label }}</span>
+      </component>
+    </template>
   </nav>
 </template>
 
@@ -70,6 +105,13 @@ function isActive(href: string) {
   }
   .lbl {
     flex: 1;
+  }
+  .item.group {
+    color: var(--pv-ink-dim);
+    cursor: default;
+  }
+  .item.group:hover {
+    background: none;
   }
 }
 </style>

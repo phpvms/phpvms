@@ -28,7 +28,7 @@
 
     <div class="fi-header-actions-ctn fi-report-filters">
         {{-- Period picker: quick ranges plus an absolute range, in one panel. --}}
-        <x-filament::dropdown placement="bottom-end" width="xs" teleport>
+        <x-filament::dropdown placement="bottom-end" width="xs" :menu="false" teleport>
             <x-slot name="trigger">
                 <button
                     type="button"

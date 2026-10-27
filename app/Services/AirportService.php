@@ -11,8 +11,11 @@ use App\Models\Airport;
 use App\Support\Dto\PhpvmsApi\AirportData;
 use App\Support\Metar;
 use App\Support\Units\Distance;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use League\Geotools\Coordinate\Coordinate;
 use League\Geotools\Geotools;
@@ -21,6 +24,20 @@ use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 
 class AirportService extends Service
 {
+    /**
+     * Every column that stores an airport id, by table. The same set
+     * 2026_10_22_225212_update_airport_id_fields_size widens.
+     *
+     * @var array<string, list<string>>
+     */
+    private const array AIRPORT_ID_COLUMNS = [
+        'aircraft'  => ['airport_id', 'hub_id'],
+        'flights'   => ['dpt_airport_id', 'arr_airport_id', 'alt_airport_id'],
+        'pireps'    => ['dpt_airport_id', 'arr_airport_id', 'alt_airport_id'],
+        'subfleets' => ['hub_id'],
+        'users'     => ['home_airport_id', 'curr_airport_id'],
+    ];
+
     public function __construct(
         private readonly MetarProvider $metarProvider
     ) {}
@@ -200,6 +217,73 @@ class AirportService extends Service
         // rather than under a second copy of its ICAO. A response without one
         // leaves `id` null and `AirportObserver` fills it from the ICAO.
         $airport = new Airport($lookup);
+        $airport->save();
+
+        return $airport;
+    }
+
+    /**
+     * Airport ids that other rows reference but no airport row carries.
+     *
+     * A soft-deleted airport still counts as present: its row exists, and
+     * restoring it is a different job from creating it.
+     *
+     * @return array<string, int> airport id => number of references, most
+     *                            referenced first
+     */
+    public function findMissingAirportIds(): array
+    {
+        $references = null;
+
+        foreach (self::AIRPORT_ID_COLUMNS as $table => $columns) {
+            foreach ($columns as $column) {
+                $query = DB::table($table)
+                    ->select($column.' as airport_id')
+                    ->whereNotNull($column)
+                    ->where($column, '<>', '');
+
+                $references = $references?->unionAll($query) ?? $query;
+            }
+        }
+
+        return DB::query()
+            ->fromSub($references, 'refs')
+            ->select('refs.airport_id')
+            ->selectRaw('count(*) as references_count')
+            ->whereNotExists(fn (Builder $query) => $query
+                ->selectRaw('1')
+                ->from('airports')
+                ->whereColumn('airports.id', 'refs.airport_id'))
+            ->groupBy('refs.airport_id')
+            ->orderByDesc('references_count')
+            ->orderBy('refs.airport_id')
+            ->pluck('references_count', 'airport_id')
+            ->map(fn (mixed $count): int => (int) $count)
+            ->all();
+    }
+
+    /**
+     * Create the airport a missing reference names, from the remote lookup.
+     *
+     * The referencing columns hold ICAO codes, so the value is looked up as
+     * an ICAO -- the lookup endpoint is keyed by ICAO, not by catalog id.
+     * Unlike addAirportFromVacentral(), the row keeps the value it is missing
+     * under rather than the catalog's own id: the point is to give the rows
+     * that already reference it an airport to resolve to.
+     */
+    public function addMissingAirport(string $airportId): ?Airport
+    {
+        if (Airport::withTrashed()->whereKey($airportId)->exists()) {
+            return null;
+        }
+
+        $lookup = $this->lookupAirport(strtoupper(trim($airportId)));
+
+        if ($lookup === []) {
+            return null;
+        }
+
+        $airport = new Airport([...Arr::except($lookup, ['id']), 'id' => $airportId]);
         $airport->save();
 
         return $airport;

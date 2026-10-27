@@ -14,7 +14,8 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "safelist:check": "node bin/measure-tailwind-safelist.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",

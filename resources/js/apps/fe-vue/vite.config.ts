@@ -6,7 +6,15 @@ import icons from "unplugin-icons/vite";
 import { phpTypescriptTransform } from "./dev/php-typescript-transform";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync, unlinkSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+  unlinkSync,
+} from "node:fs";
 import { dynamicTablerIcons, tablerIcons } from "./icon.config";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,6 +38,19 @@ const PUBLIC_BUILD_DIR = resolve(REPO_ROOT, "public", "build", THEME_NAME);
 const APP_URL = loadEnv("development", REPO_ROOT, "APP_URL").APP_URL;
 const APP_CSS = resolve(WORKSPACE_ROOT, "src", "app", "app.css");
 const SPA_ENTRY = resolve(WORKSPACE_ROOT, "src", "app", "main.ts");
+
+// web-component-widget-floor: a separate Rollup entry for the custom-elements
+// bundle. Kept out of `src/app/` so `external()` below can key off the path —
+// this graph bundles its own Vue runtime (task 1.2) instead of externalizing
+// "vue" like the SPA entry does, because a document with no host SPA has no
+// import map to resolve a shared "vue" specifier from.
+const ELEMENTS_DIR = resolve(WORKSPACE_ROOT, "src", "elements");
+const ELEMENTS_ENTRY = resolve(ELEMENTS_DIR, "index.ts");
+const ELEMENTS_ENTRY_NAME = "elements";
+// Stable, un-hashed served URL (task 1.3) so a stored page document can embed
+// a fixed <script type="module" src="/build/skylight/elements.js"> that keeps
+// resolving across rebuilds — mirrors the shared-Vue vendor copy below.
+const ELEMENTS_STABLE_FILE = "elements.js";
 
 // Single shared Vue: the browser-native ESM production build. Published verbatim
 // to <asset base>/vendor/vue.js and pointed at by the shell's import-map so that
@@ -94,12 +115,30 @@ function publishToLayouts(): import("vite").Plugin {
       const vendorDest = copyVendorVue(PUBLIC_BUILD_DIR);
       console.log(`[publish-to-layouts] shared Vue → ${vendorDest}`);
 
+      // 1c. Stable, un-hashed custom-elements bundle URL — copy the hashed
+      //     `elements` entry chunk (already published verbatim by the copyDir
+      //     above) to a fixed name alongside it, exactly like 1b above.
+      const viteMeta = resolve(DIST_DIR, ".vite", "manifest.json");
+      const manifest = JSON.parse(readFileSync(viteMeta, "utf-8")) as Record<
+        string,
+        { file: string }
+      >;
+      const elementsEntryKey = "src/elements/index.ts";
+      const elementsChunk = manifest[elementsEntryKey];
+      if (!elementsChunk) {
+        throw new Error(
+          `Custom-elements entry ("${elementsEntryKey}") missing from the Vite manifest`,
+        );
+      }
+      const elementsDest = resolve(PUBLIC_BUILD_DIR, ELEMENTS_STABLE_FILE);
+      copyFileSync(resolve(DIST_DIR, elementsChunk.file), elementsDest);
+      console.log(`[publish-to-layouts] stable elements bundle → ${elementsDest}`);
+
       // 2. Flat manifest.json in BOTH places:
       //    - public/build/<theme>/manifest.json → the shell blade reads this to
       //      resolve hashed entry/css.
       //    - views/layouts/<theme>/manifest.json → satisfies theme.json's
       //      "manifest": "manifest.json" descriptor (theme discovery).
-      const viteMeta = resolve(DIST_DIR, ".vite", "manifest.json");
       mkdirSync(LAYOUTS_DIR, { recursive: true });
       copyFileSync(viteMeta, resolve(PUBLIC_BUILD_DIR, "manifest.json"));
       copyFileSync(viteMeta, resolve(LAYOUTS_DIR, "manifest.json"));
@@ -250,13 +289,29 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         spa: SPA_ENTRY,
+        [ELEMENTS_ENTRY_NAME]: ELEMENTS_ENTRY,
       },
-      // Externalize Vue: the host's (and its bundled deps') bare `import 'vue'`
-      // statements are left as-is in the output instead of bundling a second copy.
-      // At runtime the browser resolves "vue" via the shell's import-map to the
-      // single shared vendor/vue.js — the same module third-party ESM widgets load.
-      // One resolved URL ⇒ one ESM instance ⇒ one Vue runtime for host + addons.
-      external: ["vue"],
+      // Externalize Vue for the main SPA graph: the host's (and its bundled
+      // deps') bare `import 'vue'` statements are left as-is in the output
+      // instead of bundling a second copy. At runtime the browser resolves
+      // "vue" via the shell's import-map to the single shared vendor/vue.js —
+      // the same module third-party ESM widgets load. One resolved URL ⇒ one
+      // ESM instance ⇒ one Vue runtime for host + addons.
+      //
+      // The custom-elements graph (src/elements/**) is the deliberate
+      // exception: it bundles its OWN copy of Vue instead, because a document
+      // with no host SPA (the framework-neutral case this bundle exists for)
+      // has no import map to resolve a shared "vue" specifier from. Bare
+      // `import ... from "vue"` already resolves to the package's
+      // runtime-only ESM-bundler build (no template compiler, no
+      // `new Function` — task 1.2) under bundler resolution, so bundling it
+      // here needs no extra alias.
+      external(id, importer) {
+        if (id !== "vue") {
+          return false;
+        }
+        return !importer || !importer.startsWith(`${ELEMENTS_DIR}/`);
+      },
     },
   },
 
