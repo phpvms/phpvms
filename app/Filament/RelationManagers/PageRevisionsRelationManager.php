@@ -46,6 +46,7 @@ class PageRevisionsRelationManager extends RelationManager
                 Action::make('restore')
                     ->label(__('filament.system_pages.restore_revision'))
                     ->icon(Phosphor::ArrowCounterClockwiseLight)
+                    ->authorize('update')
                     ->requiresConfirmation()
                     ->modalDescription(__('filament.system_pages.restore_confirm'))
                     ->action(function (PageRevision $record): void {

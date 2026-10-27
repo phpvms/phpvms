@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -127,10 +128,19 @@ class PageService extends Service
      * The revision is written from the draft rather than from the outgoing body
      * so that the list an author reads is a list of things that were live, and
      * restoring one puts back exactly what visitors saw.
+     *
+     * Content that went live before revisions existed (a migrated page) has no
+     * revision of its own, so the outgoing body is retained first; otherwise the
+     * first publish after upgrade would destroy it.
+     *
+     * @throws ValidationException When another live page already claims the path.
      */
     public function publish(Page $page, ?User $by = null): Page
     {
         return DB::transaction(function () use ($page, $by): Page {
+            $this->assertPathUnclaimed($page);
+            $this->retainOutgoingContent($page);
+
             $page->forceFill([
                 'body'         => $page->draft_body,
                 'status'       => PageStatus::PUBLISHED,
@@ -146,6 +156,53 @@ class PageService extends Service
 
             return $page->refresh();
         });
+    }
+
+    /**
+     * A draft may save a path another page has since published; this is the
+     * last check before two live pages would claim the same URL.
+     *
+     * @throws ValidationException
+     */
+    private function assertPathUnclaimed(Page $page): void
+    {
+        if (!filled($page->path)) {
+            return;
+        }
+
+        $claimed = Page::query()
+            ->live()
+            ->byPath($page->path)
+            ->whereKeyNot($page->getKey())
+            ->exists();
+
+        if ($claimed) {
+            throw ValidationException::withMessages([
+                'path' => __('filament.system_pages.path_taken_page'),
+            ]);
+        }
+    }
+
+    /**
+     * Write the currently published body as a revision unless the latest
+     * revision already holds it.
+     */
+    private function retainOutgoingContent(Page $page): void
+    {
+        if ($page->status !== PageStatus::PUBLISHED || !filled($page->body)) {
+            return;
+        }
+
+        if ($page->revisions()->first()?->body === $page->body) {
+            return;
+        }
+
+        PageRevision::create([
+            'page_id'      => $page->id,
+            'body'         => $page->body,
+            'published_at' => $page->published_at,
+            'published_by' => null,
+        ]);
     }
 
     /**

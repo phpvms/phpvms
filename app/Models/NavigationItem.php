@@ -25,6 +25,7 @@ use Override;
  * unlisted landing page possible.
  *
  * @property int              $id
+ * @property string|null      $name
  * @property string           $label
  * @property string|null      $icon
  * @property int|null         $parent_id

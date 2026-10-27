@@ -45,11 +45,24 @@ class PageController extends Controller
     {
         $page = $this->pageService->resolve($request->path());
 
-        if (!$page) {
+        if (!$page instanceof Page) {
             throw new PageNotFound(new Exception('Page not found'));
         }
 
         return $this->render($page);
+    }
+
+    /**
+     * Render the draft of a page for an authorised author.
+     *
+     * Reuses the live page view with the draft swapped in for the body. The
+     * swap is in memory only and the model is never saved.
+     */
+    public function preview(Page $page): View
+    {
+        $page->setAttribute('body', $page->draft_body);
+
+        return view('pages.index', ['page' => $page]);
     }
 
     /**

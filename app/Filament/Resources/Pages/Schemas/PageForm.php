@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class PageForm
@@ -75,6 +76,35 @@ class PageForm
                             ])
                             ->columnSpanFull()
                             ->columns(),
+
+                        // Create-only and not stored on the page: CreatePage reads
+                        // these once the page exists and builds the menu item.
+                        Grid::make()
+                            ->schema([
+                                Toggle::make('add_to_menu')
+                                    ->label(__('filament.navigation_items.add_to_menu'))
+                                    ->helperText(__('filament.navigation_items.add_to_menu_helper'))
+                                    ->default(true)
+                                    ->live()
+                                    ->dehydrated(false)
+                                    ->offIcon(Phosphor::XLight)
+                                    ->offColor('danger')
+                                    ->onIcon(Phosphor::CheckLight)
+                                    ->onColor('success'),
+
+                                TextInput::make('menu_label')
+                                    ->label(__('filament.navigation_items.menu_label'))
+                                    ->helperText(__('filament.navigation_items.menu_label_helper'))
+                                    ->string()
+                                    ->dehydrated(false)
+                                    ->visible(fn (Get $get): bool => (bool) $get('add_to_menu')),
+                            ])
+                            ->columnSpanFull()
+                            ->columns()
+                            ->hiddenOn('edit')
+                            ->visibleJs(<<<'JS'
+                                    $get('type') == '0'
+                                JS), // Hardcoded PageType::PAGE
                     ])
                     ->columnSpanFull(),
 

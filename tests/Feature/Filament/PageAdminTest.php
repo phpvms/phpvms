@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use App\Enums\NavigationTarget;
 use App\Enums\PageStatus;
+use App\Filament\RelationManagers\PageRevisionsRelationManager;
 use App\Filament\Resources\NavigationItems\Pages\ListNavigationItems;
 use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Models\NavigationItem;
 use App\Models\Page;
 use App\Services\PageService;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -124,4 +126,46 @@ it('resolves a page-targeted item to that page url', function (): void {
 
     expect($item->target_type)->toBe(NavigationTarget::PAGE)
         ->and($item->resolveUrl())->toBe(url('/about'));
+});
+
+it('shows a danger notification and publishes nothing when the path was taken meanwhile', function (): void {
+    $page = Page::factory()->claiming('/about')->create(['draft_body' => 'Mine']);
+    Page::factory()->published()->claiming('/about')->create();
+
+    Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
+        ->callAction('publish')
+        ->assertNotified();
+
+    expect($page->refresh()->status)->toBe(PageStatus::DRAFT)
+        ->and($page->body)->toBeNull()
+        ->and($page->revisions()->count())->toBe(0);
+});
+
+it('offers a preview action that opens the preview route', function (): void {
+    $page = Page::factory()->create();
+
+    Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
+        ->assertActionHasUrl('preview', route('frontend.pages.preview', ['page' => $page->getKey()]))
+        ->assertActionShouldOpenUrlInNewTab('preview');
+});
+
+it('restores a revision to the draft through the relation manager', function (): void {
+    $this->actingAs(createAdminUser());
+    $page = Page::factory()->create(['draft_body' => 'First']);
+    app(PageService::class)->publish($page);
+    $page->forceFill(['draft_body' => 'Second'])->save();
+    app(PageService::class)->publish($page);
+
+    $first = $page->revisions()->where('body', 'First')->first();
+
+    Livewire::test(PageRevisionsRelationManager::class, [
+        'ownerRecord' => $page,
+        'pageClass'   => EditPage::class,
+    ])
+        ->assertCanSeeTableRecords($page->revisions)
+        ->callAction(TestAction::make('restore')->table($first))
+        ->assertNotified();
+
+    expect($page->refresh()->draft_body)->toBe('First')
+        ->and($page->body)->toBe('Second');
 });

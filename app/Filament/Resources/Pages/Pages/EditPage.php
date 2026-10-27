@@ -15,6 +15,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Validation\ValidationException;
 use Override;
 
 class EditPage extends EditRecord
@@ -33,6 +34,7 @@ class EditPage extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            $this->previewAction(),
             $this->publishAction(),
             $this->unpublishAction(),
             DeleteAction::make()->icon(Phosphor::TrashLight),
@@ -53,13 +55,36 @@ class EditPage extends EditRecord
             ->modalDescription(__('filament.system_pages.publish_confirm'))
             ->visible(fn (Page $record): bool => $record->type === PageType::PAGE)
             ->action(function (Page $record): void {
-                app(PageService::class)->publish($record, auth()->user());
+                try {
+                    app(PageService::class)->publish($record, auth()->user());
+                } catch (ValidationException $validationException) {
+                    Notification::make()
+                        ->title(collect($validationException->errors())->flatten()->first())
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
 
                 Notification::make()
                     ->title(__('filament.system_pages.published'))
                     ->success()
                     ->send();
             });
+    }
+
+    /**
+     * Opens the draft the way a visitor would see the page, in a new tab.
+     */
+    private function previewAction(): Action
+    {
+        return Action::make('preview')
+            ->label(__('filament.system_pages.preview'))
+            ->icon(Phosphor::EyeLight)
+            ->color('gray')
+            ->url(fn (Page $record): string => route('frontend.pages.preview', ['page' => $record->getKey()]))
+            ->openUrlInNewTab()
+            ->visible(fn (Page $record): bool => $record->type === PageType::PAGE);
     }
 
     private function unpublishAction(): Action

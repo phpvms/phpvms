@@ -196,6 +196,15 @@ Route::middleware(['web', 'auth', 'permission:edit:flight'])
             ->name('commit');
     });
 
+/*
+ * Draft preview for page authors. Registered before the page fallback so it is
+ * never mistaken for a claimable path; the permission is the one that gates
+ * editing a page.
+ */
+Route::middleware(['web', 'auth', 'permission:edit:page', HandleInertiaRequests::class])
+    ->get('admin/pages/{page}/preview', [PageController::class, 'preview'])
+    ->name('frontend.pages.preview');
+
 Route::get('/update', fn (): Redirector|RedirectResponse => redirect('/system/update'));
 
 /*

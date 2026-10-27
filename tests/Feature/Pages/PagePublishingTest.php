@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\PageRevision;
 use App\Models\User;
 use App\Services\PageService;
+use Illuminate\Validation\ValidationException;
 
 beforeEach(function (): void {
     $this->pages = app(PageService::class);
@@ -143,4 +144,42 @@ it('reports a draft status before the model has ever been reloaded', function ()
     // default `$page->status` was null on a fresh instance.
     expect((new Page())->status)->toBe(PageStatus::DRAFT)
         ->and(Page::factory()->create()->status)->toBe(PageStatus::DRAFT);
+});
+
+it('retains a migrated page body as a revision on its first publish', function (): void {
+    $page = Page::factory()->published()->create(['body' => 'Original body', 'draft_body' => 'Replacement']);
+
+    expect($page->revisions()->count())->toBe(0);
+
+    $this->pages->publish($page);
+
+    $original = $page->revisions()->where('body', 'Original body')->first();
+
+    expect($page->refresh()->body)->toBe('Replacement')
+        ->and($original)->not->toBeNull()
+        ->and($original->published_by)->toBeNull();
+
+    $this->pages->restoreRevision($page, $original);
+
+    expect($page->refresh()->draft_body)->toBe('Original body');
+});
+
+it('does not duplicate a revision that already holds the outgoing body', function (): void {
+    $page = Page::factory()->create(['draft_body' => 'First']);
+    $this->pages->publish($page);
+    $page->forceFill(['draft_body' => 'Second'])->save();
+    $this->pages->publish($page);
+
+    expect($page->revisions()->count())->toBe(2);
+});
+
+it('refuses to publish onto a path another live page claims', function (): void {
+    Page::factory()->published()->claiming('/about')->create();
+    $page = Page::factory()->claiming('/about')->create(['draft_body' => 'Mine']);
+
+    expect(fn () => $this->pages->publish($page))->toThrow(ValidationException::class);
+
+    expect($page->refresh()->status)->toBe(PageStatus::DRAFT)
+        ->and($page->body)->toBeNull()
+        ->and($page->revisions()->count())->toBe(0);
 });
