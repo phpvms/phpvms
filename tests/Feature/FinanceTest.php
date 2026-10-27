@@ -895,6 +895,18 @@ test('pirep finances', function (): void {
     }
 });
 
+test('pirep finances with advanced fuel and no submitted_at', function (): void {
+    updateSetting('pireps.advanced_fuel', true);
+
+    [$user, $pirep] = createFullPirep();
+    $pirep->update(['submitted_at' => null]);
+
+    app(PirepFinanceService::class)->processFinancesForPirep($pirep->fresh());
+
+    $transactions = app(JournalTransactionQuery::class)->build($pirep);
+    expect($transactions['transactions']->where('tags', 'fuel')->count())->toEqual(1);
+});
+
 test('pirep finances specific expense', function (): void {
     $journalQuery = app(JournalTransactionQuery::class);
     $fareSvc = app(FareService::class);
