@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support\Metrics;
 
-use App\Providers\MetricsServiceProvider;
 use Closure;
 
 /**
@@ -16,7 +15,7 @@ use Closure;
  * properties survive across every request served by a worker -- a `static`
  * array here would log a failing metric once for the process's entire
  * lifetime, not once per request. Bound via `$this->app->scoped()` in
- * {@see MetricsServiceProvider}, the same pattern
+ * `App\Providers\MetricsServiceProvider`, the same pattern
  * AppServiceProvider uses for AssetService's per-request memo, so Octane's
  * scoped-binding flush (config/octane.php) gives every request a fresh,
  * empty log.
