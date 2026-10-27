@@ -23,7 +23,7 @@
     Mirrors vendor/filament/filament/resources/js/stores/sidebar.js: under
     1024px the store always closes, and above it the settled value is
     isOpenDesktop (both default true, persisted by $persist().as() under the
-    bare key). Alpine re-asserts the class on init, so a stale read self-corrects.
+    bare key filament:sidebar:desktop_open). Alpine re-asserts the class on init, so a stale read self-corrects.
 --}}
 <script>
     (() => {
@@ -37,7 +37,7 @@
 
         if (window.innerWidth >= 1024) {
             try {
-                isOpen = JSON.parse(localStorage.getItem('isOpenDesktop') ?? 'true') !== false
+                isOpen = JSON.parse(localStorage.getItem('filament:sidebar:desktop_open') ?? 'true') !== false
             } catch {
                 isOpen = true
             }

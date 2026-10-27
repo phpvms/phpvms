@@ -57,6 +57,8 @@
             <a
                 href="{{ $panel->getUrl() ?? url($panel->getPath()) }}"
                 class="fi-brandmenu-item"
+                role="menuitem"
+                tabindex="-1"
                 @if ($isCurrent) aria-current="true" @endif
             >
                 @if ($isAdmin)
@@ -79,7 +81,7 @@
         @endforeach
 
         @if ($addonsUrl !== null)
-            <a class="fi-brandmenu-foot" href="{{ $addonsUrl }}">
+            <a class="fi-brandmenu-foot" href="{{ $addonsUrl }}" role="menuitem" tabindex="-1">
                 <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::PuzzlePieceLight" />
                 {{ __('common.manage_addons') }}
             </a>

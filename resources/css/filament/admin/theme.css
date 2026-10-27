@@ -312,10 +312,18 @@
 
 /* Topbar: 64px -> 44px, graphite beside the rail, and the one place the
  * accent crosses the full width. Height and min-height are both set by
- * Filament; the 2px border sits inside the 44px (border-box). */
+ * Filament; the 2px border sits inside the 44px (border-box). Filament reads
+ * the bar height from --topbar-height for the sidebar header, the main
+ * container's min-height and the sticky offsets, so set it once here. */
+.fi-body {
+  --topbar-height: 44px;
+}
+
+/* The end padding leaves room for the notification badge, which Filament
+ * hangs half outside the bell's right edge. */
 .fi-topbar {
   @apply h-11 min-h-11 bg-[#22272e] border-b-2 border-b-(--primary-600) gap-3.5 items-stretch;
-  padding-inline: 0 12px;
+  padding-inline: 0 20px;
 }
 
 /* The start slot holds the brand button and the workspace navigator. Stretch
@@ -543,6 +551,13 @@
   @apply items-center py-0 leading-none;
 }
 
+/* A multi-select (5.10) moves its values out of the button into a sibling
+ * container that carries its own 36px floor and the button sits over it as an
+ * overlay. Hold it to the 32px field; selected badges still grow it. */
+.fi-fo-field-content-col .fi-select-input-ctn-multiple .fi-select-input-value-ctn {
+  @apply min-h-7.5 py-1;
+}
+
 /* A date/time picker's height comes from its trigger button — the three
  * <input>s it renders are all zero-height, so capping inputs never reaches it. */
 .fi-fo-field-content-col .fi-fo-date-time-picker-trigger {
@@ -623,6 +638,15 @@
 
 .fi-tabs .fi-tabs-item.fi-active .fi-icon {
   color: var(--primary-600);
+}
+
+/* Tabs that do not fit move into a "more" menu (5.10), where each is still a
+ * .fi-tabs-item. Give those rows back the vendor menu-row look instead of the
+ * underline tab skin above. */
+.fi-tabs .fi-tabs-item.fi-sc-tabs-header-overflow-open {
+  @apply rounded-md px-2 font-normal;
+  border-bottom-width: 0;
+  margin-bottom: 0;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1150,6 +1174,11 @@
 .fi-ta-header-toolbar .fi-select-input > [x-ref="select"],
 .fi-ta-header-toolbar .fi-select-input .fi-select-input-ctn {
   @apply h-full min-h-0;
+}
+
+/* Same 5.10 multi-select value container as in forms (see the field rule). */
+.fi-ta-header-toolbar .fi-select-input-ctn-multiple .fi-select-input-value-ctn {
+  @apply h-full min-h-0 py-0.5;
 }
 
 .fi-ta-header-toolbar .fi-icon-btn svg {
@@ -1825,13 +1854,11 @@
  * sub-navigation flows in without markup changes.
  * ------------------------------------------------------------------------- */
 .fi-sidebar-group .fi-dropdown-panel {
-  /* floating-ui lands the panel at x≈58, overlapping the 76px rail; 22px
-   * shifts it flush beside the rail with the mockup's small gap. (measured
-   * against the live app at 1440px)
-   * -mt-2.25 tops it out with the rail row: the float reference is the
-   * icon-sized .fi-dropdown box, which sits 9px below the row top (the
-   * trigger's padding), so right-start alone aligns to the icon. */
-  @apply border border-(--line-strong) rounded-xl p-0 overflow-hidden ms-5.5 -mt-2.25;
+  /* Since 5.10 the float reference is the trigger button, which spans the
+   * whole rail row, so right-start already tops the panel out with the row.
+   * The vendor offset lands it 7px off the 76px rail; -3px leaves the
+   * mockup's 4px gap. */
+  @apply border border-(--line-strong) rounded-xl p-0 overflow-hidden -ms-0.75;
   box-shadow:
     0 12px 30px -12px rgb(14 18 24 / 38%),
     0 3px 8px -3px rgb(14 18 24 / 20%);
@@ -2042,9 +2069,8 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * below it. The console runs the rail the full height with the topbar beside
  * it. Desktop only — below lg the sidebar is a drawer and must stay as-is.
  *
- * Filament hardcodes the old 4rem topbar height into the sidebar's sticky
- * offset (sidebar.css:75) and the main container's min-height (layout.css:36),
- * so both need correcting to the 44px bar above.
+ * The main container's min-height follows --topbar-height (set with the
+ * topbar above), so only the sidebar's offset needs undoing here.
  * ------------------------------------------------------------------------- */
 @media (min-width: 1024px) {
   /* One width that follows the collapse state, so the offsets below track it
@@ -2090,10 +2116,6 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
    * and push the content off the right edge. */
   .fi-layout {
     @apply w-auto;
-  }
-
-  .fi-main-ctn {
-    min-height: calc(100dvh - 44px);
   }
 }
 

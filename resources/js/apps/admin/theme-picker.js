@@ -14,7 +14,8 @@
  * part of that state — it rides Filament's own mechanism instead
  * (vendor/filament/filament/resources/js/dark-mode.js): clicking a mode
  * button dispatches a `theme-changed` window CustomEvent whose `detail` is
- * 'light' | 'dark', which that script persists to localStorage 'theme' and
+ * 'light' | 'dark', which that script persists to localStorage
+ * 'filament:theme:mode' (5.10 renamed it from 'theme') and
  * reflects as an Alpine.store('theme') effect that toggles <html class="dark">.
  */
 
@@ -40,10 +41,10 @@ function apply(state) {
   document.documentElement.dataset.density = state.density;
 }
 
-// dark-mode.js writes localStorage 'theme' synchronously before touching the
+// dark-mode.js writes localStorage 'filament:theme:mode' synchronously before touching the
 // DOM, so reading it is more reliable than racing its Alpine.effect for the
 // <html class="dark"> toggle. Falls back to the applied class for the
-// 'system' case, where 'theme' doesn't say light or dark directly.
+// 'system' case, where the stored mode doesn't say light or dark directly.
 //
 // Exported (not just used internally) so app.js can expose it as
 // `window.phpvms.theme.current()` for the maplibre admin surfaces
@@ -51,7 +52,7 @@ function apply(state) {
 // need to pick light/dark once at map construction and again on
 // `theme-changed` — one implementation, not a second copy of this logic.
 export function currentMode() {
-  const stored = localStorage.getItem("theme");
+  const stored = localStorage.getItem("filament:theme:mode");
   return stored === "dark" || stored === "light"
     ? stored
     : document.documentElement.classList.contains("dark")
