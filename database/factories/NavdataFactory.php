@@ -28,7 +28,7 @@ class NavdataFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'   => str_replace(' ', '', str_replace('.', '', fake()->unique()->text(5))),
+            'id'   => fake()->unique()->lexify('?????'),
             'name' => str_replace('.', '', fake()->unique()->word()),
             'type' => fake()->randomElement([NavaidType::VOR, NavaidType::NDB]),
             'lat'  => fake()->latitude(),

@@ -25,10 +25,12 @@ use Override;
  *   callsign         Exact match
  *   flight_type      PIREP flight_type code; '0' is treated as no filter
  *   route_code       Exact match
- *   dpt_airport_id   ICAO id (uppercased before match)
- *   dep_icao         Alias for dpt_airport_id
- *   arr_airport_id   ICAO id (uppercased before match)
- *   arr_icao         Alias for arr_airport_id
+ *   dpt_airport_id   Airport id, matched exactly
+ *   dep_icao         Departure ICAO, uppercased before match. Resolves to the
+ *                    same airport as dpt_airport_id only while an id is an
+ *                    ICAO; used when dpt_airport_id is absent
+ *   arr_airport_id   Airport id, matched exactly
+ *   arr_icao         Arrival ICAO, uppercased before match
  *   dgt              distance >= dgt (kilometres / miles per setting)
  *   dlt              distance <= dlt
  *   tgt              flight_time >= tgt (minutes)
@@ -100,9 +102,9 @@ class SearchFlightsRequest extends FormRequest
             'callsign'       => ['sometimes', 'string', 'max:32'],
             'flight_type'    => ['sometimes', 'string', 'max:8'],
             'route_code'     => ['sometimes', 'string', 'max:8'],
-            'dpt_airport_id' => ['sometimes', 'string', 'max:8'],
+            'dpt_airport_id' => ['sometimes', 'string', 'max:16'],
             'dep_icao'       => ['sometimes', 'string', 'max:8'],
-            'arr_airport_id' => ['sometimes', 'string', 'max:8'],
+            'arr_airport_id' => ['sometimes', 'string', 'max:16'],
             'arr_icao'       => ['sometimes', 'string', 'max:8'],
             'dgt'            => ['sometimes', 'integer', 'min:0'],
             'dlt'            => ['sometimes', 'integer', 'min:0'],
@@ -140,9 +142,9 @@ class SearchFlightsRequest extends FormRequest
             'callsign.max'       => 'The callsign must not exceed 32 characters.',
             'flight_type.max'    => 'The flight type must not exceed 8 characters.',
             'route_code.max'     => 'The route code must not exceed 8 characters.',
-            'dpt_airport_id.max' => 'The departure airport ID must not exceed 8 characters.',
+            'dpt_airport_id.max' => 'The departure airport ID must not exceed 16 characters.',
             'dep_icao.max'       => 'The departure ICAO must not exceed 8 characters.',
-            'arr_airport_id.max' => 'The arrival airport ID must not exceed 8 characters.',
+            'arr_airport_id.max' => 'The arrival airport ID must not exceed 16 characters.',
             'arr_icao.max'       => 'The arrival ICAO must not exceed 8 characters.',
             'icao_type.max'      => 'The ICAO type must not exceed 8 characters.',
             'dgt.min'            => 'The minimum distance must be 0 or greater.',

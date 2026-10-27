@@ -152,18 +152,22 @@ class FlightSearchQuery
      */
     private function applyAirportFilters(Builder $query, SearchFlightsRequest $request): void
     {
-        // dep_icao is an alias for dpt_airport_id; both uppercased.
+        // dep_icao names a code, so it is uppercased to match how codes are
+        // stored; dpt_airport_id names an id and is matched as given. The two
+        // are interchangeable only for as long as an airport id *is* its ICAO
+        // -- once ids become generated nanoids, folding the case of one would
+        // stop it matching.
         $departure = $request->filled('dpt_airport_id')
             ? $request->input('dpt_airport_id')
-            : $request->input('dep_icao');
+            : strtoupper((string) $request->input('dep_icao'));
         if (filled($departure)) {
             $query->fromAirport((string) $departure);
         }
 
-        // arr_icao is an alias for arr_airport_id; both uppercased.
+        // arr_icao is the code, arr_airport_id the id. Same split as above.
         $arrival = $request->filled('arr_airport_id')
             ? $request->input('arr_airport_id')
-            : $request->input('arr_icao');
+            : strtoupper((string) $request->input('arr_icao'));
         if (filled($arrival)) {
             $query->toAirport((string) $arrival);
         }

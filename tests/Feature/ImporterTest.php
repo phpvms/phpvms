@@ -932,3 +932,88 @@ test('airport special chars importer', function (): void {
     expect($airport)->not->toBeNull()
         ->and($airport->name)->toEqual('Adolfo Suárez Madrid–Barajas Airport');
 });
+
+/**
+ * The importer supplies the airport id itself, from the ICAO column, so it has
+ * to normalize the case on its own now that the `icao` mutator no longer
+ * rewrites the id. Without it a lower-case row imports under a lower-case id,
+ * which on a case-sensitive database is a second airport rather than the one
+ * already there.
+ */
+test('airport importer upper-cases the id of a lower-case icao row', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'airports').'.csv';
+    file_put_contents($path, <<<'CSV'
+        icao,iata,name,location,region,country,timezone,hub,lat,lon,elevation,ground_handling_cost,fuel_100ll_cost,fuel_jeta_cost,fuel_mogas_cost,notes
+        kaus,aus,Austin-Bergstrom,"Austin","Texas",US,America/Chicago,1,30.1945,-97.6699,148,0,,,,
+        CSV);
+
+    $status = app(ImportService::class)->importAirports($path, delete_previous: false);
+    unlink($path);
+
+    // The stored id is read back rather than looked up: mysql's default
+    // `utf8mb4_unicode_ci` would match a lower-case row for `find('KAUS')`
+    // on its own, so only the value itself tells us the case was normalized.
+    $airport = Airport::find('KAUS');
+
+    expect($status['errors'])->toHaveCount(0)
+        ->and($airport)->not->toBeNull()
+        ->and($airport->id)->toBe('KAUS')
+        ->and($airport->icao)->toBe('KAUS');
+});
+
+/**
+ * The flight exporter writes `dpt_airport_id` out verbatim, so the importer
+ * has to read it back the same way. It used to upper-case the column, which
+ * was invisible while an airport id was its ICAO and rewrites a generated one.
+ */
+test('flight importer keeps the case of a mixed-case airport id', function (): void {
+    insertFlightsScaffoldData();
+
+    Airport::factory()->create(['id' => 'dRFXpqlxMeoq', 'icao' => 'KORD']);
+    Airport::factory()->create(['id' => 'Wm4kZ2tQ8bYn', 'icao' => 'KAUS']);
+
+    $path = tempnam(sys_get_temp_dir(), 'flights').'.csv';
+    file_put_contents($path, <<<'CSV'
+        airline,flight_number,route_code,callsign,route_leg,dpt_airport,arr_airport,alt_airport,days,dpt_time,arr_time,level,distance,flight_time,flight_type,load_factor,load_factor_variance,pilot_pay,route,notes,start_date,end_date,active,subfleets,fares,fields,event_id,user_id
+        VMS,2200,,,,dRFXpqlxMeoq,Wm4kZ2tQ8bYn,,,0800 CST,1100 CST,350,500,180,J,,,,,,,,1,A32X,,,,
+        CSV);
+
+    $status = app(ImportService::class)->importFlights($path);
+    unlink($path);
+
+    $flight = Flight::where('flight_number', 2200)->first();
+
+    // Read off the stored row rather than through the relation: mysql's
+    // `utf8mb4_unicode_ci` would resolve an upper-cased id back to the same
+    // airport, so only the value itself shows the case survived.
+    expect($status['errors'])->toHaveCount(0)
+        ->and($flight)->not->toBeNull()
+        ->and($flight->dpt_airport_id)->toBe('dRFXpqlxMeoq')
+        ->and($flight->arr_airport_id)->toBe('Wm4kZ2tQ8bYn')
+        ->and(Airport::count())->toBe(2);
+});
+
+/**
+ * A row naming an airport that cannot be resolved has to fail, not import.
+ * There is no foreign key on the airport columns and they now hold 16
+ * characters, so an unresolved id saves clean and leaves the flight pointing
+ * at an airport that does not exist. `distance` is supplied on purpose: it is
+ * what skips the distance calculation that would otherwise have failed first.
+ */
+test('flight importer fails a row whose airport cannot be resolved', function (): void {
+    insertFlightsScaffoldData();
+
+    expect(setting('general.auto_airport_lookup'))->toBeFalsy();
+
+    $path = tempnam(sys_get_temp_dir(), 'flights').'.csv';
+    file_put_contents($path, <<<'CSV'
+        airline,flight_number,route_code,callsign,route_leg,dpt_airport,arr_airport,alt_airport,days,dpt_time,arr_time,level,distance,flight_time,flight_type,load_factor,load_factor_variance,pilot_pay,route,notes,start_date,end_date,active,subfleets,fares,fields,event_id,user_id
+        VMS,2201,,,,V1a2B3c4D5e6F7g8,Wm4kZ2tQ8bYn,,,0800 CST,1100 CST,350,500,180,J,,,,,,,,1,A32X,,,,
+        CSV);
+
+    $status = app(ImportService::class)->importFlights($path);
+    unlink($path);
+
+    expect($status['errors'])->toHaveCount(1)
+        ->and(Flight::where('flight_number', 2201)->exists())->toBeFalse();
+});

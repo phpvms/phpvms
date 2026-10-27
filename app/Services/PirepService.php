@@ -95,18 +95,49 @@ class PirepService extends Service
         // Check if the airports listed actually exist or not. If they're not in the local DB
         // throw an error which should bubble up to say that they don't
         if (setting('general.allow_unadded_airports', false) === true) {
-            $this->airportSvc->lookupAirportIfNotFound($pirep->dpt_airport_id);
-            $this->airportSvc->lookupAirportIfNotFound($pirep->arr_airport_id);
-        } else {
-            $dptApt = Airport::find($pirep->dpt_airport_id);
-            if (!$dptApt) {
+            // Same as flight creation: the lookup may store the airport under
+            // the catalog's id, so the PIREP takes the id it resolved to
+            // rather than the value it asked about.
+            //
+            // `AirportNotFound` when it resolves to nothing, rather than
+            // keeping the submitted value: the lookup returns null when the
+            // catalog has no such airport and when the value is too wide to
+            // invent one for, and there is no foreign key on this column to
+            // catch what that would otherwise write. Saving a PIREP whose
+            // departure airport does not exist is the worse outcome -- the
+            // relation reads null for the rest of its life.
+            $dptApt = $this->airportSvc->lookupAirportIfNotFound($pirep->dpt_airport_id);
+            if (!$dptApt instanceof Airport) {
                 throw new AirportNotFound($pirep->dpt_airport_id);
             }
 
-            $arrApt = Airport::find($pirep->arr_airport_id);
-            if (!$arrApt) {
+            $pirep->dpt_airport_id = $dptApt->id;
+
+            $arrApt = $this->airportSvc->lookupAirportIfNotFound($pirep->arr_airport_id);
+            if (!$arrApt instanceof Airport) {
                 throw new AirportNotFound($pirep->arr_airport_id);
             }
+
+            $pirep->arr_airport_id = $arrApt->id;
+        } else {
+            // Resolved by id *or* ICAO, not by id alone: an airport the
+            // catalog added is stored under a generated id, so a client that
+            // names it by its ICAO would otherwise be told an airport that is
+            // right here does not exist. The id it resolved to is what the
+            // PIREP stores, same as the branch above.
+            $dptApt = $this->airportSvc->findAirport((string) $pirep->dpt_airport_id);
+            if (!$dptApt instanceof Airport) {
+                throw new AirportNotFound($pirep->dpt_airport_id);
+            }
+
+            $pirep->dpt_airport_id = $dptApt->id;
+
+            $arrApt = $this->airportSvc->findAirport((string) $pirep->arr_airport_id);
+            if (!$arrApt instanceof Airport) {
+                throw new AirportNotFound($pirep->arr_airport_id);
+            }
+
+            $pirep->arr_airport_id = $arrApt->id;
         }
 
         // See if this user is at the current airport

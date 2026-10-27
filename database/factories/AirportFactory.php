@@ -51,15 +51,34 @@ class AirportFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => function (): string {
+            // An id and an ICAO are separate values now that the model's
+            // `icao` mutator no longer writes both, but a caller that names
+            // only one still expects the other to follow it -- so each of
+            // these defaults to whichever was supplied. Laravel expands the
+            // definition in key order and hands each closure what it has
+            // resolved so far, so `id` sees an overridden `icao` as a literal
+            // string while an unsupplied one is still an unresolved closure.
+            'id' => function (array $apt): string {
+                if (is_string($apt['icao'] ?? null)) {
+                    return strtoupper($apt['icao']);
+                }
+
                 do {
                     $airport = $this->createFactoryICAO();
                 } while (in_array($airport, $this->usedIcaos, true));
 
                 return $airport;
             },
-            'icao'                 => fn (array $apt) => $apt['id'],
-            'iata'                 => fn (array $apt) => $apt['id'],
+            // Only when it fits: `icao` is 8 wide, so an id at the airport
+            // id column's full 16 would overflow it. A wider id gets a
+            // generated ICAO instead, which is the right shape anyway -- a
+            // generated id has no ICAO to be.
+            'icao' => fn (array $apt) => strlen((string) $apt['id']) <= 8
+                ? $apt['id']
+                : $this->createFactoryICAO(),
+            // From the ICAO, not the id: an id wide enough for its own column
+            // would not fit in `iata`.
+            'iata'                 => fn (array $apt) => $apt['icao'],
             'name'                 => fake()->sentence(3),
             'country'              => fake()->country(),
             'timezone'             => fake()->timezone(),

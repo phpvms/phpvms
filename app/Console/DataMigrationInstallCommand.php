@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Commands;
+namespace App\Console;
 
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -27,6 +27,18 @@ use Jlorente\DataMigrations\Console\Commands\InstallCommand as BaseInstallComman
  *
  * Declaring the signature here — name included — is what survives the upstream
  * change, since a subclass signature overrides the parent's.
+ *
+ * It sits in `app/Console` rather than `app/Console/Commands` on purpose.
+ * Laravel auto-discovers the latter and registers what it finds by class name,
+ * which means the container autowires the constructor. Two things go wrong
+ * there: the inherited `MigrationRepositoryInterface` parameter has no binding
+ * in core Laravel at all (only `kitloong/laravel-migrations-generator`, a dev
+ * dependency, binds it), so a `--no-dev` install cannot build the class; and
+ * when it can, autowiring hands it the core `migrations` repository, so the
+ * discovered instance overwrites the correct registration and the command
+ * installs the wrong table. Out of that directory, the only thing that builds
+ * it is the `command.migrate-data.install` binding in AppServiceProvider, which
+ * passes `migration.data.repository`.
  */
 #[Description('Create the data migration repository')]
 #[Signature('migrate-data:install {--database= : The database connection to use}')]

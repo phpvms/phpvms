@@ -100,13 +100,13 @@ use UnitEnum;
  * @method static Builder<static>|Flight flightTimeAtMost(int $minutes)
  * @method static Builder<static>|Flight forAirline(int $airlineId)
  * @method static Builder<static>|Flight forTypeRating(int $typeRatingId)
- * @method static Builder<static>|Flight fromAirport(string $icao)
+ * @method static Builder<static>|Flight fromAirport(string $airportId)
  * @method static Builder<static>|Flight newModelQuery()
  * @method static Builder<static>|Flight newQuery()
  * @method static Builder<static>|Flight onlyTrashed()
  * @method static Builder<static>|Flight query()
  * @method static Builder<static>|Flight sortable($defaultParameters = null)
- * @method static Builder<static>|Flight toAirport(string $icao)
+ * @method static Builder<static>|Flight toAirport(string $airportId)
  * @method static Builder<static>|Flight visible()
  * @method static Builder<static>|Flight whereEnabled($value)
  * @method static Builder<static>|Flight whereAirlineId($value)
@@ -318,31 +318,34 @@ class Flight extends Model
     }
 
     /**
-     * Normalize departure airport ICAO at write time: uppercase + trim.
-     * Single-row write paths (admin form, FlightImporter, manual save) flow
-     * through this mutator; the RouteForge bulk-insert path normalizes
-     * explicitly in `RouteForgeService::buildFlightAttrs()` because
-     * `Model::insert()` bypasses Eloquent's attribute machinery.
+     * Trim the departure airport id at write time.
+     *
+     * This used to upper-case it as well, on the assumption that the column
+     * holds an ICAO code. It holds a foreign key to `airports.id`, and an id
+     * is matched as given -- folding its case mangled any id that was not
+     * already upper-case, so the row stopped matching the airport it names.
+     * Trimming stays: no id has leading or trailing whitespace, and callers
+     * pass values straight out of a form or a CSV.
      */
     protected function dptAirportId(): Attribute
     {
         return Attribute::make(
             set: fn (?string $value): ?string => $value === null
                 ? null
-                : strtoupper(trim($value)),
+                : trim($value),
         );
     }
 
     /**
-     * Normalize arrival airport ICAO at write time: uppercase + trim.
-     * Same single-row-vs-bulk caveat as `dptAirportId()`.
+     * Trim the arrival airport id at write time. Same reasoning as
+     * `dptAirportId()`.
      */
     protected function arrAirportId(): Attribute
     {
         return Attribute::make(
             set: fn (?string $value): ?string => $value === null
                 ? null
-                : strtoupper(trim($value)),
+                : trim($value),
         );
     }
 
@@ -741,16 +744,29 @@ class Flight extends Model
         return $query->where('airline_id', $airlineId);
     }
 
+    /**
+     * Match the departure airport id exactly.
+     *
+     * No case folding here on purpose. An airport id happens to be an ICAO
+     * code today, so these two columns hold uppercase values, but the id is
+     * moving to a generated nanoid -- which is case-sensitive and carries
+     * digits, `-` and `_`. Upper-casing an id is only ever right while the id
+     * is a code, so the caller that accepts an ICAO normalises it instead
+     * (see FlightSearchQuery::applyAirportFilters()).
+     */
     #[Scope]
-    protected function fromAirport(Builder $query, string $icao): Builder
+    protected function fromAirport(Builder $query, string $airportId): Builder
     {
-        return $query->where('dpt_airport_id', strtoupper($icao));
+        return $query->where('dpt_airport_id', $airportId);
     }
 
+    /**
+     * Match the arrival airport id exactly. See fromAirport() above.
+     */
     #[Scope]
-    protected function toAirport(Builder $query, string $icao): Builder
+    protected function toAirport(Builder $query, string $airportId): Builder
     {
-        return $query->where('arr_airport_id', strtoupper($icao));
+        return $query->where('arr_airport_id', $airportId);
     }
 
     #[Scope]
