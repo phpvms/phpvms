@@ -29,3 +29,17 @@ it('keeps the decimals of the average passenger and bag weights', function (): v
     expect($weights->pax_weight)->toBe(85.729)
         ->and($weights->bag_weight)->toBe(24.948);
 });
+
+it('parses an ATIS that SimBrief sends without an issue time', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $atis = ['network' => 'vatsim', 'letter' => 'T', 'phonetic' => 'TANGO', 'type' => 'DEP', 'message' => 'INFORMATION T'];
+    $ofp['destination']['atis'] = [
+        [...$atis, 'issued' => []],
+        [...$atis, 'issued' => '2026-10-27T21:00:00Z'],
+    ];
+
+    $parsed = SimBriefOfp::from($ofp)->destination->atis;
+
+    expect($parsed[0]->issued)->toBeNull()
+        ->and($parsed[1]->issued?->toIso8601ZuluString())->toBe('2026-10-27T21:00:00Z');
+});
