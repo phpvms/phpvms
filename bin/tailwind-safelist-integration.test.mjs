@@ -62,10 +62,18 @@ async function compileEntry(entryPath) {
   }
 }
 
-/** True if no tracked file in the repo contains `needle` (git grep, exit 1 = no match). */
+/**
+ * True if no tracked file in the repo — other than this test file, which
+ * necessarily names the probe class — contains `needle` (git grep, exit 1 = no
+ * match).
+ */
 function unusedAnywhereInRepo(needle) {
   try {
-    execFileSync("git", ["grep", "-q", "--", needle], { cwd: REPO_ROOT });
+    execFileSync(
+      "git",
+      ["grep", "-q", "--", needle, ":(exclude)bin/tailwind-safelist-integration.test.mjs"],
+      { cwd: REPO_ROOT },
+    );
     return false; // grep found a match
   } catch (error) {
     if (error.status === 1) {

@@ -48,3 +48,26 @@ describe("tag-kind widgets are a separate catalog", () => {
     expect(tagWidgets()).toHaveLength(0);
   });
 });
+
+// The server registers the first-party elements (SkylightServiceProvider::boot)
+// and shares them as `kind: 'tag'`; this is the shape the SPA receives.
+describe("first-party elements in the tag catalog", () => {
+  it("pv-hero, pv-callout and pv-stat-group appear in tagWidgets() only", () => {
+    const element = (id: string, attrs: string[]): WidgetDef => ({
+      ...base,
+      id,
+      kind: "tag",
+      tag: id,
+      module: "/build/skylight/elements.js",
+      attributes: attrs.map((name) => ({ name, type: "string", description: name })),
+    });
+    mergeServerWidgets([
+      element("pv-hero", ["heading", "eyebrow"]),
+      element("pv-callout", ["variant"]),
+      element("pv-stat-group", ["items"]),
+    ]);
+
+    expect(tagWidgets().map((w) => w.tag)).toEqual(["pv-hero", "pv-callout", "pv-stat-group"]);
+    expect(getCatalog().some((w) => w.kind === "tag")).toBe(false);
+  });
+});
