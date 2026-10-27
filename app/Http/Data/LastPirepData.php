@@ -69,7 +69,8 @@ final class LastPirepData extends Data
 
     private static function airport(?object $a): ?AirportPointData
     {
-        return $a ? new AirportPointData(
+        // The Pirep relations use withDefault(), so a missing airport arrives as an empty model.
+        return $a?->id !== null ? new AirportPointData(
             id: $a->id,
             icao: $a->icao,
             name: $a->name,
