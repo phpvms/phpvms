@@ -87,7 +87,10 @@ class AirportsTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    EditAction::make(),
+                    EditAction::make()
+                        // The form has no id field (it keys on the ICAO), and the
+                        // id need not match the ICAO, so show which row this is.
+                        ->modalDescription(fn (Airport $record): string => __('airports.id_description', ['id' => $record->id])),
                     DeleteAction::make(),
                     ForceDeleteAction::make()->before(callback: function (Airport $record): void {
                         $record->files()->each(function (File $file): void {
