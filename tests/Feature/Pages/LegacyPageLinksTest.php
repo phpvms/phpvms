@@ -7,6 +7,7 @@ use App\Http\Composers\PageLinksComposer;
 use App\Models\Page;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Mockery\MockInterface;
 
 /**
  * The `seven` theme's menu, as `PageLinksComposer` hands it to the view.
@@ -17,6 +18,7 @@ function legacyPageLinks(): Collection
 {
     $captured = null;
 
+    /** @var View&MockInterface $view */
     $view = Mockery::mock(View::class);
     $view->shouldReceive('with')
         ->with('page_links', Mockery::capture($captured))

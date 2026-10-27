@@ -152,7 +152,7 @@ it('bulk delete leaves a parent and its children and removes leaves', function (
 });
 
 it('offers only GET routes as menu targets', function (): void {
-    $options = Closure::bind(fn (): array => static::routeOptions(), null, NavigationItemForm::class)();
+    $options = new ReflectionMethod(NavigationItemForm::class, 'routeOptions')->invoke(null);
 
     // A menu link is a GET, so a POST-only route would open the wrong handler.
     expect($options)->toHaveKey('frontend.dashboard.index')
