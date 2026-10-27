@@ -10,6 +10,7 @@ use App\Filament\Exports\AirportExporter;
 use App\Filament\Imports\AirportImporter;
 use App\Filament\Resources\Airports\AirportResource;
 use App\Filament\Resources\Airports\Schemas\AirportForm;
+use App\Jobs\PopulateMissingAirports;
 use App\Models\Airport;
 use App\Services\AirportService;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -44,6 +45,13 @@ class ListAirports extends ListRecords
     /** @var array<string, array<string, mixed>> */
     public array $queuedAirports = [];
 
+    /**
+     * What the missing-airports drawer lists, read when it opens.
+     *
+     * @var array<string, int> airport id => number of references
+     */
+    public array $missingAirports = [];
+
     #[Override]
     protected function getHeaderActions(): array
     {
@@ -61,6 +69,39 @@ class ListAirports extends ListRecords
             ExportAction::make('export')
                 ->visible(config('phpvms.use_queued_filament_imports'))
                 ->exporter(AirportExporter::class),
+
+            Drawer::configure(
+                Action::make('findMissingAirports')
+                    ->label(__('airports.find_missing'))
+                    ->icon(Phosphor::MagnifyingGlassLight)
+                    ->color('gray')
+                    ->visible(fn (): bool => Gate::allows('create', Airport::class))
+                    ->modalHeading(__('airports.find_missing'))
+                    ->modalDescription(__('airports.find_missing_description'))
+                    ->modalSubmitActionLabel(__('airports.populate_from_api'))
+                    ->modalSubmitAction(fn (Action $action): Action|false => $this->missingAirports === [] ? false : $action)
+                    ->mountUsing(function (AirportService $airportService): void {
+                        $this->missingAirports = $airportService->findMissingAirportIds();
+                    })
+                    ->action(fn (AirportService $airportService) => $this->populateMissingAirports($airportService)),
+                [
+                    TextEntry::make('noMissingAirports')
+                        ->hiddenLabel()
+                        ->state(__('airports.no_missing_airports'))
+                        ->visible(fn (): bool => $this->missingAirports === []),
+                    TextEntry::make('missingAirports')
+                        ->label(__('airports.missing_airports'))
+                        ->helperText(__('airports.missing_airports_helper'))
+                        ->state(fn (): array => collect($this->missingAirports)
+                            ->map(fn (int $count, int|string $airportId): string => $airportId.' · '.$count)
+                            ->values()
+                            ->all())
+                        ->badge()
+                        ->color('gray')
+                        ->visible(fn (): bool => $this->missingAirports !== [])
+                        ->columnSpanFull(),
+                ],
+            ),
 
             Drawer::configure(
                 Action::make('addAirports')
@@ -129,6 +170,35 @@ class ListAirports extends ListRecords
                 Width::TwoExtraLarge,
             ),
         ];
+    }
+
+    /**
+     * Queue the lookup for every airport id still missing. Re-read rather than
+     * taken from the drawer, so an airport added since it opened is skipped.
+     */
+    public function populateMissingAirports(AirportService $airportService): void
+    {
+        if (!Gate::allows('create', Airport::class)) {
+            Notification::make()->title(__('common.not_authorized'))->danger()->send();
+
+            return;
+        }
+
+        $airportIds = array_map(strval(...), array_keys($airportService->findMissingAirportIds()));
+
+        if ($airportIds === []) {
+            return;
+        }
+
+        PopulateMissingAirports::dispatch($airportIds, auth()->id());
+
+        Notification::make()
+            ->title(trans_choice('airports.missing_queued', count($airportIds), ['count' => count($airportIds)]))
+            ->body(__('airports.missing_queued_body'))
+            ->success()
+            ->send();
+
+        $this->resetTable();
     }
 
     /**
