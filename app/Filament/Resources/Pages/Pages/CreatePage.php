@@ -10,7 +10,10 @@ use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Pages\PageResource;
 use App\Models\NavigationItem;
 use App\Models\Page;
+use App\Services\PageService;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Override;
 
 class CreatePage extends CreateRecord
@@ -23,6 +26,21 @@ class CreatePage extends CreateRecord
     protected function getFormActions(): array
     {
         return $this->reversePrimaryButtons(parent::getFormActions());
+    }
+
+    /**
+     * Losing a race for a path surfaces as the field error, not a 500.
+     *
+     * @param array<string, mixed> $data
+     */
+    #[Override]
+    protected function handleRecordCreation(array $data): Model
+    {
+        try {
+            return parent::handleRecordCreation($data);
+        } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
+            throw app(PageService::class)->toPathValidationException($uniqueConstraintViolationException, 'data.path');
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Enums\NavigationTarget;
 use App\Enums\PageType;
 use App\Models\NavigationItem;
 use App\Models\Page;
+use App\Services\NavigationService;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -42,6 +43,8 @@ class NavigationItemForm
 
                                 TextInput::make('icon')
                                     ->label(__('common.icon'))
+                                    ->helperText(__('filament.navigation_items.icon_helper'))
+                                    ->regex(NavigationService::ICON_PATTERN)
                                     ->string(),
                             ])
                             ->columnSpanFull()

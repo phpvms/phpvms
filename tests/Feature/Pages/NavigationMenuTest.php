@@ -6,6 +6,7 @@ use App\Models\NavigationItem;
 use App\Models\Page;
 use App\Services\NavigationService;
 use App\Services\PageService;
+use Illuminate\Support\Facades\Validator;
 
 beforeEach(function (): void {
     $this->nav = app(NavigationService::class);
@@ -112,4 +113,24 @@ it('makes route and page targets in-app visits and URL targets plain links', fun
     NavigationItem::factory()->create(['sort' => 3]);
 
     expect(array_column($this->nav->menu(true), 'spa'))->toBe([true, true, false]);
+});
+
+it('passes a plain icon name through to the menu', function (): void {
+    NavigationItem::factory()->create(['label' => 'Home', 'icon' => 'i-tabler-plane']);
+
+    expect($this->nav->menu(true)[0]['icon'])->toBe('i-tabler-plane');
+});
+
+it('drops an icon that is markup rather than a name', function (): void {
+    NavigationItem::factory()->create(['label' => 'Home', 'icon' => '<svg onload="alert(1)"></svg>']);
+
+    expect($this->nav->menu(true)[0]['icon'])->toBeNull();
+});
+
+it('rejects markup in the menu item form icon rule', function (): void {
+    $rules = ['icon' => ['string', 'regex:'.NavigationService::ICON_PATTERN]];
+
+    expect(Validator::make(['icon' => '<svg onload="x"></svg>'], $rules)->fails())->toBeTrue()
+        ->and(Validator::make(['icon' => 'PlaneArrival'], $rules)->passes())->toBeTrue()
+        ->and(Validator::make(['icon' => 'layout-dashboard'], $rules)->passes())->toBeTrue();
 });

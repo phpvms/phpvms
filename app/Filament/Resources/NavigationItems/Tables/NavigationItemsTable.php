@@ -91,7 +91,8 @@ class NavigationItemsTable
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
-                    DeleteAction::make(),
+                    DeleteAction::make()
+                        ->hidden(fn (NavigationItem $record): bool => $record->children()->exists()),
                 ]),
             ])
             ->toolbarActions([

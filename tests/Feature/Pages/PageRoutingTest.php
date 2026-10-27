@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Enums\PageType;
 use App\Models\Page;
 use App\Models\User;
 use App\Services\PageService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
@@ -78,24 +80,11 @@ it('404s a claimed path once the page is unpublished', function (): void {
     $this->get('/about')->assertNotFound();
 });
 
-it('lets two pages exchange paths', function (): void {
-    $pages = app(PageService::class);
+it('refuses a second page on a path another page holds, draft or published', function (): void {
+    Page::factory()->claiming('/one')->create(['name' => 'First']);
 
-    $first = Page::factory()->published()->claiming('/one')->create(['name' => 'First']);
-    $second = Page::factory()->published()->claiming('/two')->create(['name' => 'Second']);
-
-    // Both have to be released before either can take the other's path.
-    $pages->unpublish($first);
-    $pages->unpublish($second);
-
-    $first->forceFill(['path' => '/two'])->save();
-    $second->forceFill(['path' => '/one'])->save();
-
-    $pages->publish($first);
-    $pages->publish($second);
-
-    expect($pages->resolve('/two')->name)->toBe('First')
-        ->and($pages->resolve('/one')->name)->toBe('Second');
+    expect(fn () => Page::factory()->claiming('/one')->create(['name' => 'Second']))
+        ->toThrow(UniqueConstraintViolationException::class);
 });
 
 // `HasSlug` rewrites `slug` from `name` on every save, so the slug has to be
@@ -220,4 +209,33 @@ it('reports the alternate verbs a post-only route accepts', function (): void {
 it('reports no alternate verbs for a path nothing answers', function (): void {
     expect(app(PageService::class)->alternateMethodsFor(Request::create('/nothing-here', 'GET')))
         ->toBe([]);
+});
+
+it('404s a published page once it is switched to a link, and frees its path', function (): void {
+    anInstalledSite();
+    $page = Page::factory()->published()->claiming('/about')->create();
+
+    $this->get('/about')->assertOk();
+
+    $page->forceFill(['type' => PageType::LINK, 'link' => 'https://example.test'])->save();
+
+    $this->get('/about')->assertNotFound();
+    expect($page->refresh()->path)->toBeNull();
+
+    $other = Page::factory()->published()->claiming('/about')->create(['name' => 'Other']);
+    expect(app(PageService::class)->pathIsAvailable('/about', $other))->toBeTrue()
+        ->and(app(PageService::class)->resolve('/about')->is($other))->toBeTrue();
+});
+
+it('drops a query string or fragment from a claimed path', function (): void {
+    expect(Page::normalisePath('/about?ref=x'))->toBe('/about')
+        ->and(Page::normalisePath('about/#team'))->toBe('/about')
+        ->and(Page::normalisePath('/?utm=1'))->toBe('/')
+        ->and(Page::normalisePath('?ref=x'))->toBe('/');
+
+    anInstalledSite();
+    $page = Page::factory()->published()->claiming('/about?ref=x')->create();
+
+    $this->get('/about')->assertOk();
+    expect($page->refresh()->path)->toBe('/about');
 });

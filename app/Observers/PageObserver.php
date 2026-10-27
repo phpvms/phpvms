@@ -13,15 +13,19 @@ use App\Models\Page;
  * because two of the three target kinds are not rows. That buys the flexibility
  * but costs the database's own cleanup, so deleting a page has to take its
  * navigation entries with it here — otherwise the menu keeps an entry that
- * resolves to nothing.
+ * resolves to nothing. An entry that still has children is kept: it becomes a
+ * group heading, and deleting it would cascade through the foreign key to them.
  */
 class PageObserver
 {
     public function deleted(Page $page): void
     {
-        NavigationItem::query()
+        $leafIds = NavigationItem::query()
             ->where('target_type', NavigationTarget::PAGE)
             ->where('target_value', (string) $page->id)
-            ->delete();
+            ->whereDoesntHave('children')
+            ->pluck('id');
+
+        NavigationItem::query()->whereKey($leafIds)->delete();
     }
 }

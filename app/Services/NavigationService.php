@@ -19,6 +19,13 @@ use Illuminate\Support\Facades\Route;
 class NavigationService extends Service
 {
     /**
+     * What a menu icon may look like: a bare icon name (`layout-dashboard`,
+     * `i-tabler-plane`, `PlaneArrival`), never markup. The SPA renders values
+     * starting with `<` as raw HTML, so anything else must not reach it.
+     */
+    public const string ICON_PATTERN = '/^[A-Za-z0-9_:-]+$/D';
+
+    /**
      * The menu a viewer should see, ordered and nested.
      *
      * Items are dropped rather than rendered broken when their target has gone:
@@ -92,7 +99,7 @@ class NavigationService extends Service
             $branch[] = [
                 'label'      => $this->labelFor($item),
                 'url'        => $url ?? '',
-                'icon'       => $item->icon,
+                'icon'       => $this->iconFor($item),
                 'new_window' => $item->new_window,
                 // Route and page targets are in-app visits; a URL target may
                 // point anywhere, so it is a plain link.
@@ -126,6 +133,16 @@ class NavigationService extends Service
         $translated = __($label);
 
         return is_string($translated) ? $translated : $label;
+    }
+
+    /**
+     * The icon name, or null when the stored value is not a plain name.
+     */
+    private function iconFor(NavigationItem $item): ?string
+    {
+        $icon = $item->icon;
+
+        return is_string($icon) && preg_match(self::ICON_PATTERN, $icon) === 1 ? $icon : null;
     }
 
     /**

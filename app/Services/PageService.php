@@ -9,6 +9,7 @@ use App\Enums\PageStatus;
 use App\Models\Page;
 use App\Models\PageRevision;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -47,8 +48,9 @@ class PageService extends Service
     /**
      * Whether a page may claim this path.
      *
-     * Two ways to fail: another live page already claims it, or a registered
-     * route already answers it. The second check runs the router's own matcher
+     * Two ways to fail: another page already holds it (published or draft; a
+     * path is held by at most one page, and the database enforces it), or a
+     * registered route already answers it. The second check runs the router's own matcher
      * rather than a hand-rolled comparison, so `page/{slug}` and `pilots/{id}`
      * are recognised as taken without listing them here.
      */
@@ -57,7 +59,6 @@ class PageService extends Service
         $normalised = Page::normalisePath($path);
 
         $claimed = Page::query()
-            ->live()
             ->byPath($normalised)
             ->when($ignoring instanceof Page, fn ($q) => $q->whereKeyNot($ignoring->getKey()))
             ->exists();
@@ -133,7 +134,7 @@ class PageService extends Service
      * revision of its own, so the outgoing body is retained first; otherwise the
      * first publish after upgrade would destroy it.
      *
-     * @throws ValidationException When another live page already claims the path.
+     * @throws ValidationException When another page holds the path or a route answers it.
      */
     public function publish(Page $page, ?User $by = null): Page
     {
@@ -141,11 +142,15 @@ class PageService extends Service
             $this->assertPathUnclaimed($page);
             $this->retainOutgoingContent($page);
 
-            $page->forceFill([
-                'body'         => $page->draft_body,
-                'status'       => PageStatus::PUBLISHED,
-                'published_at' => now(),
-            ])->save();
+            try {
+                $page->forceFill([
+                    'body'         => $page->draft_body,
+                    'status'       => PageStatus::PUBLISHED,
+                    'published_at' => now(),
+                ])->save();
+            } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
+                throw $this->toPathValidationException($uniqueConstraintViolationException);
+            }
 
             PageRevision::create([
                 'page_id'      => $page->id,
@@ -159,8 +164,9 @@ class PageService extends Service
     }
 
     /**
-     * A draft may save a path another page has since published; this is the
-     * last check before two live pages would claim the same URL.
+     * The last check before a page goes live on a path: another page may have
+     * been saved onto it, or a route may have been registered over it, since the
+     * author chose it. Uses the same route check as the form.
      *
      * @throws ValidationException
      */
@@ -170,17 +176,47 @@ class PageService extends Service
             return;
         }
 
+        if ($this->pathIsReserved($page->path)) {
+            throw ValidationException::withMessages([
+                'path' => __('filament.system_pages.path_taken_route'),
+            ]);
+        }
+
         $claimed = Page::query()
-            ->live()
             ->byPath($page->path)
             ->whereKeyNot($page->getKey())
             ->exists();
 
         if ($claimed) {
             throw ValidationException::withMessages([
-                'path' => __('filament.system_pages.path_taken_page'),
+                'path' => __('filament.system_pages.path_claimed'),
             ]);
         }
+    }
+
+    /**
+     * Whether a unique-constraint failure was on the path column, so callers
+     * can turn it into the same validation error the up-front check gives.
+     */
+    public function isPathViolation(UniqueConstraintViolationException $exception): bool
+    {
+        return str_contains($exception->getMessage(), 'path');
+    }
+
+    /**
+     * The validation error for losing a race to claim a path.
+     *
+     * @param string $key The error key; Livewire forms prefix their state with `data.`.
+     */
+    public function toPathValidationException(UniqueConstraintViolationException $exception, string $key = 'path'): ValidationException|UniqueConstraintViolationException
+    {
+        if (!$this->isPathViolation($exception)) {
+            return $exception;
+        }
+
+        return ValidationException::withMessages([
+            $key => __('filament.system_pages.path_claimed'),
+        ]);
     }
 
     /**
@@ -208,8 +244,8 @@ class PageService extends Service
     /**
      * Take a page offline.
      *
-     * The path claim goes with it — `live()` is what enforces uniqueness, so an
-     * unpublished page holds nothing and another page may take the path. The old
+     * The page keeps its path -- a path is held by at most one page, published or
+     * not -- but stops answering it. The old
      * URL 404s rather than redirecting: there is no target to redirect to, and
      * 410 would assert a permanence the author has not asserted.
      */

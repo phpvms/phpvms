@@ -141,8 +141,8 @@ class PageForm
     }
 
     /**
-     * Reject a path the site already answers, or one another published page has
-     * taken. Checked on save rather than discovered at render time, so an author
+     * Reject a path the site already answers, or one another page (published or
+     * draft) already holds. Checked on save rather than discovered at render time, so an author
      * finds out while they are still looking at the field.
      *
      * Wrapped in an outer function because Filament evaluates entries in
@@ -167,7 +167,7 @@ class PageForm
             }
 
             if (!$pages->pathIsAvailable($path, $record)) {
-                $fail(__('filament.system_pages.path_taken_page'));
+                $fail(__('filament.system_pages.path_claimed'));
             }
         };
     }

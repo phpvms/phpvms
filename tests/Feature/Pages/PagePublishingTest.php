@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\PageRevision;
 use App\Models\User;
 use App\Services\PageService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function (): void {
@@ -54,7 +55,7 @@ it('restores a revision to the draft without changing the live page', function (
     $this->pages->publish($page);
 
     /** @var PageRevision $first */
-    $first = $page->revisions()->orderBy('id')->first();
+    $first = $page->revisions()->reorder('id')->first();
 
     $this->pages->restoreRevision($page, $first);
 
@@ -69,7 +70,7 @@ it('serves the earlier content once a restored revision is published', function 
     $page->forceFill(['draft_body' => 'Second'])->save();
     $this->pages->publish($page);
 
-    $this->pages->restoreRevision($page, $page->revisions()->orderBy('id')->first());
+    $this->pages->restoreRevision($page, $page->revisions()->reorder('id')->first());
     $this->pages->publish($page);
 
     expect($page->refresh()->body)->toBe('First');
@@ -85,22 +86,52 @@ it('keeps the overwritten version restorable after a last-write-wins collision',
 
     expect($page->refresh()->body)->toBe('Author B')
         // The point of declaring last-write-wins: recovery still exists.
-        ->and($page->revisions()->orderBy('id')->first()->body)->toBe('Author A');
+        ->and($page->revisions()->reorder('id')->first()->body)->toBe('Author A');
 });
 
-it('releases the path on unpublish and lets another page take it', function (): void {
+it('stops answering a path on unpublish but keeps it reserved for that page', function (): void {
     $first = Page::factory()->published()->claiming('/about')->create(['name' => 'Old About']);
 
     expect($this->pages->pathIsAvailable('/about'))->toBeFalse();
 
     $this->pages->unpublish($first);
 
-    expect($this->pages->pathIsAvailable('/about'))->toBeTrue()
-        ->and($this->pages->resolve('/about'))->toBeNull();
+    expect($this->pages->resolve('/about'))->toBeNull()
+        ->and($this->pages->pathIsAvailable('/about'))->toBeFalse()
+        ->and($this->pages->pathIsAvailable('/about', $first))->toBeTrue();
+});
 
-    $second = Page::factory()->published()->claiming('/about')->create(['name' => 'New About']);
+it('treats a path held by a draft as unavailable', function (): void {
+    $draft = Page::factory()->claiming('/about')->create();
 
-    expect($this->pages->resolve('/about')->is($second))->toBeTrue();
+    expect($this->pages->pathIsAvailable('/about'))->toBeFalse()
+        ->and($this->pages->pathIsAvailable('/about', $draft))->toBeTrue();
+});
+
+it('refuses to publish a draft whose path a route now owns', function (): void {
+    $page = Page::factory()->claiming('/livemap')->create(['draft_body' => 'Mine']);
+
+    expect(fn () => $this->pages->publish($page))->toThrow(ValidationException::class);
+
+    expect($page->refresh()->status)->toBe(PageStatus::DRAFT)
+        ->and($page->body)->toBeNull()
+        ->and($page->revisions()->count())->toBe(0);
+});
+
+it('turns a unique-index violation on save into a path validation error', function (): void {
+    Page::factory()->claiming('/about')->create();
+    $page = Page::factory()->create();
+
+    try {
+        $page->forceFill(['path' => '/about'])->save();
+    } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
+        expect($this->pages->isPathViolation($uniqueConstraintViolationException))->toBeTrue()
+            ->and($this->pages->toPathValidationException($uniqueConstraintViolationException))->toBeInstanceOf(ValidationException::class);
+
+        return;
+    }
+
+    $this->fail('Expected a unique violation.');
 });
 
 it('treats a path claimed by a registered route as unavailable', function (): void {
@@ -173,13 +204,10 @@ it('does not duplicate a revision that already holds the outgoing body', functio
     expect($page->revisions()->count())->toBe(2);
 });
 
-it('refuses to publish onto a path another live page claims', function (): void {
+it('cannot reach a state where a draft holds a path a live page claims', function (): void {
     Page::factory()->published()->claiming('/about')->create();
-    $page = Page::factory()->claiming('/about')->create(['draft_body' => 'Mine']);
 
-    expect(fn () => $this->pages->publish($page))->toThrow(ValidationException::class);
-
-    expect($page->refresh()->status)->toBe(PageStatus::DRAFT)
-        ->and($page->body)->toBeNull()
-        ->and($page->revisions()->count())->toBe(0);
+    // Previously publish() had to catch this; the unique index now stops it earlier.
+    expect(fn () => Page::factory()->claiming('/about')->create(['draft_body' => 'Mine']))
+        ->toThrow(UniqueConstraintViolationException::class);
 });

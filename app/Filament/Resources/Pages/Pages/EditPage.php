@@ -15,6 +15,8 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
 use Override;
 
@@ -28,6 +30,21 @@ class EditPage extends EditRecord
     protected function getFormActions(): array
     {
         return $this->reversePrimaryButtons(parent::getFormActions());
+    }
+
+    /**
+     * Losing a race for a path surfaces as the field error, not a 500.
+     *
+     * @param array<string, mixed> $data
+     */
+    #[Override]
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        try {
+            return parent::handleRecordUpdate($record, $data);
+        } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
+            throw app(PageService::class)->toPathValidationException($uniqueConstraintViolationException, 'data.path');
+        }
     }
 
     #[Override]

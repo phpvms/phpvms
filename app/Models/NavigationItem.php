@@ -74,6 +74,17 @@ class NavigationItem extends Model
         'target_type' => 'required',
     ];
 
+    /**
+     * The parent_id foreign key cascades, so deleting an item that still has
+     * children would silently delete its whole subtree. Refuse instead; the
+     * item has to be emptied first.
+     */
+    #[Override]
+    protected static function booted(): void
+    {
+        static::deleting(fn (NavigationItem $item): bool => !$item->children()->exists());
+    }
+
     #[Override]
     protected function casts(): array
     {

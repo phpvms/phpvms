@@ -120,6 +120,20 @@ class Page extends Model
         );
     }
 
+    /**
+     * A link has no page body to serve, so it cannot hold a path. Clearing it on
+     * save releases the claim the moment a page is switched to a link.
+     */
+    #[Override]
+    protected static function booted(): void
+    {
+        static::saving(function (Page $page): void {
+            if ($page->type === PageType::LINK) {
+                $page->path = null;
+            }
+        });
+    }
+
     #[Override]
     protected function casts(): array
     {
@@ -138,7 +152,8 @@ class Page extends Model
      */
     public function revisions(): HasMany
     {
-        return $this->hasMany(PageRevision::class, 'page_id')->latest('published_at');
+        // `id` breaks ties: two publishes inside one second share a timestamp.
+        return $this->hasMany(PageRevision::class, 'page_id')->latest('published_at')->latest('id');
     }
 
     #[Scope]
@@ -150,7 +165,7 @@ class Page extends Model
     #[Scope]
     protected function byPath(Builder $q, string $path): Builder
     {
-        return $q->where('path', static::normalisePath($path));
+        return $q->where('type', PageType::PAGE)->where('path', static::normalisePath($path));
     }
 
     /**
@@ -171,11 +186,13 @@ class Page extends Model
      * One spelling for a claimed path, so `/about`, `about` and `about/` cannot
      * become three different claims on the same URL.
      *
-     * The root is the one path that stays as a bare slash.
+     * The root is the one path that stays as a bare slash. A query string or
+     * fragment is dropped: resolution matches the request path alone, so a
+     * claim on `/about?ref=x` could never be reached.
      */
     public static function normalisePath(string $path): string
     {
-        $trimmed = trim(trim($path), '/');
+        $trimmed = trim(trim(substr($path, 0, strcspn($path, '?#'))), '/');
 
         return $trimmed === '' ? '/' : '/'.$trimmed;
     }

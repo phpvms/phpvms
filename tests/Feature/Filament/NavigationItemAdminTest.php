@@ -9,6 +9,7 @@ use App\Filament\Resources\NavigationItems\Pages\ListNavigationItems;
 use App\Models\NavigationItem;
 use App\Models\Page;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -99,4 +100,52 @@ it('reorders items by dragging and keeps children with their parent', function (
 
     Livewire::test(ListNavigationItems::class)
         ->assertCanSeeTableRecords([$b, $a, $a1], inOrder: true);
+});
+
+it('refuses to delete an item that has children', function (): void {
+    $parent = NavigationItem::factory()->create();
+    $child = NavigationItem::factory()->create(['parent_id' => $parent->id]);
+
+    expect($parent->delete())->toBeFalse()
+        ->and(NavigationItem::find($parent->id))->not->toBeNull()
+        ->and(NavigationItem::find($child->id))->not->toBeNull();
+});
+
+it('deletes a leaf item', function (): void {
+    $leaf = NavigationItem::factory()->create();
+
+    expect($leaf->delete())->toBeTrue()
+        ->and(NavigationItem::find($leaf->id))->toBeNull();
+});
+
+it('hides the row delete action for an item with children', function (): void {
+    $parent = NavigationItem::factory()->create();
+    NavigationItem::factory()->create(['parent_id' => $parent->id]);
+    $leaf = NavigationItem::factory()->create();
+
+    Livewire::test(ListNavigationItems::class)
+        ->assertActionHidden(TestAction::make('delete')->table($parent))
+        ->assertActionVisible(TestAction::make('delete')->table($leaf));
+});
+
+it('hides the header delete action on the edit page for an item with children', function (): void {
+    $parent = NavigationItem::factory()->create();
+    NavigationItem::factory()->create(['parent_id' => $parent->id]);
+
+    Livewire::test(EditNavigationItem::class, ['record' => $parent->id])
+        ->assertActionHidden('delete');
+});
+
+it('bulk delete leaves a parent and its children and removes leaves', function (): void {
+    $parent = NavigationItem::factory()->create();
+    $child = NavigationItem::factory()->create(['parent_id' => $parent->id]);
+    $leaf = NavigationItem::factory()->create();
+
+    Livewire::test(ListNavigationItems::class)
+        ->selectTableRecords([$parent->id, $leaf->id])
+        ->callAction(TestAction::make('delete')->table()->bulk());
+
+    expect(NavigationItem::find($parent->id))->not->toBeNull()
+        ->and(NavigationItem::find($child->id))->not->toBeNull()
+        ->and(NavigationItem::find($leaf->id))->toBeNull();
 });

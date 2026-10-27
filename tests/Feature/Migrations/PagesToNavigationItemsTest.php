@@ -108,6 +108,17 @@ it('marks existing page content as published so it stays reachable', function ()
         ->and(Page::live()->whereKey($page->id)->exists())->toBeTrue();
 });
 
+it('leaves a draft authored after the schema migration as a draft', function (): void {
+    $draft = Page::factory()->create(['body' => null, 'draft_body' => '<p>New admin draft</p>']);
+    $legacy = Page::factory()->create(['body' => '<p>Legacy</p>', 'draft_body' => null]);
+
+    pagesToNavigationMigration()->up();
+
+    expect($draft->refresh()->status)->toBe(PageStatus::DRAFT)
+        ->and($draft->published_at)->toBeNull()
+        ->and($legacy->refresh()->status)->toBe(PageStatus::PUBLISHED);
+});
+
 it('does not publish link rows', function (): void {
     $link = Page::factory()->link()->create();
 
@@ -163,4 +174,16 @@ it('leaves link rows in the pages table rather than destroying them', function (
     pagesToNavigationMigration()->up();
 
     expect(DB::table('pages')->where('name', 'Forum')->exists())->toBeTrue();
+});
+
+it('gives two link rows to one URL their own items, and a re-run adds none', function (): void {
+    Page::factory()->link('https://example.test/same')->create(['name' => 'Forum', 'public' => true]);
+    Page::factory()->link('https://example.test/same')->create(['name' => 'Members Forum', 'public' => false]);
+
+    pagesToNavigationMigration()->up();
+    expect(NavigationItem::count())->toBe(2)
+        ->and(NavigationItem::pluck('label')->sort()->values()->all())->toBe(['Forum', 'Members Forum']);
+
+    pagesToNavigationMigration()->up();
+    expect(NavigationItem::count())->toBe(2);
 });

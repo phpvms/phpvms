@@ -6,6 +6,7 @@ namespace App\Filament\Resources\NavigationItems\Pages;
 
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\NavigationItems\NavigationItemResource;
+use App\Models\NavigationItem;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -27,7 +28,9 @@ class EditNavigationItem extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()->icon(Phosphor::TrashLight),
+            DeleteAction::make()
+                ->icon(Phosphor::TrashLight)
+                ->hidden(fn (NavigationItem $record): bool => $record->children()->exists()),
         ];
     }
 }

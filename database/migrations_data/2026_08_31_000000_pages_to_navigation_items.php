@@ -32,8 +32,13 @@ use Illuminate\Support\Facades\Schema;
  * this every existing page would be a draft the moment the `live()` scope starts
  * being enforced, and every site would go blank on upgrade.
  *
- * Idempotent: a page that already has a navigation item is skipped, so a re-run
- * cannot double the menu.
+ * Idempotent without a schema change: `pages.link` is not unique, so the target
+ * alone cannot say whether a row was migrated -- two link rows to one URL with
+ * different names or visibility are two menu entries. A row is identified by its
+ * target, `name` (copied verbatim and not touched by later label edits), `public`
+ * and `new_window`. When several legacy rows share that whole identity, the Nth
+ * is skipped only if at least N matching items already exist, so a re-run adds
+ * nothing and a first run still gives every row its own item.
  */
 return new class() extends Migration
 {
@@ -49,12 +54,21 @@ return new class() extends Migration
 
     /**
      * Existing content is live today. Say so, or the new enforcement hides it.
+     *
+     * Only legacy rows qualify: a draft with no `draft_body` and no
+     * `published_at`. The schema migration already published every pre-upgrade
+     * page and copied `body` into `draft_body`, so what is left here is a
+     * backstop for rows that migration did not reach. The admin always writes a
+     * `draft_body`, so a draft created after the schema migration but before
+     * this data migration carries one and must stay a draft.
      */
     private function publishExistingContent(): void
     {
         DB::table('pages')
             ->where('type', PageType::PAGE->value)
             ->where('status', PageStatus::DRAFT->value)
+            ->whereNull('draft_body')
+            ->whereNull('published_at')
             ->update([
                 'status'       => PageStatus::PUBLISHED->value,
                 'draft_body'   => DB::raw('body'),
@@ -66,22 +80,32 @@ return new class() extends Migration
     {
         $sort = (int) DB::table('navigation_items')->max('sort');
 
+        /** @var array<string, int> $seen */
+        $seen = [];
+
         DB::table('pages')
             ->orderBy('id')
             ->select(['id', 'name', 'slug', 'icon', 'type', 'public', 'enabled', 'link', 'new_window'])
-            ->chunkById(200, function ($pages) use (&$sort): void {
+            ->chunkById(200, function ($pages) use (&$sort, &$seen): void {
                 foreach ($pages as $page) {
                     $isLink = (int) $page->type === PageType::LINK->value;
 
                     $target = $isLink ? NavigationTarget::URL : NavigationTarget::PAGE;
                     $value = $isLink ? (string) $page->link : (string) $page->id;
 
-                    $alreadyMigrated = DB::table('navigation_items')
+                    $identity = [$target->value, $value, $page->name, (bool) $page->public, (bool) $page->new_window];
+                    $key = serialize($identity);
+                    $seen[$key] = ($seen[$key] ?? 0) + 1;
+
+                    $existing = DB::table('navigation_items')
                         ->where('target_type', $target->value)
                         ->where('target_value', $value)
-                        ->exists();
+                        ->where('name', $page->name)
+                        ->where('public', (bool) $page->public)
+                        ->where('new_window', (bool) $page->new_window)
+                        ->count();
 
-                    if ($alreadyMigrated) {
+                    if ($existing >= $seen[$key]) {
                         continue;
                     }
 

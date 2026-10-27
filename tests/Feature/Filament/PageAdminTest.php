@@ -128,9 +128,8 @@ it('resolves a page-targeted item to that page url', function (): void {
         ->and($item->resolveUrl())->toBe(url('/about'));
 });
 
-it('shows a danger notification and publishes nothing when the path was taken meanwhile', function (): void {
-    $page = Page::factory()->claiming('/about')->create(['draft_body' => 'Mine']);
-    Page::factory()->published()->claiming('/about')->create();
+it('shows a danger notification and publishes nothing when a route now owns the path', function (): void {
+    $page = Page::factory()->claiming('/livemap')->create(['draft_body' => 'Mine']);
 
     Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
         ->callAction('publish')
@@ -139,6 +138,16 @@ it('shows a danger notification and publishes nothing when the path was taken me
     expect($page->refresh()->status)->toBe(PageStatus::DRAFT)
         ->and($page->body)->toBeNull()
         ->and($page->revisions()->count())->toBe(0);
+});
+
+it('rejects a path another draft already holds', function (): void {
+    Page::factory()->claiming('/about')->create();
+    $page = Page::factory()->create();
+
+    Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
+        ->fillForm(['path' => '/about'])
+        ->call('save')
+        ->assertHasFormErrors(['path']);
 });
 
 it('offers a preview action that opens the preview route', function (): void {
