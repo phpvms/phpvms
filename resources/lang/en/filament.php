@@ -209,6 +209,7 @@ return [
     'branding_save_failed'                      => 'Branding could not be saved',
     'branding_save_failed_body'                 => 'These settings are missing from the database (:keys). Run `php artisan migrate-data` to create them, then try again.',
     'config'                                    => 'Config',
+    'content'                                   => 'Content',
     'operations'                                => 'Operations',
     'addons'                                    => 'Add-Ons',
     'addon_remove_tables'                       => 'Also remove its data',
@@ -584,7 +585,10 @@ return [
         'unpublished_changes' => 'Unpublished changes',
     ],
     'navigation_items' => [
+        'name'             => 'Name',
+        'name_helper'      => 'What this item is called here in the admin. The site shows the label.',
         'label'            => 'Menu label',
+        'label_helper'     => 'Checked as a translation key first (e.g. common.dashboard), so it follows the site language. Anything else is shown as typed.',
         'target_type'      => 'Links to',
         'target_page'      => 'Page',
         'target_route'     => 'Site route',
@@ -593,8 +597,7 @@ return [
         'parent_none'      => 'Top level',
         'visible'          => 'Shown in menu',
         'visible_helper'   => 'Hiding an item removes it from the menu. The page it points at stays reachable by URL.',
-        'reorder_hint'     => 'Drag rows to reorder the menu.',
         'options'          => 'Options',
-        'navigation_label' => 'Navigation',
+        'navigation_label' => 'Menu Item',
     ],
 ];

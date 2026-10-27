@@ -28,8 +28,15 @@ class NavigationItemForm
                     ->schema([
                         Grid::make()
                             ->schema([
+                                TextInput::make('name')
+                                    ->label(__('filament.navigation_items.name'))
+                                    ->helperText(__('filament.navigation_items.name_helper'))
+                                    ->required()
+                                    ->string(),
+
                                 TextInput::make('label')
                                     ->label(__('filament.navigation_items.label'))
+                                    ->helperText(__('filament.navigation_items.label_helper'))
                                     ->required()
                                     ->string(),
 
@@ -136,8 +143,9 @@ class NavigationItemForm
         return NavigationItem::query()
             ->when($record instanceof NavigationItem, fn ($q) => $q->whereKeyNot($record->getKey()))
             ->ordered()
-            ->pluck('label', 'id')
-            ->reject(fn (string $label, int $id): bool => $record instanceof NavigationItem
+            ->get(['id', 'name', 'label'])
+            ->mapWithKeys(fn (NavigationItem $item): array => [(int) $item->id => (string) ($item->name ?? $item->label)])
+            ->reject(fn (string $name, int $id): bool => $record instanceof NavigationItem
                 && self::descendsFrom($id, (int) $record->getKey()))
             ->all();
     }

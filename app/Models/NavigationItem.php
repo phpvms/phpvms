@@ -55,6 +55,7 @@ class NavigationItem extends Model
     public $table = 'navigation_items';
 
     protected $fillable = [
+        'name',
         'label',
         'icon',
         'parent_id',
@@ -67,6 +68,7 @@ class NavigationItem extends Model
     ];
 
     public static array $rules = [
+        'name'        => 'required',
         'label'       => 'required',
         'target_type' => 'required',
     ];

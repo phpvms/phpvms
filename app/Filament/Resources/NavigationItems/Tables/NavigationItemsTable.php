@@ -26,13 +26,16 @@ class NavigationItemsTable
             // writes straight to the column the front end reads.
             ->reorderable('sort')
             ->defaultSort('sort')
-            ->description(__('filament.navigation_items.reorder_hint'))
             ->columns([
+                TextColumn::make('name')
+                    ->label(__('filament.navigation_items.name'))
+                    ->searchable(),
+
                 TextColumn::make('label')
                     ->label(__('filament.navigation_items.label'))
                     ->searchable(),
 
-                TextColumn::make('parent.label')
+                TextColumn::make('parent.name')
                     ->label(__('filament.navigation_items.parent'))
                     ->placeholder(__('filament.navigation_items.parent_none')),
 

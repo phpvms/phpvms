@@ -86,6 +86,7 @@ return new class() extends Migration
                     }
 
                     DB::table('navigation_items')->insert([
+                        'name'         => $page->name,
                         'label'        => $page->name,
                         'icon'         => $page->icon,
                         'parent_id'    => null,

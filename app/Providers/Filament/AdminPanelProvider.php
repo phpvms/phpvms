@@ -62,6 +62,9 @@ class AdminPanelProvider extends BasePanelProvider
                 EnumsNavigationGroup::Finance->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
                     ->icon(Phosphor::MoneyLight),
+                EnumsNavigationGroup::Content->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Content->getLabel())
+                    ->icon(Phosphor::ArticleLight),
                 EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
                     ->icon(Phosphor::GearLight),

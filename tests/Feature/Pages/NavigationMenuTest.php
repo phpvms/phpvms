@@ -95,3 +95,21 @@ it('resolves every page target in one query, not one per item', function (): voi
     // One for the items, one for the pages.
     expect($queries)->toBe(2);
 });
+
+it('translates a label that is a translation key and shows any other as typed', function (): void {
+    NavigationItem::factory()->create(['label' => 'common.dashboard', 'sort' => 1]);
+    NavigationItem::factory()->create(['label' => 'Fleet', 'sort' => 2]);
+    NavigationItem::factory()->create(['label' => 'Docs.v2', 'sort' => 3]);
+
+    expect(array_column($this->nav->menu(true), 'label'))
+        ->toBe([__('common.dashboard'), 'Fleet', 'Docs.v2']);
+});
+
+it('makes route and page targets in-app visits and URL targets plain links', function (): void {
+    $page = Page::factory()->published()->claiming('/about')->create();
+    NavigationItem::factory()->forRoute('frontend.flights.index')->create(['sort' => 1]);
+    NavigationItem::factory()->forPage($page)->create(['sort' => 2]);
+    NavigationItem::factory()->create(['sort' => 3]);
+
+    expect(array_column($this->nav->menu(true), 'spa'))->toBe([true, true, false]);
+});

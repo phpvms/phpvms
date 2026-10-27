@@ -31,12 +31,13 @@ class NavigationItemFactory extends Factory
     public function definition(): array
     {
         return [
-            'label'        => $this->faker->unique()->word(),
+            'name'         => fake()->words(2, true),
+            'label'        => fake()->unique()->word(),
             'icon'         => null,
             'parent_id'    => null,
             'sort'         => 0,
             'target_type'  => NavigationTarget::URL,
-            'target_value' => $this->faker->url(),
+            'target_value' => fake()->url(),
             'new_window'   => false,
             'public'       => true,
             'visible'      => true,
