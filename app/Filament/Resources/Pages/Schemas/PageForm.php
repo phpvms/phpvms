@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Enums\PageType;
+use App\Models\NavigationItem;
 use App\Models\Page;
 use App\Services\PageService;
 use Closure;
@@ -102,6 +103,9 @@ class PageForm
                             ->columnSpanFull()
                             ->columns()
                             ->hiddenOn('edit')
+                            // Menu items have their own permission; page editors
+                            // without it do not get a back door to the menu.
+                            ->visible(fn (): bool => auth()->user()?->can('create', NavigationItem::class) ?? false)
                             ->visibleJs(<<<'JS'
                                     $get('type') == '0'
                                 JS), // Hardcoded PageType::PAGE

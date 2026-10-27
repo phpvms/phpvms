@@ -184,8 +184,9 @@ class NavigationItemForm
                 continue;
             }
 
-            // A route with required parameters cannot be linked without them.
-            if ($route->parameterNames() !== []) {
+            // A route with required parameters cannot be linked without them,
+            // and a menu link is a GET.
+            if ($route->parameterNames() !== [] || !in_array('GET', $route->methods(), true)) {
                 continue;
             }
 

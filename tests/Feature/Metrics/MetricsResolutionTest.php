@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Support\Metrics\MetricFailureLog;
 use App\Support\Metrics\Metrics;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -159,4 +160,14 @@ it('logs a failing metric again on the next request when the registry is a long-
     $metrics->resolve('test.octane');
 
     Log::shouldHaveReceived('warning')->twice();
+});
+
+it('returns null when reading the namespace version fails', function (): void {
+    $metrics = new Metrics(new MetricFailureLog());
+    $metrics->registry()->register(['id' => 'test.counter', 'resolve' => fn (): int => 7]);
+
+    // Building the cache key reads the namespace version from the cache first.
+    Cache::shouldReceive('get')->andThrow(new RuntimeException('cache down'));
+
+    expect($metrics->resolve('test.counter'))->toBeNull();
 });

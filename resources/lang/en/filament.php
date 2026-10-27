@@ -576,7 +576,7 @@ return [
         'publish_confirm'     => 'Make the current draft the version visitors see?',
         'published'           => 'Published',
         'unpublish'           => 'Unpublish',
-        'unpublish_confirm'   => 'Take this page offline? Its path is released and the URL will return a 404.',
+        'unpublish_confirm'   => 'Take this page offline? The URL returns a 404 until you publish it again. The page keeps its path.',
         'unpublished'         => 'Unpublished',
         'revisions'           => 'Revisions',
         'restore_revision'    => 'Restore to draft',

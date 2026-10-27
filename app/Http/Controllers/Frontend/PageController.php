@@ -43,7 +43,11 @@ class PageController extends Controller
      */
     public function showByPath(Request $request): View
     {
-        $page = $this->pageService->resolve($request->path());
+        // The fallback takes every method so unknown URLs stay 404, but a page
+        // only answers a read.
+        $page = in_array($request->getMethod(), ['GET', 'HEAD'], true)
+            ? $this->pageService->resolve($request->path())
+            : null;
 
         if (!$page instanceof Page) {
             throw new PageNotFound(new Exception('Page not found'));

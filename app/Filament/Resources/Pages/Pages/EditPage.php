@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Pages\Pages;
 use App\Enums\PageStatus;
 use App\Enums\PageType;
 use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\RelationManagers\PageRevisionsRelationManager;
 use App\Filament\Resources\Pages\PageResource;
 use App\Models\Page;
 use App\Services\PageService;
@@ -18,6 +19,7 @@ use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\On;
 use Override;
 
 class EditPage extends EditRecord
@@ -30,6 +32,18 @@ class EditPage extends EditRecord
     protected function getFormActions(): array
     {
         return $this->reversePrimaryButtons(parent::getFormActions());
+    }
+
+    /**
+     * A restore writes the draft from the revisions table, which is a separate
+     * component. Reload the field so a later save does not write the old draft
+     * back over the restored one.
+     */
+    #[On(PageRevisionsRelationManager::RESTORED_EVENT)]
+    public function refreshDraftBody(): void
+    {
+        $this->getRecord()->refresh();
+        $this->refreshFormData(['draft_body']);
     }
 
     /**
