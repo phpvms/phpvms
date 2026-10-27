@@ -26,7 +26,9 @@ use Illuminate\Support\ServiceProvider;
  * property inside it) would survive across every request an Octane worker
  * serves, permanently suppressing the log for a metric that failed once
  * (tasks.md 2.3). Octane's scoped-binding flush (config/octane.php) gives
- * every request a fresh, empty log -- see MetricFailureLog's docblock.
+ * every request a fresh, empty log -- see MetricFailureLog's docblock. The
+ * singleton hub is handed a resolver closure, not the log itself, so each
+ * recorded failure reads the CURRENT request's log rather than the first one.
  */
 final class MetricsServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,6 @@ final class MetricsServiceProvider extends ServiceProvider
     {
         $this->app->scoped(MetricFailureLog::class);
 
-        $this->app->singleton('metrics', static fn (Application $app): Metrics => new Metrics($app->make(MetricFailureLog::class)));
+        $this->app->singleton('metrics', static fn (Application $app): Metrics => new Metrics(static fn (): MetricFailureLog => $app->make(MetricFailureLog::class)));
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Metrics;
 
 use App\Support\Skylight\Facades\Skylight;
+use Closure;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -61,7 +62,11 @@ final readonly class Metrics
 
     private MetricRegistry $registry;
 
-    public function __construct(private MetricFailureLog $failureLog)
+    /**
+     * @param MetricFailureLog|Closure(): MetricFailureLog $failureLog A closure is resolved on every failure, so a
+     *                                                                 long-lived registry always sees the current request's scoped log.
+     */
+    public function __construct(private MetricFailureLog|Closure $failureLog)
     {
         $this->registry = new MetricRegistry();
     }
@@ -250,7 +255,9 @@ final readonly class Metrics
 
     private function recordFailure(string $id, Throwable|string $reason): void
     {
-        $this->failureLog->once($id, static function () use ($id, $reason): void {
+        $log = $this->failureLog instanceof Closure ? ($this->failureLog)() : $this->failureLog;
+
+        $log->once($id, static function () use ($id, $reason): void {
             if ($reason instanceof Throwable) {
                 Log::warning(sprintf('Metric "%s" resolver failed.', $id), [
                     'metric'    => $id,

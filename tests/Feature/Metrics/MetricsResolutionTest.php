@@ -141,3 +141,22 @@ it('logs independently per metric id, not globally once per request', function (
 
     Log::shouldHaveReceived('warning')->twice();
 });
+
+it('logs a failing metric again on the next request when the registry is a long-lived singleton', function (): void {
+    Log::spy();
+    $metrics = app('metrics');
+
+    $metrics->registry()->register([
+        'id'      => 'test.octane',
+        'resolve' => fn (): int => throw new RuntimeException('boom'),
+    ]);
+
+    $metrics->resolve('test.octane');
+    $metrics->resolve('test.octane');
+
+    app()->forgetScopedInstances();
+
+    $metrics->resolve('test.octane');
+
+    Log::shouldHaveReceived('warning')->twice();
+});
