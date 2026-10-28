@@ -805,12 +805,12 @@ describe("flight bid UI", () => {
   });
 
   it("submits the planning form values when Generate OFP is pressed", async () => {
-    const submit = vi
-      .spyOn(HTMLFormElement.prototype, "submit")
-      .mockImplementation(function (this: HTMLFormElement) {
-        expect(new FormData(this).get("route")).toBe("MRF JALTU");
-        expect(new FormData(this).get("planformat")).toBe("lido");
-      });
+    const submit = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(function (
+      this: HTMLFormElement,
+    ) {
+      expect(new FormData(this).get("route")).toBe("MRF JALTU");
+      expect(new FormData(this).get("planformat")).toBe("lido");
+    });
     vi.stubGlobal(
       "fetch",
       vi.fn((_input: RequestInfo | URL, _init?: RequestInit) =>
@@ -869,15 +869,15 @@ describe("flight bid UI", () => {
   });
 
   it("submits provider fields and immediately polls after popup generation", async () => {
-    const submit = vi
-      .spyOn(HTMLFormElement.prototype, "submit")
-      .mockImplementation(function (this: HTMLFormElement) {
-        expect(new FormData(this).get("route")).toBe("DIRECT");
-        expect(new FormData(this).get("maps")).toBe("none");
-        expect(new FormData(this).has("fl")).toBe(false);
-        expect(new FormData(this).get("orig")).toBe("KDFW");
-        expect(new FormData(this).get("type")).toBe("A320");
-      });
+    const submit = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(function (
+      this: HTMLFormElement,
+    ) {
+      expect(new FormData(this).get("route")).toBe("DIRECT");
+      expect(new FormData(this).get("maps")).toBe("none");
+      expect(new FormData(this).has("fl")).toBe(false);
+      expect(new FormData(this).get("orig")).toBe("KDFW");
+      expect(new FormData(this).get("type")).toBe("A320");
+    });
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -926,12 +926,12 @@ describe("flight bid UI", () => {
   });
 
   it("submits modal generation into its iframe and begins polling from the submission signal", async () => {
-    const submit = vi
-      .spyOn(HTMLFormElement.prototype, "submit")
-      .mockImplementation(function (this: HTMLFormElement) {
-        expect(this.target).toBe("phpvms-simbrief-embedded");
-        expect(new FormData(this).get("orig")).toBe("KDFW");
-      });
+    const submit = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(function (
+      this: HTMLFormElement,
+    ) {
+      expect(this.target).toBe("phpvms-simbrief-embedded");
+      expect(new FormData(this).get("orig")).toBe("KDFW");
+    });
     const wrapper = mount(SimBriefGenerationDialog, {
       props: {
         failure: null,
