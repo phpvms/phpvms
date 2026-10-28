@@ -24,6 +24,11 @@ use Override;
  */
 class PageRevisionsRelationManager extends RelationManager
 {
+    /**
+     * Tells the edit page to reload the draft it is showing.
+     */
+    public const RESTORED_EVENT = 'page-revision-restored';
+
     protected static string $relationship = 'revisions';
 
     #[Override]
@@ -54,6 +59,8 @@ class PageRevisionsRelationManager extends RelationManager
                         $page = $this->getOwnerRecord();
 
                         app(PageService::class)->restoreRevision($page, $record);
+
+                        $this->dispatch(self::RESTORED_EVENT);
 
                         Notification::make()
                             ->title(__('filament.system_pages.restored'))

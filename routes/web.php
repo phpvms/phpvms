@@ -219,9 +219,16 @@ Route::get('/update', fn (): Redirector|RedirectResponse => redirect('/system/up
  *
  * When nothing claims the path this throws exactly what an unmatched request
  * threw before the fallback existed, so 404 behaviour is unchanged.
+ *
+ * Registered for every method rather than with `Route::fallback()`, which is
+ * GET-only: the router would otherwise see the GET fallback for any other
+ * method and answer an unknown URL with 405 instead of 404.
  */
 Route::middleware([HandleInertiaRequests::class])
     ->name('frontend.')
     ->group(function (): void {
-        Route::fallback([PageController::class, 'showByPath'])->name('pages.show.path');
+        Route::any('{fallbackPlaceholder}', [PageController::class, 'showByPath'])
+            ->where('fallbackPlaceholder', '.*')
+            ->fallback()
+            ->name('pages.show.path');
     });

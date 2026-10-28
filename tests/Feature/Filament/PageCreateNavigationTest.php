@@ -8,12 +8,13 @@ use App\Filament\Resources\Pages\Pages\CreatePage;
 use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Models\NavigationItem;
 use App\Models\Page;
+use App\Models\User;
 use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    createAdminUser();
+    $this->actingAs(createAdminUser());
 });
 
 it('creates a linked menu item when the page is added to the menu', function (): void {
@@ -79,4 +80,26 @@ it('does not offer the menu fields on the edit form', function (): void {
     Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
         ->assertFormFieldDoesNotExist('add_to_menu')
         ->assertFormFieldDoesNotExist('menu_label');
+});
+
+it('does not add a menu item for an editor without the menu permission', function (): void {
+    $editor = User::factory()->create();
+    $editor->givePermissionTo(['view:dashboard', 'view:page', 'edit:page']);
+    $this->actingAs($editor);
+
+    Livewire::test(CreatePage::class)
+        ->assertFormFieldHidden('add_to_menu')
+        ->fillForm([
+            'name'        => 'Rules',
+            'type'        => PageType::PAGE->value,
+            'public'      => false,
+            'enabled'     => true,
+            'draft_body'  => 'Be nice',
+            'add_to_menu' => true,
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Page::where('name', 'Rules')->exists())->toBeTrue()
+        ->and(NavigationItem::count())->toBe(0);
 });

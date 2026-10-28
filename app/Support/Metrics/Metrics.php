@@ -127,9 +127,11 @@ final readonly class Metrics
             return null;
         }
 
-        $key = $this->cacheKey($id, $normalizedParameters);
-
         try {
+            // Inside the try: building the key reads the namespace version
+            // from the cache, and a failed read is a failure like any other.
+            $key = $this->cacheKey($id, $normalizedParameters);
+
             return Cache::remember(
                 $key,
                 $definition['ttl'],

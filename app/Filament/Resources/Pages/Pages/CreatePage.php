@@ -59,6 +59,12 @@ class CreatePage extends CreateRecord
             return;
         }
 
+        // The toggle is hidden without this permission, but the form state is
+        // client-supplied, so check again before writing.
+        if (!(auth()->user()?->can('create', NavigationItem::class) ?? false)) {
+            return;
+        }
+
         $label = filled($state['menu_label'] ?? null) ? (string) $state['menu_label'] : $page->name;
 
         NavigationItem::create([

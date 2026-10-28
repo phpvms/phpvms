@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Composers;
 
 use App\Contracts\Composer;
+use App\Enums\PageStatus;
+use App\Enums\PageType;
 use App\Models\Page;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +14,7 @@ use Illuminate\View\View;
 
 class PageLinksComposer extends Composer
 {
-    public static array $fields = ['id', 'name', 'slug', 'icon', 'type', 'link', 'new_window'];
+    public static array $fields = ['id', 'name', 'slug', 'path', 'icon', 'type', 'link', 'new_window'];
 
     public function compose(View $view): void
     {
@@ -26,7 +28,11 @@ class PageLinksComposer extends Composer
                 $w['public'] = true;
             }
 
-            $pages = Page::where($w)->get(static::$fields);
+            // A draft or unpublished page would link to a 404. Links have no
+            // content to publish, so they are always listed.
+            $pages = Page::where($w)
+                ->where(fn ($q) => $q->where('type', PageType::LINK)->orWhere('status', PageStatus::PUBLISHED))
+                ->get(static::$fields);
         } catch (Exception) {
             $pages = [];
         }

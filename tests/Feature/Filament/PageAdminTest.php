@@ -178,3 +178,35 @@ it('restores a revision to the draft through the relation manager', function ():
     expect($page->refresh()->draft_body)->toBe('First')
         ->and($page->body)->toBe('Second');
 });
+
+it('reloads the edit form draft after a restore, so saving keeps it', function (): void {
+    $this->actingAs(createAdminUser());
+    $page = Page::factory()->create(['draft_body' => 'First']);
+    app(PageService::class)->publish($page);
+    $page->forceFill(['draft_body' => 'Second'])->save();
+    app(PageService::class)->publish($page);
+
+    $edit = Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
+        ->assertSchemaStateSet(['draft_body' => 'Second']);
+
+    // What the relation manager does on the same page.
+    app(PageService::class)->restoreRevision($page, $page->revisions()->where('body', 'First')->firstOrFail());
+    $edit->dispatch(PageRevisionsRelationManager::RESTORED_EVENT);
+
+    $edit->call('save')->assertHasNoFormErrors();
+
+    expect($page->refresh()->draft_body)->toBe('First');
+});
+
+it('dispatches the restore event from the relation manager', function (): void {
+    $this->actingAs(createAdminUser());
+    $page = Page::factory()->create(['draft_body' => 'First']);
+    app(PageService::class)->publish($page);
+
+    Livewire::test(PageRevisionsRelationManager::class, [
+        'ownerRecord' => $page,
+        'pageClass'   => EditPage::class,
+    ])
+        ->callAction(TestAction::make('restore')->table($page->revisions()->firstOrFail()))
+        ->assertDispatched(PageRevisionsRelationManager::RESTORED_EVENT);
+});

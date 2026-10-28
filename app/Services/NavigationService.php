@@ -101,9 +101,10 @@ class NavigationService extends Service
                 'url'        => $url ?? '',
                 'icon'       => $this->iconFor($item),
                 'new_window' => $item->new_window,
-                // Route and page targets are in-app visits; a URL target may
-                // point anywhere, so it is a plain link.
-                'spa'      => $item->target_type !== NavigationTarget::URL,
+                // Route targets are in-app visits. A page renders Blade, not an
+                // Inertia response, and a URL target may point anywhere, so
+                // both are plain links.
+                'spa'      => $item->target_type === NavigationTarget::ROUTE,
                 'children' => $children,
             ];
         }

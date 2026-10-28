@@ -30,6 +30,11 @@ class PageService extends Service
     public const ROOT_PATH = '/';
 
     /**
+     * The route name of the page fallback in routes/web.php.
+     */
+    public const PAGE_FALLBACK_ROUTE = 'frontend.pages.show.path';
+
+    /**
      * The live page claiming a path, or null.
      *
      * Resolution happens per request and never registers routes from stored
@@ -90,8 +95,15 @@ class PageService extends Service
             return true;
         }
 
-        // Our own catch-all is not a claim on anything.
-        return !$route->isFallback;
+        // The page fallback is not a claim on anything. Any other route is,
+        // including the API fallback, which owns everything under `/api`.
+        if ($route->getName() !== self::PAGE_FALLBACK_ROUTE) {
+            return true;
+        }
+
+        // Fallbacks are matched before the method check, so a path that only a
+        // POST route answers lands here too. Visitors would get a 405 there.
+        return $this->alternateMethodsFor(Request::create($normalised, 'GET')) !== [];
     }
 
     /**

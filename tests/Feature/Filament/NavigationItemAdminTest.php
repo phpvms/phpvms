@@ -6,6 +6,7 @@ use App\Enums\NavigationTarget;
 use App\Filament\Resources\NavigationItems\Pages\CreateNavigationItem;
 use App\Filament\Resources\NavigationItems\Pages\EditNavigationItem;
 use App\Filament\Resources\NavigationItems\Pages\ListNavigationItems;
+use App\Filament\Resources\NavigationItems\Schemas\NavigationItemForm;
 use App\Models\NavigationItem;
 use App\Models\Page;
 use Database\Seeders\RolesPermissionsSeeder;
@@ -148,4 +149,12 @@ it('bulk delete leaves a parent and its children and removes leaves', function (
     expect(NavigationItem::find($parent->id))->not->toBeNull()
         ->and(NavigationItem::find($child->id))->not->toBeNull()
         ->and(NavigationItem::find($leaf->id))->toBeNull();
+});
+
+it('offers only GET routes as menu targets', function (): void {
+    $options = new ReflectionMethod(NavigationItemForm::class, 'routeOptions')->invoke(null);
+
+    // A menu link is a GET, so a POST-only route would open the wrong handler.
+    expect($options)->toHaveKey('frontend.dashboard.index')
+        ->not->toHaveKey('frontend.profile.tokens.store');
 });

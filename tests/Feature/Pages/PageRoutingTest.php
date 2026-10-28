@@ -239,3 +239,32 @@ it('drops a query string or fragment from a claimed path', function (): void {
     $this->get('/about')->assertOk();
     expect($page->refresh()->path)->toBe('/about');
 });
+
+it('answers 404 for any method on a URL nothing claims', function (): void {
+    anInstalledSite();
+
+    // The fallbacks take every method. A GET-only fallback made the router
+    // answer these with 405.
+    $this->post('/nothing-here')->assertNotFound();
+    $this->postJson('/api/no-such-endpoint')->assertNotFound();
+    $this->deleteJson('/api/no-such-endpoint')->assertNotFound();
+});
+
+it('serves a page only to a read', function (): void {
+    anInstalledSite();
+    Page::factory()->published()->claiming('/about')->create();
+
+    $this->get('/about')->assertOk();
+    $this->post('/about')->assertNotFound();
+});
+
+it('treats a path under /api as taken', function (): void {
+    // The API fallback owns the prefix, so a page there could never be reached.
+    expect(app(PageService::class)->pathIsAvailable('/api/docs'))->toBeFalse();
+});
+
+it('treats a path that only a POST route answers as taken', function (): void {
+    $path = (string) parse_url(route('oauth.cancel'), PHP_URL_PATH);
+
+    expect(app(PageService::class)->pathIsReserved($path))->toBeTrue();
+});

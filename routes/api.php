@@ -176,5 +176,10 @@ Route::group(['middleware' => ['api.auth']], function (): void {
  *
  * A page cannot claim a path under `/api` anyway: `PageService::pathIsReserved()`
  * asks the router, and the router now answers for everything below this prefix.
+ *
+ * Every method, not `Route::fallback()`'s GET only, so a POST to an unknown API
+ * URL is a 404 and not a 405.
  */
-Route::fallback(FallbackController::class);
+Route::any('{fallbackPlaceholder}', FallbackController::class)
+    ->where('fallbackPlaceholder', '.*')
+    ->fallback();
