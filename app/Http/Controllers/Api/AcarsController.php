@@ -222,15 +222,13 @@ class AcarsController extends Controller
     /**
      * Upsert the position row from the newest point the batch carried.
      *
-     * Only IN_PROGRESS and PENDING get a row. PENDING because filing happens while a
-     * client may still be posting the tail of the flight. Refused batches still write
+     * Only IN_PROGRESS gets a row. Filing removes it, so a tail batch the client
+     * posts after filing must not put the flight back. Refused batches still write
      * their `acars` rows.
      */
     private function syncPosition(Pirep $pirep, ?Acars $latest): void
     {
-        if (!$latest instanceof Acars
-            || !in_array($pirep->state, [PirepState::IN_PROGRESS, PirepState::PENDING], true)
-        ) {
+        if (!$latest instanceof Acars || $pirep->state !== PirepState::IN_PROGRESS) {
             return;
         }
 

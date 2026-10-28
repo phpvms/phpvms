@@ -549,6 +549,10 @@ class PirepService extends Service
         Log::info('New PIREP filed, pirep_id: '.$pirep->id);
         event(new PirepFiled($pirep));
 
+        // A filed flight has stopped flying: off the map now, as on cancel(),
+        // rather than lingering for PirepPositionExpiration's live_time.
+        PirepPosition::where('pirep_id', $pirep->id)->delete();
+
         $pirep->refresh();
         $this->snapshotScheduledArrival($pirep);
 

@@ -137,19 +137,22 @@ test('repeated batches for one PIREP leave exactly one row', function (): void {
         ->and(Acars::where('pirep_id', $pirep->id)->flightPath()->count())->toBe(50);
 });
 
-test('a batch for a filed PIREP still moves the marker', function (): void {
+test('a batch for a filed PIREP cannot return it to the map', function (): void {
     [$pirep] = prefileFlight();
     $at = Carbon::now('UTC');
 
     postPositions($pirep, [point($at->copy(), 33.0, 33.0)]);
 
-    // Filing moves it to PENDING while the client may still be sending.
+    // Filed, and its row removed with it, while the client may still be sending.
     $pirep->state = PirepState::PENDING;
     $pirep->save();
 
+    positionRow($pirep)->delete();
+
     postPositions($pirep, [point($at->copy()->addMinute(), 34.0, 34.0)]);
 
-    expect((float) positionRow($pirep)->lat)->toBe(34.0);
+    expect(positionRow($pirep))->toBeNull()
+        ->and(Acars::where('pirep_id', $pirep->id)->flightPath()->count())->toBe(2);
 });
 
 test('a batch for an accepted PIREP writes acars but no position', function (): void {
@@ -225,6 +228,21 @@ test('the update endpoint writes no position row and emits what it always did', 
 test('the file endpoint writes no position row', function (): void {
     [$pirep] = prefileFlight();
     positionRow($pirep)->delete();
+
+    test()->post('/api/pireps/'.$pirep->id.'/file', [
+        'flight_time' => 60,
+        'fuel_used'   => 100,
+        'distance'    => 100,
+    ])->assertStatus(200);
+
+    expect(positionRow($pirep))->toBeNull();
+});
+
+test('filing takes the flight off the map', function (): void {
+    [$pirep] = prefileFlight();
+
+    postPositions($pirep, [point(Carbon::now('UTC'), 33.0, 33.0)]);
+    expect(positionRow($pirep))->not->toBeNull();
 
     test()->post('/api/pireps/'.$pirep->id.'/file', [
         'flight_time' => 60,
