@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Dto\SimBriefOfp;
 
+use App\Support\Casts\EmptyNodeAsStringCast;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Dto;
 
 final class SimBriefOfpTlrTakeoffRunway extends Dto
@@ -35,7 +37,10 @@ final class SimBriefOfpTlrTakeoffRunway extends Dto
         public int|string $speeds_vr,
         public int|string $speeds_v2,
         public int|string $speeds_v2_id,
+        // An airframe with no speed beyond V1/VR/V2 (a Phenom 300) gets [].
+        #[WithCast(EmptyNodeAsStringCast::class)]
         public int|string $speeds_other,
+        #[WithCast(EmptyNodeAsStringCast::class)]
         public int|string $speeds_other_id,
         public int $distance_decide,
         public int $distance_reject,

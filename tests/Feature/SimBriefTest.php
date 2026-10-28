@@ -156,6 +156,72 @@ test('parses a landing runway with no performance figures', function (): void {
         ->and($runway->gradient)->toBe(-0.84);
 });
 
+test('parses a takeoff runway with no other speed', function (): void {
+    // Verbatim from a real OFP (EHAM, Phenom 300): SimBrief sends an empty node
+    // as [] in its JSON, and the airframe has no speed beyond V1/VR/V2, so
+    // speeds_other used to abort hydration of the entire OFP with a TypeError.
+    $tlr = SimBriefOfpTlr::from([
+        'takeoff' => [
+            'conditions' => [
+                'airport_icao'      => 'EHAM',
+                'planned_runway'    => '24',
+                'planned_weight'    => '7950',
+                'wind_direction'    => '200',
+                'wind_speed'        => '15',
+                'temperature'       => '11',
+                'altimeter'         => '1009',
+                'surface_condition' => 'dry',
+            ],
+            'runway' => [
+                [
+                    'identifier'          => '04',
+                    'length'              => '6627',
+                    'length_tora'         => '6263',
+                    'length_toda'         => '6460',
+                    'length_asda'         => '6263',
+                    'length_lda'          => '6627',
+                    'elevation'           => '-13',
+                    'gradient'            => '-0.02',
+                    'true_course'         => '41',
+                    'magnetic_course'     => '39',
+                    'headwind_component'  => '-13',
+                    'crosswind_component' => '5',
+                    'ils_frequency'       => '',
+                    'flap_setting'        => '1',
+                    'thrust_setting'      => 'TOGA',
+                    'bleed_setting'       => 'N/A',
+                    'anti_ice_setting'    => 'OFF',
+                    'flex_temperature'    => '',
+                    'max_temperature'     => '50',
+                    'max_weight'          => '8150',
+                    'limit_code'          => 'A',
+                    'limit_obstacle'      => [],
+                    'speeds_v1'           => '104',
+                    'speeds_vr'           => '104',
+                    'speeds_v2'           => '116',
+                    'speeds_v2_id'        => '2',
+                    'speeds_other'        => [],
+                    'speeds_other_id'     => [],
+                    'thrust_value'        => [],
+                    'thrust_value_id'     => [],
+                    'distance_decide'     => '2069',
+                    'distance_reject'     => '3786',
+                    'distance_margin'     => '2477',
+                    'distance_continue'   => '3669',
+                ],
+            ],
+        ],
+        'landing' => [],
+    ]);
+
+    $runway = $tlr->takeoff->runway[0];
+
+    expect($runway->speeds_other)->toBe('')
+        ->and($runway->speeds_other_id)->toBe('')
+        ->and($runway->distance_decide)->toBe(2069)
+        ->and($runway->limit_obstacle)->toBe([]);
+});
+
 test('read simbrief', function (): void {
     $userinfo = createUserData();
     $user = $userinfo['user'];
