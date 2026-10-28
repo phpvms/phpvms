@@ -476,3 +476,15 @@ test('clear expired briefs', function (): void {
     expect($all_briefs->count())->toEqual(1)
         ->and($all_briefs[0]->id)->toEqual($sb_ignored->id);
 });
+
+test('check_ofp refuses a request without the static id instead of failing', function (): void {
+    // A browser still caching the pre-JSON simbrief.apiv1.js polls without static_id.
+    $this->actingAs(User::factory()->create())
+        ->getJson('/simbrief/check_ofp?'.http_build_query([
+            'ofp_id'      => '1793190494_DEEF323BEE',
+            'flight_id'   => 'flight',
+            'aircraft_id' => '1',
+        ]))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('static_id');
+});
