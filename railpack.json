@@ -2,7 +2,7 @@
   "$schema": "https://schema.railpack.com",
   "steps": {
     "extensions": {
-      "commands": ["...", "install-php-extensions pcntl"]
+      "commands": ["...", "install-php-extensions pcntl pdo_mysql pdo_pgsql gd redis"]
     },
     "build": {
       "commands": ["...", "php artisan filament:assets"]

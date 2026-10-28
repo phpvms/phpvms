@@ -12,7 +12,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check",
+    "fmt:check": "oxfmt --check . '!**/*.json'",
+    "fmt:check:json": "oxfmt --list-different '**/*.json'",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "safelist:check": "node bin/measure-tailwind-safelist.mjs"
@@ -47,7 +48,7 @@
     "esbuild": "^0.28.2",
     "happy-dom": "^20.14.6",
     "laravel-vite-plugin": "^3.2.0",
-    "oxfmt": "^0.41.0",
+    "oxfmt": "^0.75.0",
     "oxlint": "^1.89.0",
     "sass": "^1.105.2",
     "tailwindcss": "^4.3.3",
