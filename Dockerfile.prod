@@ -72,6 +72,7 @@ RUN apt-get update; \
         mariadb-client
 
 COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
+COPY --chmod=755 ./resources/docker/run-phpvms-links.sh /etc/entrypoint.d/25-run-phpvms-links.sh
 
 # Deal with permissions
 RUN usermod -ou $WWWUSER www-data \

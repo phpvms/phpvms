@@ -10,7 +10,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('addons:relink')]
-#[Description('Rebuild public asset symlinks (public/ext/{name}) for all enabled addons')]
+#[Description('Rebuild public asset symlinks (public/ext/{name}, and storage/app/public/themes/{name} for themes) for all enabled addons')]
 class AddonsRelink extends Command
 {
     public function handle(AddonRegistry $registry): int

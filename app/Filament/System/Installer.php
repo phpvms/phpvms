@@ -332,6 +332,12 @@ class Installer extends Page
             $this->stream(content: $message, to: $this->stream);
         }
 
+        if (!app(InstallerService::class)->linkStorage()) {
+            $message = __('installer.storage_link_failed').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+        }
+
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(
             content: __('installer.migrations_completed').PHP_EOL,

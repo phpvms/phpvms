@@ -12,6 +12,8 @@ use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonValidator;
 use App\Addons\Support\ManifestParser;
 use App\Addons\Support\OctaneReloader;
+use App\Addons\Support\ThemeAddonRegistrar;
+use App\Addons\Support\ThemeAssetLinker;
 use App\Events\AddonInstalled;
 use App\Events\AddonUpdated;
 use App\Exceptions\AddonInstallException;
@@ -24,6 +26,7 @@ use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
@@ -40,6 +43,7 @@ class AddonRegistry
         private readonly AddonAssetLinker $assetLinker,
         private readonly OctaneReloader $octane,
         private readonly AddonValidator $validator,
+        private readonly ThemeAssetLinker $themeAssetLinker,
     ) {}
 
     /**
@@ -132,6 +136,8 @@ class AddonRegistry
             throw new RuntimeException(sprintf('The "%s" addon is bundled with phpVMS and cannot be deleted.', $name));
         }
 
+        $this->assertNotActiveTheme($addon, 'deleted');
+
         // An addon shipped in the image cannot be removed from disk at runtime:
         // the files belong to the image layer, and the next deploy restores
         // them regardless. Deleting the row alone would be worse than useless —
@@ -157,6 +163,9 @@ class AddonRegistry
         $imageCopy = $this->imageRootCopy($addon->registry_id);
 
         if ($imageCopy instanceof AddonManifest) {
+            // Read before the files go: the overlay's theme.json names its link.
+            $outgoingTheme = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
+
             // Before any row state changes: a surviving overlay is still the
             // newer copy, so it would keep winning precedence and the "revert"
             // would be a lie.
@@ -169,10 +178,19 @@ class AddonRegistry
             // just deleted and the addon would stop loading entirely.
             $addon->path = $imageCopy->path;
             $addon->version = $imageCopy->version;
+            // The overlay may have changed the type (a theme updated into a
+            // module, or back); linkAssets() below branches on it.
+            $addon->type = $imageCopy->type;
             $addon->namespace = $imageCopy->namespace;
             $addon->save();
 
-            $this->assetLinker->link($addon->getName(), $addon->getPath());
+            $incomingTheme = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
+
+            if ($outgoingTheme !== null && $outgoingTheme !== $incomingTheme) {
+                $this->themeAssetLinker->unlink($outgoingTheme);
+            }
+
+            $this->linkAssets($addon);
 
             app(AddonDiscoveryService::class)->rebuildCache();
             $this->bustPanelComponentCache();
@@ -180,6 +198,9 @@ class AddonRegistry
 
             return AddonDeleteOutcome::Reverted;
         }
+
+        // Read before the files go: theme.json names the theme link.
+        $themeName = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
 
         // Files first, and it throws on failure. Dropping the tables before
         // knowing the files are gone would leave a discoverable addon whose
@@ -193,6 +214,10 @@ class AddonRegistry
         }
 
         $this->assetLinker->unlink($addon->getName());
+
+        if ($themeName !== null) {
+            $this->themeAssetLinker->unlink($themeName);
+        }
 
         $addon->delete();
 
@@ -267,7 +292,6 @@ class AddonRegistry
     private function removeAddonFilesOrFail(Addon $addon): void
     {
         $path = rtrim($addon->getPath(), '/');
-        $root = AddonRoots::installed();
 
         // Resolved on both sides, for the same reason AddonRoots::isImageManaged()
         // resolves: discovery stores realpath()s, and the configured root may
@@ -275,14 +299,13 @@ class AddonRegistry
         // direction that matters for a recursive delete — a symlink inside the
         // writable root pointing elsewhere resolves outside it and is refused.
         $path = realpath($path) ?: $path;
-        $root = realpath($root) ?: $root;
 
-        if ($path === '' || $root === '' || !str_starts_with($path, $root.'/')) {
+        if (!$this->inWritableRoot($path)) {
             Log::warning(sprintf(
-                'AddonRegistry: not removing files for "%s" — path %s is outside the installed addon root %s',
+                'AddonRegistry: not removing files for "%s" — path %s is outside the writable addon roots %s',
                 $addon->getName(),
                 $path === '' ? '(empty)' : $path,
-                $root,
+                implode(', ', AddonRoots::writable()),
             ));
 
             return;
@@ -306,6 +329,26 @@ class AddonRegistry
                 $path,
             ));
         }
+    }
+
+    /**
+     * Whether a resolved path lies inside one of the writable roots.
+     */
+    private function inWritableRoot(string $path): bool
+    {
+        if ($path === '') {
+            return false;
+        }
+
+        foreach (AddonRoots::writable() as $root) {
+            $root = realpath($root) ?: $root;
+
+            if ($root !== '' && str_starts_with($path, $root.'/')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -354,7 +397,7 @@ class AddonRegistry
     public function relinkAssets(): void
     {
         foreach ($this->enabled() as $addon) {
-            $this->assetLinker->link($addon->getName(), $addon->getPath());
+            $this->linkAssets($addon);
         }
     }
 
@@ -371,8 +414,10 @@ class AddonRegistry
 
         try {
             $manifest = $this->validator->validate($extracted);
+            $this->assertThemeNameAvailable($manifest, $extracted);
             $safeName = $this->safeName($manifest);
-            $dest = AddonRoots::installed().'/'.$safeName;
+            $root = AddonRoots::installedFor($manifest->type);
+            $dest = $root.'/'.$safeName;
 
             // Identity, not directory name. A second copy in the writable root
             // would be ignored by discovery in favour of the image one, leaving
@@ -390,7 +435,7 @@ class AddonRegistry
                 throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
             }
 
-            File::ensureDirectoryExists(AddonRoots::installed());
+            File::ensureDirectoryExists($root);
 
             if (!$this->placeDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
@@ -401,7 +446,7 @@ class AddonRegistry
 
         $addon = $this->register($manifest, $dest);
 
-        $this->assetLinker->link($addon->getName(), $addon->getPath());
+        $this->linkAssets($addon);
         $this->bustPanelComponentCache();
         $this->octane->reload();
 
@@ -438,10 +483,15 @@ class AddonRegistry
         // Snapshot the prior DB state so it can be restored on failure.
         $prior = [
             'version'   => $existing->version,
+            'type'      => $existing->type,
             'namespace' => $existing->namespace,
             'path'      => $existing->path,
             'enabled'   => $existing->isEnabled(),
         ];
+
+        // Read before the files are replaced: theme.json names the theme link.
+        $oldThemeName = $existing->type === 'theme' ? ThemeAddonRegistrar::themeName($existing->getPath(), $existing->getName()) : null;
+        $newThemeName = null;
 
         $staging = $this->freshStagingPath();
         $extracted = $this->fetchIntoStaging($source, $staging);
@@ -449,9 +499,23 @@ class AddonRegistry
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = AddonRoots::installed().'/'.$this->safeName($manifest);
+            $this->assertThemeNameAvailable($manifest, $extracted);
+            $newThemeName = $manifest->type === 'theme' ? ThemeAddonRegistrar::themeName($extracted, $manifest->name) : null;
 
-            File::ensureDirectoryExists(AddonRoots::installed());
+            // A version that renames the theme, or stops being a theme, would
+            // leave general.theme pointing at nothing and the site would fall
+            // back to the default without anyone choosing it.
+            if ($oldThemeName !== null && $oldThemeName !== $newThemeName && $oldThemeName === setting('general.theme', config('themes.default'))) {
+                throw new AddonInstallException(sprintf(
+                    'This update renames or removes the active theme "%s". Select another theme first.',
+                    $oldThemeName,
+                ));
+            }
+
+            $root = AddonRoots::installedFor($manifest->type);
+            $dest = $root.'/'.$this->safeName($manifest);
+
+            File::ensureDirectoryExists($root);
 
             // Updating a copy that lives in the image root places the new
             // version in the writable root for the first time, so there is
@@ -475,6 +539,9 @@ class AddonRegistry
             }
 
             $existing->version = $manifest->version;
+            // The type picks the root above and the asset links below, so a
+            // version that changes it must change the row too.
+            $existing->type = $manifest->type;
             $existing->namespace = $manifest->namespace;
             $existing->path = $dest;
             $existing->enabled = $prior['enabled'];
@@ -500,7 +567,17 @@ class AddonRegistry
             File::deleteDirectory($backup);
         }
 
-        $this->assetLinker->link($existing->getName(), $existing->getPath());
+        // The rebuild inside the try ran while both copies existed and may
+        // have picked the old one; rebuild again once it is gone.
+        if ($this->removeSupersededCopy($prior['path'], $dest)) {
+            app(AddonDiscoveryService::class)->rebuildCache();
+        }
+
+        if ($oldThemeName !== null && $oldThemeName !== $newThemeName) {
+            $this->themeAssetLinker->unlink($oldThemeName);
+        }
+
+        $this->linkAssets($existing);
         $this->bustPanelComponentCache();
         $this->octane->reload();
 
@@ -515,7 +592,7 @@ class AddonRegistry
      * relink assets. No tables are dropped — a failed update must not uninstall
      * a working addon.
      *
-     * @param array{version: ?string, namespace: string, path: string, enabled: bool} $prior
+     * @param array{version: ?string, type: string, namespace: string, path: string, enabled: bool} $prior
      */
     private function restorePreviousVersion(Addon $addon, array $prior, ?string $dest, ?string $backup, bool $destWasCreated = false): void
     {
@@ -542,13 +619,14 @@ class AddonRegistry
         }
 
         $addon->version = $prior['version'];
+        $addon->type = $prior['type'];
         $addon->namespace = $prior['namespace'];
         $addon->path = $prior['path'];
         $addon->enabled = $prior['enabled'];
         $addon->save();
 
         app(AddonDiscoveryService::class)->rebuildCache();
-        $this->assetLinker->link($addon->getName(), $addon->getPath());
+        $this->linkAssets($addon);
         $this->bustPanelComponentCache();
         $this->octane->reload();
     }
@@ -704,12 +782,128 @@ class AddonRegistry
             throw new RuntimeException(sprintf('The "%s" addon is bundled with phpVMS and cannot be disabled.', $name));
         }
 
+        if (!$enabled) {
+            $this->assertNotActiveTheme($addon, 'disabled');
+        }
+
         $addon->enabled = $enabled;
         $addon->save();
 
         app(AddonDiscoveryService::class)->rebuildCache();
         $this->bustPanelComponentCache();
         $this->octane->reload();
+    }
+
+    /**
+     * Delete the previous version's directory when an update placed the new
+     * one somewhere else — a version that changed the addon's type moves it
+     * from the installed root to the themes root, or back. Left behind, the
+     * old copy is still a valid addon on disk: once the new one is deleted,
+     * discovery finds the old one and the addon comes back.
+     *
+     * Only a copy in a writable root is removed. An image-root copy is not
+     * superseded, it is the bundled version a delete reverts to.
+     *
+     * @return bool whether a copy was removed
+     */
+    private function removeSupersededCopy(string $priorPath, string $dest): bool
+    {
+        $prior = realpath($priorPath) ?: $priorPath;
+
+        if ($prior === (realpath($dest) ?: $dest) || !File::isDirectory($prior)) {
+            return false;
+        }
+
+        if (AddonRoots::isImageManaged($prior) || !$this->inWritableRoot($prior)) {
+            return false;
+        }
+
+        return File::deleteDirectory($prior);
+    }
+
+    /**
+     * Refuse a theme addon whose theme name is already used by a folder theme
+     * or by another theme addon. Two themes under one name would share one
+     * asset link, so the views would come from one addon and the assets from
+     * the other.
+     *
+     * @throws AddonInstallException
+     */
+    private function assertThemeNameAvailable(AddonManifest $manifest, string $dir): void
+    {
+        if ($manifest->type !== 'theme') {
+            return;
+        }
+
+        $name = ThemeAddonRegistrar::themeName($dir, $manifest->name);
+
+        // The name becomes a path segment (the asset link) and is read on every
+        // boot, so a name with a slash or ".." must be refused here rather than
+        // break boot later.
+        try {
+            AddonAssetLinker::segment($name);
+        } catch (InvalidArgumentException) {
+            throw new AddonInstallException(sprintf('Invalid theme name: "%s". Use letters, digits, "-" and "_".', $name));
+        }
+
+        // Case-insensitive: the asset link name is lowercased.
+        $wanted = strtolower($name);
+
+        $takenByAddon = Addon::query()
+            ->where('type', 'theme')
+            ->where('registry_id', '!=', $manifest->registryId)
+            ->get()
+            ->contains(fn (Addon $other): bool => strtolower(ThemeAddonRegistrar::themeName($other->getPath(), $other->getName())) === $wanted);
+
+        // Themes configured by hand in config/themes.php. Entries the registrar
+        // added for addons are left out: the row check above covers them, and
+        // this addon's own entry must not block its update.
+        $addonEntries = array_map(strtolower(...), (array) config('themes.addon_themes', []));
+        $configured = array_diff(array_map(strtolower(...), array_map(strval(...), array_keys((array) config('themes.themes', [])))), $addonEntries);
+
+        if ($takenByAddon || in_array($wanted, ThemeAddonRegistrar::folderThemeNames(), true) || in_array($wanted, $configured, true)) {
+            throw new AddonInstallException(sprintf('A theme named "%s" already exists.', $name));
+        }
+    }
+
+    /**
+     * Link an addon's public assets: public/ext/{name} for every addon, plus
+     * the storage theme link for a theme addon.
+     */
+    private function linkAssets(Addon $addon): void
+    {
+        $this->assetLinker->link($addon->getName(), $addon->getPath());
+
+        if ($addon->type === 'theme') {
+            $this->themeAssetLinker->link(
+                ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()),
+                $addon->getPath(),
+            );
+        }
+    }
+
+    /**
+     * Refuse to disable or delete the theme the site is using. Without the
+     * theme the frontend falls back to another one, which an operator who
+     * clicked "disable" on an addon would not expect.
+     *
+     * @throws RuntimeException
+     */
+    private function assertNotActiveTheme(Addon $addon, string $action): void
+    {
+        if ($addon->type !== 'theme') {
+            return;
+        }
+
+        $themeName = ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName());
+
+        if ($themeName === setting('general.theme', config('themes.default'))) {
+            throw new RuntimeException(sprintf(
+                'The "%s" theme is the active theme and cannot be %s. Select another theme first.',
+                $themeName,
+                $action,
+            ));
+        }
     }
 
     /**

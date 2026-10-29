@@ -7,8 +7,8 @@ namespace App\Addons\Support;
 use Illuminate\Support\Facades\File;
 
 /**
- * The two directories an addon can live in, and the rules that follow from
- * which one it is in.
+ * The directories an addon can live in, and the rules that follow from which
+ * one it is in.
  *
  * - The IMAGE root (`addons.paths.base`, `modules/`) ships inside the
  *   deployment image. It is read-only at runtime: install, update and file
@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\File;
  * - The INSTALLED root (`addons.paths.installed`) is a persistent writable
  *   volume. Everything the addon manager places at runtime goes here, and the
  *   full lifecycle (install/update/delete) applies.
+ * - The THEMES root (`addons.paths.themes`) is the installed root for addons
+ *   of type "theme". Same volume and same rules as the installed root.
  *
  * Both are read from config on every call rather than cached, so tests that
  * point either root at a temp directory behave as expected.
@@ -41,14 +43,40 @@ final class AddonRoots
     }
 
     /**
-     * Every root to scan, image root FIRST.
+     * The writable root for installed addons of type "theme".
+     */
+    public static function themes(): string
+    {
+        return rtrim((string) config('addons.paths.themes', storage_path('addon-themes')), '/');
+    }
+
+    /**
+     * The writable root an addon of $type is installed into.
+     */
+    public static function installedFor(string $type): string
+    {
+        return $type === 'theme' ? self::themes() : self::installed();
+    }
+
+    /**
+     * Every writable root: the ones install/update place files in, and the
+     * only ones delete may remove files from.
      *
-     * Order is the collision rule: when the same addon is present in both roots
-     * the image copy wins. That direction is deliberate — the point of
-     * separating the roots is that a bundled addon's updates arrive with the
-     * image, so a leftover copy in the writable root must never shadow it.
+     * @return list<string>
+     */
+    public static function writable(): array
+    {
+        return array_values(array_unique([self::installed(), self::themes()]));
+    }
+
+    /**
+     * Every root to scan, image root first.
      *
-     * Duplicates are removed so a deployment that points both keys at the same
+     * When the same addon is present in more than one root, the higher version
+     * wins (AddonDiscoveryService::scanAllRoots()); ties and unversioned copies
+     * go to the image.
+     *
+     * Duplicates are removed so a deployment that points two keys at the same
      * directory (the pre-split layout, and what several tests do) scans it once
      * instead of reporting every addon twice.
      *
@@ -56,7 +84,7 @@ final class AddonRoots
      */
     public static function all(): array
     {
-        return array_values(array_unique([self::image(), self::installed()]));
+        return array_values(array_unique([self::image(), ...self::writable()]));
     }
 
     /**
