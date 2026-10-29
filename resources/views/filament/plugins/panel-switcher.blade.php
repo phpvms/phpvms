@@ -29,7 +29,7 @@
 @capture($brandButtonContent, $withChevron = true)
     <span @class(['fi-brandbtn-mark', 'fi-brandmark-custom' => $brandMark !== null])>
         {{-- Same built-in mark as the dropdown's admin row, so the two match. --}}
-        <img src="{{ $brandMark ?? public_asset('/assets/img/logo_blue.svg') }}" alt="" />
+        <img src="{{ $brandMark ?? asset('/assets/img/logo_blue.svg') }}" alt="" />
     </span>
     <span class="fi-brandbtn-text">
         <span class="fi-brandbtn-name">{{ $brandName }}</span>
@@ -63,7 +63,7 @@
             >
                 @if ($isAdmin)
                     <span @class(['fi-brandmenu-item-mark', 'fi-brandmark-custom' => $brandMark !== null])>
-                        <img src="{{ $brandMark ?? public_asset('/assets/img/logo_blue.svg') }}" alt="" />
+                        <img src="{{ $brandMark ?? asset('/assets/img/logo_blue.svg') }}" alt="" />
                     </span>
                 @else
                     <span class="fi-brandmenu-item-mark" style="background-color: {{ $markColors[$nonAdminIndex++ % count($markColors)] }}">

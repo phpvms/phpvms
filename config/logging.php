@@ -54,6 +54,20 @@ return [
 
     'channels' => [
 
+        /*
+         * Where PHP deprecations go (LOG_DEPRECATIONS_CHANNEL, `null` by default).
+         *
+         * Declared here rather than left to the framework: Laravel adds this
+         * channel lazily on the first deprecation, writing it into the
+         * application it bootstrapped. Under Octane each request runs on a copy
+         * of that config, so the request's LogManager never sees it and the
+         * deprecation turns into "Log [deprecations] is not defined" - a 500.
+         */
+        'deprecations' => [
+            'driver'   => 'stack',
+            'channels' => [env('LOG_DEPRECATIONS_CHANNEL', 'null')],
+        ],
+
         'stack' => [
             'driver'            => 'stack',
             'channels'          => explode(',', (string) env('LOG_STACK', 'daily')),

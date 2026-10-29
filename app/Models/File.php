@@ -127,7 +127,7 @@ class File extends Model
                 }
 
                 // Otherwise, figure out the public URL and save there
-                return public_asset(Storage::disk('public')->url($this->path));
+                return asset(Storage::disk('public')->url($this->path));
             }
         );
     }
