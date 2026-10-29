@@ -47,11 +47,15 @@ class ThemeAssetLinker
     }
 
     /**
-     * Link {addonPath}/public as {assetsBase}/{themeName}. No-op when the theme
-     * ships no public/ directory. Idempotent: replaces an existing link.
+     * Link {addonPath}/public as {assetsBase}/{themeName}. Idempotent: replaces
+     * an existing link, and removes it when the theme ships no public/.
      */
     public function link(string $themeName, string $addonPath): void
     {
+        // First, so a version that dropped public/ does not leave the previous
+        // version's link dangling.
+        $this->unlink($themeName);
+
         $source = realpath($addonPath.'/public');
 
         if ($source === false || !is_dir($source)) {
@@ -61,8 +65,6 @@ class ThemeAssetLinker
         File::ensureDirectoryExists($this->assetsBase);
 
         $target = $this->target($themeName);
-
-        $this->unlink($themeName);
 
         $base = realpath($this->assetsBase) ?: $this->assetsBase;
 

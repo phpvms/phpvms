@@ -100,7 +100,11 @@ class InstallerService extends Service
             return false;
         }
 
-        return is_link(public_path('storage')) || is_dir(public_path('storage'));
+        // Something at public/storage is not enough: a leftover directory or a
+        // broken link makes storage:link refuse, and nothing would be served.
+        $target = realpath(storage_path('app/public'));
+
+        return $target !== false && realpath(public_path('storage')) === $target;
     }
 
     /**

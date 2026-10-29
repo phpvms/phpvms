@@ -163,6 +163,9 @@ class AddonRegistry
         $imageCopy = $this->imageRootCopy($addon->registry_id);
 
         if ($imageCopy instanceof AddonManifest) {
+            // Read before the files go: the overlay's theme.json names its link.
+            $outgoingTheme = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
+
             // Before any row state changes: a surviving overlay is still the
             // newer copy, so it would keep winning precedence and the "revert"
             // would be a lie.
@@ -175,8 +178,17 @@ class AddonRegistry
             // just deleted and the addon would stop loading entirely.
             $addon->path = $imageCopy->path;
             $addon->version = $imageCopy->version;
+            // The overlay may have changed the type (a theme updated into a
+            // module, or back); linkAssets() below branches on it.
+            $addon->type = $imageCopy->type;
             $addon->namespace = $imageCopy->namespace;
             $addon->save();
+
+            $incomingTheme = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
+
+            if ($outgoingTheme !== null && $outgoingTheme !== $incomingTheme) {
+                $this->themeAssetLinker->unlink($outgoingTheme);
+            }
 
             $this->linkAssets($addon);
 
@@ -555,7 +567,11 @@ class AddonRegistry
             File::deleteDirectory($backup);
         }
 
-        $this->removeSupersededCopy($prior['path'], $dest);
+        // The rebuild inside the try ran while both copies existed and may
+        // have picked the old one; rebuild again once it is gone.
+        if ($this->removeSupersededCopy($prior['path'], $dest)) {
+            app(AddonDiscoveryService::class)->rebuildCache();
+        }
 
         if ($oldThemeName !== null && $oldThemeName !== $newThemeName) {
             $this->themeAssetLinker->unlink($oldThemeName);
@@ -787,20 +803,22 @@ class AddonRegistry
      *
      * Only a copy in a writable root is removed. An image-root copy is not
      * superseded, it is the bundled version a delete reverts to.
+     *
+     * @return bool whether a copy was removed
      */
-    private function removeSupersededCopy(string $priorPath, string $dest): void
+    private function removeSupersededCopy(string $priorPath, string $dest): bool
     {
         $prior = realpath($priorPath) ?: $priorPath;
 
         if ($prior === (realpath($dest) ?: $dest) || !File::isDirectory($prior)) {
-            return;
+            return false;
         }
 
         if (AddonRoots::isImageManaged($prior) || !$this->inWritableRoot($prior)) {
-            return;
+            return false;
         }
 
-        File::deleteDirectory($prior);
+        return File::deleteDirectory($prior);
     }
 
     /**
@@ -837,7 +855,13 @@ class AddonRegistry
             ->get()
             ->contains(fn (Addon $other): bool => strtolower(ThemeAddonRegistrar::themeName($other->getPath(), $other->getName())) === $wanted);
 
-        if ($takenByAddon || in_array($wanted, ThemeAddonRegistrar::folderThemeNames(), true)) {
+        // Themes configured by hand in config/themes.php. Entries the registrar
+        // added for addons are left out: the row check above covers them, and
+        // this addon's own entry must not block its update.
+        $addonEntries = array_map(strtolower(...), (array) config('themes.addon_themes', []));
+        $configured = array_diff(array_map(strtolower(...), array_map(strval(...), array_keys((array) config('themes.themes', [])))), $addonEntries);
+
+        if ($takenByAddon || in_array($wanted, ThemeAddonRegistrar::folderThemeNames(), true) || in_array($wanted, $configured, true)) {
             throw new AddonInstallException(sprintf('A theme named "%s" already exists.', $name));
         }
     }

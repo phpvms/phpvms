@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Addons\AddonDeleteOutcome;
 use App\Addons\AddonRegistry;
+use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Sources\ZipSource;
 use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonRoots;
@@ -55,8 +56,14 @@ afterEach(function (): void {
  *
  * @param array<string, string> $extraFiles path => contents
  */
-function themeAddonZip(string $workDir, string $themeName = 'testsky', array $extraFiles = []): string
-{
+function themeAddonZip(
+    string $workDir,
+    string $themeName = 'testsky',
+    array $extraFiles = [],
+    string $version = '1.0.0',
+    string $type = 'theme',
+    bool $withPublic = true,
+): string {
     // Hashed: the theme name may be deliberately invalid as a path ("acme/sky").
     $path = $workDir.'/theme-'.md5($themeName.uniqid('', true)).'.zip';
 
@@ -65,8 +72,8 @@ function themeAddonZip(string $workDir, string $themeName = 'testsky', array $ex
     $zip->addFromString('module.json', json_encode([
         'name'        => 'Testsky',
         'registry_id' => 'acme/testsky',
-        'type'        => 'theme',
-        'version'     => '1.0.0',
+        'type'        => $type,
+        'version'     => $version,
         'providers'   => [],
     ]));
     $zip->addFromString('composer.json', json_encode([
@@ -74,7 +81,10 @@ function themeAddonZip(string $workDir, string $themeName = 'testsky', array $ex
     ]));
     $zip->addFromString('theme.json', json_encode(['name' => $themeName, 'kind' => 'blade']));
     $zip->addFromString('resources/views/home.blade.php', 'testsky home');
-    $zip->addFromString('public/css/app.css', 'body {}');
+
+    if ($withPublic) {
+        $zip->addFromString('public/css/app.css', 'body {}');
+    }
 
     foreach ($extraFiles as $file => $contents) {
         $zip->addFromString($file, $contents);
@@ -399,4 +409,84 @@ it('rebuilds the addon boot cache from the command line', function (): void {
     $this->artisan('addons:cache')->assertSuccessful();
 
     expect(app(BootCache::class)->enabled()->pluck('name')->all())->toContain('Testsky');
+});
+
+// ── PR review fixes ─────────────────────────────────────────────────────────
+
+it('restores the type and the theme link when reverting to the bundled copy', function (): void {
+    // The bundled theme, as the image ships it.
+    $bundled = $this->work.'/image/testsky';
+    File::ensureDirectoryExists($bundled.'/resources/views');
+    File::ensureDirectoryExists($bundled.'/public/css');
+    File::put($bundled.'/module.json', json_encode([
+        'name' => 'Testsky', 'registry_id' => 'acme/testsky', 'type' => 'theme', 'version' => '1.0.0', 'providers' => [],
+    ]));
+    File::put($bundled.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']]]));
+    File::put($bundled.'/theme.json', json_encode(['name' => 'testsky']));
+    File::put($bundled.'/public/css/app.css', 'bundled');
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+    updateSetting('general.theme', 'seven');
+
+    $registry = app(AddonRegistry::class);
+    $registry->update('Testsky', new ZipSource(themeAddonZip($this->work, version: '2.0.0', type: 'module')));
+
+    expect(Addon::query()->value('type'))->toBe('module');
+
+    expect($registry->delete('Testsky'))->toBe(AddonDeleteOutcome::Reverted)
+        ->and(Addon::query()->value('type'))->toBe('theme')
+        ->and(File::get($this->work.'/public-disk/themes/testsky/css/app.css'))->toBe('bundled');
+});
+
+it('refuses a theme name configured by hand in config/themes.php', function (): void {
+    Config::set('themes.themes', ['testsky' => ['views-path' => 'elsewhere']]);
+    Config::set('themes.addon_themes', []);
+
+    expect(fn (): Addon => installThemeAddon($this->work))
+        ->toThrow(AddonInstallException::class, 'already exists');
+});
+
+it('does not block an update with its own registered theme entry', function (): void {
+    installThemeAddon($this->work);
+    Config::set('themes.themes', []);
+    app(ThemeAddonRegistrar::class)->register();
+    updateSetting('general.theme', 'seven');
+
+    $updated = app(AddonRegistry::class)->update('Testsky', new ZipSource(themeAddonZip($this->work, version: '1.1.0')));
+
+    expect($updated->version)->toBe('1.1.0');
+});
+
+it('removes the theme link when an update drops public/', function (): void {
+    installThemeAddon($this->work);
+    updateSetting('general.theme', 'seven');
+
+    app(AddonRegistry::class)->update('Testsky', new ZipSource(themeAddonZip($this->work, version: '1.1.0', withPublic: false)));
+
+    expect(is_link($this->work.'/public-disk/themes/testsky'))->toBeFalse();
+});
+
+it('points the boot cache at the new copy after a same-version type change', function (): void {
+    app(AddonRegistry::class)->install(new ZipSource(themeAddonZip($this->work, type: 'module')));
+    updateSetting('general.theme', 'seven');
+
+    app(AddonRegistry::class)->update('Testsky', new ZipSource(themeAddonZip($this->work)));
+
+    $entry = app(BootCache::class)->enabled()->firstWhere('name', 'Testsky');
+    expect(realpath($entry->path))->toBe(realpath($this->work.'/themes/acme-testsky'))
+        ->and($entry->type)->toBe('theme');
+});
+
+it('reports a storage link only when it reaches the public disk', function (): void {
+    Artisan::shouldReceive('call')->andReturn(0);
+    $public = $this->work.'/public';
+    File::ensureDirectoryExists($public);
+    app()->usePublicPath($public);
+
+    // A leftover real directory, which storage:link refuses to replace.
+    File::ensureDirectoryExists($public.'/storage');
+    expect(app(InstallerService::class)->linkStorage())->toBeFalse();
+
+    File::deleteDirectory($public.'/storage');
+    symlink(storage_path('app/public'), $public.'/storage');
+    expect(app(InstallerService::class)->linkStorage())->toBeTrue();
 });
