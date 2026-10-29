@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Laravel\Passport\Passport;
 use phpseclib3\Crypt\RSA;
 use RuntimeException;
+use Throwable;
 
 class InstallerService extends Service
 {
@@ -75,6 +76,31 @@ class InstallerService extends Service
     public function clearCaches(): void
     {
         Artisan::call('optimize:clear');
+    }
+
+    /**
+     * Create the public/storage link, which serves the public disk and the
+     * theme addon assets under it.
+     *
+     * Relative, so the link survives the install being moved to another
+     * directory. Idempotent: an existing link is left alone. Runs on install
+     * and on update, so existing sites get the link too.
+     *
+     * Returns false when the link cannot be made — commonly a shared host that
+     * disables symlink() — so the caller can report it. The site still works,
+     * but assets on the public disk are not served.
+     */
+    public function linkStorage(): bool
+    {
+        try {
+            Artisan::call('storage:link', ['--relative' => true]);
+        } catch (Throwable $throwable) {
+            Log::warning('Could not create the public/storage link', ['exception' => $throwable]);
+
+            return false;
+        }
+
+        return is_link(public_path('storage')) || is_dir(public_path('storage'));
     }
 
     /**

@@ -136,6 +136,11 @@ class Updater extends Page
             $streamCallback(__('installer.update_step_failed'));
         }
 
+        // Sites installed before the installer made the link get it here.
+        if (!app(InstallerService::class)->linkStorage()) {
+            $streamCallback(__('installer.storage_link_failed'));
+        }
+
         if (count($dataMigrationsPending) !== 0) {
             if ($migrationSvc->runAllDataMigrationsWithStreaming($streamCallback) !== 0) {
                 $streamCallback(__('installer.failed'));

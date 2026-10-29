@@ -112,8 +112,12 @@ class SetActiveTheme implements Middleware
             return $theme;
         }
 
-        // all() is a list of Theme objects, not a name-keyed map.
-        $fallback = Theme::all()[0]->name ?? null;
+        // The configured default first: a theme addon that was removed or
+        // disabled out of band should land on the stock theme, not whichever
+        // theme happens to be listed first. all() is a list of Theme objects,
+        // not a name-keyed map.
+        $default = (string) config('themes.default');
+        $fallback = $default !== '' && Theme::exists($default) ? $default : (Theme::all()[0]->name ?? null);
 
         Log::warning(sprintf(
             'Theme "%s" is not installed; falling back to "%s".',
