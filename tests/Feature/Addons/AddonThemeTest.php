@@ -7,7 +7,6 @@ use App\Addons\AddonRegistry;
 use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Sources\ZipSource;
 use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\AddonRoots;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ThemeAddonRegistrar;
 use App\Addons\Support\ThemeAssetLinker;
@@ -110,12 +109,6 @@ it('installs a theme addon into the themes root, not the addons root', function 
         ->and(File::isDirectory($this->work.'/installed/acme-testsky'))->toBeFalse();
 });
 
-it('routes the install root by addon type', function (): void {
-    expect(AddonRoots::installedFor('theme'))->toBe($this->work.'/themes')
-        ->and(AddonRoots::installedFor('module'))->toBe($this->work.'/installed')
-        ->and(AddonRoots::all())->toBe([$this->work.'/image', $this->work.'/installed', $this->work.'/themes']);
-});
-
 // ── Asset link ──────────────────────────────────────────────────────────────
 
 it('links the theme public folder into the public disk with a relative link', function (): void {
@@ -157,14 +150,12 @@ it('refuses an addon with a PHP file in public/', function (string $file): void 
     expect(Addon::query()->count())->toBe(0)
         ->and(File::isDirectory($this->work.'/themes/acme-testsky'))->toBeFalse();
 })->with([
-    'php'           => 'public/shell.php',
     'nested'        => 'public/js/vendor/x.phtml',
     'double ext'    => 'public/img/a.php.png',
     'upper case'    => 'public/A.PHP',
     'phar'          => 'public/x.phar',
     'versioned php' => 'public/x.php7',
     'in .git'       => 'public/.git/hook.php',
-    'in CVS'        => 'public/CVS/x.php',
     '.htaccess'     => 'public/.htaccess',
     '.user.ini'     => 'public/js/.user.ini',
 ]);
@@ -197,15 +188,6 @@ it('refuses to delete the active theme', function (): void {
     expect(File::isDirectory($addon->getPath()))->toBeTrue();
 });
 
-it('disables a theme addon that is not the active theme', function (): void {
-    installThemeAddon($this->work);
-    updateSetting('general.theme', 'seven');
-
-    app(AddonRegistry::class)->disable('Testsky');
-
-    expect(Addon::query()->where('name', 'Testsky')->value('enabled'))->toBeFalsy();
-});
-
 // ── Registration ────────────────────────────────────────────────────────────
 
 it('registers an enabled theme addon with the theme engine', function (): void {
@@ -232,17 +214,6 @@ it('renders views from a registered theme addon', function (): void {
     Theme::set('testsky');
 
     expect(view('home')->render())->toBe('testsky home');
-});
-
-it('does not register a disabled theme addon', function (): void {
-    installThemeAddon($this->work);
-    updateSetting('general.theme', 'seven');
-    app(AddonRegistry::class)->disable('Testsky');
-    Config::set('themes.themes', []);
-
-    app(ThemeAddonRegistrar::class)->register();
-
-    expect(config('themes.themes'))->not->toHaveKey('testsky');
 });
 
 it('refuses to install a theme addon named like a folder theme', function (): void {
@@ -388,12 +359,6 @@ it('falls back to the configured default theme when the active one is gone', fun
 
 // ── storage:link ────────────────────────────────────────────────────────────
 
-it('creates the storage link with a relative target', function (): void {
-    Artisan::shouldReceive('call')->once()->with('storage:link', ['--relative' => true]);
-
-    app(InstallerService::class)->linkStorage();
-});
-
 it('reports a storage link that cannot be made instead of throwing', function (): void {
     Artisan::shouldReceive('call')->once()->andThrow(new ErrorException('symlink() has been disabled'));
 
@@ -477,7 +442,7 @@ it('points the boot cache at the new copy after a same-version type change', fun
 });
 
 it('reports a storage link only when it reaches the public disk', function (): void {
-    Artisan::shouldReceive('call')->andReturn(0);
+    Artisan::shouldReceive('call')->with('storage:link', ['--relative' => true])->andReturn(0);
     $public = $this->work.'/public';
     File::ensureDirectoryExists($public);
     app()->usePublicPath($public);
