@@ -6,8 +6,8 @@
                 rel="noopener noreferrer"
                 target="_blank"
             >
-                <img src="{{ public_asset('/assets/img/logo_white_no_bg.svg') }}" class="h-10 hidden dark:block" alt="phpVMS Logo" />
-                <img src="{{ public_asset('/assets/img/logo_blue_no_bg.svg') }}" class="h-10 block dark:hidden" alt="phpVMS Logo" />
+                <img src="{{ asset('/assets/img/logo_white_no_bg.svg') }}" class="h-10 hidden dark:block" alt="phpVMS Logo" />
+                <img src="{{ asset('/assets/img/logo_blue_no_bg.svg') }}" class="h-10 block dark:hidden" alt="phpVMS Logo" />
             </a>
 
             <p class="fi-filament-info-widget-version">
