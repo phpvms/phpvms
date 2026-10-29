@@ -2,7 +2,9 @@
 
 use App\Enums\ExpenseType;
 use App\Enums\FlightType;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
+use App\Enums\PirepState;
 use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Expense;
@@ -893,6 +895,75 @@ test('pirep finances', function (): void {
         $find = $transactions['transactions']->where('tags', $type);
         expect($find->count())->toEqual($count);
     }
+});
+
+/**
+ * Advanced fuel only charges for the fuel uplifted on top of what the previous accepted
+ * flight on the same aircraft left in the tanks. Two earlier flights on one aircraft:
+ * the older leaves 40 in the tanks, the newer leaves 70. Fuel costs 10 per unit.
+ *
+ * @return array{0: Pirep, 1: Pirep, 2: Pirep}
+ */
+function createAdvancedFuelHistory(): array
+{
+    updateSetting('pireps.advanced_fuel', true);
+
+    [, $pirep] = createFullPirep();
+
+    $previous = fn (string $submitted_at, int $fuel_used): Pirep => Pirep::factory()->create([
+        'airline_id'     => $pirep->airline_id,
+        'aircraft_id'    => $pirep->aircraft_id,
+        'dpt_airport_id' => $pirep->dpt_airport_id,
+        'arr_airport_id' => $pirep->arr_airport_id,
+        'state'          => PirepState::ACCEPTED,
+        'status'         => PirepPhase::ARRIVED,
+        'submitted_at'   => $submitted_at,
+        'block_fuel'     => 100,
+        'fuel_used'      => $fuel_used,
+    ]);
+
+    $older = $previous('2026-10-01 10:00:00', 60);
+    $newer = $previous('2026-10-01 14:00:00', 30);
+
+    $pirep->update(['block_fuel' => 100, 'fuel_used' => 50]);
+
+    return [$pirep->fresh(), $older, $newer];
+}
+
+function fuelDebitFor(Pirep $pirep): int
+{
+    app(PirepFinanceService::class)->payFuelCosts($pirep);
+
+    return app(JournalTransactionQuery::class)->build($pirep)['transactions']
+        ->where('tags', 'fuel')
+        ->sole()
+        ->debit;
+}
+
+test('advanced fuel charges a pending pirep against the latest accepted flight', function (): void {
+    [$pirep] = createAdvancedFuelHistory();
+    $pirep->update(['submitted_at' => '2026-10-01 18:00:00']);
+
+    // 100 block fuel - 70 left by the newer flight = 30 uplifted
+    expect(fuelDebitFor($pirep->fresh()))->toBe(30 * 10 * 100);
+});
+
+test('advanced fuel recalculates an accepted pirep against the flight before it', function (): void {
+    [, $older, $newer] = createAdvancedFuelHistory();
+
+    // 100 block fuel - 40 left by the older flight = 60 uplifted, ignoring the
+    // newer flight itself
+    expect(fuelDebitFor($newer))->toBe(60 * 10 * 100)
+        // Nothing before the oldest one: the full block fuel is uplifted
+        ->and(fuelDebitFor($older))->toBe(100 * 10 * 100);
+});
+
+test('advanced fuel falls back to the block on time for a pirep without submitted_at', function (): void {
+    [$pirep] = createAdvancedFuelHistory();
+    $pirep->update(['submitted_at' => null, 'block_on_time' => '2026-10-01 12:00:00']);
+
+    // Landed between the two flights, so the older one is the previous flight
+    expect(fuelDebitFor($pirep->fresh()))->toBe(60 * 10 * 100);
 });
 
 test('pirep finances with advanced fuel and no submitted_at', function (): void {
