@@ -46,7 +46,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^25.9.9",
     "esbuild": "^0.28.2",
-    "happy-dom": "^20.14.6",
+    "happy-dom": "^21.0.0",
     "laravel-vite-plugin": "^3.2.0",
     "oxfmt": "^0.75.0",
     "oxlint": "^1.89.0",
