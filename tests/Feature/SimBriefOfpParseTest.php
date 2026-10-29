@@ -43,3 +43,17 @@ it('parses an ATIS that SimBrief sends without an issue time', function (): void
     expect($parsed[0]->issued)->toBeNull()
         ->and($parsed[1]->issued?->toIso8601ZuluString())->toBe('2026-10-27T21:00:00Z');
 });
+
+it('parses an ATIS that SimBrief sends without a letter', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['destination']['atis'] = [
+        ['network' => 'vatsim', 'issued' => '2026-10-29T20:30:00Z', 'letter' => [], 'phonetic' => [], 'type' => [], 'message' => []],
+    ];
+
+    $parsed = SimBriefOfp::from($ofp)->destination->atis[0];
+
+    expect($parsed->letter)->toBe('')
+        ->and($parsed->phonetic)->toBe('')
+        ->and($parsed->type)->toBe('')
+        ->and($parsed->message)->toBe('');
+});
