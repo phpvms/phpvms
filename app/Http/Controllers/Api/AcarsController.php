@@ -146,13 +146,9 @@ class AcarsController extends Controller
             $position['type'] = AcarsType::FLIGHT_PATH;
 
             if (isset($position['altitude'])) {
-                if (!isset($position['altitude_agl'])) {
-                    $position['altitude_agl'] = $position['altitude'];
-                }
+                $position['altitude_agl'] ??= $position['altitude'];
 
-                if (!isset($position['altitude_msl'])) {
-                    $position['altitude_msl'] = $position['altitude'];
-                }
+                $position['altitude_msl'] ??= $position['altitude'];
 
                 unset($position['altitude']);
             }
@@ -200,7 +196,7 @@ class AcarsController extends Controller
 
                 $count++;
             } catch (QueryException $ex) {
-                Log::info('Error on adding ACARS position: '.$ex->getMessage());
+                Log::error('Error on adding ACARS position: '.$ex->getMessage());
             }
         }
 
@@ -222,18 +218,34 @@ class AcarsController extends Controller
     /**
      * Upsert the position row from the newest point the batch carried.
      *
-     * Only IN_PROGRESS and PENDING get a row. PENDING because filing happens while a
-     * client may still be posting the tail of the flight. Refused batches still write
+     * Only IN_PROGRESS gets a row. Filing removes it, so a tail batch the client
+     * posts after filing must not put the flight back. Refused batches still write
      * their `acars` rows.
+     *
+     * The state is read again, locked, in the same transaction as the upsert: the
+     * PIREP loaded at the start of the request can be stale by now if the flight
+     * was filed while the batch was being written. Filing commits the new state
+     * before it deletes the row, so either this sees that state and skips, or it
+     * commits first and the delete comes after it.
      */
     private function syncPosition(Pirep $pirep, ?Acars $latest): void
     {
-        if (!$latest instanceof Acars
-            || !in_array($pirep->state, [PirepState::IN_PROGRESS, PirepState::PENDING], true)
-        ) {
+        if (!$latest instanceof Acars) {
             return;
         }
 
+        DB::transaction(function () use ($pirep, $latest): void {
+            $state = Pirep::whereKey($pirep->id)->lockForUpdate()->value('state');
+            if ($state !== PirepState::IN_PROGRESS) {
+                return;
+            }
+
+            $this->upsertPosition($pirep, $latest);
+        });
+    }
+
+    private function upsertPosition(Pirep $pirep, Acars $latest): void
+    {
         PirepPosition::updateOrCreate(
             ['pirep_id' => $pirep->id],
             [

@@ -368,6 +368,27 @@ test('attach to pirep', function (): void {
         ->and($briefing->pirep_id)->toEqual($pirep->id);
 });
 
+test('pirep api serializes a simbrief detached from its flight', function (): void {
+    $userinfo = createUserData();
+    $user = $userinfo['user'];
+
+    apiAs($user);
+
+    /** @var Pirep $pirep */
+    $pirep = Pirep::factory()->create(['user_id' => $user->id]);
+
+    $briefing = loadSimBrief($user, $userinfo['aircraft']->first());
+
+    // Filing a PIREP attaches the OFP and drops its flight_id, then answers with the PIREP
+    app(SimBriefService::class)->attachSimbriefToPirep($pirep, $briefing);
+
+    $response = $this->get('/api/pireps/'.$pirep->id);
+    $response->assertOk();
+
+    expect($response->json('data.simbrief.id'))->toEqual($briefing->id)
+        ->and($response->json('data.simbrief.url'))->toBeNull();
+});
+
 test('simbrief create form preloads selected airports', function (): void {
     Airport::factory()->create(['id' => 'OMAA', 'icao' => 'OMAA', 'name' => 'Abu Dhabi International']);
     Airport::factory()->create(['id' => 'OMDB', 'icao' => 'OMDB', 'name' => 'Dubai International']);
