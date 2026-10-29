@@ -549,10 +549,6 @@ class PirepService extends Service
         Log::info('New PIREP filed, pirep_id: '.$pirep->id);
         event(new PirepFiled($pirep));
 
-        // A filed flight has stopped flying: off the map now, as on cancel(),
-        // rather than lingering for PirepPositionExpiration's live_time.
-        PirepPosition::where('pirep_id', $pirep->id)->delete();
-
         $pirep->refresh();
         $this->snapshotScheduledArrival($pirep);
 
@@ -592,6 +588,12 @@ class PirepService extends Service
         }
 
         $pirep->save();
+
+        // A filed flight has stopped flying: off the map now, as on cancel(),
+        // rather than lingering for PirepPositionExpiration's live_time. Only
+        // after the new state is saved, so a position batch that is still being
+        // written either sees that state or has already committed its row.
+        PirepPosition::where('pirep_id', $pirep->id)->delete();
     }
 
     private function snapshotScheduledArrival(Pirep $pirep): void

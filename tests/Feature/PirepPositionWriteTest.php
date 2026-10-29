@@ -252,3 +252,22 @@ test('filing takes the flight off the map', function (): void {
 
     expect(positionRow($pirep))->toBeNull();
 });
+
+test('a batch written while the flight is filed does not put it back on the map', function (): void {
+    [$pirep] = prefileFlight();
+    $at = Carbon::now('UTC');
+
+    postPositions($pirep, [point($at->copy(), 33.0, 33.0)]);
+    expect(positionRow($pirep))->not->toBeNull();
+
+    // The request loaded the PIREP as IN_PROGRESS, then filing lands while the
+    // batch is being written: the state is committed and the row deleted.
+    Acars::created(function (Acars $acars) use ($pirep): void {
+        Pirep::whereKey($pirep->id)->update(['state' => PirepState::PENDING]);
+        PirepPosition::where('pirep_id', $pirep->id)->delete();
+    });
+
+    postPositions($pirep, [point($at->copy()->addMinute(), 34.0, 34.0)]);
+
+    expect(positionRow($pirep))->toBeNull();
+});
