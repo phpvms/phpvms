@@ -25,7 +25,7 @@ class SubfleetExporter extends Exporter
     {
         return [
             ExportColumn::make('airline.icao'),
-            ExportColumn::make('hub.name'),
+            ExportColumn::make('hub.icao'),
             ExportColumn::make('type'),
             ExportColumn::make('simbrief_type'),
             ExportColumn::make('name'),
