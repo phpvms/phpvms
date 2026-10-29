@@ -28,7 +28,7 @@ class SubfleetImporter extends Importer
             ImportColumn::make('airline')
                 ->relationship(resolveUsing: 'icao'),
             ImportColumn::make('hub')
-                ->relationship(),
+                ->relationship(resolveUsing: ['icao', 'id']),
             ImportColumn::make('type')
                 ->requiredMapping()
                 ->rules(['required']),
