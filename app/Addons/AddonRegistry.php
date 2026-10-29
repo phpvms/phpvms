@@ -26,6 +26,7 @@ use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
@@ -476,6 +477,10 @@ class AddonRegistry
             'enabled'   => $existing->isEnabled(),
         ];
 
+        // Read before the files are replaced: theme.json names the theme link.
+        $oldThemeName = $existing->type === 'theme' ? ThemeAddonRegistrar::themeName($existing->getPath(), $existing->getName()) : null;
+        $newThemeName = null;
+
         $staging = $this->freshStagingPath();
         $extracted = $this->fetchIntoStaging($source, $staging);
         $backup = null;
@@ -483,6 +488,18 @@ class AddonRegistry
         try {
             $manifest = $this->validator->validate($extracted);
             $this->assertThemeNameAvailable($manifest, $extracted);
+            $newThemeName = $manifest->type === 'theme' ? ThemeAddonRegistrar::themeName($extracted, $manifest->name) : null;
+
+            // A version that renames the theme, or stops being a theme, would
+            // leave general.theme pointing at nothing and the site would fall
+            // back to the default without anyone choosing it.
+            if ($oldThemeName !== null && $oldThemeName !== $newThemeName && $oldThemeName === setting('general.theme', config('themes.default'))) {
+                throw new AddonInstallException(sprintf(
+                    'This update renames or removes the active theme "%s". Select another theme first.',
+                    $oldThemeName,
+                ));
+            }
+
             $root = AddonRoots::installedFor($manifest->type);
             $dest = $root.'/'.$this->safeName($manifest);
 
@@ -539,6 +556,10 @@ class AddonRegistry
         }
 
         $this->removeSupersededCopy($prior['path'], $dest);
+
+        if ($oldThemeName !== null && $oldThemeName !== $newThemeName) {
+            $this->themeAssetLinker->unlink($oldThemeName);
+        }
 
         $this->linkAssets($existing);
         $this->bustPanelComponentCache();
@@ -797,15 +818,26 @@ class AddonRegistry
         }
 
         $name = ThemeAddonRegistrar::themeName($dir, $manifest->name);
-        $themesPath = (string) config('themes.themes_path', resource_path('views/layouts'));
+
+        // The name becomes a path segment (the asset link) and is read on every
+        // boot, so a name with a slash or ".." must be refused here rather than
+        // break boot later.
+        try {
+            AddonAssetLinker::segment($name);
+        } catch (InvalidArgumentException) {
+            throw new AddonInstallException(sprintf('Invalid theme name: "%s". Use letters, digits, "-" and "_".', $name));
+        }
+
+        // Case-insensitive: the asset link name is lowercased.
+        $wanted = strtolower($name);
 
         $takenByAddon = Addon::query()
             ->where('type', 'theme')
             ->where('registry_id', '!=', $manifest->registryId)
             ->get()
-            ->contains(fn (Addon $other): bool => ThemeAddonRegistrar::themeName($other->getPath(), $other->getName()) === $name);
+            ->contains(fn (Addon $other): bool => strtolower(ThemeAddonRegistrar::themeName($other->getPath(), $other->getName())) === $wanted);
 
-        if ($takenByAddon || is_file($themesPath.'/'.$name.'/theme.json')) {
+        if ($takenByAddon || in_array($wanted, ThemeAddonRegistrar::folderThemeNames(), true)) {
             throw new AddonInstallException(sprintf('A theme named "%s" already exists.', $name));
         }
     }

@@ -7,6 +7,7 @@ use App\Addons\AddonRegistry;
 use App\Addons\Sources\ZipSource;
 use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonRoots;
+use App\Addons\Support\BootCache;
 use App\Addons\Support\ThemeAddonRegistrar;
 use App\Addons\Support\ThemeAssetLinker;
 use App\Exceptions\AddonInstallException;
@@ -56,7 +57,8 @@ afterEach(function (): void {
  */
 function themeAddonZip(string $workDir, string $themeName = 'testsky', array $extraFiles = []): string
 {
-    $path = $workDir.'/'.$themeName.'.zip';
+    // Hashed: the theme name may be deliberately invalid as a path ("acme/sky").
+    $path = $workDir.'/theme-'.md5($themeName.uniqid('', true)).'.zip';
 
     $zip = new ZipArchive();
     $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
@@ -140,7 +142,7 @@ it('removes the theme link, and only the link, when the theme is deleted', funct
 
 it('refuses an addon with a PHP file in public/', function (string $file): void {
     expect(fn (): Addon => installThemeAddon($this->work, [$file => '<?php echo 1;']))
-        ->toThrow(AddonInstallException::class, 'must not contain PHP files');
+        ->toThrow(AddonInstallException::class, 'must not contain PHP or server config files');
 
     expect(Addon::query()->count())->toBe(0)
         ->and(File::isDirectory($this->work.'/themes/acme-testsky'))->toBeFalse();
@@ -151,6 +153,10 @@ it('refuses an addon with a PHP file in public/', function (string $file): void 
     'upper case'    => 'public/A.PHP',
     'phar'          => 'public/x.phar',
     'versioned php' => 'public/x.php7',
+    'in .git'       => 'public/.git/hook.php',
+    'in CVS'        => 'public/CVS/x.php',
+    '.htaccess'     => 'public/.htaccess',
+    '.user.ini'     => 'public/js/.user.ini',
 ]);
 
 it('allows PHP files outside public/', function (): void {
@@ -234,6 +240,49 @@ it('refuses to install a theme addon named like a folder theme', function (): vo
         ->toThrow(AddonInstallException::class, 'A theme named "seven" already exists');
 
     expect(Addon::query()->count())->toBe(0);
+});
+
+it('refuses a theme name that cannot be a path segment', function (string $name): void {
+    expect(fn (): Addon => app(AddonRegistry::class)->install(new ZipSource(themeAddonZip($this->work, $name))))
+        ->toThrow(AddonInstallException::class, 'Invalid theme name');
+
+    expect(Addon::query()->count())->toBe(0);
+})->with(['slash' => 'acme/sky', 'dot dot' => '..']);
+
+it('treats theme names that differ only by case as the same name', function (): void {
+    expect(fn (): Addon => app(AddonRegistry::class)->install(new ZipSource(themeAddonZip($this->work, 'Skylight'))))
+        ->toThrow(AddonInstallException::class, 'already exists');
+});
+
+it('skips a theme addon whose name cannot be registered, without breaking boot', function (): void {
+    $addon = installThemeAddon($this->work);
+    // As if an older install let the name through.
+    File::put($addon->getPath().'/theme.json', json_encode(['name' => 'acme/sky']));
+    Config::set('themes.themes', []);
+
+    app(ThemeAddonRegistrar::class)->register();
+
+    expect(config('themes.themes'))->toBe([]);
+});
+
+it('refuses an update that renames the active theme', function (): void {
+    installThemeAddon($this->work);
+    updateSetting('general.theme', 'testsky');
+
+    expect(fn (): Addon => app(AddonRegistry::class)->update('Testsky', new ZipSource(themeAddonZip($this->work, 'renamed'))))
+        ->toThrow(AddonInstallException::class, 'renames or removes the active theme');
+
+    expect(is_link($this->work.'/public-disk/themes/testsky'))->toBeTrue();
+});
+
+it('moves the asset link when an update renames an inactive theme', function (): void {
+    installThemeAddon($this->work);
+    updateSetting('general.theme', 'seven');
+
+    app(AddonRegistry::class)->update('Testsky', new ZipSource(themeAddonZip($this->work, 'renamed')));
+
+    expect(is_link($this->work.'/public-disk/themes/testsky'))->toBeFalse()
+        ->and(is_link($this->work.'/public-disk/themes/renamed'))->toBeTrue();
 });
 
 it('refuses a second theme addon with the same theme name', function (): void {
@@ -339,4 +388,15 @@ it('reports a storage link that cannot be made instead of throwing', function ()
     Artisan::shouldReceive('call')->once()->andThrow(new ErrorException('symlink() has been disabled'));
 
     expect(app(InstallerService::class)->linkStorage())->toBeFalse();
+});
+
+// ── Boot cache ──────────────────────────────────────────────────────────────
+
+it('rebuilds the addon boot cache from the command line', function (): void {
+    installThemeAddon($this->work);
+    File::delete(config('addons.paths.boot_cache'));
+
+    $this->artisan('addons:cache')->assertSuccessful();
+
+    expect(app(BootCache::class)->enabled()->pluck('name')->all())->toContain('Testsky');
 });

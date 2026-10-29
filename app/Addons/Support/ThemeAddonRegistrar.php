@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Addons\Support;
 
 use App\Addons\Models\AddonBootCache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Makes enabled addons of type "theme" selectable as themes.
@@ -41,7 +43,13 @@ class ThemeAddonRegistrar
                 continue;
             }
 
-            $this->registerTheme($entry);
+            // Runs during register() on every boot: one bad theme must not
+            // take the whole site, and the admin page to remove it, down.
+            try {
+                $this->registerTheme($entry);
+            } catch (Throwable $throwable) {
+                Log::warning(sprintf('ThemeAddonRegistrar: skipping theme addon "%s": %s', $entry->name, $throwable->getMessage()));
+            }
         }
     }
 
@@ -68,13 +76,45 @@ class ThemeAddonRegistrar
     /**
      * Whether a theme named $name already exists outside this addon: a folder
      * theme, or an entry in config('themes.themes').
+     *
+     * Case-insensitive, because the asset link name is lowercased
+     * (AddonAssetLinker::segment()): "Sky" and "sky" would share one link.
      */
     public static function nameTaken(string $name): bool
     {
+        $wanted = strtolower($name);
+
+        foreach (array_keys((array) config('themes.themes', [])) as $existing) {
+            if (strtolower((string) $existing) === $wanted) {
+                return true;
+            }
+        }
+
+        return in_array($wanted, self::folderThemeNames(), true);
+    }
+
+    /**
+     * Lowercased names of the folder themes under themes_path.
+     *
+     * @return list<string>
+     */
+    public static function folderThemeNames(): array
+    {
         $themesPath = (string) config('themes.themes_path', resource_path('views/layouts'));
 
-        return array_key_exists($name, (array) config('themes.themes', []))
-            || is_file($themesPath.'/'.$name.'/theme.json');
+        if (!is_dir($themesPath)) {
+            return [];
+        }
+
+        $names = [];
+
+        foreach (File::directories($themesPath) as $dir) {
+            if (is_file($dir.'/theme.json')) {
+                $names[] = strtolower(basename($dir));
+            }
+        }
+
+        return $names;
     }
 
     /**
