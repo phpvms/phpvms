@@ -412,6 +412,15 @@ class SimBriefController
      */
     public function check_ofp(Request $request): JsonResponse
     {
+        // A browser still caching the pre-JSON simbrief.apiv1.js polls without
+        // static_id, which downloadOfp() cannot take.
+        $request->validate([
+            'static_id'   => ['required', 'string'],
+            'ofp_id'      => ['required', 'string'],
+            'flight_id'   => ['required', 'string'],
+            'aircraft_id' => ['required', 'string'],
+        ]);
+
         /** @var User $user */
         $user = Auth::user();
         $static_id = $request->input('static_id');
