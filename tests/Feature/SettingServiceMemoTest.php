@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Services\SettingService;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 /**
  * Tests for the in-request SettingService memo (Tier 1 cache).
@@ -52,4 +55,28 @@ it('SettingService is registered in the Octane flush list', function (): void {
     // Under Octane the singleton (and its memo) is discarded before each
     // request, so a setting change is observed on the next request.
     expect(config('octane.flush', []))->toContain(SettingService::class);
+});
+
+it('reads a setting from the application cache once per request in production', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+    $reads = 0;
+    Event::listen([CacheHit::class, CacheMissed::class], function ($event) use (&$reads): void {
+        if (str_ends_with($event->key, 'units.weight')) {
+            $reads++;
+        }
+    });
+
+    $values = array_map(fn (): mixed => setting('units.weight'), range(1, 5));
+
+    expect(array_unique($values))->toHaveCount(1)
+        ->and($reads)->toBe(1);
+});
+
+it('observes a write within the same request in production', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+
+    setting('general.theme');
+    setting_save('general.theme', 'test_dark');
+
+    expect(setting('general.theme'))->toBe('test_dark');
 });

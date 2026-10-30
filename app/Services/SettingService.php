@@ -63,6 +63,26 @@ class SettingService extends Service
     }
 
     /**
+     * The memoized value of a setting, or $resolve's result memoized for the
+     * rest of the request.
+     *
+     * The `setting()` helper resolves through the application cache in
+     * production. Without this, every call is a cache round trip even after
+     * the first one: an API response that converts the units of thousands of
+     * aircraft read `units.weight` from the cache thousands of times.
+     */
+    public function remember(string $key, callable $resolve): mixed
+    {
+        $formattedKey = Setting::formatKey($key);
+
+        if (array_key_exists($formattedKey, $this->memo)) {
+            return $this->memo[$formattedKey];
+        }
+
+        return $this->memo[$formattedKey] = $resolve();
+    }
+
+    /**
      * Update an existing setting. Returns the value on success, null when
      * the key does not exist OR when the caller passes a null $value
      * (does not insert new settings — these are seeded by migrations).
