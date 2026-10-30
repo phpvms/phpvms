@@ -1,63 +1,41 @@
 ---
+# Triggered by publishing a GitHub release. The tag is the version
+# (8.0.0-alpha.1, 8.0.0, 8.0.1); the release's prerelease checkbox is the only
+# switch. See docs/how-to-release.md.
 name: release
 on:
-  workflow_dispatch:
+  release:
+    types: [published]
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  bump-version:
-    name: Bump Version and Push Tag
+  package:
+    name: "Build and publish package"
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      version: ${{ env.NBGV_SemVer2 }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Determine Version
-        uses: dotnet/nbgv@master
-        id: ngbv
-        with:
-          setAllVars: true
-  release:
-    runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
-      packages: write
-      attestations: write
-      id-token: write
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # https://github.com/marketplace/actions/nerdbank-gitversioning
-      - name: Nerdbank.GitVersioning
-        uses: dotnet/nbgv@v0.4.2
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          setAllVars: true
+          node-version: 22
+          cache: pnpm
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
 
-      - uses: olegtarasov/get-tag@v2.1.2
-        id: tagName
-
-      # Configure Caching
       - name: Get composer cache directory
         id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -66,69 +44,84 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-        # Dependencies
-      - name: "Install Release Dependencies"
+      - name: Install release dependencies (no scripts)
         run: |
           rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --verbose
-          composer dump-autoload
-          sudo chmod +x ./.github/scripts/*
-
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+          composer install --no-dev --prefer-dist --no-interaction --no-scripts
+          chmod +x ./.github/scripts/*
 
       - name: Install NPM dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
 
       - name: Compile assets
         run: pnpm run build
 
+      - name: Run Composer post-autoload scripts
+        run: composer dump-autoload
+
       - name: Publish Filament assets
         run: php artisan filament:assets
 
-      - name: Get version
+      - id: version
+        name: Stamp version
         run: .github/scripts/version.sh
 
-      - name: Build Distro
+      - name: Build distro
         run: .github/scripts/build.sh
 
-      # Dependencies
-      - name: "List files"
-        run: |
-          find . -maxdepth 2  -type f
-
-      - name: Create Release
+      - name: Attach assets to the release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dist/*.*"
           allowUpdates: true
-          generateReleaseNotes: true
-          name: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          tag: ${{ github.event.release.tag_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: BetaHuhn/do-spaces-action@v2
-        id: spaces
-        with:
-          access_key: ${{ secrets.SPACE_ACCESS_KEY}}
-          secret_key: ${{ secrets.SPACE_SECRET_KEY }}
-          space_name: ${{ secrets.SPACE_NAME }}
-          space_region: ${{ secrets.SPACE_REGION }}
-          source: dist
-          cdn_domain: phpvms.cdn.vmslabs.net
-          permission: public-read
+      - name: Upload to Bunny storage
+        env:
+          AWS_ACCESS_KEY_ID: phpvms
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BUNNY_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+          # AWS CLI v2.23+ sends checksum headers many S3-compatible stores reject
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+        run: |
+          aws s3 cp dist/ s3://phpvms/ --recursive \
+            --endpoint-url https://ny-s3.storage.bunnycdn.com
 
-      # Push to Docker
+      - name: Discord notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
+        with:
+          args: ${{ steps.version.outputs.discord_msg }}
+
+  docker:
+    name: "Build and push Docker image"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # Dockerfile.prod copies the tree in and runs composer install, so the
+      # image reports the release tag the same way the package does.
+      - name: Stamp version
+        run: composer config version "${{ github.event.release.tag_name }}"
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # latest=auto only tags :latest for non-prerelease semver tags
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -137,7 +130,6 @@ jobs:
           flavor: |
             latest=auto
           tags: |
-            type=ref,event=branch
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
@@ -146,6 +138,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: Dockerfile.prod
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -153,13 +146,6 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-
-      - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
-        with:
-          args: ${{ steps.discord.outputs.discord_msg }}

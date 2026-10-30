@@ -1,50 +1,38 @@
 #!/usr/bin/env bash
-
-set -e
-
 #
-# Reference:
-# https://gitversion.net/docs/reference/variables
-# https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/execute.md
+# Work out the version and package names for this build and export them for
+# the following workflow steps.
 #
-export VERSION=${NBGV_AssemblyInformationalVersion}
-export FULL_VERSION=${VERSION}
-php artisan phpvms:version --write --write-full-version "${VERSION}"
+# On a release the ref is the tag (8.0.0-alpha.1, 8.0.0, ...). It is stamped
+# into the shipped composer.json, which is where VersionService reads the
+# version from. Branch builds (nightlies) keep the committed placeholder.
+#
+set -euo pipefail
 
-# Output for debug
-php artisan phpvms:version
-
-if test "$GIT_TAG_NAME"; then
-  echo "Tagged with ${GIT_TAG_NAME}"
-  export FILE_NAME="phpvms-${GIT_TAG_NAME}"
-  #export IMAGE_NAME="phpvms:${GIT_TAG_NAME}"
-else
-  export BRANCH=${GITHUB_REF##*/}
-  echo "On branch $BRANCH"
-  export FILE_NAME="phpvms-${BRANCH}"
-  #export IMAGE_NAME="phpvms:${NBGV_SemVer2}"
+if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+  composer config version "${GITHUB_REF_NAME}"
 fi
 
-export TAR_NAME="$FILE_NAME.tar.gz"
-export ZIP_NAME="$FILE_NAME.zip"
-export BASE_DIR=`pwd`
+VERSION=$(composer config version)
+FILE_NAME="phpvms-${GITHUB_REF_NAME}"
+TAR_NAME="${FILE_NAME}.tar.gz"
+ZIP_NAME="${FILE_NAME}.zip"
+BASE_DIR=$(pwd)
 
-echo "BRANCH=${BRANCH}"
+echo "VERSION=${VERSION}"
 echo "FILE_NAME=${FILE_NAME}"
-echo "TAR_NAME=${TAR_NAME}"
-echo "ZIP_NAME=${ZIP_NAME}"
 echo "BASE_DIR=${BASE_DIR}"
-echo "FULL_VERSION=${FULL_VERSION}"
 
 # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#environment-files
-echo "BRANCH=${BRANCH}" >> "$GITHUB_ENV"
-echo "FILE_NAME=${FILE_NAME}" >> "$GITHUB_ENV"
-echo "TAR_NAME=${TAR_NAME}" >> "$GITHUB_ENV"
-echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_ENV"
-echo "BASE_DIR=${BASE_DIR}" >> "$GITHUB_ENV"
-echo "FULL_VERSION=${FULL_VERSION}" >> "$GITHUB_ENV"
-#echo "IMAGE_NAME=${IMAGE_NAME}" >> "$GITHUB_ENV"
+{
+  echo "VERSION=${VERSION}"
+  echo "FILE_NAME=${FILE_NAME}"
+  echo "TAR_NAME=${TAR_NAME}"
+  echo "ZIP_NAME=${ZIP_NAME}"
+  echo "BASE_DIR=${BASE_DIR}"
+} >> "$GITHUB_ENV"
 
-echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-echo "full_version=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
-echo "discord_msg=Version ${FULL_VERSION} is available, download: [zip](https://phpvms.cdn.vmslabs.net/${ZIP_NAME}) | [tar](https://phpvms.cdn.vmslabs.net/${TAR_NAME})" >> "$GITHUB_OUTPUT"
+{
+  echo "version=${VERSION}"
+  echo "discord_msg=Version ${VERSION} is available, download: [zip](https://downloads.phpvms.net/${ZIP_NAME}) | [tar](https://downloads.phpvms.net/${TAR_NAME})"
+} >> "$GITHUB_OUTPUT"

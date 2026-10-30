@@ -22,8 +22,6 @@ class VersionWidget extends Widget implements DynamicWidget
 
     protected string $version;
 
-    protected string $version_full;
-
     public static function getWidgetLabel(): string
     {
         return __('filament.dashboard.version');
@@ -41,16 +39,14 @@ class VersionWidget extends Widget implements DynamicWidget
 
     public function mount(VersionService $versionSvc): void
     {
-        $this->version = $versionSvc->getCurrentVersion(false);
-        $this->version_full = $versionSvc->getCurrentVersion(true);
+        $this->version = $versionSvc->getCurrentVersion();
     }
 
     #[Override]
     protected function getViewData(): array
     {
         return [
-            'version'      => $this->version,
-            'version_full' => $this->version_full,
+            'version' => $this->version,
         ];
     }
 }

@@ -8,7 +8,7 @@ use App\Contracts\Service;
 use App\Support\HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Yaml\Yaml;
+use RuntimeException;
 use Version\Version;
 
 class VersionService extends Service
@@ -116,61 +116,18 @@ class VersionService extends Service
     }
 
     /**
-     * Get the build ID, which is the date and the git log version
-     *
-     * @return string
+     * The application version, read from the root composer.json. The release
+     * workflow stamps that field with the release tag before packaging.
      */
-    public function getBuildId(array $cfg)
+    public function getCurrentVersion(): string
     {
-        return $cfg['build']['number'];
-    }
+        $composer = json_decode(file_get_contents(base_path('composer.json')), true, 512, JSON_THROW_ON_ERROR);
 
-    /**
-     * Generate a build ID
-     *
-     * @param array $cfg The version config
-     */
-    public function generateBuildId(array $cfg): string
-    {
-        $date = date('ymd');
-        exec($cfg['git']['git-local'], $version);
-        if ($version === []) {
-            return $date;
+        if (!is_array($composer) || !is_string($composer['version'] ?? null) || $composer['version'] === '') {
+            throw new RuntimeException('composer.json has no "version" field');
         }
 
-        $version = substr($version[0], 0, $cfg['build']['length']);
-
-        // prefix with the date in YYMMDD format
-        $version = $date.'.'.$version;
-
-        return $version;
-    }
-
-    /**
-     * Get the current version
-     *
-     * @param bool $include_build True will include the build ID
-     */
-    public function getCurrentVersion($include_build = true): string
-    {
-        $version_file = config_path('version.yml');
-        $cfg = Yaml::parse(file_get_contents($version_file));
-
-        $c = $cfg['current'];
-        $version = sprintf('%s.%s.%s', $c['major'], $c['minor'], $c['patch']);
-        if (!empty($c['prerelease'])) {
-            $version .= '-'.$c['prerelease'];
-        }
-
-        if ($include_build) {
-            // Get the current build id
-            $build_number = $c['buildmetadata'];
-            if (!empty($build_number)) {
-                $version = $version.'+'.$build_number;
-            }
-        }
-
-        return $version;
+        return $this->cleanVersionString($composer['version']);
     }
 
     /**
@@ -178,7 +135,7 @@ class VersionService extends Service
      */
     public function isNewVersionAvailable(?string $current_version = null): bool
     {
-        $current_version = $current_version ? $this->cleanVersionString($current_version) : $this->getCurrentVersion(false);
+        $current_version = $current_version ? $this->cleanVersionString($current_version) : $this->getCurrentVersion();
 
         $latest_version = $this->getLatestVersion();
         Log::info('Current version='.$current_version.'; latest detected='.$latest_version);
