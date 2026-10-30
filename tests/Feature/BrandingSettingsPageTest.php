@@ -6,11 +6,11 @@ use App\Models\Setting;
 use Illuminate\Support\Collection;
 
 /**
- * `App\Filament\Pages\Settings::getFormSchema()` builds its tabs from exactly
- * this query (`app/Filament/Pages/Settings.php:175-177`): every non-hidden
- * row, ordered by `order`, grouped by `group`. These tests exercise that
- * query directly rather than rendering the Livewire page, since it is the
- * one mechanism that decides both field order and tab membership.
+ * `App\Filament\Pages\Settings::getFormSchema()` builds its tabs from this
+ * query: every non-hidden row, grouped into tabs and ordered within them by
+ * `App\Support\SettingsTabs::group()` (by `order`, then key). These tests
+ * exercise the query directly rather than rendering the Livewire page, since
+ * it decides which settings, and so which tabs, appear at all.
  */
 function settingsPageQuery(): Collection
 {
