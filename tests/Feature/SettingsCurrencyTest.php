@@ -37,6 +37,15 @@ beforeEach(function (): void {
     $this->seed(RolesPermissionsSeeder::class);
 });
 
+/**
+ * The row's stored currency. journal_transactions.currency is a char(5), which
+ * Postgres returns padded with spaces ('EUR  ').
+ */
+function currencyOf(Journal|JournalTransaction $model): string
+{
+    return trim((string) $model->fresh()->currency);
+}
+
 /** UPDATE statements run against the journal tables while $run executes. */
 function journalUpdates(callable $run): int
 {
@@ -69,8 +78,8 @@ it('moves the journals to the new currency when it changes', function (): void {
         ->set('data.units.currency', 'EUR')
         ->call('save');
 
-    expect($journal->fresh()->currency)->toBe('EUR')
-        ->and($txn->fresh()->currency)->toBe('EUR');
+    expect(currencyOf($journal))->toBe('EUR')
+        ->and(currencyOf($txn))->toBe('EUR');
 });
 
 it('migrates the journals on a retry even when the cache already holds the new currency', function (): void {
@@ -86,8 +95,8 @@ it('migrates the journals on a retry even when the cache already holds the new c
         ->set('data.units.currency', 'EUR')
         ->call('save');
 
-    expect($journal->fresh()->currency)->toBe('EUR')
-        ->and($txn->fresh()->currency)->toBe('EUR');
+    expect(currencyOf($journal))->toBe('EUR')
+        ->and(currencyOf($txn))->toBe('EUR');
 });
 
 it('only rewrites journal rows still on another currency', function (): void {
@@ -100,6 +109,6 @@ it('only rewrites journal rows still on another currency', function (): void {
     $this->travel(5)->minutes();
     app(FinanceService::class)->changeJournalCurrencies();
 
-    expect($stale->fresh()->currency)->toBe('EUR')
+    expect(currencyOf($stale))->toBe('EUR')
         ->and($current->fresh()->updated_at)->toEqual($before);
 });
