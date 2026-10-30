@@ -121,3 +121,34 @@ it('runForBundle only updates flights in the target bundle', function (): void {
     expect($flightA->fresh()->visible)->toBeFalse()
         ->and($flightB->fresh()->visible)->toBeFalse(); // unchanged from baseline
 });
+
+it('leaves flights already at the right visibility untouched', function (): void {
+    // Every flight of every bundle used to be rewritten nightly, bumping its
+    // updated_at even when nothing changed.
+    $open = FlightBundle::factory()->create(['enabled' => true]);
+    $plain = Flight::factory()->create(['bundle_id' => $open->id, 'enabled' => true, 'visible' => true]);
+    $windowed = Flight::factory()->create([
+        'bundle_id'  => $open->id,
+        'enabled'    => true,
+        'visible'    => true,
+        'start_date' => Carbon::now('UTC')->subDay(),
+        'end_date'   => Carbon::now('UTC')->addDay(),
+    ]);
+    $dated = FlightBundle::factory()->create([
+        'enabled'    => true,
+        'start_date' => Carbon::now('UTC')->subDay(),
+        'end_date'   => Carbon::now('UTC')->addDay(),
+    ]);
+    $inDated = Flight::factory()->create(['bundle_id' => $dated->id, 'enabled' => true, 'visible' => true]);
+    $closed = FlightBundle::factory()->create(['enabled' => false]);
+    $hidden = Flight::factory()->create(['bundle_id' => $closed->id, 'enabled' => true, 'visible' => false]);
+
+    $flights = [$plain, $windowed, $inDated, $hidden];
+    $before = array_map(fn (Flight $f): ?string => $f->fresh()->updated_at?->toDateTimeString(), $flights);
+
+    $this->travel(1)->hours();
+    SetVisibleFlights::run();
+
+    expect(array_map(fn (Flight $f): ?string => $f->fresh()->updated_at?->toDateTimeString(), $flights))->toBe($before)
+        ->and(array_map(fn (Flight $f): bool => $f->fresh()->visible, $flights))->toBe([true, true, true, false]);
+});
