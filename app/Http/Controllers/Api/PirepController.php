@@ -60,8 +60,8 @@ class PirepController extends Controller
     protected function parsePirep(Request $request): ?array
     {
         // The state moves only through the service (prefile, file, accept,
-        // reject), and the key is never client-supplied.
-        $attrs = Arr::except($request->input(), ['id', 'state']);
+        // reject); the key and the owner are never client-supplied.
+        $attrs = Arr::except($request->input(), ['id', 'state', 'user_id']);
 
         if (array_key_exists('created_at', $attrs)) {
             $attrs['created_at'] = Carbon::createFromTimeString($attrs['created_at']);

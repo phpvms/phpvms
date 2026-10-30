@@ -115,6 +115,7 @@ class Maintenance extends Page
     public function checkForPhpVMSUpdates(): Action
     {
         return Action::make('checkForPhpVMSUpdates')
+            ->authorize(fn (): bool => static::canEdit())
             ->label(__('filament.maintenance_check_update'))
             ->icon(Phosphor::ArrowsClockwiseLight)
             ->action(function (): void {

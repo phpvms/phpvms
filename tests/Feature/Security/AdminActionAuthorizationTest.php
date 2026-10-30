@@ -55,6 +55,7 @@ it('blocks maintenance actions without the edit permission', function (): void {
 
     livewire(Maintenance::class)
         ->assertActionHidden('disableWebCron')
+        ->assertActionHidden('checkForPhpVMSUpdates')
         ->call('mountAction', 'disableWebCron')
         ->call('callMountedAction');
 
@@ -91,7 +92,27 @@ it('refuses to fetch a map style from a non-public address', function (string $u
     'ipv6 loopback' => 'http://[::1]/style.json',
     'localhost'     => 'http://localhost/style.json',
     'file scheme'   => 'file:///etc/passwd',
+    'shared/cgnat'  => 'http://100.100.100.200/latest/meta-data/',
 ]);
+
+it('does not follow a redirect to a non-public address', function (): void {
+    Http::fake([
+        '8.8.8.8/*'   => Http::response('', 302, ['Location' => 'http://127.0.0.1/admin']),
+        '127.0.0.1/*' => Http::response(['version' => 8, 'sources' => [], 'layers' => []]),
+    ]);
+
+    expect(TestMapStyleAction::fetch('https://8.8.8.8/style.json'))->toBeNull();
+    Http::assertSentCount(1);
+});
+
+it('follows a redirect to another public address', function (): void {
+    Http::fake([
+        '8.8.8.8/*' => Http::response('', 302, ['Location' => 'https://1.1.1.1/style.json']),
+        '1.1.1.1/*' => Http::response(['version' => 8, 'sources' => [], 'layers' => []]),
+    ]);
+
+    expect(TestMapStyleAction::fetch('https://8.8.8.8/style.json')?->json('version'))->toBe(8);
+});
 
 it('allows a map style from a public address', function (): void {
     expect(TestMapStyleAction::isPublicHttpUrl('https://8.8.8.8/style.json'))->toBeTrue();

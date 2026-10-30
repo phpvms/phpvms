@@ -182,3 +182,18 @@ it('only regenerates the api key on a post', function (): void {
     $this->post(route('frontend.profile.regen_apikey'))->assertRedirect();
     expect($this->owner->fresh()->api_key)->not->toBe($old);
 });
+
+it('keeps the owner when a pilot files their pirep with another user_id', function (): void {
+    $briefing = SimBrief::factory()->create(['user_id' => $this->attacker->id]);
+    apiAs($this->owner);
+
+    $this->postJson('/api/pireps/'.$this->pirep->id.'/file', [
+        'distance'    => 100,
+        'flight_time' => 60,
+        'user_id'     => $this->attacker->id,
+        'simbrief_id' => $briefing->id,
+    ])->assertOk();
+
+    expect($this->pirep->fresh()->user_id)->toBe($this->owner->id)
+        ->and($briefing->fresh()->pirep_id)->toBeNull();
+});
