@@ -13,6 +13,7 @@ use GuzzleHttp\Psr7\UriResolver;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpFoundation\IpUtils;
 
 /**
  * Fetches a custom map style URL and reports whether it looks like a valid
@@ -159,7 +160,7 @@ class TestMapStyleAction
         }
 
         foreach ($addresses as $address) {
-            if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) === false) {
+            if (IpUtils::isPrivateIp($address)) {
                 return null;
             }
         }
