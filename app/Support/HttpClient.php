@@ -13,6 +13,15 @@ use function GuzzleHttp\json_decode;
  */
 class HttpClient
 {
+    /**
+     * Seconds a request may take in total, unless the caller passes its own
+     * `timeout`. connect_timeout alone only bounds the handshake: a server that
+     * accepts the connection and then answers slowly held the caller for as
+     * long as it liked (Guzzle's default is no limit), e.g. a page waiting on
+     * a METAR lookup. Downloads (download()) are left unbounded.
+     */
+    private const int TIMEOUT = 5;
+
     public function __construct(private readonly GuzzleClient $httpClient) {}
 
     /**
@@ -28,6 +37,7 @@ class HttpClient
     {
         $opts = array_merge([
             'connect_timeout' => 2, // wait two seconds by default
+            'timeout'         => self::TIMEOUT,
         ], $opts);
 
         $response = $this->httpClient->request('GET', $uri, $opts);
@@ -48,6 +58,7 @@ class HttpClient
     {
         $opts = array_merge([
             'connect_timeout'    => 2,
+            'timeout'            => self::TIMEOUT,
             RequestOptions::JSON => $body,
         ], $opts);
 
@@ -69,6 +80,7 @@ class HttpClient
     {
         $opts = array_merge([
             'connect_timeout' => 2,
+            'timeout'         => self::TIMEOUT,
             'form_params'     => $body,
         ], $opts);
 
