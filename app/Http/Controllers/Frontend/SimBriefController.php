@@ -301,7 +301,7 @@ class SimBriefController
         $user = Auth::user();
 
         /** @var SimBrief $simbrief */
-        $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->find($id);
+        $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->where('user_id', Auth::id())->find($id);
         if (!$simbrief) {
             flash()->error('SimBrief briefing not found');
 
@@ -339,7 +339,7 @@ class SimBriefController
      */
     public function generate_new(Request $request): RedirectResponse
     {
-        $simbrief = SimBrief::find($request->id);
+        $simbrief = SimBrief::where('user_id', Auth::id())->find($request->id);
 
         // Invalid Simbrief ID/profile, go back to the main flight index
         if (!$simbrief) {
@@ -365,7 +365,7 @@ class SimBriefController
      */
     public function prefile(Request $request): RedirectResponse
     {
-        $sb = SimBrief::find($request->id);
+        $sb = SimBrief::where('user_id', Auth::id())->find($request->id);
         if (!$sb) {
             return redirect(route('frontend.flights.index'));
         }
@@ -381,8 +381,8 @@ class SimBriefController
      */
     public function cancel(Request $request): RedirectResponse
     {
-        $sb = SimBrief::find($request->id);
-        if (!$sb) {
+        $sb = SimBrief::where('user_id', Auth::id())->find($request->id);
+        if ($sb) {
             $sb->delete();
         }
 

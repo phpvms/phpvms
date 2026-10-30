@@ -45,6 +45,14 @@ class SimBriefService extends Service
         ?string $sb_user_id = null,
         ?string $sb_static_id = null
     ) {
+        // The OFP id comes from the client; it must not re-own or overwrite a
+        // briefing that belongs to another pilot.
+        if (SimBrief::whereKey($ofp_id)->where('user_id', '!=', $user_id)->exists()) {
+            Log::warning('Simbrief | OFP '.$ofp_id.' belongs to another user, refused for user '.$user_id);
+
+            return null;
+        }
+
         $uri = str_replace('{id}', $ofp_id, config('phpvms.simbrief_url'));
 
         if ($sb_user_id && $sb_static_id) {

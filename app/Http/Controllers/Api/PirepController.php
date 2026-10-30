@@ -10,6 +10,7 @@ use App\Exceptions\PirepError;
 use App\Http\Requests\Acars\CommentRequest;
 use App\Http\Requests\Acars\FieldsRequest;
 use App\Http\Requests\Acars\FileRequest;
+use App\Http\Requests\Acars\OwnPirepRequest;
 use App\Http\Requests\Acars\PrefileRequest;
 use App\Http\Requests\Acars\RouteRequest;
 use App\Http\Requests\Acars\UpdateRequest;
@@ -36,6 +37,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -54,7 +56,9 @@ class PirepController extends Controller
      */
     protected function parsePirep(Request $request): ?array
     {
-        $attrs = $request->input();
+        // The state moves only through the service (prefile, file, accept,
+        // reject); the key and the owner are never client-supplied.
+        $attrs = Arr::except($request->input(), ['id', 'state', 'user_id']);
 
         if (array_key_exists('created_at', $attrs)) {
             $attrs['created_at'] = Carbon::createFromTimeString($attrs['created_at']);
@@ -307,7 +311,7 @@ class PirepController extends Controller
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function cancel(string $pirep_id, Request $request)
+    public function cancel(string $pirep_id, OwnPirepRequest $request)
     {
         Log::info('PIREP Cancel, pirep_id: '.$pirep_id.', user_id: '.Auth::id());
 
@@ -393,7 +397,7 @@ class PirepController extends Controller
      * @throws \Exception
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function finances_recalculate(string $id, Request $request): AnonymousResourceCollection
+    public function finances_recalculate(string $id, OwnPirepRequest $request): AnonymousResourceCollection
     {
         $pirep = Pirep::find($id);
         $this->financeSvc->processFinancesForPirep($pirep);
@@ -447,6 +451,11 @@ class PirepController extends Controller
             $position['pirep_id'] = $id;
             $position['type'] = AcarsType::ROUTE;
 
+            // A client id that belongs to another PIREP's row becomes a new row
+            if (isset($position['id']) && Acars::whereKey($position['id'])->where('pirep_id', '!=', $id)->exists()) {
+                unset($position['id']);
+            }
+
             if (isset($position['id'])) {
                 Acars::updateOrInsert(['id' => $position['id']], $position);
             } else {
@@ -463,7 +472,7 @@ class PirepController extends Controller
     /**
      * @throws \Exception
      */
-    public function route_delete(string $id, Request $request): JsonResponse
+    public function route_delete(string $id, OwnPirepRequest $request): JsonResponse
     {
         $pirep = Pirep::find($id);
 

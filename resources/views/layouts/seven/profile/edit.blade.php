@@ -47,8 +47,11 @@
                         style="background-color:#29B473;">Unlink VATSIM Account</a>
                 @endif
 
-                <a href="{{ route('frontend.profile.regen_apikey') }}" class="btn btn-warning"
-                    onclick="return confirm('Are you sure? This will reset your API key!')">@lang('profile.newapikey')</a>
+                <form method="post" action="{{ route('frontend.profile.regen_apikey') }}" class="d-inline"
+                    onsubmit="return confirm('Are you sure? This will reset your API key!')">
+                    @csrf
+                    <button type="submit" class="btn btn-warning">@lang('profile.newapikey')</button>
+                </form>
             </div>
 
             <h3>@lang('profile.your-profile')</h3>

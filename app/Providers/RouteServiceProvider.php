@@ -114,7 +114,7 @@ class RouteServiceProvider extends ServiceProvider
                 ]);
 
                 Route::get('profile/acars', 'ProfileController@acars')->name('profile.acars');
-                Route::get('profile/regen_apikey', 'ProfileController@regen_apikey')->name('profile.regen_apikey');
+                Route::post('profile/regen_apikey', 'ProfileController@regen_apikey')->name('profile.regen_apikey');
 
                 Route::resource('profile', 'ProfileController');
 
@@ -464,7 +464,7 @@ class RouteServiceProvider extends ServiceProvider
             Route::delete('users/{id}/award/{award_id}', 'UserController@destroy_user_award')
                 ->name('users.destroy_user_award')->middleware('ability:admin,users');
 
-            Route::get('users/{id}/regen_apikey', 'UserController@regen_apikey')
+            Route::post('users/{id}/regen_apikey', 'UserController@regen_apikey')
                 ->name('users.regen_apikey')->middleware('ability:admin,users');
 
             Route::get('users/{id}/verify_email', 'UserController@verify_email')

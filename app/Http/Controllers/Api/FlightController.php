@@ -152,7 +152,8 @@ class FlightController extends Controller
         /** @var User $user */
         $user = Auth::user();
         $w = [
-            'id' => $id,
+            'id'      => $id,
+            'user_id' => $user->id,
         ];
 
         /** @var SimBrief $simbrief */
@@ -161,10 +162,6 @@ class FlightController extends Controller
         if ($simbrief === null) {
             throw new AssetNotFound(new Exception('Flight briefing not found'));
         }
-
-        /*if ($simbrief->user_id !== $user->id) {
-            throw new Unauthorized(new Exception('User cannot access another user\'s simbrief'));
-        }*/
 
         return response($simbrief->acars_xml, 200, [
             'Content-Type' => 'application/xml',

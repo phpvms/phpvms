@@ -6,6 +6,7 @@ use App\Exceptions\Converters\GenericExceptionAbstract;
 use App\Exceptions\Converters\SymfonyException;
 use App\Exceptions\Converters\ValidationException;
 use App\Http\Middleware\SetActiveTheme;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -74,6 +75,13 @@ class Handler extends ExceptionHandler
         /*
          * Not of the HttpException abstract class. Map these into
          */
+
+        // A FormRequest or policy denial is a 403, not a server error
+        if ($exception instanceof AuthorizationException) {
+            $error = new Unauthorized($exception);
+
+            return $error->getResponse();
+        }
 
         if ($exception instanceof ModelNotFoundException || $exception instanceof NotFoundHttpException) {
             $error = new AssetNotFound($exception);

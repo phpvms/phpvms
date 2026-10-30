@@ -30,6 +30,7 @@ use App\Support\Units\Time;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -37,6 +38,12 @@ use Laracasts\Flash\Flash;
 
 class PirepController extends Controller
 {
+    /**
+     * Form fields a pilot may never set: the state moves only through
+     * submit/accept/reject, and the key and owner come from the server.
+     */
+    private const PROTECTED_ATTRIBUTES = ['id', 'state', 'user_id'];
+
     public function __construct(
         private readonly AircraftRepository $aircraftRepo,
         private readonly AirlineRepository $airlineRepo,
@@ -259,7 +266,7 @@ class PirepController extends Controller
         $aircraft = null;
         if ($request->has('sb_id')) {
             $simbrief_id = $request->input('sb_id');
-            $simbrief = SimBrief::find($simbrief_id);
+            $simbrief = SimBrief::where('user_id', Auth::id())->findOrFail($simbrief_id);
             $pirep = Pirep::fromSimBrief($simbrief);
 
             $aircraft = $simbrief->aircraft;
@@ -307,7 +314,7 @@ class PirepController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $pirep = new Pirep($request->post());
+        $pirep = new Pirep(Arr::except($request->post(), self::PROTECTED_ATTRIBUTES));
         $pirep->user_id = $user->id;
 
         $attrs = $request->all();
@@ -400,7 +407,7 @@ class PirepController extends Controller
         $this->pirepSvc->saveRoute($pirep);
 
         if ($request->has('sb_id')) {
-            $brief = SimBrief::find($request->input('sb_id'));
+            $brief = SimBrief::where('user_id', Auth::id())->find($request->input('sb_id'));
             if ($brief !== null) {
                 /** @var SimBriefService $sbSvc */
                 $sbSvc = app(SimBriefService::class);
@@ -528,7 +535,7 @@ class PirepController extends Controller
         }
 
         $orig_route = $pirep->route;
-        $attrs = $request->all();
+        $attrs = Arr::except($request->all(), self::PROTECTED_ATTRIBUTES);
         $attrs['submit'] = strtolower($attrs['submit']);
 
         // Fix the time

@@ -170,6 +170,11 @@ class AcarsController extends Controller
                 }
             }
 
+            // A client id that belongs to another PIREP's row becomes a new row
+            if (isset($position['id']) && Acars::whereKey($position['id'])->where('pirep_id', '!=', $id)->exists()) {
+                unset($position['id']);
+            }
+
             try {
                 if (!empty($position['id'])) {
                     Acars::updateOrInsert(
@@ -234,6 +239,11 @@ class AcarsController extends Controller
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
             }
 
+            // A client id that belongs to another PIREP's row becomes a new row
+            if (isset($log['id']) && Acars::whereKey($log['id'])->where('pirep_id', '!=', $id)->exists()) {
+                unset($log['id']);
+            }
+
             try {
                 if (isset($log['id'])) {
                     Acars::updateOrInsert(
@@ -287,6 +297,11 @@ class AcarsController extends Controller
 
             if (isset($log['created_at'])) {
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
+            }
+
+            // A client id that belongs to another PIREP's row becomes a new row
+            if (isset($log['id']) && Acars::whereKey($log['id'])->where('pirep_id', '!=', $id)->exists()) {
+                unset($log['id']);
             }
 
             try {
