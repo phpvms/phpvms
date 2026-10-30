@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use App\Services\SettingService;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\CacheMissed;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 /**
  * Tests for the in-request SettingService memo (Tier 1 cache).
@@ -11,9 +15,10 @@ use Illuminate\Support\Facades\DB;
  * The SettingsSeeder runs in beforeEach (Pest.php), so all standard
  * settings (e.g. 'general.theme') are available.
  *
- * Tests run in a non-production environment, so setting() calls
- * retrieve() directly (no Cache::remember wrapper) — which means
- * the memo is exercised on every call.
+ * Tests run in a non-production environment unless they say otherwise, so
+ * setting() calls retrieve() directly (no Cache::remember wrapper) — which
+ * means the memo is exercised on every call. The production-mode tests at the
+ * end switch the environment to cover the application cache path.
  */
 it('repeated reads of the same key hit the source at most once', function (): void {
     DB::enableQueryLog();
@@ -52,4 +57,54 @@ it('SettingService is registered in the Octane flush list', function (): void {
     // Under Octane the singleton (and its memo) is discarded before each
     // request, so a setting change is observed on the next request.
     expect(config('octane.flush', []))->toContain(SettingService::class);
+});
+
+it('reads a setting from the application cache once per request in production', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+    $reads = 0;
+    Event::listen([CacheHit::class, CacheMissed::class], function ($event) use (&$reads): void {
+        if (str_ends_with($event->key, 'units.weight')) {
+            $reads++;
+        }
+    });
+
+    $values = array_map(fn (): mixed => setting('units.weight'), range(1, 5));
+
+    expect(array_unique($values))->toHaveCount(1)
+        ->and($reads)->toBe(1);
+});
+
+it('reads an already cached setting from the application cache once per request in production', function (): void {
+    // With the value already cached, retrieve() never runs, so only remember()
+    // can keep it for the rest of the request.
+    app()->detectEnvironment(fn (): string => 'production');
+    Cache::put(config('cache.keys.SETTINGS.key').'units.weight', 'cached-unit', 60);
+    app(SettingService::class)->clearMemo();
+    $hits = 0;
+    $misses = 0;
+    Event::listen(CacheHit::class, function (CacheHit $event) use (&$hits): void {
+        if (str_ends_with($event->key, 'units.weight')) {
+            $hits++;
+        }
+    });
+    Event::listen(CacheMissed::class, function (CacheMissed $event) use (&$misses): void {
+        if (str_ends_with($event->key, 'units.weight')) {
+            $misses++;
+        }
+    });
+
+    $values = array_map(fn (): mixed => setting('units.weight'), range(1, 5));
+
+    expect($values)->toBe(array_fill(0, 5, 'cached-unit'))
+        ->and($hits)->toBe(1)
+        ->and($misses)->toBe(0);
+});
+
+it('observes a write within the same request in production', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+
+    setting('general.theme');
+    setting_save('general.theme', 'test_dark');
+
+    expect(setting('general.theme'))->toBe('test_dark');
 });

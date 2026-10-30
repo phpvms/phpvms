@@ -159,7 +159,12 @@ if (!function_exists('setting')) {
             if (app()->environment('production')) {
                 $cache = config('cache.keys.SETTINGS');
 
-                $value = Cache::remember($cache['key'].$key, $cache['time'], fn () => $settingService->retrieve($key));
+                // Through the request memo first: the cache is shared across
+                // requests, but reading it again within one is a wasted round trip.
+                $value = $settingService->remember(
+                    $key,
+                    fn () => Cache::remember($cache['key'].$key, $cache['time'], fn () => $settingService->retrieve($key)),
+                );
             } else {
                 $value = $settingService->retrieve($key);
             }
