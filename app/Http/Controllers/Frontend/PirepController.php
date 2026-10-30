@@ -286,7 +286,7 @@ class PirepController extends Controller
         $aircraft = null;
         if ($request->has('sb_id')) {
             $simbrief_id = $request->input('sb_id');
-            $simbrief = SimBrief::with('aircraft.subfleet.fares')->find($simbrief_id);
+            $simbrief = SimBrief::with('aircraft.subfleet.fares')->where('user_id', Auth::id())->findOrFail($simbrief_id);
             $pirep = Pirep::fromSimBrief($simbrief);
 
             $aircraft = $simbrief->aircraft;
@@ -438,7 +438,7 @@ class PirepController extends Controller
         $this->pirepSvc->saveRoute($pirep);
 
         if ($request->has('sb_id')) {
-            $brief = SimBrief::find($request->input('sb_id'));
+            $brief = SimBrief::where('user_id', Auth::id())->find($request->input('sb_id'));
             if ($brief !== null) {
                 /** @var SimBriefService $sbSvc */
                 $sbSvc = app(SimBriefService::class);
@@ -504,9 +504,7 @@ class PirepController extends Controller
 
         // set the custom fields
         foreach ($pirep->fields as $field) {
-            if ($field->slug === null) {
-                $field->slug = Str::slug($field->name);
-            }
+            $field->slug ??= Str::slug($field->name);
 
             $field_name = 'field_'.$field->slug;
             $pirep->{$field_name} = $field->value;

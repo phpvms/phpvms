@@ -669,5 +669,5 @@ it('characterizes the legacy target-user API route and explicit input target beh
     $this->putJson('/api/users/'.$target->id.'/bids', [
         'id'        => $target->id,
         'flight_id' => $flight->id,
-    ])->assertOk()->assertJsonPath('data.user_id', $target->id);
+    ])->assertForbidden();
 });

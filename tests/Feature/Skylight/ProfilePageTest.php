@@ -269,7 +269,7 @@ it('surfaces the flash from regenerating the api key', function (): void {
     $user = User::factory()->create();
     $before = $user->api_key;
 
-    $this->actingAs($user)->get('/profile/regen_apikey')->assertRedirect();
+    $this->actingAs($user)->post('/profile/regen_apikey')->assertRedirect();
 
     expect($user->fresh()->api_key)->not->toBe($before);
 

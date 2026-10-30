@@ -318,7 +318,7 @@ class SimBriefController
         $user = Auth::user();
 
         /** @var ?SimBrief $simbrief */
-        $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->find($id);
+        $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->where('user_id', $user->id)->find($id);
         if (!$simbrief) {
             flash()->error('SimBrief briefing not found');
 
@@ -356,7 +356,7 @@ class SimBriefController
      */
     public function generate_new(Request $request): RedirectResponse
     {
-        $simbrief = SimBrief::find($request->id);
+        $simbrief = SimBrief::where('user_id', Auth::id())->find($request->id);
 
         // Invalid Simbrief ID/profile, go back to the main flight index
         if (!$simbrief) {
@@ -382,7 +382,7 @@ class SimBriefController
      */
     public function prefile(Request $request): RedirectResponse
     {
-        $sb = SimBrief::find($request->id);
+        $sb = SimBrief::where('user_id', Auth::id())->find($request->id);
         if (!$sb) {
             return redirect(route('frontend.flights.index'));
         }
@@ -398,7 +398,7 @@ class SimBriefController
      */
     public function cancel(Request $request): RedirectResponse
     {
-        $sb = SimBrief::find($request->id);
+        $sb = SimBrief::where('user_id', Auth::id())->find($request->id);
         if ($sb) {
             $sb->delete();
         }
@@ -550,7 +550,7 @@ class SimBriefController
 
         return response()->json([
             'attempt'     => SimBriefAttemptData::fromModel($attempt),
-            'apiCode'     => md5((string) setting('simbrief.api_key').$request->string('apiRequest')->toString()),
+            'apiCode'     => md5(setting('simbrief.api_key').$request->string('apiRequest')->toString()),
             'providerUrl' => SimBriefEmbedCapabilityService::PROVIDER_URL,
         ]);
     }

@@ -35,7 +35,7 @@
                     <span class="queue__text">
                         <strong>{{ $record->user?->name ?? '—' }}
                             <span class="chip chip--mute chip--plain ml-1">{{ __('common.pilot_note') }}</span></strong>
-                        <span>{!! $record->notes !!}</span>
+                        <span>{!! nl2br(e($record->notes)) !!}</span>
                     </span>
                     @if ($record->submitted_at)
                         <span class="queue__when" title="{{ $record->submitted_at->format('d-m-Y H:i') }}">{{ $record->submitted_at->format('j M') }}</span>

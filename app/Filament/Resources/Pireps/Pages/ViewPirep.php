@@ -25,6 +25,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
+use Livewire\Attributes\Computed;
 use Override;
 use Throwable;
 
@@ -203,6 +204,8 @@ class ViewPirep extends ViewRecord
      */
     public function recalculateFinances(): void
     {
+        abort_unless(auth()->user()?->can('update', $this->record) ?? false, 403);
+
         app(PirepFinanceService::class)->processFinancesForPirep($this->record);
 
         Notification::make()
@@ -219,7 +222,8 @@ class ViewPirep extends ViewRecord
      *
      * @return Collection<int, PirepEvent>
      */
-    public function getLogEntriesProperty(): Collection
+    #[Computed]
+    public function logEntries(): Collection
     {
         return PirepEvent::query()
             ->where('pirep_id', $this->record->id)

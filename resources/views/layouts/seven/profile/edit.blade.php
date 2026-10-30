@@ -26,8 +26,11 @@
                 <a href="{{ route('frontend.profile.connections') }}" class="btn btn-primary">
                     <i class="bi bi-key"></i> @lang('oauth.connections')</a>
                 &nbsp;
-                <a href="{{ route('frontend.profile.regen_apikey') }}" class="btn btn-warning"
-                    onclick="return confirm('Are you sure? This will reset your API key!')">@lang('profile.newapikey')</a>
+                <form method="post" action="{{ route('frontend.profile.regen_apikey') }}" class="d-inline"
+                    onsubmit="return confirm('Are you sure? This will reset your API key!')">
+                    @csrf
+                    <button type="submit" class="btn btn-warning">@lang('profile.newapikey')</button>
+                </form>
             </div>
 
             @include('profile.connected-accounts', ['user' => $user])

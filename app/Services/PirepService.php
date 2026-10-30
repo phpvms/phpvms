@@ -214,7 +214,7 @@ class PirepService extends Service
         // Keep the flight_id until the end of flight (pirep file)
         if (array_key_exists('simbrief_id', $attrs)) {
             /** @var ?SimBrief $simbrief */
-            $simbrief = SimBrief::find($attrs['simbrief_id']);
+            $simbrief = SimBrief::where('user_id', $pirep->user_id)->find($attrs['simbrief_id']);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief, true);
             }
@@ -378,7 +378,7 @@ class PirepService extends Service
         // at the end of the flight when it's been filed
         if (array_key_exists('simbrief_id', $attrs)) {
             /** @var ?SimBrief $simbrief */
-            $simbrief = SimBrief::find($attrs['simbrief_id']);
+            $simbrief = SimBrief::where('user_id', $pirep->user_id)->find($attrs['simbrief_id']);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief);
             }
