@@ -85,6 +85,7 @@ Route::group([
     Route::post('profile/regen_apikey', [ProfileController::class, 'regen_apikey'])->name('profile.regen_apikey');
 
     // API Connections: authorized OAuth apps + personal access tokens
+    // Deprecated (seven only, removed with seven): opted-in themes are redirected to profile.index.
     Route::get('profile/connections', [ProfileController::class, 'connections'])->name('profile.connections');
     Route::post('profile/tokens', [ProfileController::class, 'store_token'])->name('profile.tokens.store');
     Route::delete('profile/tokens/{token_id}', [ProfileController::class, 'destroy_token'])->name('profile.tokens.destroy');
@@ -92,6 +93,8 @@ Route::group([
 
     Route::resource('profile', ProfileController::class);
 
+    // Deprecated (seven only, removed with seven): simbrief.generate and
+    // simbrief.briefing render seven views; opted-in themes are redirected to ofp.*.
     Route::get('simbrief/generate', [SimBriefController::class, 'generate'])->name('simbrief.generate');
     Route::get('ofp/planning', [SimBriefController::class, 'skylightPlanning'])->name('ofp.planning');
     Route::post('ofp/attempts/{staticId}/api-code', [SimBriefController::class, 'skylightApiCode'])->name('ofp.attempt.api-code');

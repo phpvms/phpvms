@@ -592,3 +592,14 @@ if (!function_exists('theme_kind')) {
         return theme_setting('kind', 'blade');
     }
 }
+
+if (!function_exists('theme_uses_spa_data')) {
+    /**
+     * Whether the active Blade theme opted in (theme.json `"data": "spa"`) to
+     * receive the SPA page props instead of the legacy Blade data.
+     */
+    function theme_uses_spa_data(): bool
+    {
+        return theme_setting('data') === 'spa';
+    }
+}

@@ -1,0 +1,148 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\PhpvmsAirsideTheme\Providers;
+
+use App\Contracts\Modules\ServiceProvider;
+use Illuminate\Support\Facades\Blade;
+use Modules\PhpvmsAirsideTheme\Support\AirsideVite;
+use Modules\PhpvmsAirsideTheme\Support\NavigationIcon;
+use Override;
+
+/**
+ * airside: the bundled Blade + Livewire pilot theme.
+ *
+ * Everything TallStackUI-specific lives here, never in core: the component
+ * prefix, the icon pack, the `<x-airside::*>` component namespace and the
+ * `@airsideVite` directive. Views reach the request-scoped ShellData with
+ * `@inject('shell', ShellData::class)`. Components render with TallStackUI's
+ * defaults; there is no soft customisation layer.
+ */
+class AirsideThemeServiceProvider extends ServiceProvider
+{
+    public const string COMPONENT_PREFIX = 'ts-';
+
+    /**
+     * TallStackUI's internal icon names (its config `custom.guide` keys) and
+     * the Phosphor icon that stands in for each.
+     *
+     * @var array<string, string>
+     */
+    public const array ICON_GUIDE = [
+        'arrow-down-tray'      => 'download-simple',
+        'arrow-path'           => 'arrow-clockwise',
+        'arrow-trending-up'    => 'trend-up',
+        'arrow-trending-down'  => 'trend-down',
+        'arrow-up-tray'        => 'upload-simple',
+        'arrow-uturn-left'     => 'arrow-u-up-left',
+        'arrow-uturn-right'    => 'arrow-u-up-right',
+        'arrows-pointing-in'   => 'arrows-in',
+        'arrows-pointing-out'  => 'arrows-out',
+        'backspace'            => 'backspace',
+        'bars-3-bottom-left'   => 'text-align-left',
+        'bars-4'               => 'list',
+        'calendar'             => 'calendar',
+        'check'                => 'check',
+        'check-circle'         => 'check-circle',
+        'chevron-double-left'  => 'caret-double-left',
+        'chevron-double-right' => 'caret-double-right',
+        'chevron-down'         => 'caret-down',
+        'chevron-left'         => 'caret-left',
+        'chevron-right'        => 'caret-right',
+        'chevron-up'           => 'caret-up',
+        'chevron-up-down'      => 'caret-up-down',
+        'clipboard'            => 'clipboard',
+        'clipboard-document'   => 'clipboard-text',
+        'clock'                => 'clock',
+        'cloud-arrow-up'       => 'cloud-arrow-up',
+        'code-bracket'         => 'code',
+        'code-bracket-square'  => 'code-block',
+        'computer-desktop'     => 'desktop',
+        'document-arrow-down'  => 'file-arrow-down',
+        'document-check'       => 'file-text',
+        'document-text'        => 'file-text',
+        'ellipsis-vertical'    => 'dots-three-vertical',
+        'exclamation-circle'   => 'warning-circle',
+        'eye'                  => 'eye',
+        'eye-slash'            => 'eye-slash',
+        'information-circle'   => 'info',
+        'link'                 => 'link',
+        'list-bullet'          => 'list-bullets',
+        'magnifying-glass'     => 'magnifying-glass',
+        'minus'                => 'minus',
+        'moon'                 => 'moon',
+        'numbered-list'        => 'list-numbers',
+        'photo'                => 'image',
+        'plus'                 => 'plus',
+        'question-mark-circle' => 'question',
+        'swatch'               => 'swatches',
+        'sun'                  => 'sun',
+        'trash'                => 'trash',
+        'x-circle'             => 'x-circle',
+        'x-mark'               => 'x',
+    ];
+
+    #[Override]
+    public function register(): void
+    {
+        parent::register();
+
+        // TallStackUI reads the prefix while it registers its components,
+        // which happens after every provider's register(). `tallstackui` is the
+        // key its config file is published under; `ts-ui` is the merged copy
+        // the package reads at runtime, and it is merged before this runs.
+        config([
+            'tallstackui.prefix' => self::COMPONENT_PREFIX,
+            'ts-ui.prefix'       => self::COMPONENT_PREFIX,
+        ]);
+
+        $this->useAdminIconPack();
+    }
+
+    /**
+     * Draw TallStackUI's icons from the Phosphor pack the admin panel uses
+     * (BasePanelProvider, light style). `type` names the BladeUI package, which
+     * switches the icon component to custom mode; `custom.guide` maps every
+     * icon the components use internally to its Phosphor light counterpart.
+     * Views pass pack icons as `phosphor.<name>.light`.
+     */
+    private function useAdminIconPack(): void
+    {
+        $guide = [];
+
+        foreach (self::ICON_GUIDE as $internal => $phosphor) {
+            $guide[$internal] = 'phosphor-'.$phosphor.'-'.NavigationIcon::STYLE;
+        }
+
+        foreach (['tallstackui', 'ts-ui'] as $root) {
+            config([
+                $root.'.components.icon.1.type'         => 'codeat3/blade-phosphor-icons',
+                $root.'.components.icon.1.custom.guide' => $guide,
+            ]);
+        }
+    }
+
+    #[Override]
+    public function boot(): void
+    {
+        parent::boot();
+
+        Blade::anonymousComponentPath($this->addonBasePath().'/resources/views/components', 'airside');
+
+        $this->registerViteDirective();
+    }
+
+    private function registerViteDirective(): void
+    {
+        $this->app->singleton(AirsideVite::class, fn (): AirsideVite => new AirsideVite($this->addonBasePath().'/public/hot'));
+
+        Blade::directive('airsideVite', fn (string $expression): string => '<?php echo app('.var_export(AirsideVite::class, true).')('.$expression.'); ?>');
+    }
+
+    #[Override]
+    protected function addonNamespace(): string
+    {
+        return 'airside';
+    }
+}

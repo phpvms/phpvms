@@ -11,6 +11,7 @@ use App\Events\PirepRejected;
 use App\Models\Pirep;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 /**
  * Wires the tour slice to the PIREP lifecycle.
@@ -26,6 +27,9 @@ class TourServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        // The slice's Livewire components, as `<livewire:tours::name />`.
+        Livewire::addNamespace('tours', classNamespace: 'App\\Features\\Tour\\Livewire', classPath: __DIR__.'/Livewire');
+
         // Points user_tours.pirep_id at the IN_PROGRESS PIREP, so the column is
         // populated while the pilot is airborne rather than only once they file.
         Event::listen(PirepPrefiled::class, function (PirepPrefiled $event): void {

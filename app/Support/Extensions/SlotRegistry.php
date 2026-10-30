@@ -42,6 +42,9 @@ final class SlotRegistry
      *                     (e.g. '/ext/samplevueslot/widgets/slot.js'). If set,
      *                     imported at runtime; REQUIRES a string `component`
      *                     (the resolver key it is imported under).
+     *   view      string  Blade view name rendered by Blade-theme slot outlets
+     *                     (`<x-slot-outlet>`). An entry may set both `component`
+     *                     and `view` to support SPA and Blade themes at once.
      *   order     int     ascending render order within the slot (default 100).
      *   props     array   props to pass; a string value starting with '@' is a
      *                     ref resolved against the page DTO (e.g. '@flight').
@@ -56,6 +59,13 @@ final class SlotRegistry
 
         if (empty($entry['slot']) || !is_string($entry['slot'])) {
             throw new InvalidArgumentException('Slot entry requires a string "slot".');
+        }
+
+        $hasComponent = !empty($entry['component']) && is_string($entry['component']);
+        $hasView = !empty($entry['view']) && is_string($entry['view']);
+
+        if (!$hasComponent && !$hasView) {
+            throw new InvalidArgumentException(sprintf('Slot entry for "%s" needs a Vue "component" or a Blade "view".', $entry['slot']));
         }
 
         // A `module` entry is imported at runtime under its `component` name (the
@@ -73,13 +83,37 @@ final class SlotRegistry
     }
 
     /**
-     * All registered slot entries as a flat, JSON-serializable list — the exact
-     * shape merged into the SPA registry.
+     * Entries the SPA can render (those with a `component`) as a flat,
+     * JSON-serializable list — the exact shape merged into the SPA registry.
+     * Blade-only entries are left out: the SPA has nothing to resolve them with
+     * and would show a load error in the slot.
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function all(): array
     {
-        return $this->entries;
+        return array_values(array_filter(
+            $this->entries,
+            static fn (array $entry): bool => is_string($entry['component'] ?? null) && $entry['component'] !== '',
+        ));
+    }
+
+    /**
+     * Entries for one slot that a Blade theme can render (those with a `view`),
+     * in ascending order. Equal orders keep registration order.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function bladeEntriesFor(string $slot): array
+    {
+        $entries = array_values(array_filter(
+            $this->entries,
+            static fn (array $entry): bool => $entry['slot'] === $slot && is_string($entry['view'] ?? null) && $entry['view'] !== '',
+        ));
+
+        // usort is stable since PHP 8.0.
+        usort($entries, static fn (array $a, array $b): int => (int) $a['order'] <=> (int) $b['order']);
+
+        return $entries;
     }
 }

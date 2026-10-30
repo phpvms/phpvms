@@ -31,7 +31,7 @@ class SettingsSeeder extends Seeder
             'key'         => 'general.theme',
             'name'        => 'Current Theme',
             'group'       => 'general',
-            'value'       => 'skylight',
+            'value'       => 'airside',
             'type'        => 'hidden',
             'options'     => '',
             'description' => 'The currently active theme',

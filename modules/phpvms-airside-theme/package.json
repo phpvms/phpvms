@@ -1,0 +1,21 @@
+{
+  "name": "@phpvms/airside-theme",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:theme": "vite build"
+  },
+  "dependencies": {
+    "@phpvms/map": "workspace:*",
+    "@phpvms/simbrief": "workspace:*"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "laravel-vite-plugin": "^3.2.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.4"
+  }
+}

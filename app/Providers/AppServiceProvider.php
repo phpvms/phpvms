@@ -76,6 +76,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Intervention\Image\ImageManager as InterventionImageManager;
 use Laracasts\Flash\Flash;
 use Override;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
@@ -199,9 +200,11 @@ class AppServiceProvider extends ServiceProvider
             // Legacy presenter path (one object exposing BOTH projections). Kept
             // for controllers not yet migrated.
             if ($presenter !== null && method_exists($presenter, 'toInertiaArray')) {
-                return theme_kind() === 'spa'
-                    ? Inertia::render($inertiaPage, $presenter->toInertiaArray())
-                    : view($bladeView, $presenter->toBladeArray());
+                if (theme_kind() === 'spa') {
+                    return Inertia::render($inertiaPage, $presenter->toInertiaArray());
+                }
+
+                return view($bladeView, theme_uses_spa_data() ? $presenter->toInertiaArray() : $presenter->toBladeArray());
             }
 
             // Direct path (no presenter): the controller supplies the Blade data and
@@ -210,6 +213,12 @@ class AppServiceProvider extends ServiceProvider
             // (e.g. the SPA DTO isn't built on the Blade path, and vice-versa).
             if (theme_kind() === 'spa') {
                 return Inertia::render($inertiaPage, $spa instanceof Closure ? $spa() : ($spa ?? []));
+            }
+
+            // A Blade theme that opts in (theme.json "data": "spa") gets the
+            // same page props as an SPA theme, as view variables.
+            if (theme_uses_spa_data()) {
+                return view($bladeView, $spa instanceof Closure ? $spa() : ($spa ?? []));
             }
 
             return view($bladeView, $bladeData instanceof Closure ? $bladeData() : $bladeData);
@@ -308,6 +317,14 @@ class AppServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(ModuleService::class);
+
+        // Intervention registers `image` and aliases its manager class to that key,
+        // but Laravel 13 binds `image` to its own Illuminate\Image\ImageManager, so
+        // the alias hands out the wrong class. Bind the Intervention manager by
+        // class so avatar resizing gets the one with canvas()/make().
+        $this->app->bind(InterventionImageManager::class, fn (Application $app): InterventionImageManager => new InterventionImageManager([
+            'driver' => $app->make(ImageUploadService::class)->rasterDriver() ?? 'gd',
+        ]));
         $this->app->singleton(SocialiteProviderRegistry::class);
         $this->app->singleton(OAuthConnectionService::class);
 

@@ -28,6 +28,7 @@ return [
     'notifications'      => 'Notifications',
 
     // Sidebar account menu
+    'go_to_admin' => 'Go to Admin',
     'sign_in'     => 'Sign in',
     'sign_out'    => 'Sign out',
     'theme'       => 'Theme',

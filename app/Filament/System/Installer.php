@@ -2,6 +2,7 @@
 
 namespace App\Filament\System;
 
+use App\Addons\Support\AddonCacheRefresher;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\Role;
 use App\Models\User;
@@ -139,6 +140,43 @@ class Installer extends Page
     }
 
     /**
+     * Runs on every request after the first. The migration flags travel in the
+     * Livewire snapshot, so a tab that ran the migrations keeps saying so after
+     * the database was dropped or replaced underneath it. The database is the
+     * truth: when it reports pending migrations, the snapshot is stale, so send
+     * the wizard back to the start with a fresh mount rather than patching it.
+     */
+    public function hydrate(): void
+    {
+        if ($this->autoMigrationStarted && $this->migrationsPending()) {
+            Notification::make()
+                ->title(__('installer.restarted_database_changed'))
+                ->warning()
+                ->send();
+
+            $this->redirect(static::getUrl(panel: 'system'));
+        }
+    }
+
+    private function userExists(): bool
+    {
+        try {
+            return Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists();
+        } catch (QueryException) {
+            return false;
+        }
+    }
+
+    private function migrationsPending(): bool
+    {
+        try {
+            return count(app(MigrationService::class)->migrationsAvailable()) > 0;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Compute the wizard step the user should land on initially.
      * Skips requirements when satisfied, and skips migrations when nothing is pending.
      */
@@ -187,8 +225,10 @@ class Installer extends Page
 
                 $this->getUserAndAirlineSetupStep(),
             ])
+                // The step is derived from the database on every mount, never
+                // from the URL: a `?step=` left in a tab or bookmark would pin a
+                // fresh load to the migration step with nothing to run.
                 ->startOnStep(fn (): int => $this->computeStartStep())
-                ->persistStepInQueryString()
                 ->nextAction(fn (Action $action): Action => $action
                     ->label(new HtmlString(
                         Blade::render(
@@ -353,11 +393,27 @@ class Installer extends Page
             $this->stream(content: $message, to: $this->stream);
         }
 
+        app(AddonCacheRefresher::class)->refresh();
+
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(
             content: __('installer.migrations_completed').PHP_EOL,
             to: $this->stream
         );
+
+        // Seed data can ship users (the demo environment does). Then there is no
+        // first user to create, and the next request would be refused anyway:
+        // canAccess() closes the installer the moment a user exists. Say so and
+        // hand over to the login page instead of a step that can never submit.
+        if ($this->userExists()) {
+            $message = __('installer.user_already_seeded').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+
+            $this->js('setTimeout(() => window.location.href = '.json_encode(route('login')).', '.(self::AUTO_ADVANCE_SECONDS * 1000).')');
+
+            return $this->migrationOutput = $output;
+        }
 
         // Only hand the step over to the countdown once there is genuinely
         // nothing left to run — otherwise it would advance into the step's own
@@ -579,7 +635,7 @@ class Installer extends Page
                     ]),
             ])
             ->afterValidation(function (): void {
-                if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
+                if ($this->migrationsPending()) {
                     Notification::make()
                         ->title(
                             __(

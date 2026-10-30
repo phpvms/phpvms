@@ -1,0 +1,21 @@
+{
+    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "schema_version": 1,
+    "name": "Airside",
+    "alias": "airside",
+    "registry_id": "phpvms/airside-theme",
+    "version": "1.0.0",
+    "type": "theme",
+    "description": "The phpVMS pilot theme. Blade and Livewire with skylight's design, built on TallStackUI.",
+    "keywords": ["theme", "airside", "livewire", "tallstackui"],
+    "bundled": true,
+    "providers": [
+        "Modules\\PhpvmsAirsideTheme\\Providers\\AirsideThemeServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "database": {
+        "tables": []
+    }
+}

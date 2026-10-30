@@ -1,0 +1,11 @@
+/*
+ * airside: TallStackUI's stylesheet (which brings Tailwind v4) and the theme's
+ * own sources. Components render with TallStackUI's defaults; there is no
+ * token sheet of its own.
+ */
+@import "../../../../vendor/tallstackui/tallstackui/css/v4.css";
+
+@source "../views";
+@source "../../app";
+@source "../../../../vendor/tallstackui/tallstackui";
+@source "../../../../resources/views/components/slot-outlet.blade.php";

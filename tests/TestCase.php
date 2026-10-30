@@ -4,15 +4,94 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\BootCache;
+use App\Addons\Support\ManifestParser;
 use App\Services\SettingService;
 use App\Support\InstallMarker;
 use Database\Seeders\SettingsSeeder;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\ParallelTesting;
 use Override;
 
 abstract class TestCase extends BaseTestCase
 {
+    /**
+     * Whether this process already checked the boot cache for bundled themes.
+     */
+    private static bool $bundledThemesPrimed = false;
+
+    /**
+     * Boot the application with the bundled theme addons registered.
+     *
+     * Theme addons register from the boot cache inside `register()`, and the
+     * cache is only ever written by a web boot or `addons:cache`. A fresh
+     * checkout (CI) has neither, so the bundled theme (airside) would be
+     * missing from every test. When the cache lacks a bundled theme, add it
+     * and boot again, once per process. Entries already in the cache stay.
+     */
+    #[Override]
+    public function createApplication(): Application
+    {
+        $app = parent::createApplication();
+
+        if (self::$bundledThemesPrimed) {
+            return $app;
+        }
+
+        self::$bundledThemesPrimed = true;
+
+        return $this->primeBundledThemes($app) ? parent::createApplication() : $app;
+    }
+
+    /**
+     * Add every bundled theme addon missing from the boot cache.
+     *
+     * @return bool Whether the cache was written
+     */
+    private function primeBundledThemes(Application $app): bool
+    {
+        $cache = $app->make(BootCache::class);
+        $parser = $app->make(ManifestParser::class);
+        $known = array_map(static fn (AddonBootCache $entry): string => $entry->registryId, $cache->read());
+
+        $missing = [];
+
+        foreach (glob(rtrim((string) config('addons.paths.base'), '/').'/*', GLOB_ONLYDIR) ?: [] as $directory) {
+            $manifest = $parser->parse(realpath($directory) ?: $directory);
+
+            if ($manifest === null || $manifest->type !== 'theme' || !$manifest->isBundled() || in_array($manifest->registryId, $known, true)) {
+                continue;
+            }
+
+            $missing[] = new AddonBootCache(
+                name: $manifest->name,
+                alias: $manifest->alias,
+                type: $manifest->type,
+                registryId: $manifest->registryId,
+                version: $manifest->version,
+                namespace: $manifest->namespace,
+                providers: $manifest->providers,
+                path: $manifest->path,
+                autoloadPath: $manifest->autoloadPath,
+                layout: $manifest->layout,
+                description: $manifest->description,
+                enabled: true,
+                files: $manifest->files,
+            );
+        }
+
+        if ($missing === []) {
+            return false;
+        }
+
+        // No fingerprints: a web boot sees the cache as stale and rebuilds it.
+        $cache->write([...$cache->read(), ...$missing]);
+
+        return true;
+    }
+
     /**
      * Seed the settings table for every test.
      *
@@ -51,5 +130,12 @@ abstract class TestCase extends BaseTestCase
         // Off by default for every test. A test that wants the lookup path
         // turns it back on itself AND fakes the HTTP response.
         app(SettingService::class)->store('general.auto_airport_lookup', false);
+
+        // The seeder ships `general.theme` as airside (the default for fresh
+        // installs). The suite predates that and most theme-dependent tests
+        // assume skylight, so every test starts on it. A test that wants
+        // airside activates it itself (`useAirside()`), and the fresh-install
+        // test resets the row to what the seeder ships.
+        app(SettingService::class)->store('general.theme', 'skylight');
     }
 }

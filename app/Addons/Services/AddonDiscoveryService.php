@@ -6,10 +6,13 @@ namespace App\Addons\Services;
 
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Models\AddonManifest;
+use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonVersions;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
+use App\Addons\Support\ThemeAddonRegistrar;
+use App\Addons\Support\ThemeAssetLinker;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -551,8 +554,38 @@ class AddonDiscoveryService
             $addon->installed_at = now();
         }
 
+        $wasNew = !$addon->exists;
+
         $addon->save();
 
+        if ($wasNew && $m->isBundled()) {
+            $this->linkBundledAssets($m);
+        }
+
         return $addon;
+    }
+
+    /**
+     * Link the public assets of a bundled addon discovery has just enabled.
+     *
+     * Install and update link assets themselves, but a bundled addon never goes
+     * through them: it is enabled here, by discovery, on a fresh install or when
+     * a release first ships it. Without this its assets (a bundled theme's
+     * `/storage/themes/<name>/build`) are unreachable until `addons:relink`.
+     *
+     * Never throws: discovery runs during boot, and a host that cannot create
+     * symlinks must still serve the site. `addons:relink` repairs it later.
+     */
+    private function linkBundledAssets(AddonManifest $m): void
+    {
+        try {
+            app(AddonAssetLinker::class)->link($m->name, $m->path);
+
+            if ($m->type === 'theme') {
+                app(ThemeAssetLinker::class)->link(ThemeAddonRegistrar::themeName($m->path, $m->name), $m->path);
+            }
+        } catch (Throwable $throwable) {
+            Log::warning(sprintf('AddonDiscoveryService: could not link assets for bundled addon "%s": %s', $m->name, $throwable->getMessage()));
+        }
     }
 }

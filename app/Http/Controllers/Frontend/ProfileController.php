@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
-use App\Events\ProfileUpdated;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
+use App\Features\Profile\Actions\CreatePersonalToken;
+use App\Features\Profile\Actions\RegenerateApiKey;
+use App\Features\Profile\Actions\RevokeAuthorizedApp;
+use App\Features\Profile\Actions\RevokeToken;
+use App\Features\Profile\Actions\UpdateProfile;
 use App\Features\Tour\Enums\TourStatus;
 use App\Http\Data\ApiConnectionsData;
 use App\Http\Data\ProfileConnectionData;
@@ -15,8 +19,6 @@ use App\Http\Data\ProfileEditData;
 use App\Models\Airline;
 use App\Models\Award;
 use App\Models\User;
-use App\Models\UserField;
-use App\Models\UserFieldValue;
 use App\Services\UserService;
 use App\Support\ApiScope;
 use App\Support\Countries;
@@ -27,14 +29,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Intervention\Image\Facades\Image;
 use Laracasts\Flash\Flash;
 
 class ProfileController extends Controller
@@ -46,6 +43,11 @@ class ProfileController extends Controller
         private readonly UserService $userSvc,
         private readonly OAuthConnectionService $oauthConnections,
         private readonly SocialiteProviderRegistry $socialiteProviders,
+        private readonly UpdateProfile $updateProfile,
+        private readonly RegenerateApiKey $regenerateApiKey,
+        private readonly CreatePersonalToken $createPersonalToken,
+        private readonly RevokeToken $revokeToken,
+        private readonly RevokeAuthorizedApp $revokeAuthorizedApp,
     ) {}
 
     /**
@@ -189,9 +191,16 @@ class ProfileController extends Controller
      *
      *
      * @throws Exception
+     *
+     * @deprecated Blade-theme (seven) page, removed with seven in the next release.
+     *             Themes that opt in to the SPA data (airside) edit on the profile page.
      */
     public function edit(Request $request): RedirectResponse|View
     {
+        if (theme_uses_spa_data()) {
+            return redirect()->route('frontend.profile.index');
+        }
+
         /** @var ?User $user */
         $user = User::with('fields.field', 'home_airport', 'identities')->where('id', Auth::id())->first();
 
@@ -232,8 +241,7 @@ class ProfileController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-        $id = Auth::user()->id;
-        $user = User::find($id);
+        $user = User::find(Auth::user()->id);
 
         if (!$user) {
             Flash::error('User not found!');
@@ -241,27 +249,7 @@ class ProfileController extends Controller
             return redirect(route('frontend.dashboard.index'));
         }
 
-        $rules = [
-            'name'              => 'required',
-            'email'             => 'required|unique:users,email,'.$id,
-            'airline_id'        => 'required|exists:airlines,id',
-            'password'          => ['string', 'nullable', 'confirmed', Password::default()],
-            'avatar'            => 'nullable|mimes:jpeg,png,jpg',
-            'simbrief_username' => 'nullable|string',
-            'country'           => 'nullable|string',
-            'timezone'          => 'nullable|string',
-            'home_airport_id'   => 'nullable|exists:airports,id',
-            'opt_in'            => 'boolean',
-        ];
-
-        $userFields = UserField::where(
-            ['show_on_registration' => true, 'required' => true, 'internal' => false]
-        )->get();
-        foreach ($userFields as $field) {
-            $rules['field_'.$field->slug] = 'required';
-        }
-
-        // opt_in was previously absent from $rules, so it never reached
+        // opt_in was previously absent from the rules, so it never reached
         // $validated and never saved -- the checkbox did nothing. Coercing here
         // rather than in the rules is what makes UNchecking work: an unchecked
         // box is simply absent from the payload, so a `nullable|boolean` rule
@@ -271,66 +259,14 @@ class ProfileController extends Controller
             'opt_in' => $request->boolean('opt_in'),
         ]);
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate(UpdateProfile::rules($user));
 
-        if (array_key_exists('password', $validated) && $validated['password'] !== null) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        $user->fill($validated);
-
-        if ($request->hasFile('avatar')) {
-            if ($user->avatar !== null) {
-                Storage::delete($user->avatar);
-            }
-
-            $avatar = $request->file('avatar');
-            $file_name = $user->ident.'.'.$avatar->getClientOriginalExtension();
-            $path = 'avatars/'.$file_name;
-
-            // Create the avatar, resizing it and keeping the aspect ratio.
-            // https://stackoverflow.com/a/26892028
-            $w = config('phpvms.avatar.width');
-            $h = config('phpvms.avatar.height');
-
-            $canvas = Image::canvas($w, $h);
-            $image = Image::make($avatar)->resize($w, $h, static function ($constraint): void {
-                $constraint->aspectRatio();
-            });
-
-            $canvas->insert($image);
-            Log::info('Uploading avatar into folder '.public_path('uploads/avatars'));
-            $canvas->save(public_path('uploads/avatars/'.$file_name));
-
-            $user->setAttribute('avatar', $path);
-        }
-
-        // User needs to verify their new email address
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
-        $user->refresh();
-
-        if ($user->email !== $request->input('email')) {
-            $user->sendEmailVerificationNotification();
-        }
-
-        // Save all of the user fields
-        $userFields = UserField::where('internal', false)->get();
-        foreach ($userFields as $field) {
-            $field_name = 'field_'.$field->slug;
-            UserFieldValue::updateOrCreate([
-                'user_field_id' => $field->id,
-                'user_id'       => $id,
-            ], ['value' => $request->get($field_name)]);
-        }
-
-        // Dispatch event including whether an avatar has been updated
-        ProfileUpdated::dispatch($user, $request->hasFile('avatar'));
+        $this->updateProfile->handle(
+            $user,
+            $validated,
+            $request->hasFile('avatar') ? $request->file('avatar') : null,
+            $request->all(),
+        );
 
         Flash::success('Profile updated successfully!');
 
@@ -342,11 +278,7 @@ class ProfileController extends Controller
      */
     public function regen_apikey(Request $request): RedirectResponse
     {
-        $user = User::find(Auth::user()->id);
-        Log::info('Regenerating API key "'.$user->ident.'"');
-
-        $user->api_key = Utils::generateApiKey();
-        $user->save();
+        $this->regenerateApiKey->handle(User::find(Auth::user()->id));
 
         flash('New API key generated!')->success();
 
@@ -356,9 +288,21 @@ class ProfileController extends Controller
     /**
      * Show the API connections page: authorized OAuth applications and the
      * user's personal access tokens.
+     *
+     * @deprecated Blade-theme (seven) page, removed with seven in the next release.
+     *             Themes that opt in to the SPA data (airside) manage these on the
+     *             profile page.
      */
-    public function connections(): View
+    public function connections(): View|RedirectResponse
     {
+        if (theme_uses_spa_data()) {
+            // Keep the one-time token (and any flash message) from the redirect
+            // that brought the pilot here, e.g. store_token's plain_text_token.
+            session()->reflash();
+
+            return redirect()->route('frontend.profile.index');
+        }
+
         /** @var User $user */
         $user = Auth::user();
 
@@ -401,16 +345,10 @@ class ProfileController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        // Only allow scopes that exist in the catalog (never the wildcard).
-        $scopes = array_values(array_intersect(
-            $validated['scopes'] ?? [],
-            array_keys(ApiScope::catalog())
-        ));
-
-        $token = $user->createToken($validated['name'], $scopes);
+        $token = $this->createPersonalToken->handle($user, $validated['name'], $validated['scopes'] ?? []);
 
         return redirect(route('frontend.profile.connections'))
-            ->with('plain_text_token', $token->accessToken);
+            ->with('plain_text_token', $token);
     }
 
     /**
@@ -421,8 +359,7 @@ class ProfileController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $token = $user->tokens()->where('id', $token_id)->first();
-        $token?->revoke();
+        $this->revokeToken->handle($user, $token_id);
 
         flash('Token revoked.')->success();
 
@@ -437,10 +374,7 @@ class ProfileController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $user->tokens()
-            ->where('client_id', $client_id)
-            ->get()
-            ->each(fn ($token) => $token->revoke());
+        $this->revokeAuthorizedApp->handle($user, $client_id);
 
         flash('Application access revoked.')->success();
 
