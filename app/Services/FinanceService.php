@@ -237,9 +237,9 @@ class FinanceService extends Service
      * holds row locks that block finance writes meanwhile.
      *
      * @param ?string $currency The currency to move to; the `units.currency`
-     *                          setting when omitted. The settings page passes the
-     *                          value it just stored, so the setting is not read
-     *                          (and cached) before that write has committed.
+     *                          setting when omitted. ChangeJournalCurrencies passes
+     *                          the value read from the settings table, which the
+     *                          application cache can lag behind.
      */
     public function changeJournalCurrencies(?string $currency = null): void
     {

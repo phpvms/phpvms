@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Filament\Pages\Settings;
+use App\Jobs\ChangeJournalCurrencies;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
 use App\Services\FinanceService;
@@ -10,6 +11,7 @@ use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Ramsey\Uuid\Uuid;
 
@@ -61,16 +63,35 @@ function journalUpdates(callable $run): int
 }
 
 it('leaves the journals alone when the settings are saved without a currency change', function (): void {
+    Queue::fake();
     $this->actingAs(createAdminUser());
     currencyTxn(Journal::factory()->create(['currency' => 'USD']), 'USD');
 
     $page = Livewire::test(Settings::class);
 
     expect(journalUpdates(fn () => $page->call('save')))->toBe(0);
+    Queue::assertNotPushed(ChangeJournalCurrencies::class);
 });
 
-it('moves the journals to the new currency when it changes', function (): void {
-    $this->actingAs(createAdminUser());
+it('queues the journal migration for the admin when the currency changes', function (): void {
+    Queue::fake();
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+    currencyTxn(Journal::factory()->create(['currency' => 'USD']), 'USD');
+
+    $page = Livewire::test(Settings::class)->set('data.units.currency', 'EUR');
+
+    expect(journalUpdates(fn () => $page->call('save')))->toBe(0);
+    $page->assertNotified();
+    Queue::assertPushed(
+        ChangeJournalCurrencies::class,
+        fn (ChangeJournalCurrencies $job): bool => $job->notifyUserId === $admin->id,
+    );
+});
+
+it('moves the journals to the new currency and notifies the admin', function (): void {
+    $admin = createAdminUser();
+    $this->actingAs($admin);
     $journal = Journal::factory()->create(['currency' => 'USD']);
     $txn = currencyTxn($journal, 'USD');
 
@@ -79,24 +100,47 @@ it('moves the journals to the new currency when it changes', function (): void {
         ->call('save');
 
     expect(currencyOf($journal))->toBe('EUR')
-        ->and(currencyOf($txn))->toBe('EUR');
+        ->and(currencyOf($txn))->toBe('EUR')
+        ->and($admin->notifications()->count())->toBe(1)
+        ->and($admin->notifications()->first()->data['title'])->toBe('Journal currencies updated');
 });
 
-it('migrates the journals on a retry even when the cache already holds the new currency', function (): void {
+it('queues the migration on a retry even when the cache already holds the new currency', function (): void {
     // A currency save that rolled back can leave its uncommitted value in the
     // application cache while the table and the journals keep the old one.
+    Queue::fake();
     app()->detectEnvironment(fn (): string => 'production');
     $this->actingAs(createAdminUser());
-    $journal = Journal::factory()->create(['currency' => 'USD']);
-    $txn = currencyTxn($journal, 'USD');
     Cache::put(config('cache.keys.SETTINGS.key').'units.currency', 'EUR', 60);
 
     Livewire::test(Settings::class)
         ->set('data.units.currency', 'EUR')
         ->call('save');
 
+    Queue::assertPushed(ChangeJournalCurrencies::class);
+});
+
+it('moves the journals to the stored currency, not a stale cached one', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+    setting_save('units.currency', 'EUR');
+    Cache::put(config('cache.keys.SETTINGS.key').'units.currency', 'USD', 60);
+    $journal = Journal::factory()->create(['currency' => 'USD']);
+    $txn = currencyTxn($journal, 'USD');
+
+    new ChangeJournalCurrencies()->handle(app(FinanceService::class));
+
     expect(currencyOf($journal))->toBe('EUR')
         ->and(currencyOf($txn))->toBe('EUR');
+});
+
+it('notifies the admin when the journal migration fails', function (): void {
+    $admin = createAdminUser();
+
+    new ChangeJournalCurrencies($admin->id)->failed(new RuntimeException('Lock wait timeout exceeded'));
+
+    expect($admin->notifications()->count())->toBe(1)
+        ->and($admin->notifications()->first()->data['title'])->toBe('Journal currency update failed')
+        ->and($admin->notifications()->first()->data['body'])->toBe('Lock wait timeout exceeded');
 });
 
 it('only rewrites journal rows still on another currency', function (): void {
