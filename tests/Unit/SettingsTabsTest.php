@@ -51,11 +51,12 @@ it('orders a tab by order, then by key on a tie', function (string $class): void
 })->with([Setting::class, AddonSetting::class]);
 
 it('sorts the tab names regardless of case', function (): void {
+    // A case-sensitive sort would put 'Beta' before 'alpha'.
     $settings = collect([
-        tabSetting(AddonSetting::class, 'beta', 1, 'b'),
-        tabSetting(AddonSetting::class, 'Alpha', 1, 'a'),
         tabSetting(AddonSetting::class, 'charlie', 1, 'c'),
+        tabSetting(AddonSetting::class, 'Beta', 1, 'b'),
+        tabSetting(AddonSetting::class, 'alpha', 1, 'a'),
     ]);
 
-    expect(array_keys(tabLayout($settings)))->toBe(['Alpha', 'beta', 'charlie']);
+    expect(array_keys(tabLayout($settings)))->toBe(['alpha', 'Beta', 'charlie']);
 });
