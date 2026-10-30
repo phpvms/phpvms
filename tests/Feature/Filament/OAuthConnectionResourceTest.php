@@ -220,6 +220,11 @@ it('hides enable and disable from users without the update permission', function
 
     Livewire::test(ManageOAuthConnections::class)
         ->assertTableActionHidden('disable', $connection);
+
+    $connection->update(['enabled' => false]);
+
+    Livewire::test(ManageOAuthConnections::class)
+        ->assertTableActionHidden('enable', $connection->fresh());
 });
 
 it('offers a button css class field on every provider and saves it', function (): void {

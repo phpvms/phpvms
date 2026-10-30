@@ -72,6 +72,14 @@ class SimBriefService extends Service
             return null;
         }
 
+        // The OFP id comes from the client; it must not re-own (or overwrite the
+        // stored file of) a briefing that belongs to another pilot.
+        if (SimBrief::whereKey($ofp_id)->where('user_id', '!=', $user->id)->exists()) {
+            Log::warning('Simbrief | OFP '.$ofp_id.' belongs to another user, refused for user '.$user->id);
+
+            return null;
+        }
+
         Storage::put('simbrief/'.$ofp_id.'.json', $response->body());
 
         $attrs = [

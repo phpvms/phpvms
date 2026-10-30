@@ -37,6 +37,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -46,6 +47,14 @@ use Laracasts\Flash\Flash;
 
 class PirepController extends Controller
 {
+    /**
+     * Form fields a pilot may never set: the state moves only through
+     * submit/accept/reject, and the key and owner come from the server.
+     *
+     * @var list<string>
+     */
+    private const array PROTECTED_ATTRIBUTES = ['id', 'state', 'user_id'];
+
     public function __construct(
         private readonly FareService $fareSvc,
         private readonly GeoService $geoSvc,
@@ -345,7 +354,7 @@ class PirepController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $pirep = new Pirep(PirepLevelNormalizer::normalize($request->post()));
+        $pirep = new Pirep(PirepLevelNormalizer::normalize(Arr::except($request->post(), self::PROTECTED_ATTRIBUTES)));
         $pirep->user_id = $user->id;
 
         $attrs = $request->all();
@@ -560,7 +569,7 @@ class PirepController extends Controller
         }
 
         $orig_route = $pirep->route;
-        $attrs = $request->all();
+        $attrs = Arr::except($request->all(), self::PROTECTED_ATTRIBUTES);
         $attrs['submit'] = strtolower((string) $attrs['submit']);
 
         // Fix the time

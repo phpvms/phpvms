@@ -107,7 +107,8 @@ class TestMapStyleAction
 
             $host = trim((string) parse_url($url, PHP_URL_HOST), '[]');
             $options = ['allow_redirects' => false];
-            if (filter_var($host, FILTER_VALIDATE_IP) === false) {
+            // Pinning needs ext-curl; without it the per-hop check still applies.
+            if (\defined('CURLOPT_RESOLVE') && filter_var($host, FILTER_VALIDATE_IP) === false) {
                 $port = parse_url($url, PHP_URL_PORT) ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
                 $address = str_contains($addresses[0], ':') ? '['.$addresses[0].']' : $addresses[0];
                 $options['curl'] = [CURLOPT_RESOLVE => [$host.':'.$port.':'.$address]];

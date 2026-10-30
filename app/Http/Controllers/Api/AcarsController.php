@@ -172,6 +172,11 @@ class AcarsController extends Controller
             try {
                 $written = null;
 
+                // A client id that belongs to another PIREP's row becomes a new row
+                if (!empty($position['id']) && Acars::whereKey($position['id'])->where('pirep_id', '!=', $id)->exists()) {
+                    unset($position['id']);
+                }
+
                 DB::transaction(function () use ($position, &$written): void {
                     if (!empty($position['id'])) {
                         Acars::updateOrInsert(

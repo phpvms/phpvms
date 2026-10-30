@@ -15,9 +15,11 @@ use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Services\PirepService;
+use App\Services\SimBriefService;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 use function Pest\Livewire\livewire;
@@ -197,3 +199,73 @@ it('keeps the owner when a pilot files their pirep with another user_id', functi
     expect($this->pirep->fresh()->user_id)->toBe($this->owner->id)
         ->and($briefing->fresh()->pirep_id)->toBeNull();
 });
+
+it('ignores state and user_id when a pilot edits their pirep through the web form', function (): void {
+    $pirep = Pirep::factory()->create(['user_id' => $this->owner->id, 'state' => PirepState::DRAFT]);
+
+    $this->actingAs($this->owner)->put(route('frontend.pireps.update', $pirep->id), [
+        'airline_id'     => $pirep->airline_id,
+        'flight_number'  => 100,
+        'dpt_airport_id' => $pirep->dpt_airport_id,
+        'arr_airport_id' => $pirep->arr_airport_id,
+        'hours'          => 1,
+        'minutes'        => 0,
+        'block_fuel'     => 100,
+        'fuel_used'      => 50,
+        'submit'         => 'save',
+        'state'          => PirepState::ACCEPTED->value,
+        'user_id'        => $this->attacker->id,
+    ])->assertRedirect();
+
+    $pirep = $pirep->fresh();
+    expect($pirep->state)->not->toBe(PirepState::ACCEPTED)
+        ->and($pirep->user_id)->toBe($this->owner->id);
+});
+
+it("does not let a pilot take over another pilot's simbrief briefing by its ofp id", function (): void {
+    Storage::fake();
+    $briefing = SimBrief::factory()->create(['user_id' => $this->owner->id]);
+    $this->attacker->update(['simbrief_username' => 'attacker']);
+    Http::fake(['*' => Http::response(['fetch' => ['status' => 'Success']])]);
+
+    $result = app(SimBriefService::class)->downloadOfp(
+        $this->attacker, 'static', (string) $briefing->id, (string) Flight::factory()->create()->id, 'ac',
+    );
+
+    expect($result)->toBeNull()
+        ->and($briefing->fresh()->user_id)->toBe($this->owner->id);
+    Storage::assertMissing('simbrief/'.$briefing->id.'.json');
+});
+
+it("does not attach another pilot's briefing when prefiling", function (): void {
+    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('simbrief.block_aircraft', false);
+    $briefing = SimBrief::factory()->create(['user_id' => $this->attacker->id]);
+
+    app(PirepService::class)->prefile($this->owner, [
+        'airline_id'     => $this->pirep->airline_id,
+        'aircraft_id'    => $this->pirep->aircraft_id,
+        'flight_number'  => '100',
+        'dpt_airport_id' => $this->pirep->dpt_airport_id,
+        'arr_airport_id' => $this->pirep->arr_airport_id,
+        'simbrief_id'    => $briefing->id,
+    ]);
+
+    expect($briefing->fresh()->pirep_id)->toBeNull();
+});
+
+it("does not let an acars id overwrite another pirep's row", function (string $uri, string $key): void {
+    $victim = Pirep::factory()->create(['user_id' => $this->attacker->id, 'state' => PirepState::IN_PROGRESS]);
+    $row = Acars::factory()->create(['pirep_id' => $victim->id, 'type' => AcarsType::ROUTE]);
+    apiAs($this->owner);
+
+    $this->postJson(str_replace('{id}', $this->pirep->id, $uri), [
+        $key => [['id' => $row->id, 'name' => 'WPT', 'lat' => 1, 'lon' => 1, 'order' => 1]],
+    ])->assertSuccessful();
+
+    expect($row->fresh()->pirep_id)->toBe($victim->id);
+})->with([
+    'positions' => ['/api/pireps/{id}/acars/position', 'positions'],
+    'route'     => ['/api/pireps/{id}/route', 'route'],
+]);
