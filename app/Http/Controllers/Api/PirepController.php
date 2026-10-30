@@ -448,8 +448,15 @@ class PirepController extends Controller
             $position['pirep_id'] = $id;
             $position['type'] = AcarsType::ROUTE;
 
+            // A client id that belongs to another PIREP's row becomes a new row
+            if (isset($position['id']) && Acars::whereKey($position['id'])->where('pirep_id', '!=', $id)->exists()) {
+                unset($position['id']);
+            }
+
             if (isset($position['id'])) {
-                Acars::updateOrInsert(['id' => $position['id']], $position);
+                // Keyed on the PIREP too, so a racing write can never update
+                // another PIREP's row; it hits the primary key.
+                Acars::updateOrInsert(['id' => $position['id'], 'pirep_id' => $id], $position);
             } else {
                 $acars = Acars::create($position);
                 $acars->save();

@@ -53,9 +53,12 @@ it('blocks maintenance actions without the edit permission', function (): void {
     setting_save('cron.random_id', 'keep-me');
     $this->actingAs(viewOnlyAdmin('view:maintenance'));
 
-    livewire(Maintenance::class)
-        ->assertActionHidden('disableWebCron')
-        ->assertActionHidden('checkForPhpVMSUpdates')
+    $component = livewire(Maintenance::class);
+    foreach (['enableWebCron', 'disableWebCron', 'checkForPhpVMSUpdates', 'clearCache', 'flushFailedJobs', 'resyncAllSeeds', 'optimizeApp', 'archivePirepFlights'] as $action) {
+        $component->assertActionHidden($action);
+    }
+
+    $component
         ->call('mountAction', 'disableWebCron')
         ->call('callMountedAction');
 
