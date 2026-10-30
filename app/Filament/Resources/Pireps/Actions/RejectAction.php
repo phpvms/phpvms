@@ -17,6 +17,7 @@ class RejectAction
             ->color('danger')
             ->icon(Phosphor::XCircleLight)
             ->label(__('common.reject'))
+            ->authorize('update')
             ->visible(fn (Pirep $record): bool => $record->state === PirepState::PENDING)
             ->action(function (Pirep $record): void {
                 $pirep = app(PirepService::class)->changeState($record, PirepState::REJECTED);

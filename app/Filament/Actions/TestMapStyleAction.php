@@ -10,6 +10,8 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\UriInterface;
+use RuntimeException;
 
 /**
  * Fetches a custom map style URL and reports whether it looks like a valid
@@ -49,9 +51,24 @@ class TestMapStyleAction
                     return;
                 }
 
+                if (!self::isPublicHttpUrl($url)) {
+                    self::fail(__('map.test_style_unreachable'));
+
+                    return;
+                }
+
                 try {
-                    $response = Http::connectTimeout(2)->timeout(5)->get($url);
-                } catch (ConnectionException) {
+                    $response = Http::connectTimeout(2)->timeout(5)
+                        ->withOptions(['allow_redirects' => [
+                            'max'         => 3,
+                            'on_redirect' => static function ($request, $response, UriInterface $uri): void {
+                                if (!self::isPublicHttpUrl((string) $uri)) {
+                                    throw new RuntimeException('Redirected to a non-public address');
+                                }
+                            },
+                        ]])
+                        ->get($url);
+                } catch (ConnectionException|RuntimeException) {
                     self::fail(__('map.test_style_unreachable'));
 
                     return;
@@ -76,6 +93,36 @@ class TestMapStyleAction
                     ->title(__('map.test_style_success'))
                     ->send();
             });
+    }
+
+    /**
+     * The test fetches server-side, so only http(s) URLs whose host resolves
+     * exclusively to public addresses are allowed - never loopback, private,
+     * link-local (cloud metadata) or other reserved ranges.
+     */
+    public static function isPublicHttpUrl(string $url): bool
+    {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $host = trim((string) parse_url($url, PHP_URL_HOST), '[]');
+
+        if (!\in_array($scheme, ['http', 'https'], true) || $host === '') {
+            return false;
+        }
+
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            $addresses = [$host];
+        } else {
+            $addresses = gethostbynamel($host) ?: [];
+            foreach (dns_get_record($host, DNS_AAAA) ?: [] as $record) {
+                $addresses[] = $record['ipv6'];
+            }
+        }
+
+        if ($addresses === []) {
+            return false;
+        }
+
+        return array_all($addresses, fn ($address): bool => filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false);
     }
 
     private static function fail(string $body): void

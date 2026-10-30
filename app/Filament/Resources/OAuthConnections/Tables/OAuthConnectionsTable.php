@@ -90,6 +90,7 @@ class OAuthConnectionsTable
                     ),
 
                     Action::make('enable')
+                        ->authorize('update')
                         ->label(__('social_login.actions.enable'))
                         ->icon(Phosphor::CheckCircleLight)
                         ->color('success')
@@ -98,6 +99,7 @@ class OAuthConnectionsTable
                         ->action(fn (OAuthConnection $record): OAuthConnection => app(OAuthConnectionService::class)->enable($record)),
 
                     Action::make('disable')
+                        ->authorize('update')
                         ->label(__('social_login.actions.disable'))
                         ->icon(Phosphor::XCircleLight)
                         ->color('warning')

@@ -17,6 +17,7 @@ class AcceptAction
             ->color('success')
             ->icon(Phosphor::CheckCircleLight)
             ->label(__('common.accept'))
+            ->authorize('update')
             ->visible(fn (Pirep $record): bool => $record->state === PirepState::PENDING)
             ->action(function (Pirep $record): void {
                 $pirep = app(PirepService::class)->changeState($record, PirepState::ACCEPTED);

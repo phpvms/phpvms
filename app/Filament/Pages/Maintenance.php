@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Jobs\BackfillPirepsParentFlight;
@@ -36,6 +37,16 @@ class Maintenance extends Page
     public array $cron = [];
 
     use AuthorizesAccess;
+
+    /**
+     * View opens the page; the mutating actions on it need edit.
+     *
+     * @return array<int, Ability>
+     */
+    public static function getPermissionAbilities(): array
+    {
+        return [Ability::View, Ability::Edit];
+    }
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::System;
 
@@ -136,6 +147,7 @@ class Maintenance extends Page
     public function enableWebCron(): Action
     {
         return Action::make('enableWebCron')
+            ->authorize(fn (): bool => static::canEdit())
             ->label(__('filament.maintenance_cron_change_id'))
             ->action(function (): void {
                 $id = Str::nanoid(24);
@@ -152,6 +164,7 @@ class Maintenance extends Page
     public function disableWebCron(): Action
     {
         return Action::make('disableWebCron')
+            ->authorize(fn (): bool => static::canEdit())
             ->label(__('common.disable'))
             ->color('warning')
             ->action(function (): void {
@@ -169,6 +182,7 @@ class Maintenance extends Page
     public function clearCache(): Action
     {
         return Action::make('clearCache')
+            ->authorize(fn (): bool => static::canEdit())
             ->icon(Phosphor::TrashLight)
             ->color('danger')
             ->label(__('filament.maintenance_clear_cache'))
@@ -216,6 +230,7 @@ class Maintenance extends Page
     public function flushFailedJobs(): Action
     {
         return Action::make('flushFailedJobs')
+            ->authorize(fn (): bool => static::canEdit())
             ->color('danger')
             ->icon(Phosphor::TrashLight)
             ->label(__('filament.maintenance_flush_failed_jobs'))
@@ -236,6 +251,7 @@ class Maintenance extends Page
     public function resyncAllSeeds(): Action
     {
         return Action::make('resyncAllSeeds')
+            ->authorize(fn (): bool => static::canEdit())
             ->icon(Phosphor::DatabaseLight)
             ->color('warning')
             ->label(__('filament.maintenance_resync_all_seeds'))
@@ -252,6 +268,7 @@ class Maintenance extends Page
     public function optimizeApp(): Action
     {
         return Action::make('optimizeApp')
+            ->authorize(fn (): bool => static::canEdit())
             ->icon(Phosphor::WrenchLight)
             ->label(__('filament.maintenance_optimize_app'))
             ->action(function (): void {
@@ -276,6 +293,7 @@ class Maintenance extends Page
     public function archivePirepFlights(): Action
     {
         return Action::make('archivePirepFlights')
+            ->authorize(fn (): bool => static::canEdit())
             ->icon(Phosphor::ArchiveLight)
             ->label(__('filament.maintenance_archive_pirep_flights'))
             ->requiresConfirmation()

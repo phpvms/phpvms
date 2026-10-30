@@ -85,6 +85,10 @@ class UserController extends Controller
             throw new UserNotFound();
         }
 
+        if (!$request->isMethod('GET') && $user->id !== Auth::id()) {
+            throw new Unauthorized(new Exception('Bids can only be changed for the authenticated user'));
+        }
+
         // Add a bid
         if ($request->isMethod('PUT') || $request->isMethod('POST')) {
             $flight_id = $request->input('flight_id');
