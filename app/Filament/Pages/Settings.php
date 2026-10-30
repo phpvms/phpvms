@@ -121,12 +121,18 @@ class Settings extends Page
             // than leaving the DB with half-saved settings or a half-migrated
             // journal.
             DB::transaction(function () use ($data): void {
+                $currency = setting('units.currency');
+
                 $settingService = app(SettingService::class);
                 foreach ($data as $key => $value) {
                     $settingService->store($key, $value);
                 }
 
-                app(FinanceService::class)->changeJournalCurrencies();
+                // Only when the currency changed: the journals are already on
+                // it otherwise, and the migration touches every journal row.
+                if (setting('units.currency') !== $currency) {
+                    app(FinanceService::class)->changeJournalCurrencies();
+                }
             });
 
             Notification::make()
