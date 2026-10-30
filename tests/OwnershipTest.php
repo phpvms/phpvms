@@ -5,6 +5,7 @@ namespace Tests;
 use App\Models\Acars;
 use App\Models\Bid;
 use App\Models\Enums\AcarsType;
+use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\File;
 use App\Models\Flight;
@@ -233,5 +234,34 @@ final class OwnershipTest extends TestCase
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException::class);
         app('router')->getRoutes()->match(Request::create('/admin/users/1/regen_apikey', 'GET'));
+    }
+
+    public function test_manual_pirep_ignores_protected_attributes(): void
+    {
+        $this->updateSetting('pilots.only_flights_from_current', false);
+        $this->updateSetting('pireps.restrict_aircraft_to_rank', false);
+        $this->owner->rank->update(['auto_approve_acars' => true, 'auto_approve_manual' => false]);
+
+        $this->actingAs($this->owner)->post(route('frontend.pireps.store'), [
+            'airline_id'     => $this->pirep->airline_id,
+            'aircraft_id'    => $this->pirep->aircraft_id,
+            'flight_number'  => 100,
+            'dpt_airport_id' => $this->pirep->dpt_airport_id,
+            'arr_airport_id' => $this->pirep->arr_airport_id,
+            'hours'          => 1,
+            'minutes'        => 0,
+            'block_fuel'     => 100,
+            'fuel_used'      => 50,
+            'submit'         => 'submit',
+            'state'          => PirepState::ACCEPTED,
+            'source'         => PirepSource::ACARS,
+            'user_id'        => $this->attacker->id,
+        ])->assertRedirect();
+
+        $pirep = Pirep::where('flight_number', '100')->latest()->first();
+        $this->assertNotNull($pirep);
+        $this->assertEquals($this->owner->id, $pirep->user_id);
+        $this->assertNotEquals(PirepSource::ACARS, $pirep->source);
+        $this->assertNotEquals(PirepState::ACCEPTED, $pirep->state);
     }
 }
