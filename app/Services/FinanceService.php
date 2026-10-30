@@ -235,10 +235,15 @@ class FinanceService extends Service
      * Only rows still on another currency are written: rewriting every
      * transaction row (hundreds of thousands on a busy VA) takes seconds and
      * holds row locks that block finance writes meanwhile.
+     *
+     * @param ?string $currency The currency to move to; the `units.currency`
+     *                          setting when omitted. The settings page passes the
+     *                          value it just stored, so the setting is not read
+     *                          (and cached) before that write has committed.
      */
-    public function changeJournalCurrencies(): void
+    public function changeJournalCurrencies(?string $currency = null): void
     {
-        $currency = setting('units.currency', 'USD');
+        $currency ??= setting('units.currency', 'USD');
         $update = ['currency' => $currency];
 
         Journal::query()->where('currency', '!=', $currency)->update($update);

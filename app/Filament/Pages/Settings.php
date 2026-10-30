@@ -121,7 +121,11 @@ class Settings extends Page
             // than leaving the DB with half-saved settings or a half-migrated
             // journal.
             DB::transaction(function () use ($data): void {
-                $currency = setting('units.currency');
+                // Read from the table, not setting(): the application cache can
+                // hold a currency that never committed (a save that rolled back),
+                // which would make the retry look unchanged and skip the migration.
+                $storedCurrency = static fn (): ?string => Setting::query()->byKey('units.currency')->value('value');
+                $previousCurrency = $storedCurrency();
 
                 $settingService = app(SettingService::class);
                 foreach ($data as $key => $value) {
@@ -130,8 +134,9 @@ class Settings extends Page
 
                 // Only when the currency changed: the journals are already on
                 // it otherwise, and the migration touches every journal row.
-                if (setting('units.currency') !== $currency) {
-                    app(FinanceService::class)->changeJournalCurrencies();
+                $currency = $storedCurrency();
+                if ($currency !== null && $currency !== $previousCurrency) {
+                    app(FinanceService::class)->changeJournalCurrencies($currency);
                 }
             });
 

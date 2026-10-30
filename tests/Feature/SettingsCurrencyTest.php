@@ -8,6 +8,7 @@ use App\Models\JournalTransaction;
 use App\Services\FinanceService;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Ramsey\Uuid\Uuid;
@@ -46,7 +47,7 @@ function journalUpdates(callable $run): int
     DB::disableQueryLog();
 
     return collect($queries)
-        ->filter(fn (array $q): bool => preg_match('/^update "?(journals|journal_transactions)"? /i', (string) $q['query']) === 1)
+        ->filter(fn (array $q): bool => preg_match('/^update [`"]?(journals|journal_transactions)[`"]? /i', (string) $q['query']) === 1)
         ->count();
 }
 
@@ -63,6 +64,23 @@ it('moves the journals to the new currency when it changes', function (): void {
     $this->actingAs(createAdminUser());
     $journal = Journal::factory()->create(['currency' => 'USD']);
     $txn = currencyTxn($journal, 'USD');
+
+    Livewire::test(Settings::class)
+        ->set('data.units.currency', 'EUR')
+        ->call('save');
+
+    expect($journal->fresh()->currency)->toBe('EUR')
+        ->and($txn->fresh()->currency)->toBe('EUR');
+});
+
+it('migrates the journals on a retry even when the cache already holds the new currency', function (): void {
+    // A currency save that rolled back can leave its uncommitted value in the
+    // application cache while the table and the journals keep the old one.
+    app()->detectEnvironment(fn (): string => 'production');
+    $this->actingAs(createAdminUser());
+    $journal = Journal::factory()->create(['currency' => 'USD']);
+    $txn = currencyTxn($journal, 'USD');
+    Cache::put(config('cache.keys.SETTINGS.key').'units.currency', 'EUR', 60);
 
     Livewire::test(Settings::class)
         ->set('data.units.currency', 'EUR')
