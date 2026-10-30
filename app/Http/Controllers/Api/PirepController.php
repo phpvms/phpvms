@@ -454,7 +454,9 @@ class PirepController extends Controller
             }
 
             if (isset($position['id'])) {
-                Acars::updateOrInsert(['id' => $position['id']], $position);
+                // Keyed on the PIREP too, so a racing write can never update
+                // another PIREP's row; it hits the primary key.
+                Acars::updateOrInsert(['id' => $position['id'], 'pirep_id' => $id], $position);
             } else {
                 $acars = Acars::create($position);
                 $acars->save();

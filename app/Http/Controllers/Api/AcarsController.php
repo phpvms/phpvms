@@ -179,8 +179,10 @@ class AcarsController extends Controller
 
                 DB::transaction(function () use ($position, &$written): void {
                     if (!empty($position['id'])) {
+                        // Keyed on the PIREP too, so a racing write can never
+                        // update another PIREP's row; it hits the primary key.
                         Acars::updateOrInsert(
-                            ['id' => $position['id']],
+                            ['id' => $position['id'], 'pirep_id' => $position['pirep_id']],
                             $position
                         );
 

@@ -48,12 +48,17 @@ use Laracasts\Flash\Flash;
 class PirepController extends Controller
 {
     /**
-     * Form fields a pilot may never set: the state moves only through
-     * submit/accept/reject, and the key and owner come from the server.
+     * Columns a pilot may never set from the form. The state moves only through
+     * submit/accept/reject; the key and owner come from the server; and the
+     * source, timestamps and flight-quality values decide auto-approval and
+     * awards, so they are never taken from a manual report.
      *
      * @var list<string>
      */
-    private const array PROTECTED_ATTRIBUTES = ['id', 'state', 'user_id'];
+    private const array PROTECTED_ATTRIBUTES = [
+        'id', 'state', 'user_id', 'source', 'source_name', 'status', 'score', 'landing_rate',
+        'submitted_at', 'block_off_time', 'block_on_time', 'created_at', 'updated_at',
+    ];
 
     public function __construct(
         private readonly FareService $fareSvc,

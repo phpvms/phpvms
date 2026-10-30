@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\AcarsType;
+use App\Enums\PirepSource;
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Pages\ViewPirep;
 use App\Filament\Resources\Pireps\PirepResource;
@@ -269,3 +270,31 @@ it("does not let an acars id overwrite another pirep's row", function (string $u
     'positions' => ['/api/pireps/{id}/acars/position', 'positions'],
     'route'     => ['/api/pireps/{id}/route', 'route'],
 ]);
+
+it('ignores protected attributes when a pilot files a manual pirep', function (): void {
+    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    $this->owner->rank->update(['auto_approve_acars' => true, 'auto_approve_manual' => false]);
+
+    $this->actingAs($this->owner)->post(route('frontend.pireps.store'), [
+        'airline_id'     => $this->pirep->airline_id,
+        'aircraft_id'    => $this->pirep->aircraft_id,
+        'flight_number'  => 100,
+        'dpt_airport_id' => $this->pirep->dpt_airport_id,
+        'arr_airport_id' => $this->pirep->arr_airport_id,
+        'hours'          => 1,
+        'minutes'        => 0,
+        'block_fuel'     => 100,
+        'fuel_used'      => 50,
+        'submit'         => 'submit',
+        'state'          => PirepState::ACCEPTED->value,
+        'source'         => PirepSource::ACARS->value,
+        'user_id'        => $this->attacker->id,
+    ])->assertRedirect();
+
+    $pirep = Pirep::where('flight_number', '100')->latest()->first();
+    expect($pirep)->not->toBeNull()
+        ->and($pirep->user_id)->toBe($this->owner->id)
+        ->and($pirep->source)->not->toBe(PirepSource::ACARS)
+        ->and($pirep->state)->not->toBe(PirepState::ACCEPTED);
+});
