@@ -5,8 +5,9 @@ A release is a published GitHub release. Publishing one triggers
 target commit, stamps the tag into the shipped `composer.json`, attaches the
 zip and tarball to the release, uploads them to bunny storage
 (`https://downloads.phpvms.net/<file>`), and posts to Discord. A second job
-builds `Dockerfile.prod` and pushes `ghcr.io/phpvms/phpvms:<tag>` and
-`:<major>.<minor>`; `:latest` moves only for non-prerelease releases.
+builds `Dockerfile.prod` and pushes `ghcr.io/phpvms/phpvms:<tag>`. Stable
+releases also get `:<major>.<minor>`; prereleases get only `:<tag>`. `:latest`
+moves only when the release is not marked as a prerelease.
 
 There is no release tooling beyond `gh` and that workflow. Nothing is committed
 back to the repo by a release.
@@ -18,7 +19,9 @@ back to the repo by a release.
 - The committed value is a placeholder for git checkouts, e.g. `8.0.0-dev`.
   Bump it by hand when `main` moves to the next minor (`8.1.0-dev`).
 - CI overwrites it with the release tag on the build runner only
-  (`composer config version <tag>` in `.github/scripts/version.sh`).
+  (`composer config version <tag>` in `.github/scripts/version.sh`), before
+  `composer install`, and refreshes the lock hash so the shipped
+  `composer.json`, `composer.lock` and `vendor/composer/installed.php` agree.
 - Tags are plain semver with no `v` prefix: `8.0.0-alpha.1`, `8.0.0`, `8.0.1`.
 - Installs check for updates against the GitHub releases API and honour the
   release's prerelease flag against the `general.check_prerelease_version`
