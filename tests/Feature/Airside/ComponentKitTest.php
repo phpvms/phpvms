@@ -117,12 +117,18 @@ it('renders a drawer with slots, side classes and a livewire entangle', function
         ->toContain("x-on:click=\"\$tsui.open.slide('filters')\"")
         ->toContain('airside-drawer-open.window')
         ->toContain('x-on:slide:filters-open.window')
-        ->toContain('translate-x-full');
+        ->toContain('translate-x-full')
+        ->toContain('role="dialog"')->toContain('aria-label="Filters"')->toContain('x-trap.noscroll="show"');
 
     // The bottom variant slides up. The Livewire-bound form (wire:model) needs a Livewire
     // render and is covered by the bids and API connection drawer tests.
     $bottom = Blade::render('<x-airside::drawer name="sheet" side="bottom" />');
     expect($bottom)->toContain('translate-y-full')->not->toContain('wire:model');
+
+    // Two unnamed drawers must not share a slide id, or one trigger opens both.
+    $pair = Blade::render('<x-airside::drawer title="A" /><x-airside::drawer title="B" />');
+    preg_match_all('/x-on:slide:(drawer-[A-Za-z0-9]+)-open\.window/', $pair, $ids);
+    expect($ids[1])->toHaveCount(2)->and($ids[1][0])->not->toBe($ids[1][1]);
 });
 
 it('renders an inline confirm that forwards wire attributes to the confirm button', function (): void {

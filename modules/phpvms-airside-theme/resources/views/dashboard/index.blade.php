@@ -66,7 +66,8 @@
                         </div>
                         <strong class="font-mono text-sm">{{ $number($rank['currentHours'] ?? null) }} / {{ $number($rank['targetHours'] ?? null) }} hrs</strong>
                         @if (($rank['targetHours'] ?? null) !== null)
-                            <x-ts-progress :percent="(int) $rank['pct']" sm without-text aria-label="{{ $rank['from'] }} progress: {{ $rank['pct'] }}%" />
+                            {{-- The native element: TallStackUI's bar renders role="progressbar" with no accessible name. --}}
+                            <progress class="h-2 w-full overflow-hidden rounded-full accent-primary-600 dark:accent-primary-400" value="{{ $rank['pct'] }}" max="100" aria-label="{{ $rank['from'] }} progress: {{ $rank['pct'] }}%">{{ $rank['pct'] }}%</progress>
                         @endif
                         <p class="m-0 text-xs text-dark-500 dark:text-dark-400">{{ $promotion }}</p>
                     </div>
