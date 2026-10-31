@@ -5,21 +5,20 @@
     'value' => null,
 ])
 
-{{-- A labelled form control with its validation error. Extra attributes land on the control. --}}
-<div class="grid gap-1.5">
-    @if ($label)
-        <label for="{{ $attributes->get('id', $name) }}" class="text-[13px] font-medium text-ink">{{ $label }}</label>
+{{--
+  A labelled form control: TallStackUI's input (or password). The validation error is rendered
+  through TallStackUI's error component inside a live region, so assistive tech announces it.
+  Extra attributes land on the control.
+--}}
+@php($id = $attributes->get('id', $name))
+<div class="grid gap-1">
+    @if ($type === 'password')
+        <x-ts-password :label="$label" :name="$name" :id="$id" invalidate {{ $attributes->except('id') }} />
+    @else
+        <x-ts-input :label="$label" :name="$name" :id="$id" :type="$type" :value="$value" invalidate {{ $attributes->except('id') }} />
     @endif
 
-    <input
-        type="{{ $type }}"
-        name="{{ $name }}"
-        id="{{ $attributes->get('id', $name) }}"
-        @if ($type !== 'password' && $value !== null) value="{{ $value }}" @endif
-        {{ $attributes->except('id') }}
-    />
-
     @error($name)
-        <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+        <div role="alert"><x-ts-error :property="$name" /></div>
     @enderror
 </div>

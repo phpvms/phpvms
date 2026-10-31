@@ -1,13 +1,13 @@
 @props(['kind' => 'info'])
 
+{{-- Alert: TallStackUI's alert in its light style. Prop: kind (info|success|error). Slot: the message. --}}
 @php
-    $tone = match ($kind) {
-        'success' => 'border-ok/40 bg-ok/10 text-ok',
-        'error' => 'border-bad/40 bg-bad/10 text-bad',
-        default => 'border-line bg-panel-inset text-ink',
+    $color = match ($kind) {
+        'success' => 'green',
+        'error' => 'red',
+        default => 'primary',
     };
 @endphp
-
-<div {{ $attributes->class(['rounded-md border px-3 py-2 text-[13px]', $tone]) }} role="{{ $kind === 'error' ? 'alert' : 'status' }}">
+<x-ts-alert :color="$color" light shadowless {{ $attributes->merge(['role' => $kind === 'error' ? 'alert' : 'status']) }}>
     {{ $slot }}
-</div>
+</x-ts-alert>

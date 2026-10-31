@@ -39,10 +39,12 @@ it('renders a page with a header, links slot and region label', function (): voi
 it('renders a card with title, body and footer, and omits empty regions', function (): void {
     $html = Blade::render('<x-airside::card title="Details" description="More">Body<x-slot:footer>Foot</x-slot:footer></x-airside::card>');
 
-    expect($html)->toContain('Details')->toContain('More')->toContain('Body')->toContain('Foot')->toContain('border-line');
+    // TallStackUI's card: the header sits above a bottom border, the footer below a top border.
+    expect($html)->toContain('x-data="tallstackui_card(')->toContain('Details')->toContain('More')->toContain('Body')
+        ->toMatch('/border-t[^>]*>.*Foot/s');
 
     $bare = Blade::render('<x-airside::card>Only</x-airside::card>');
-    expect($bare)->toContain('Only')->not->toContain('<header')->not->toContain('<footer');
+    expect($bare)->toContain('Only')->not->toContain('<h2')->not->toContain('border-t');
 });
 
 it('renders an empty state with optional icon and actions', function (): void {
@@ -52,12 +54,12 @@ it('renders an empty state with optional icon and actions', function (): void {
     expect(Blade::render('<x-airside::empty title="Bare" />'))->not->toContain('<svg');
 });
 
-it('renders stat tiles with dash for null and accent rule', function (): void {
+it('renders stat tiles with dash for null and the accent colour', function (): void {
     $plain = Blade::render('<x-airside::stat label="Flights" value="12" />');
-    expect($plain)->toContain('Flights')->toContain('12')->not->toContain('h-0.5');
+    expect($plain)->toContain('x-data="tallstackui_stats(')->toContain('Flights')->toContain('12')->not->toContain('font-mono');
 
     $accented = Blade::render('<x-airside::stat label="Hours" value="3:10" mono accent="green" />');
-    expect($accented)->toContain('h-0.5')->toContain('var(--pv-green)')->toContain('font-mono');
+    expect($accented)->toContain('font-mono')->toContain('green');
 
     expect(Blade::render('<x-airside::stat label="Rank" :value="null" />'))->toContain('—');
 });
@@ -109,11 +111,18 @@ it('renders a drawer with slots, side classes and a livewire entangle', function
         </x-airside::drawer>
         BLADE);
 
-    expect($html)->toContain('Filters')->toContain('Narrow it')->toContain('Open')->toContain('Body')->toContain('Foot')
-        ->toContain('inset-y-0 right-0')->toContain('airside-drawer-open.window')->toContain('x-trap.noscroll')->toContain('open: false');
+    // TallStackUI's slide: opened through $tsui, closed on Escape, the footer in its own bordered area.
+    expect($html)->toContain('x-data="tallstackui_slide(')->toContain('Filters')->toContain('Narrow it')->toContain('<b>Open</b>')->toContain('Body')
+        ->toMatch('/border-t[^>]*>.*Foot/s')
+        ->toContain("x-on:click=\"\$tsui.open.slide('filters')\"")
+        ->toContain('airside-drawer-open.window')
+        ->toContain('x-on:slide:filters-open.window')
+        ->toContain('translate-x-full');
 
-    $bottom = Blade::render('<x-airside::drawer side="bottom" wire:model="showDrawer" />');
-    expect($bottom)->toContain('inset-x-0 bottom-0')->toContain('$wire.$entangle(')->toContain('showDrawer')->not->toContain('wire:model');
+    // The bottom variant slides up. The Livewire-bound form (wire:model) needs a Livewire
+    // render and is covered by the bids and API connection drawer tests.
+    $bottom = Blade::render('<x-airside::drawer name="sheet" side="bottom" />');
+    expect($bottom)->toContain('translate-y-full')->not->toContain('wire:model');
 });
 
 it('renders an inline confirm that forwards wire attributes to the confirm button', function (): void {
@@ -128,7 +137,7 @@ it('renders an inline confirm that forwards wire attributes to the confirm butto
 
 it('renders a back link', function (): void {
     expect(Blade::render('<x-airside::back-link href="/flights">flight manifest</x-airside::back-link>'))
-        ->toContain('href="/flights"')->toContain('Back to flight manifest')->toContain('←');
+        ->toContain('href="/flights"')->toContain('Back to flight manifest')->toContain('<svg')->toContain('wire:navigate');
 });
 
 it('renders an icon and nothing for an unknown name', function (): void {

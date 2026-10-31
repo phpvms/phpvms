@@ -39,9 +39,12 @@ it('renders the pilot header, the seven metrics and the board', function (): voi
 it('shows a dash for a missing score, on-time percentage and landing rate', function (): void {
     $html = $this->actingAs($this->pilot)->get(route('frontend.dashboard.index'))->assertOk()->getContent();
 
-    expect($html)->toMatch('/Pilot score<\/dt>\s*<dd[^>]*>—</')
-        ->and($html)->toMatch('/On-time<\/dt>\s*<dd[^>]*>—</')
-        ->and($html)->toMatch('/Avg landing<\/dt>\s*<dd[^>]*>—</');
+    // Each metric is a TallStackUI stats tile: the title heading, then the value in the number area.
+    $tile = fn (string $label): string => '/'.preg_quote($label, '/').'<\/h2>\s*<div x-ref="number">\s*<span[^>]*>—<\/span>/';
+
+    expect($html)->toMatch($tile('Pilot score'))
+        ->and($html)->toMatch($tile('On-time'))
+        ->and($html)->toMatch($tile('Avg landing'));
 });
 
 it('says the rank target is unavailable when the pilot has no rank', function (): void {

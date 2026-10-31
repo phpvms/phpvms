@@ -14,10 +14,10 @@
 @php
     $actionAttributes = $attributes->whereStartsWith(['wire:', 'x-on:']);
 @endphp
-<span {{ $attributes->except(array_keys($actionAttributes->getAttributes()))->class('pv-confirm inline-flex flex-wrap items-center gap-2') }} x-data="{ asking: false }" x-on:keydown.escape="asking = false">
+<span {{ $attributes->except(array_keys($actionAttributes->getAttributes()))->class('inline-flex flex-wrap items-center gap-2') }} x-data="{ asking: false }" x-on:keydown.escape="asking = false">
     <span x-show="! asking" x-on:click="asking = true">{{ $trigger ?? '' }}</span>
     <span x-show="asking" x-cloak class="inline-flex flex-wrap items-center gap-2" role="group" aria-label="{{ $prompt }}">
-        <span class="text-[13px] text-ink">{{ $prompt }}</span>
+        <span class="text-sm">{{ $prompt }}</span>
         @isset($confirm)
             <span x-on:click="asking = false">{{ $confirm }}</span>
         @else

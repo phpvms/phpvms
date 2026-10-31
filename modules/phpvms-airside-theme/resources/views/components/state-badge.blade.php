@@ -13,6 +13,6 @@
         default => 'slate',
     };
 @endphp
-<x-ts-badge :color="$color" light :attributes="$attributes->class('pv-state-badge')" data-state="{{ $stateColor }}">
+<x-ts-badge :color="$color" light :attributes="$attributes" data-state="{{ $stateColor }}">
     {{ $label ?? $slot }}
 </x-ts-badge>

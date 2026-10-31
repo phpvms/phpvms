@@ -1,38 +1,27 @@
 {{-- The dashboard toolbar and board. State and layout rules: App\Features\Dashboard\Livewire\DashboardBoard. --}}
-<div class="pv-dashboard-board-root grid gap-3">
+<div class="grid gap-3">
     @if (! $ready)
         <div class="grid place-items-center py-10">
-            <x-airside::loading text="Loading dashboard…" />
+            <x-ts-spinner text="Loading dashboard…" />
         </div>
     @else
-        <div class="pv-dashboard-toolbar flex items-center justify-between">
-            <h2 class="m-0 text-[15px] font-semibold text-ink">{{ __('common.dashboard') }}</h2>
+        <div class="flex items-center justify-between">
+            <h2 class="m-0 text-base font-semibold">{{ __('common.dashboard') }}</h2>
 
             <div class="flex items-center gap-2">
                 @if ($editing)
-                    <div class="relative" x-data="{ open: false }" x-on:click.outside="open = false" x-on:keydown.escape="open = false">
-                        <x-ts-button sm outline type="button" x-on:click="open = ! open" aria-haspopup="menu" x-bind:aria-expanded="open ? 'true' : 'false'">
-                            {{ __('ui.add_widget') }}
-                        </x-ts-button>
-
-                        <div x-show="open" x-cloak role="menu" class="absolute top-[calc(100%+6px)] right-0 z-40 min-w-[200px] rounded-lg border border-line bg-panel p-1 shadow-lg">
-                            @forelse ($this->availableWidgets as $widget)
-                                <button
-                                    wire:key="add-{{ $widget['id'] }}"
-                                    type="button"
-                                    role="menuitem"
-                                    class="flex h-8 w-full items-center gap-2 rounded-sm px-2 text-xs text-ink hover:bg-panel-inset"
-                                    wire:click="addWidget('{{ $widget['id'] }}')"
-                                    x-on:click="open = false"
-                                >
-                                    <x-airside::icon :name="$widget['icon']" class="size-[15px] text-ink-dim" />
-                                    {{ $widget['title'] }}
-                                </button>
-                            @empty
-                                <div class="p-2 text-xs text-ink-dim">{{ __('ui.all_widgets_placed') }}</div>
-                            @endforelse
-                        </div>
-                    </div>
+                    <x-ts-dropdown :text="__('ui.add_widget')" position="bottom-end" sm>
+                        @forelse ($this->availableWidgets as $widget)
+                            <x-ts-dropdown.items
+                                wire:key="add-{{ $widget['id'] }}"
+                                :text="$widget['title']"
+                                :icon="\Modules\PhpvmsAirsideTheme\Support\NavigationIcon::tallstack($widget['icon'])"
+                                wire:click="addWidget('{{ $widget['id'] }}')"
+                            />
+                        @empty
+                            <x-ts-dropdown.items :text="__('ui.all_widgets_placed')" />
+                        @endforelse
+                    </x-ts-dropdown>
 
                     <x-ts-button sm flat type="button" wire:click="resetLayout">{{ __('ui.reset') }}</x-ts-button>
                 @endif
@@ -45,12 +34,12 @@
 
         @php($zones = ['grid' => $grid, 'sidebar' => $sidebar])
 
-        <div class="pv-dashboard-board grid grid-cols-1 gap-4 min-[1100px]:grid-cols-[1fr_320px] min-[1100px]:items-start">
+        <div class="grid grid-cols-1 gap-4 min-[1100px]:grid-cols-[1fr_320px] min-[1100px]:items-start">
             @foreach ($zones as $zone => $ids)
                 <div
                     wire:key="zone-{{ $zone }}"
                     data-zone="{{ $zone }}"
-                    @class(['pv-dashboard-zone grid min-h-[60px] content-start gap-3', 'grid-cols-2' => $zone === 'grid', 'grid-cols-1' => $zone === 'sidebar'])
+                    @class(['grid min-h-[60px] content-start gap-3', 'grid-cols-2' => $zone === 'grid', 'grid-cols-1' => $zone === 'sidebar'])
                 >
                     @foreach ($ids as $id)
                         @continue(! isset($catalog[$id]))
@@ -61,13 +50,32 @@
                             class="min-w-0"
                             @if ($zone === 'grid') style="grid-column: span {{ $catalog[$id]['span'] }} / span {{ $catalog[$id]['span'] }}" @endif
                         >
-                            <x-airside::dashboard-widget-frame :title="$catalog[$id]['title']" :icon="$catalog[$id]['icon']" :widget-id="$id" :editing="$editing">
+                            @php($widgetIcon = \Modules\PhpvmsAirsideTheme\Support\NavigationIcon::tallstack($catalog[$id]['icon'] ?? null))
+                            <x-ts-card class="flex min-w-0 flex-col">
+                                <x-slot:header>
+                                    <div class="flex w-full items-center gap-2">
+                                        @if ($editing)
+                                            <span data-handle draggable="true" class="inline-flex cursor-grab text-dark-400 active:cursor-grabbing" aria-label="Drag to reorder" title="Drag">
+                                                <x-ts-icon name="phosphor.dots-six-vertical.light" sm />
+                                            </span>
+                                        @endif
+                                        @if ($widgetIcon)
+                                            <x-ts-icon :name="$widgetIcon" sm gray />
+                                        @endif
+                                        <h3 class="m-0 text-sm font-semibold">{{ $catalog[$id]['title'] }}</h3>
+                                        <div class="flex-1"></div>
+                                        @if ($editing)
+                                            <x-ts-button xs flat color="red" icon="phosphor.x.light" aria-label="Remove widget" wire:click="removeWidget('{{ $id }}')" />
+                                        @endif
+                                    </div>
+                                </x-slot:header>
+
                                 @if ($id === 'route')
-                                    <x-airside::dashboard-route-widget :route="$route" />
+                                    @include('livewire.dashboard.route-widget', ['route' => $route])
                                 @elseif ($id === 'activity')
                                     <livewire:dashboard::activity-feed :key="'activity-feed'" />
                                 @endif
-                            </x-airside::dashboard-widget-frame>
+                            </x-ts-card>
                         </div>
                     @endforeach
                 </div>
