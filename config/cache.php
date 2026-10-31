@@ -138,8 +138,9 @@ return [
             'time' => 60 * 30,
         ],
         'METAR_WEATHER_LOOKUP' => [
-            'key'  => 'airports.weather.metar.', // append icao
-            'time' => 60 * 60,  // Cache for 60 minutes
+            'key'          => 'airports.weather.metar.', // append icao
+            'time'         => 60 * 60,  // Cache for 60 minutes
+            'missing_time' => 60 * 15,  // A station without a report: ask again after 15 minutes
         ],
         'RANKS_PILOT_LIST' => [
             'key'  => 'ranks.pilot_list',
@@ -158,8 +159,9 @@ return [
             'time' => 60 * 60 * 24, // Cache for 1 day
         ],
         'TAF_WEATHER_LOOKUP' => [
-            'key'  => 'airports.weather.taf.', // append icao
-            'time' => 60 * 60,  // Cache for 60 minutes
+            'key'          => 'airports.weather.taf.', // append icao
+            'time'         => 60 * 60,  // Cache for 60 minutes
+            'missing_time' => 60 * 15,  // A station without a report: ask again after 15 minutes
         ],
         'USER_API_KEY' => [
             'key'  => 'user.apikey',
