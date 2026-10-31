@@ -11,6 +11,7 @@ use App\Features\Ofp\OfpServiceProvider;
 use App\Features\Pireps\PirepsServiceProvider;
 use App\Features\Profile\ProfileServiceProvider;
 use App\Features\Shell\ShellServiceProvider;
+use App\Features\Themes\ThemeFieldsServiceProvider;
 use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -63,6 +64,7 @@ return [
     PirepsServiceProvider::class,
     OfpServiceProvider::class,
     ShellServiceProvider::class,
+    ThemeFieldsServiceProvider::class,
 
     AdminPanelProvider::class,
     SystemPanelProvider::class,
