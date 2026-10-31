@@ -145,12 +145,15 @@ return [
             'key'  => 'ranks.pilot_list',
             'time' => 60 * 10,
         ],
+        // Setting values are cached wrapped in an array, which keeps their type
+        // (see setting()). The prefix moved when the wrapping came in, so a bare
+        // value cached before it is never read back.
         'SETTINGS' => [
-            'key'  => 'settings.', // append setting key
+            'key'  => 'settings.typed.', // append setting key
             'time' => 60 * 60 * 24, // Cache for 1 day
         ],
         'ADDON_SETTINGS' => [
-            'key'  => 'addon_settings.', // append "{addon_id}.{key}"
+            'key'  => 'addon_settings.typed.', // append "{addon_id}.{key}"
             'time' => 60 * 60 * 24, // Cache for 1 day
         ],
         'MODULES' => [

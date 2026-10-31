@@ -161,9 +161,11 @@ if (!function_exists('setting')) {
 
                 // Through the request memo first: the cache is shared across
                 // requests, but reading it again within one is a wasted round trip.
+                // Cached wrapped in an array: the Redis store keeps a bare number
+                // unserialized and hands it back as a string, "250" for an int.
                 $value = $settingService->remember(
                     $key,
-                    fn () => Cache::remember($cache['key'].$key, $cache['time'], fn () => $settingService->retrieve($key)),
+                    fn (): mixed => Cache::remember($cache['key'].$key, $cache['time'], fn (): array => [$settingService->retrieve($key)])[0],
                 );
             } else {
                 $value = $settingService->retrieve($key);
