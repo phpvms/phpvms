@@ -5,6 +5,11 @@ declare(strict_types=1);
 use App\Contracts\Metar as MetarProvider;
 use App\Services\Metar\AviationWeather;
 use App\Support\HttpClient;
+use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Facades\Cache;
 
 /*
@@ -20,38 +25,36 @@ beforeEach(function (): void {
 });
 
 /** A provider answering $answers in turn ('' for no report, a Throwable to fail), counting the calls. */
-function countingMetarProvider(array $answers): MetarProvider
+final class CountingMetarProvider extends MetarProvider
 {
-    return new class($answers) extends MetarProvider
+    public int $calls = 0;
+
+    /** @param list<string|Throwable> $answers */
+    public function __construct(private readonly array $answers) {}
+
+    protected function get_metar($icao): string
     {
-        public int $calls = 0;
+        return $this->answer();
+    }
 
-        public function __construct(private array $answers) {}
+    protected function get_taf($icao): string
+    {
+        return $this->answer();
+    }
 
-        protected function get_metar($icao): string
-        {
-            return $this->answer();
+    private function answer(): string
+    {
+        $answer = $this->answers[min($this->calls++, count($this->answers) - 1)];
+        if ($answer instanceof Throwable) {
+            throw $answer;
         }
 
-        protected function get_taf($icao): string
-        {
-            return $this->answer();
-        }
-
-        private function answer(): string
-        {
-            $answer = $this->answers[min($this->calls++, count($this->answers) - 1)];
-            if ($answer instanceof Throwable) {
-                throw $answer;
-            }
-
-            return $answer;
-        }
-    };
+        return $answer;
+    }
 }
 
 it('asks once for a METAR that is there', function (): void {
-    $provider = countingMetarProvider(['LSGG 311050Z 24008KT CAVOK 12/05 Q1021']);
+    $provider = new CountingMetarProvider(['LSGG 311050Z 24008KT CAVOK 12/05 Q1021']);
 
     expect($provider->metar('LSGG'))->toStartWith('LSGG')
         ->and($provider->metar('LSGG'))->toStartWith('LSGG')
@@ -59,7 +62,7 @@ it('asks once for a METAR that is there', function (): void {
 });
 
 it('remembers that a station has no METAR', function (): void {
-    $provider = countingMetarProvider(['']);
+    $provider = new CountingMetarProvider(['']);
 
     expect($provider->metar('LSGP'))->toBe('')
         ->and($provider->metar('LSGP'))->toBe('')
@@ -67,7 +70,7 @@ it('remembers that a station has no METAR', function (): void {
 });
 
 it('remembers that a station has no TAF', function (): void {
-    $provider = countingMetarProvider(['']);
+    $provider = new CountingMetarProvider(['']);
 
     $provider->taf('LSGP');
     $provider->taf('LSGP');
@@ -76,7 +79,7 @@ it('remembers that a station has no TAF', function (): void {
 });
 
 it('asks again for a missing report sooner than for a report', function (): void {
-    $provider = countingMetarProvider(['', 'LSGP 311050Z 24008KT CAVOK 12/05 Q1021']);
+    $provider = new CountingMetarProvider(['', 'LSGP 311050Z 24008KT CAVOK 12/05 Q1021']);
     $provider->metar('LSGP');
 
     $this->travel(config('cache.keys.METAR_WEATHER_LOOKUP.missing_time') + 1)->seconds();
@@ -86,7 +89,7 @@ it('asks again for a missing report sooner than for a report', function (): void
 });
 
 it('does not remember a request that failed', function (): void {
-    $provider = countingMetarProvider([new RuntimeException('timed out'), 'LSGG 311050Z 24008KT CAVOK 12/05 Q1021']);
+    $provider = new CountingMetarProvider([new RuntimeException('timed out'), 'LSGG 311050Z 24008KT CAVOK 12/05 Q1021']);
 
     expect($provider->metar('LSGG'))->toBe('')
         ->and($provider->metar('LSGG'))->toStartWith('LSGG')
@@ -94,10 +97,12 @@ it('does not remember a request that failed', function (): void {
 });
 
 it('does not remember an AviationWeather request that failed', function (): void {
-    $http = Mockery::mock(HttpClient::class);
-    $http->shouldReceive('get')->twice()->andThrow(new RuntimeException('connection refused'));
-    $provider = new AviationWeather($http);
+    $failure = fn (): ConnectException => new ConnectException('connection refused', new Request('GET', 'https://aviationweather.gov'));
+    $handler = new MockHandler([$failure(), $failure()]);
+    $provider = new AviationWeather(new HttpClient(new GuzzleClient(['handler' => HandlerStack::create($handler)])));
 
     expect($provider->metar('LSGG'))->toBe('')
-        ->and($provider->metar('LSGG'))->toBe('');
+        ->and($provider->metar('LSGG'))->toBe('')
+        // Both asked the provider: the failure was not cached as "no report".
+        ->and($handler->count())->toBe(0);
 });
