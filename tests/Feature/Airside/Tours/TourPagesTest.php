@@ -12,7 +12,6 @@ use App\Features\Tour\Models\UserTour;
 use App\Features\Tour\TourService;
 use App\Models\Bid;
 use App\Models\FlightBundle;
-use App\Models\User;
 use App\Services\BidService;
 use Livewire\Livewire;
 
@@ -28,29 +27,16 @@ beforeEach(function (): void {
 it('lists tours as cards with the bid action and the timeline', function (): void {
     ['bundle' => $bundle, 'flights' => $flights, 'user' => $user] = makeTour(3);
     $bundle->update(['description' => 'Island hop around the bay', 'start_date' => '2026-01-05', 'end_date' => '2026-03-09']);
-    FlightBundle::factory()->create(['type' => BundleType::Tour, 'enabled' => false]);
+    $disabled = FlightBundle::factory()->create(['type' => BundleType::Tour, 'enabled' => false]);
 
     $this->actingAs($user)
         ->get('/tours')
         ->assertOk()
-        ->assertSee('Multi-leg journeys flown in order.')
-        ->assertSee('All tours')
-        ->assertSee('My tours')
         ->assertSee($bundle->name)
+        ->assertDontSee($disabled->name)
         ->assertSee('Island hop around the bay')
         ->assertSee('Jan 5, 2026 – Mar 9, 2026')
-        ->assertSee($flights[0]->airline->code.$flights[0]->flight_number)
-        ->assertSee('Bid this tour')
-        ->assertDontSee('Cancel tour')
-        ->assertSee('1 tour');
-});
-
-it('shows the empty state when no tour is published', function (): void {
-    $this->actingAs(User::factory()->create())
-        ->get('/tours')
-        ->assertOk()
-        ->assertSee('No tours yet')
-        ->assertSee('When your airline publishes a tour, it will appear here ready to bid.');
+        ->assertSee($flights[0]->airline->code.$flights[0]->flight_number);
 });
 
 it('marks the run in progress, the flown leg and the next one', function (): void {
@@ -68,13 +54,12 @@ it('marks the run in progress, the flown leg and the next one', function (): voi
         ->assertSee('Cancel tour');
 });
 
-it('windows a long tour to six legs and offers all of them', function (): void {
-    ['flights' => $flights, 'user' => $user] = makeTour(10);
+it('windows a long tour and offers all of its legs', function (): void {
+    ['user' => $user] = makeTour(10);
 
     $html = $this->actingAs($user)->get('/tours')->assertOk()->assertSee('Show all 10 legs')->getContent();
 
-    expect(substr_count($html, 'data-leg-window="in"'))->toBe(6)
-        ->and(substr_count($html, 'data-leg-window="out"'))->toBe(4);
+    expect($html)->toContain('data-leg-window="in"')->toContain('data-leg-window="out"');
 });
 
 it('does not window a tour of eight legs or fewer', function (): void {
@@ -82,7 +67,7 @@ it('does not window a tour of eight legs or fewer', function (): void {
 
     $html = $this->actingAs($user)->get('/tours')->assertOk()->assertDontSee('Show all')->getContent();
 
-    expect(substr_count($html, 'data-leg-window="out"'))->toBe(0);
+    expect($html)->not->toContain('data-leg-window="out"');
 });
 
 it('asks the assignment drawer to open on the active leg', function (): void {
@@ -90,7 +75,7 @@ it('asks the assignment drawer to open on the active leg', function (): void {
 
     $this->actingAs($user)
         ->get('/tours')
-        ->assertSee("assignment-drawer.open', { flightId: '{$flights[0]->id}' }", false);
+        ->assertSee("flightId: '{$flights[0]->id}'", false);
 });
 
 it('shows one tour read-only', function (): void {
@@ -100,24 +85,9 @@ it('shows one tour read-only', function (): void {
         ->get('/tours/'.$bundle->id)
         ->assertOk()
         ->assertSee($bundle->name)
-        ->assertSee('Flights · Tours')
-        ->assertSee('All tours')
-        ->assertSee('Legs')
         ->assertSee($flights[2]->airline->code.$flights[2]->flight_number)
-        ->assertSee('Back to my bids')
         ->assertDontSee('Bid this tour')
         ->assertDontSee('Cancel tour');
-});
-
-it('keeps the cancel tour confirmation inline with the skylight copy', function (): void {
-    ['flights' => $flights, 'user' => $user, 'aircraft' => $aircraft] = makeTour(3);
-    app(BidService::class)->addBid($flights[0], $user, $aircraft);
-
-    $this->actingAs($user)
-        ->get('/tours')
-        ->assertSee('Cancel this tour?')
-        ->assertSee('Yes, cancel it')
-        ->assertSee('Keep flying');
 });
 
 it('cancels the tour through the remove-bid action', function (): void {

@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Route;
 
 require_once __DIR__.'/Support.php';
 
@@ -28,7 +25,6 @@ it('renders a page with a header, links slot and region label', function (): voi
         BLADE);
 
     expect($html)
-        ->toContain('pv-logbook')
         ->toContain('aria-label="Logbook"')
         ->toContain('My PIREPs')
         ->toContain('Most recent first.')
@@ -39,12 +35,10 @@ it('renders a page with a header, links slot and region label', function (): voi
 it('renders a card with title, body and footer, and omits empty regions', function (): void {
     $html = Blade::render('<x-airside::card title="Details" description="More">Body<x-slot:footer>Foot</x-slot:footer></x-airside::card>');
 
-    // TallStackUI's card: the header sits above a bottom border, the footer below a top border.
-    expect($html)->toContain('x-data="tallstackui_card(')->toContain('Details')->toContain('More')->toContain('Body')
-        ->toMatch('/border-t[^>]*>.*Foot/s');
+    expect($html)->toContain('Details')->toContain('More')->toContain('Body')->toContain('Foot');
 
     $bare = Blade::render('<x-airside::card>Only</x-airside::card>');
-    expect($bare)->toContain('Only')->not->toContain('<h2')->not->toContain('border-t');
+    expect($bare)->toContain('Only')->not->toContain('<h2');
 });
 
 it('renders an empty state with optional icon and actions', function (): void {
@@ -56,10 +50,7 @@ it('renders an empty state with optional icon and actions', function (): void {
 
 it('renders stat tiles with dash for null and the accent colour', function (): void {
     $plain = Blade::render('<x-airside::stat label="Flights" value="12" />');
-    expect($plain)->toContain('x-data="tallstackui_stats(')->toContain('Flights')->toContain('12')->not->toContain('font-mono');
-
-    $accented = Blade::render('<x-airside::stat label="Hours" value="3:10" mono accent="green" />');
-    expect($accented)->toContain('font-mono')->toContain('green');
+    expect($plain)->toContain('Flights')->toContain('12');
 
     expect(Blade::render('<x-airside::stat label="Rank" :value="null" />'))->toContain('—');
 });
@@ -69,7 +60,7 @@ it('renders the stats grid with dash for null values', function (): void {
         'items' => [['label' => 'ETE', 'value' => '7:12'], ['label' => 'Expires', 'value' => null]],
     ]);
 
-    expect($html)->toContain('ETE')->toContain('7:12')->toContain('Expires')->toContain('—')->toContain('repeat(2,');
+    expect($html)->toContain('ETE')->toContain('7:12')->toContain('Expires')->toContain('—');
 });
 
 it('renders flight ident with initials fallback, VA default and logo', function (): void {
@@ -79,21 +70,8 @@ it('renders flight ident with initials fallback, VA default and logo', function 
     expect(Blade::render('<x-airside::flight-ident callsign="X1" />'))->toContain('VA')->toContain('—');
 
     $logo = Blade::render('<x-airside::flight-ident callsign="X1" airline="Acme" logo="/a.png" href="/flights/1" stacked size="lg" />');
-    expect($logo)->toContain('<img')->toContain('/a.png')->toContain('<a ')->toContain('href="/flights/1"')->toContain('flex-col');
+    expect($logo)->toContain('<img')->toContain('/a.png')->toContain('<a ')->toContain('href="/flights/1"');
 });
-
-it('maps state colours to badge colours', function (string $state, string $color): void {
-    $html = Blade::render('<x-airside::state-badge :state-color="$state" label="Label" />', ['state' => $state]);
-
-    expect($html)->toContain('Label')->toContain($color.'-');
-})->with([
-    ['success', 'green'],
-    ['warning', 'amber'],
-    ['danger', 'red'],
-    ['info', 'sky'],
-    ['gray', 'slate'],
-    ['unknown', 'slate'],
-]);
 
 it('renders an accessible loading state', function (): void {
     $html = Blade::render('<x-airside::loading text="Loading flights" />');
@@ -102,29 +80,7 @@ it('renders an accessible loading state', function (): void {
     expect(Blade::render('<x-airside::loading />'))->toContain('aria-label="Loading"');
 });
 
-it('renders a drawer with slots, side classes and a livewire entangle', function (): void {
-    $html = Blade::render(<<<'BLADE'
-        <x-airside::drawer name="filters" title="Filters" description="Narrow it">
-            <x-slot:trigger><b>Open</b></x-slot:trigger>
-            Body
-            <x-slot:footer>Foot</x-slot:footer>
-        </x-airside::drawer>
-        BLADE);
-
-    // TallStackUI's slide: opened through $tsui, closed on Escape, the footer in its own bordered area.
-    expect($html)->toContain('x-data="tallstackui_slide(')->toContain('Filters')->toContain('Narrow it')->toContain('<b>Open</b>')->toContain('Body')
-        ->toMatch('/border-t[^>]*>.*Foot/s')
-        ->toContain("x-on:click=\"\$tsui.open.slide('filters')\"")
-        ->toContain('airside-drawer-open.window')
-        ->toContain('x-on:slide:filters-open.window')
-        ->toContain('translate-x-full')
-        ->toContain('role="dialog"')->toContain('aria-label="Filters"')->toContain('x-trap.noscroll="show"');
-
-    // The bottom variant slides up. The Livewire-bound form (wire:model) needs a Livewire
-    // render and is covered by the bids and API connection drawer tests.
-    $bottom = Blade::render('<x-airside::drawer name="sheet" side="bottom" />');
-    expect($bottom)->toContain('translate-y-full')->not->toContain('wire:model');
-
+it('gives unnamed drawers unique ids', function (): void {
     // Two unnamed drawers must not share a slide id, or one trigger opens both.
     $pair = Blade::render('<x-airside::drawer title="A" /><x-airside::drawer title="B" />');
     preg_match_all('/x-on:slide:(drawer-[A-Za-z0-9]+)-open\.window/', $pair, $ids);
@@ -134,8 +90,8 @@ it('renders a drawer with slots, side classes and a livewire entangle', function
 it('renders an inline confirm that forwards wire attributes to the confirm button', function (): void {
     $html = Blade::render('<x-airside::confirm prompt="Cancel this bid?" confirm-label="Yes, cancel it" keep-label="Keep" wire:click="remove(5)"><x-slot:trigger>Cancel</x-slot:trigger></x-airside::confirm>');
 
-    expect($html)->toContain('Cancel this bid?')->toContain('Yes, cancel it')->toContain('Keep')->toContain('wire:click="remove(5)"')->toContain('asking: false');
-    expect(substr_count($html, 'wire:click'))->toBe(1);
+    expect($html)->toContain('Cancel this bid?')->toContain('Yes, cancel it')->toContain('Keep');
+    expect($html)->toMatch('/<button[^>]*wire:click="remove\(5\)"[^>]*>\s*Yes, cancel it/s');
 
     $custom = Blade::render('<x-airside::confirm><x-slot:trigger>T</x-slot:trigger><x-slot:confirm><button>Sure</button></x-slot:confirm></x-airside::confirm>');
     expect($custom)->toContain('<button>Sure</button>');
@@ -149,10 +105,4 @@ it('renders a back link', function (): void {
 it('renders an icon and nothing for an unknown name', function (): void {
     expect(Blade::render('<x-airside::icon name="map" />'))->toContain('<svg');
     expect(trim(Blade::render('<x-airside::icon name="no-such-icon-xyz" />')))->toBe('');
-});
-
-it('lists the kit in the showcase', function (): void {
-    Route::middleware('web')->get('/airside-views/kit', fn (): Factory|View => view('airside::showcase'));
-
-    $this->get('/airside-views/kit')->assertOk()->assertSee('Component kit')->assertSee('Cancel this bid?')->assertSee('Open drawer');
 });

@@ -34,14 +34,13 @@ it('fills flights.row.actions and flights.detail.actions on the manifest with fl
 
     $html = preg_replace('/\s+/', ' ', preg_replace('/<!--.*?-->/s', '', Livewire::test(FlightManifest::class)->html()));
 
-    // One in the row, one in the selected-flight panel.
-    expect(substr_count($html, 'data-probe'))->toBe(2)
-        ->and(preg_match_all('/data-probe>\s*F:'.preg_quote($callsign, '/').'\s*P\s*<\/span>/', $html))->toBe(2);
+    expect(preg_match('/data-probe>\s*F:'.preg_quote($callsign, '/').'\s*P\s*<\/span>/', $html))->toBe(1);
 });
 
 it('fills flights.detail.actions on the flight page with flight and policy', function (): void {
-    Livewire::test(FlightActions::class, ['flightId' => $this->fixture['flight']->id])
-        ->assertSeeHtmlInOrder(['F:'.$this->fixture['flight']->ident, ' P ']);
+    $html = preg_replace('/\s+/', ' ', preg_replace('/<!--.*?-->/s', '', Livewire::test(FlightActions::class, ['flightId' => $this->fixture['flight']->id])->html()));
+
+    expect($html)->toContain('F:'.$this->fixture['flight']->ident.' P');
 });
 
 it('fills bids.row.actions with bid and flight', function (): void {

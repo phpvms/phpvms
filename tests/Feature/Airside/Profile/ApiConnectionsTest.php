@@ -47,7 +47,7 @@ function authorizedApp(User $user, string $name = 'Flight Tracker'): string
     return (string) $client->id;
 }
 
-it('hides the API key behind a reveal and regenerates it', function (): void {
+it('regenerates the API key', function (): void {
     $old = $this->pilot->api_key;
 
     $component = Livewire::test(ApiAccess::class)

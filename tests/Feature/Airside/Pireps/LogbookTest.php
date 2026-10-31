@@ -18,12 +18,8 @@ beforeEach(function (): void {
 it('shows the header, the total and the empty state when there are no PIREPs', function (): void {
     $this->actingAs($this->pilot)->get(route('frontend.pireps.index'))
         ->assertOk()
-        ->assertSee('Logbook')
-        ->assertSee('My PIREPs')
-        ->assertSee('Every flight you have filed, most recent first.')
         ->assertSee('0 total')
         ->assertSee('No PIREPs yet')
-        ->assertSee('Fly a flight and it will show up in your logbook.')
         ->assertDontSee('aria-label="Pagination"', escape: false);
 });
 

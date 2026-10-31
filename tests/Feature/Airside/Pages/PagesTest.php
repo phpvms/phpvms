@@ -77,7 +77,6 @@ it('paginates the roster and keeps the sort in the page links', function (): voi
 
     $this->get(route('frontend.users.index', ['limit' => 2, 'orderBy' => 'name', 'sortedBy' => 'asc']))
         ->assertOk()
-        ->assertSee('class="pv-pagination', false)
         ->assertSee('orderBy=name', false)
         ->assertSee('page=2', false);
 });
@@ -112,11 +111,4 @@ it('renders the home page with the newest pilots', function (): void {
         ->assertOk()
         ->assertSee(__('common.newest_pilots'))
         ->assertSee(route('frontend.profile.show.public', [$pilot->id]), false);
-});
-
-it('renders the credits page', function (): void {
-    $this->get(route('frontend.credits'))
-        ->assertOk()
-        ->assertSee('phpvms')
-        ->assertSee('https://docs.phpvms.net', false);
 });

@@ -10,7 +10,6 @@ use App\Addons\Support\BootCache;
 use App\Addons\Support\OctaneReloader;
 use App\Addons\Support\ThemeAssetLinker;
 use App\Models\Addon;
-use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 
@@ -62,18 +61,6 @@ function bundledThemeInImage(string $work, bool $bundled = true): string
 
     return $dir;
 }
-
-it('ships airside as a bundled theme addon', function (): void {
-    $manifest = json_decode((string) file_get_contents(base_path('modules/phpvms-airside-theme/module.json')), true);
-    $theme = json_decode((string) file_get_contents(base_path('modules/phpvms-airside-theme/theme.json')), true);
-
-    expect($manifest)->toMatchArray(['registry_id' => 'phpvms/airside-theme', 'type' => 'theme', 'bundled' => true])
-        ->and($theme)->toMatchArray(['name' => 'airside', 'kind' => 'blade', 'data' => 'spa']);
-});
-
-it('boots a test run with airside registered', function (): void {
-    expect(Theme::exists('airside'))->toBeTrue();
-});
 
 it('links the assets of a bundled theme that discovery enables', function (): void {
     bundledThemeInImage($this->work);

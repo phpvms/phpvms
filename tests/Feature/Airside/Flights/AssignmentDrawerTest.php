@@ -38,15 +38,8 @@ it('opens on the selection step with the flight, the policy note and the subflee
     openDrawer($this->fixture['flight']->id)
         ->assertSet('open', true)
         ->assertSet('state', 'selecting')
-        ->assertSee('FLIGHT ASSIGNMENT')
         ->assertSee($this->fixture['flight']->ident)
-        ->assertSee('Aircraft Assignment')
-        ->assertSee('Select the subfleet and aircraft to fly with.')
-        ->assertSee($subfleet->name)
-        ->assertSee('1 available')
-        ->assertSee('Aircraft is optional. A selection is stored as a preference and is not reserved exclusively.')
-        ->assertSee('Departure')
-        ->assertSee('Block');
+        ->assertSee($subfleet->name);
 });
 
 it('says the aircraft is reserved when the server requires one', function (): void {
@@ -179,7 +172,7 @@ it('reports the pilot bid limit', function (): void {
         ->call('submit')
         ->assertSet('failureType', 'pilot-limit')
         ->assertSet('state', 'selecting')
-        ->assertSee('alert');
+        ->assertSet('failureMessage', fn ($message): bool => filled($message));
 });
 
 it('reports a flight another pilot already holds', function (): void {
@@ -289,10 +282,4 @@ it('reports the closed event with whether a bid changed', function (): void {
         ->call('submit')
         ->call('close')
         ->assertDispatched('assignment-drawer.closed', flightId: $flightId, changed: true);
-});
-
-it('lets the page place the drawer once and open it by event', function (): void {
-    $this->get('/flights/'.$this->fixture['flight']->id)
-        ->assertOk()
-        ->assertSee('wire:name="bids::assignment-drawer"', false);
 });

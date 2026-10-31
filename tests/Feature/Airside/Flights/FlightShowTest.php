@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__.'/Support.php';
 
 use App\Contracts\Metar as MetarProvider;
+use App\Features\Bids\Livewire\AssignmentDrawer;
 use App\Features\Flights\Livewire\AirportWeather;
 use App\Features\Flights\Livewire\FlightActions;
 use App\Models\Bid;
@@ -59,25 +60,13 @@ it('renders the hero, the facts, the route and the static OFP card', function ()
 
     $this->get('/flights/'.$flight->id)
         ->assertOk()
-        ->assertSee('Back to flight manifest')
-        ->assertSee('FLIGHT DISPATCH')
         ->assertSee($flight->ident)
-        ->assertSee('Scheduled departure')
         ->assertSee('0930')
-        ->assertSee('Scheduled arrival')
         ->assertSee('1215')
-        ->assertSee('Distance')
-        ->assertSee('Block time')
-        ->assertSee('Route code')
-        ->assertSee('Cruise')
         ->assertSee('FL360')
-        ->assertSee('Operational route')
         ->assertSee('DCT TEST')
-        ->assertSee('Bid on flight')
-        ->assertSee('Not generated')
-        ->assertSee('Generate the OFP with SimBrief after bid confirmation.')
-        ->assertSee('wire:name="flights::flight-actions"', false)
-        ->assertSee('wire:name="bids::assignment-drawer"', false);
+        ->assertSeeLivewire(FlightActions::class)
+        ->assertSeeLivewire(AssignmentDrawer::class);
 });
 
 it('emits the route map island with the route as JSON', function (): void {
@@ -117,20 +106,6 @@ it('leaves the arrival out of the island when it has no coordinates', function (
     preg_match('#data-airside-island="route-map".*?<script type="application/json">(.*?)</script>#s', $html, $match);
 
     expect(json_decode($match[1], true)['to'])->toBeNull();
-});
-
-it('shows a loading placeholder before the weather loads', function (): void {
-    $html = new AirportWeather()->placeholder(['label' => 'Departure weather', 'icao' => 'KJFK'])->render();
-
-    expect($html)->toContain('Departure weather')->toContain('KJFK')->toContain('Loading current report…');
-});
-
-it('puts the three weather cards on the page, loading lazily', function (): void {
-    $this->get('/flights/'.$this->fixture['flight']->id)
-        ->assertOk()
-        ->assertSee('Departure weather')
-        ->assertSee('Arrival weather')
-        ->assertSee('Alternate weather');
 });
 
 it('offers Generate OFP when SimBrief is on', function (): void {

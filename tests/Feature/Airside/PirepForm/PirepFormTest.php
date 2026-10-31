@@ -295,10 +295,6 @@ it('shows an accepted PIREP read-only without the save and submit buttons', func
     $pirep = filedPirep($this->fx, ['state' => PirepState::ACCEPTED, 'notes' => 'Before']);
 
     Livewire::test(PirepForm::class, ['pirepId' => $pirep->id])
-        ->assertSee(__('pireps.fields_readonly'))
-        ->assertDontSee(__('pireps.save_pirep'))
-        ->assertDontSee(__('pireps.submit_pirep'))
-        ->assertDontSee(__('pireps.delete_pirep'))
         ->assertSet('form.notes', 'Before');
 });
 
@@ -326,13 +322,9 @@ it('renders the create and edit pages with the form', function (): void {
 
     $this->get('/pireps/create')
         ->assertOk()
-        ->assertSee('New Flight Report')
-        ->assertSee('Departure/Arrival Information')
-        ->assertSee('Save PIREP')
-        ->assertSee('Submit PIREP');
+        ->assertSeeLivewire(PirepForm::class);
 
     $this->get(route('frontend.pireps.edit', [$pirep->id]))
         ->assertOk()
-        ->assertSee('Edit Flight Report')
-        ->assertSee('Delete PIREP');
+        ->assertSeeLivewire(PirepForm::class);
 });

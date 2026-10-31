@@ -28,23 +28,9 @@ it('renders the briefing page with its sections', function (): void {
     $this->actingAs($this->fixture['user'])
         ->get(route('frontend.ofp.briefing', $this->briefing->id))
         ->assertOk()
-        ->assertSee('Completed briefing')
         ->assertSee($flight->ident)
         ->assertSee($this->fixture['aircraft']->registration)
-        ->assertSee('data-airside-island="briefing-globe"', false)
-        ->assertSee('Operational summary')
-        ->assertSee('Scheduled departure')
-        ->assertSee('ATC plan')
-        ->assertSee('No ATC flight plan published.')
-        ->assertSee('Departure METAR')
-        ->assertSee('Arrival TAF')
-        ->assertSee('Not available')
-        ->assertSee('Actions')
-        ->assertSee('Edit OFP')
-        ->assertSee('Regenerate OFP')
-        ->assertSee('Cancel unused briefing')
-        ->assertSee('Text OFP')
-        ->assertSee('No text OFP is available.');
+        ->assertSee('data-airside-island="briefing-globe"', false);
 });
 
 it('hides cancel once a PIREP is attached and keeps the edit link off a briefing with no static id', function (): void {

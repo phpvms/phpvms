@@ -12,7 +12,6 @@ use App\Models\UserFieldValue;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
-use Intervention\Image\ImageManager;
 use Livewire\Livewire;
 
 /**
@@ -101,15 +100,9 @@ it('shows the rule errors under the fields', function (): void {
 });
 
 it('stores an uploaded avatar through UpdateProfile', function (): void {
-    $canvas = Mockery::mock();
-    $canvas->shouldReceive('insert')->once();
-    $canvas->shouldReceive('save')->once()->with(public_path('uploads/avatars/'.$this->pilot->ident.'.png'));
-    $image = Mockery::mock();
-    $image->shouldReceive('resize')->once()->andReturnSelf();
-    $this->mock(ImageManager::class, function ($mock) use ($canvas, $image): void {
-        $mock->shouldReceive('canvas')->once()->andReturn($canvas);
-        $mock->shouldReceive('make')->once()->andReturn($image);
-    });
+    $target = public_path('uploads/avatars/'.$this->pilot->ident.'.png');
+    File::ensureDirectoryExists(dirname($target));
+    File::delete($target);
 
     Livewire::test(ProfileEdit::class)
         ->set('form.avatar', UploadedFile::fake()->image('me.png', 200, 200))
@@ -117,8 +110,13 @@ it('stores an uploaded avatar through UpdateProfile', function (): void {
         ->assertHasNoErrors()
         ->assertSet('form.avatar', null);
 
-    expect($this->pilot->refresh()->getRawOriginal('avatar'))->toBe('avatars/'.$this->pilot->ident.'.png');
-});
+    try {
+        expect($this->pilot->refresh()->getRawOriginal('avatar'))->toBe('avatars/'.$this->pilot->ident.'.png')
+            ->and(File::exists($target))->toBeTrue();
+    } finally {
+        File::delete($target);
+    }
+})->skip(!extension_loaded('gd'), 'GD is not available');
 
 it('rejects an avatar that is not a jpeg or png when saving', function (): void {
     Livewire::test(ProfileEdit::class)
@@ -183,17 +181,9 @@ it('refuses a guest', function (): void {
 });
 
 it('deletes the previous avatar from public uploads when a new one is stored', function (): void {
-    $canvas = Mockery::mock();
-    $canvas->shouldReceive('insert')->once();
-    $canvas->shouldReceive('save')->once();
-    $image = Mockery::mock();
-    $image->shouldReceive('resize')->once()->andReturnSelf();
-    $this->mock(ImageManager::class, function ($mock) use ($canvas, $image): void {
-        $mock->shouldReceive('canvas')->once()->andReturn($canvas);
-        $mock->shouldReceive('make')->once()->andReturn($image);
-    });
-
+    $target = public_path('uploads/avatars/'.$this->pilot->ident.'.png');
     $previous = public_path('uploads/avatars/'.$this->pilot->ident.'.jpg');
+    File::ensureDirectoryExists(dirname($previous));
     File::put($previous, 'old');
     $this->pilot->forceFill(['avatar' => 'avatars/'.$this->pilot->ident.'.jpg'])->save();
 
@@ -202,15 +192,12 @@ it('deletes the previous avatar from public uploads when a new one is stored', f
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(File::exists($previous))->toBeFalse();
-});
-
-it('resolves the Intervention image manager, not the framework one', function (): void {
-    // Laravel 13 binds `image` to Illuminate\Image\ImageManager and Intervention
-    // aliases its own class to that key, so without an explicit binding the
-    // avatar code would get a manager with no canvas().
-    expect(app(ImageManager::class))->toBeInstanceOf(ImageManager::class);
-});
+    try {
+        expect(File::exists($previous))->toBeFalse();
+    } finally {
+        File::delete([$previous, $target]);
+    }
+})->skip(!extension_loaded('gd'), 'GD is not available');
 
 it('writes a resized avatar to public uploads with the real image manager', function (): void {
     $target = public_path('uploads/avatars/'.$this->pilot->ident.'.png');

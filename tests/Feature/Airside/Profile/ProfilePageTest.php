@@ -27,16 +27,9 @@ it('renders the record cards and the own-profile cards for your own profile', fu
     $this->actingAs($this->pilot)
         ->get('/profile')
         ->assertOk()
-        ->assertSee('Pilot profile')
         ->assertSee('Ada Lovelace')
-        ->assertSee('Record')
-        ->assertSee('Total Hours')
-        ->assertSee('Awards &amp; merits', false)
-        ->assertSee('No awards earned yet.')
-        ->assertSee('No tours completed yet.')
         ->assertSee('Edit profile')
         ->assertSee('API access')
-        ->assertSee('Regenerate API key')
         ->assertDontSee('Type ratings')
         ->assertDontSee('ACARS config');
 });

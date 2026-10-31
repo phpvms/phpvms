@@ -70,7 +70,7 @@ it('falls back to the default for a broken layout', function (): void {
         ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity']);
 });
 
-it('shows the drag handle, remove and add controls only while editing', function (): void {
+it('toggles editing mode', function (): void {
     dashboardBoard()
         ->call('loadLayout', null)
         ->assertDontSeeHtml('data-handle')
@@ -146,12 +146,6 @@ it('cannot have its route changed from the browser', function (): void {
     dashboardBoard()->set('route', ['from' => ['icao' => 'KJFK']]);
 })->throws(CannotUpdateLockedPropertyException::class);
 
-it('shows the nav display note when there is no position', function (): void {
-    dashboardBoard()
-        ->call('loadLayout', null)
-        ->assertSee('No position — set a home airport');
-});
-
 it('emits the route-map island and the TRK and DIST readout', function (): void {
     $route = [
         'from' => ['icao' => 'KJFK', 'name' => 'John F Kennedy', 'lat' => 40.6398, 'lon' => -73.7789],
@@ -174,15 +168,14 @@ it('computes the readout like skylight (JFK to LHR is about 2999 nm, bearing 51)
         ->and(RouteReadout::bearing(40.6398, -73.7789, 51.47, -0.4543))->toBe(51);
 });
 
-it('lists the catalog and sanitises layouts', function (): void {
-    expect(array_keys(WidgetCatalog::all()))->toBe(['route', 'activity'])
-        ->and(WidgetCatalog::sanitize(null))->toBe(['grid' => ['route', 'activity'], 'sidebar' => []]);
+it('sanitises layouts', function (): void {
+    expect(WidgetCatalog::sanitize(null))->toBe(['grid' => ['route', 'activity'], 'sidebar' => []]);
 });
 
 it('loads the activity widget lazily on the dashboard board', function (): void {
     Livewire::test(DashboardBoard::class, ['route' => []])
         ->call('loadLayout', ['grid' => ['activity'], 'sidebar' => []])
-        ->assertSeeHtml('wire:name="dashboard::activity-feed"');
+        ->assertSeeLivewire(ActivityFeed::class);
 });
 
 it('shows the activity placeholder, then the feed', function (): void {

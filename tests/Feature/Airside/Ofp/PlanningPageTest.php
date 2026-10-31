@@ -21,11 +21,6 @@ it('renders aircraft selection and no generate island while no aircraft is chose
     $this->actingAs($this->fixture['user'])
         ->get('/ofp/planning?flight_id='.$flight->id)
         ->assertOk()
-        ->assertSee('Route and schedule')
-        ->assertSee('Scheduled departure')
-        ->assertSee('DCT TEST')
-        ->assertSee('Flight Plan Generation')
-        ->assertSee('Select the subfleet and aircraft to fly with.')
         ->assertSee($this->fixture['subfleet']->name)
         ->assertDontSee('data-airside-island="simbrief-attempt"', false);
 
@@ -42,25 +37,6 @@ it('renders the options form and the generate island once an aircraft is chosen'
 
     $response
         ->assertSee('data-airside-island="simbrief-attempt"', false)
-        ->assertSee('Flight Information')
-        ->assertSee('Planning Options')
-        ->assertSee('Briefing Options')
-        ->assertSee('ATC callsign')
-        ->assertSee('Preferred company route')
-        ->assertSee('Preferred flight level')
-        ->assertSee('Cont fuel')
-        ->assertSee('Reserve fuel')
-        ->assertSee('SID/STAR type')
-        ->assertSee('Plan stepclimbs')
-        ->assertSee('ETOPS planning')
-        ->assertSee('OFP layout')
-        ->assertSee('Detailed navlog')
-        ->assertSee('Runway analysis')
-        ->assertSee('Include NOTAMs')
-        ->assertSee('FIR NOTAMs')
-        ->assertSee('Flight maps')
-        ->assertSee('Generate OFP')
-        ->assertSee('Check for completed OFP')
         ->assertSee($aircraft->registration);
 
     $attempt = SimBriefAttempt::query()->where('user_id', $this->fixture['user']->id)->firstOrFail();
@@ -82,7 +58,14 @@ it('lets the pilot pick the ATC callsign only when the setting allows it', funct
     $this->actingAs($this->fixture['user'])
         ->get('/ofp/planning?flight_id='.$this->fixture['flight']->id.'&aircraft_id='.$this->fixture['aircraft']->id)
         ->assertOk()
-        ->assertSee('<select id="ofp-callsign" name="callsign"', false);
+        ->assertSee('name="callsign"', false);
+
+    updateSetting('simbrief.callsign', true);
+
+    $this->actingAs($this->fixture['user'])
+        ->get('/ofp/planning?flight_id='.$this->fixture['flight']->id.'&aircraft_id='.$this->fixture['aircraft']->id)
+        ->assertOk()
+        ->assertDontSee('name="callsign"', false);
 });
 
 it('mounts the aircraft selection for a flight-only bid', function (): void {

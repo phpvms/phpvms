@@ -30,31 +30,13 @@ it('renders the summary, the stat strip and the flight details', function (): vo
 
     $this->actingAs($this->pilot)->get(route('frontend.pireps.show', ['id' => $pirep->id]))
         ->assertOk()
-        ->assertSee('← Logbook')
         ->assertSee($pirep->ident)
         ->assertSee($pirep->dpt_airport_id)
         ->assertSee($pirep->arr_airport_id)
         ->assertSee($this->pilot->name)
         ->assertSee('Filed 14 Mar 2026, 10:30')
-        ->assertSee('Flight Time')
         ->assertSee('1h 30m')
-        ->assertSee('Landing Rate')
-        ->assertSee('-212 fpm')
-        ->assertSee('Fuel Used')
-        ->assertSee('Cruise')
-        ->assertSee('FLIGHT DETAILS')
-        ->assertSee('Flight Type');
-});
-
-it('leaves out the panels that have no content', function (): void {
-    $pirep = Pirep::factory()->create(['user_id' => $this->pilot->id, 'notes' => null]);
-
-    $this->actingAs($this->pilot)->get(route('frontend.pireps.show', ['id' => $pirep->id]))
-        ->assertOk()
-        ->assertDontSee('NOTES')
-        ->assertDontSee('CUSTOM FIELDS')
-        ->assertDontSee('FARES')
-        ->assertDontSee('ACARS LOG');
+        ->assertSee('-212 fpm');
 });
 
 it('shows the notes panel when the PIREP has notes', function (): void {

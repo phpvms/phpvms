@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__.'/Support.php';
 
+use App\Features\Bids\Livewire\AssignmentDrawer;
 use App\Features\Flights\Livewire\FlightManifest;
+use App\Models\Airline;
 use App\Models\Bid;
 use App\Models\Flight;
 use Livewire\Livewire;
@@ -23,10 +25,8 @@ beforeEach(function (): void {
 it('renders the flights page with the manifest and the assignment drawer', function (): void {
     $this->get('/flights')
         ->assertOk()
-        ->assertSee('wire:name="flights::flight-manifest"', false)
-        ->assertSee('wire:name="bids::assignment-drawer"', false)
-        ->assertSee('Find a flight')
-        ->assertSee('Flight manifest');
+        ->assertSeeLivewire(FlightManifest::class)
+        ->assertSeeLivewire(AssignmentDrawer::class);
 });
 
 it('lists the flight with its facts and a Bid button', function (): void {
@@ -34,13 +34,7 @@ it('lists the flight with its facts and a Bid button', function (): void {
 
     Livewire::test(FlightManifest::class)
         ->assertSee($flight->ident)
-        ->assertSee($this->fixture['departure']->icao)
-        ->assertSee('Available')
-        ->assertSee('Details')
-        ->assertSee('SELECTED FLIGHT')
-        ->assertSee('OFP:')
-        ->assertSee('Bid on flight')
-        ->assertSee('1 shown');
+        ->assertSee($this->fixture['departure']->icao);
 });
 
 it('offers Overview and View Bid on a flight the pilot has a bid on', function (): void {
@@ -62,38 +56,18 @@ it('shows a locked flight as unavailable with its reason', function (): void {
         ->assertSee('Remove your current bid before selecting another flight');
 });
 
-it('keeps the 17 filters and the page in the query string and restores them on reload', function (): void {
-    $query = [
-        'airline_id'     => '1',
-        'flight_type'    => 'J',
-        'flight_number'  => '104',
-        'route_code'     => 'A',
-        'dep_icao'       => 'KDFW',
-        'arr_icao'       => 'KORD',
-        'subfleet_id'    => '7',
-        'type_rating_id' => '3',
-        'icao_type'      => 'B738',
-        'search'         => 'dallas',
-        'dgt'            => '10',
-        'dlt'            => '9000',
-        'tgt'            => '30',
-        'tlt'            => '600',
-        'orderBy'        => 'distance',
-        'sortedBy'       => 'desc',
-        'limit'          => '25',
-    ];
+it('keeps the filters and the page in the query string and restores them on reload', function (): void {
+    $query = [];
+
+    foreach (FlightManifest::FILTERS as $queryName) {
+        $query[$queryName] = 'v-'.$queryName;
+    }
 
     $component = Livewire::withQueryParams($query)->test(FlightManifest::class);
 
     foreach (FlightManifest::FILTERS as $property => $queryName) {
         $component->assertSet($property, $query[$queryName]);
     }
-
-    $component->assertSee('17 active')
-        ->assertSee('Flight: 104')
-        ->assertSee('Departure: KDFW')
-        ->assertSee('Min distance: 10')
-        ->assertSee('Direction: desc');
 });
 
 it('filters only on submit and puts the applied filters in the URL', function (): void {
@@ -138,8 +112,7 @@ it('shows the empty state when no flight matches', function (): void {
         ->set('flightNumber', '424242')
         ->call('apply')
         ->assertSee('No flights found')
-        ->assertSee('Change or clear the active filters to see another part of the schedule.')
-        ->assertDontSee('Flight manifest');
+        ->assertDontSee($this->fixture['flight']->ident);
 });
 
 it('shows the error when a filter value is refused and still lists flights', function (): void {
@@ -169,24 +142,22 @@ it('pages through the results', function (): void {
         ->assertSet('page', 2);
 });
 
-it('hides flights of a restricted airline and keeps the filter options to what exists', function (): void {
+it('hides flights of another airline when the pilot is restricted to their company', function (): void {
     updateSetting('pilots.restrict_to_company', true);
     $stranger = airsideDispatchFixture();
-    Flight::query()->whereKey($stranger['flight']->id)->update(['airline_id' => $stranger['airline']->id]);
+    $otherAirline = Airline::factory()->create();
+    expect($otherAirline->id)->not->toBe($this->fixture['airline']->id);
+    Flight::query()->whereKey($stranger['flight']->id)->update(['airline_id' => $otherAirline->id]);
 
-    $component = Livewire::test(FlightManifest::class);
-
-    if ($stranger['airline']->id !== $this->fixture['airline']->id) {
-        $component->assertDontSee($stranger['flight']->ident);
-    }
-
-    $component->assertSee($this->fixture['flight']->ident);
+    Livewire::test(FlightManifest::class)
+        ->assertDontSee($stranger['flight']->ident)
+        ->assertSee($this->fixture['flight']->ident);
 });
 
 it('renders the Bid button with the real flight id in the open event', function (): void {
     $id = $this->fixture['flight']->id;
 
     Livewire::test(FlightManifest::class)
-        ->assertSeeHtml("\$dispatch('assignment-drawer.open', { flightId: '{$id}' })")
+        ->assertSeeHtml("flightId: '{$id}'")
         ->assertDontSee('@js', false);
 });

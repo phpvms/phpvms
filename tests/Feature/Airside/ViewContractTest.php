@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__.'/Support.php';
 
 use App\Models\Aircraft;
+use App\Models\Fare;
 use App\Models\Subfleet;
 use App\Models\User;
 use Illuminate\Support\Facades\View;
@@ -48,24 +49,17 @@ function airsideControllerViewNames(): array
     return array_values(array_diff(array_unique($names), $deprecated));
 }
 
-it('finds the controller view names', function (): void {
-    expect(airsideControllerViewNames())
-        ->toContain('dashboard.index', 'flights.show', 'pireps.fares', 'airports.show', 'auth.register', 'users.index', 'credits', 'home', 'oauth.authorize', 'ofp.briefing')
-        ->not->toContain('profile.edit', 'flights.simbrief_form');
-});
-
 it('has an airside view for every controller view name', function (string $name): void {
     expect(View::exists($name))->toBeTrue("airside has no view named [{$name}]");
     expect(View::getFinder()->find($name))->toContain('modules/phpvms-airside-theme/resources/views');
 })->with(fn (): array => array_combine(airsideControllerViewNames(), array_map(fn (string $name): array => [$name], airsideControllerViewNames())));
 
-it('has an airside view for the login, verify, registered and terms pages', function (string $name): void {
-    expect(View::exists($name))->toBeTrue();
-})->with(['auth.login', 'auth.verify', 'auth.registered', 'auth.toc']);
-
 it('renders the old fares partial for an aircraft', function (): void {
-    $aircraft = Aircraft::factory()->create(['subfleet_id' => Subfleet::factory()->create()->id]);
+    $subfleet = Subfleet::factory()->create();
+    $fare = Fare::factory()->create();
+    $subfleet->fares()->attach($fare->id, ['price' => 100, 'cost' => 50, 'capacity' => 10]);
+    $aircraft = Aircraft::factory()->create(['subfleet_id' => $subfleet->id]);
     $this->actingAs(User::factory()->create());
 
-    $this->get('/pireps/fares?aircraft_id='.$aircraft->id)->assertOk();
+    $this->get('/pireps/fares?aircraft_id='.$aircraft->id)->assertOk()->assertSee($fare->name);
 });

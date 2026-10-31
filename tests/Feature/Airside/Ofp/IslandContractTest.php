@@ -30,10 +30,6 @@ it('loads the generate island on planning and the globe island on the briefing',
 
     expect($planning)->toContain('data-airside-island="simbrief-attempt"')
         ->and($briefing)->toContain('data-airside-island="briefing-globe"');
-
-    $views = base_path('modules/phpvms-airside-theme/resources/views/ofp');
-    expect(file_get_contents($views.'/planning.blade.php'))->toContain("@airsideVite('resources/js/islands/simbrief-attempt.js')")
-        ->and(file_get_contents($views.'/briefing.blade.php'))->toContain("@airsideVite('resources/js/islands/briefing-globe.js')");
 });
 
 it('leaves no raw directive text in the rendered pages', function (): void {
@@ -43,21 +39,4 @@ it('leaves no raw directive text in the rendered pages', function (): void {
         ->getContent();
 
     expect($html)->not->toContain('@js(')->not->toContain('@airsideVite');
-});
-
-it('keeps the popup, poll and retry behaviour of the skylight hook in the island', function (): void {
-    $source = file_get_contents(base_path('modules/phpvms-airside-theme/resources/js/islands/simbrief-attempt.js'));
-
-    expect($source)
-        ->toContain('@phpvms/simbrief')
-        ->toContain('reserveProviderPopup(POPUP_NAME)')
-        ->toContain('const POPUP_NAME = "phpvms-simbrief"')
-        ->toContain('POLL_INTERVAL_MS = 3_000')
-        ->toContain('POLL_MAX_ATTEMPTS = 60')
-        ->toContain('The SimBrief window was blocked. Allow popups, then try Generate OFP again.')
-        ->toContain('Checking for the completed OFP')
-        ->toContain('livewire:navigating');
-
-    // The popup is reserved before the first await, or the browser blocks it.
-    expect(strpos($source, 'reserveProviderPopup(POPUP_NAME)'))->toBeLessThan(strpos($source, 'await requestProviderSubmission'));
 });

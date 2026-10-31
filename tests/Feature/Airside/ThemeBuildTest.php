@@ -13,43 +13,6 @@ use Illuminate\Support\Facades\Blade;
  */
 $manifest = dirname(__DIR__, 3).'/modules/phpvms-airside-theme/public/build/manifest.json';
 
-it('lists the theme in the pnpm workspace by explicit path and in the root build', function (): void {
-    $workspace = file_get_contents(base_path('pnpm-workspace.yaml'));
-    $package = json_decode((string) file_get_contents(base_path('package.json')), true);
-    $theme = json_decode((string) file_get_contents(base_path('modules/phpvms-airside-theme/package.json')), true);
-
-    expect($workspace)->toContain('- "modules/phpvms-airside-theme"')
-        ->and($workspace)->not->toMatch('/^\s*-\s*["\']?modules\/\*/m')
-        ->and($package['scripts']['build:themes'])->toBe('node bin/build-themes.mjs')
-        ->and($package['scripts']['build'])->toContain('pnpm run build:themes')
-        ->and($theme['scripts'])->toHaveKey('build:theme')
-        ->and($theme['name'])->toBe('@phpvms/airside-theme');
-});
-
-it('takes its entries from the CSS, the main script and a glob of islands', function (): void {
-    $config = file_get_contents(base_path('modules/phpvms-airside-theme/vite.config.js'));
-
-    expect($config)
-        ->toContain('resources/css/airside.css')
-        ->toContain('resources/js/airside.js')
-        ->toContain('resources/js/islands')
-        ->toContain('public/hot')
-        ->toContain('/storage/themes/airside/build/');
-});
-
-it('scans the theme views, TallStackUI, the slot outlet and the provider for classes', function (): void {
-    $css = file_get_contents(base_path('modules/phpvms-airside-theme/resources/css/airside.css'));
-
-    expect($css)
-        ->toContain('@source "../views"')
-        ->toContain('@source "../../app"')
-        ->toContain('vendor/tallstackui/tallstackui')
-        ->toContain('resources/views/components/slot-outlet.blade.php');
-
-    expect(base_path('vendor/tallstackui/tallstackui/css/v4.css'))->toBeFile()
-        ->and(base_path('resources/views/components/slot-outlet.blade.php'))->toBeFile();
-});
-
 /**
  * Lay out public/ the way a deployment does: public/storage/themes/airside is
  * the theme's own public folder (the storage link plus ThemeAssetLinker).

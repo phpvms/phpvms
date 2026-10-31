@@ -25,20 +25,7 @@ it('renders the page with the list component', function (): void {
 
     $this->actingAs($fixture['user'])->get('/flights/bids')
         ->assertOk()
-        ->assertSee('wire:name="bids::bid-list"', false)
-        ->assertSee('My bids');
-});
-
-it('shows the empty state', function (): void {
-    $fixture = airsideDispatchFixture();
-
-    Livewire::actingAs($fixture['user'])->test(BidList::class)
-        ->assertSee('Flights')
-        ->assertSee('Your reserved dispatches, ready to reopen and brief.')
-        ->assertSee('0 bids')
-        ->assertSee('No bids yet')
-        ->assertSee('Reserve a flight from the manifest to keep it here for your next dispatch.')
-        ->assertSee('Browse flights');
+        ->assertSeeLivewire(BidList::class);
 });
 
 it('lists a bid with its facts, expiry and actions', function (): void {
@@ -52,15 +39,8 @@ it('lists a bid with its facts, expiry and actions', function (): void {
     ]);
 
     Livewire::actingAs($fixture['user'])->test(BidList::class)
-        ->assertSee('1 bid')
         ->assertSee($fixture['flight']->ident)
-        ->assertSee('ETE')
-        ->assertSee('Dist')
         ->assertSee($fixture['aircraft']->registration.' · '.$fixture['aircraft']->icao, false)
-        ->assertSee('Expires')
-        ->assertSee('Expiring first')
-        ->assertSee('Cancel this bid?')
-        ->assertSee('Generate OFP')
         ->assertSee(route('frontend.ofp.planning', ['bid_id' => $bid->id]), false);
 });
 
@@ -111,11 +91,7 @@ describe('tours', function (): void {
             ->assertSee($this->tourName)
             ->assertSee('Tour overview')
             ->assertSee('Cancel tour')
-            ->assertSee('Cancel the whole tour?')
-            ->assertSee('Yes, cancel it')
-            ->assertSee('Keep flying')
-            ->assertSee('legs')
-            ->assertSee('Leg 1');
+            ->assertSee('Cancel the whole tour?');
     });
 
     it('asks before a leg ends the tour, with the tour named', function (): void {

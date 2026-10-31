@@ -46,8 +46,7 @@ it('renders the login page from its controller', function (): void {
         ->assertSee('name="email"', false)
         ->assertSee('name="password"', false)
         ->assertSee(url('/register'), false)
-        ->assertSee(url('/password/reset'), false)
-        ->assertSee('x-data="tallstackui_toastBase(', false);
+        ->assertSee(url('/password/reset'), false);
 });
 
 it('lists the enabled social logins on the login page', function (): void {
@@ -72,8 +71,7 @@ it('renders the register page with the terms and the disabled submit', function 
         ->assertSee('name="timezone"', false)
         ->assertSee('name="toc_accepted"', false)
         ->assertSee('name="opt_in"', false)
-        ->assertSee('id="register_button"', false)
-        ->assertSee('airsideAirportSearch(', false);
+        ->assertSee('id="register_button"', false);
 });
 
 it('renders the register page for an invite', function (): void {

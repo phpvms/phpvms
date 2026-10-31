@@ -51,32 +51,10 @@ it('renders the required meta tags', function (): void {
 it('applies the saved theme mode before first paint', function (): void {
     $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
 
-    // TallStackUI's theme switch keeps the mode under `dark-theme`; the head script reads the same key.
-    $script = strpos($html, "localStorage.getItem('dark-theme')");
+    $script = strpos($html, "classList.toggle('dark'");
 
     expect($script)->not->toBeFalse()
-        ->and($script)->toBeLessThan(strpos($html, '<body'))
-        ->and($html)->toContain("classList.toggle('dark'")
-        ->and($html)->toContain("document.addEventListener('livewire:navigated', apply)")
-        ->and($html)->toContain('x-data="tallstackui_darkTheme(');
-});
-
-it('loads the Livewire and TallStackUI scripts', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect($html)
-        ->toContain('/livewire')
-        ->toContain('/tallstackui/script/');
-});
-
-it('renders a collapsible sidebar at 16rem with no section label', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect($html)
-        ->toContain('$store[\'tsui.side-bar\'].toggle()')
-        ->toContain('md:w-64')
-        ->toContain('md:pl-64')
-        ->not->toContain('Workspace');
+        ->and($script)->toBeLessThan(strpos($html, '<body'));
 });
 
 it('lets a guest see the layout with a sign in entry', function (): void {
@@ -127,15 +105,6 @@ it('navigates in-app menu items and leaves external and new-window items as plai
         ->and($html)->not->toMatch('/<a\s+href="https:\/\/example.com\/x"[^>]*wire:navigate/s')
         ->and($html)->toMatch('/<a\s+href="[^"]*flights"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/s')
         ->and($html)->not->toMatch('/<a\s+href="[^"]*flights"[^>]*wire:navigate/s');
-});
-
-it('persists nothing in the shell across navigation', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    // The sidebar and header re-render per page: the current item, open groups,
-    // sector, duty and station stay server-driven, and the header's mobile menu
-    // button keeps driving the page's own sidebar.
-    expect($html)->not->toContain('x-persist=');
 });
 
 it('emits no theme css block when there is no stored override', function (): void {

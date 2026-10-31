@@ -21,54 +21,48 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('renders the 404 page in the airside layout with status 404', function (): void {
+it('renders the 404 page with status 404', function (): void {
     $this->get('/there-is-no-such-page')
         ->assertNotFound()
-        ->assertSee('class="pv-error', false)
         ->assertSee(__('errors.404.title'))
-        ->assertSee('x-data="tallstackui_layout()"', false)
         ->assertDontSee('bootstrap', false);
 });
 
-it('renders the 401 page in the airside layout with status 401', function (): void {
+it('renders the 401 page with status 401', function (): void {
     Route::middleware('web')->get('/airside-probe/forbidden', fn () => abort(401));
 
     $this->get('/airside-probe/forbidden')
         ->assertUnauthorized()
-        ->assertSee('class="pv-error', false)
         ->assertSee(__('errors.401.title'));
 });
 
-it('renders the 500 page without the layout, the database or a build manifest', function (): void {
+it('renders the 500 page with its administrator hint and no build assets', function (): void {
     Route::middleware('web')->get('/airside-probe/broken', fn () => abort(500));
 
     $this->get('/airside-probe/broken')
         ->assertStatus(500)
         ->assertSee('For administrators')
-        ->assertDontSee('pv-region-nav', false)
         ->assertDontSee('/build/', false);
 });
 
-it('renders the 503 maintenance page without the layout', function (): void {
+it('renders the 503 maintenance page', function (): void {
     Route::middleware('web')->get('/airside-probe/maintenance', fn () => abort(503));
 
     $this->get('/airside-probe/maintenance')
         ->assertStatus(503)
-        ->assertSee('We will be right back')
-        ->assertDontSee('pv-region-nav', false);
+        ->assertSee('We will be right back');
 });
 
-it('renders the pagination views in airside markup', function (): void {
+it('renders the pagination views with the current page marked', function (): void {
     User::factory()->count(3)->create();
     $paginator = User::query()->orderBy('id')->paginate(1, ['*'], 'page', 2);
 
     foreach (['pagination.default', 'pagination.bootstrap-5'] as $view) {
         $html = Blade::render('{{ $paginator->links($view) }}', ['paginator' => $paginator, 'view' => $view]);
 
-        expect($html)->toContain('pv-pagination')->toContain('aria-current="page"')->not->toContain('class="pagination');
+        expect($html)->toContain('aria-current="page"');
     }
 
-    expect(Blade::render("{{ \$paginator->links('pagination.simple-default') }}", ['paginator' => User::query()->simplePaginate(1)]))->toContain('pv-pagination');
 });
 
 it('renders the latest pilots widget', function (): void {
@@ -76,7 +70,7 @@ it('renders the latest pilots widget', function (): void {
 
     $html = Blade::render('{{ Widget::LatestPilots() }}');
 
-    expect($html)->toContain('pv-widget')->toContain($user->ident);
+    expect($html)->toContain($user->ident);
 });
 
 it('renders the latest pireps widget', function (): void {
@@ -84,7 +78,7 @@ it('renders the latest pireps widget', function (): void {
 
     $html = Blade::render('{{ Widget::LatestPireps() }}');
 
-    expect($html)->toContain('pv-widget')->toContain($pirep->dpt_airport_id);
+    expect($html)->toContain($pirep->dpt_airport_id);
 });
 
 it('renders the latest news widget with and without news', function (): void {

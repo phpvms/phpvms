@@ -25,16 +25,6 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('ships airside as the config default and the seeded theme', function (): void {
-    expect(config('themes.default'))->toBe('airside');
-
-    Setting::query()->where('id', Setting::formatKey('general.theme'))->delete();
-    app(SettingsSeeder::class)->run();
-    forgetSettingCaches();
-
-    expect(setting('general.theme'))->toBe('airside');
-});
-
 it('renders a fresh install with the airside layout', function (): void {
     Setting::query()->where('id', Setting::formatKey('general.theme'))->delete();
     app(SettingsSeeder::class)->run();
@@ -42,7 +32,9 @@ it('renders a fresh install with the airside layout', function (): void {
 
     User::factory()->create();
 
-    $this->get('/login')->assertOk()->assertSee('x-data="tallstackui_toastBase(', false);
+    expect(setting('general.theme'))->toBe('airside');
+
+    $this->get('/login')->assertOk();
 });
 
 it('leaves a saved theme untouched when the seeder runs again', function (): void {

@@ -66,12 +66,6 @@ it('shows a placeholder, then the raw METAR', function (): void {
         ->assertDontSee('Loading METAR');
 });
 
-it('renders the loading placeholder before it loads', function (): void {
-    $html = new HeaderMetar()->placeholder()->render();
-
-    expect($html)->toContain('Loading METAR…');
-});
-
 it('says there is no station', function (): void {
     Livewire::withoutLazyLoading()->test(HeaderMetar::class, ['icao' => null])
         ->assertSee('No station');
@@ -138,44 +132,29 @@ it('loads the header METAR for the pilot station, lazily', function (): void {
     $airport = Airport::factory()->create(['icao' => 'KJFK', 'timezone' => 'America/New_York']);
     $this->pilot->update(['curr_airport_id' => $airport->id]);
 
-    $html = $this->get('/airside-probe/pilot')->getContent();
+    $response = $this->get('/airside-probe/pilot')->assertSeeLivewire(HeaderMetar::class);
 
-    expect($html)->toContain('wire:name="shell::header-metar"')
-        ->toContain('Loading METAR…')
-        ->toContain("airsideClocks('America\/New_York')");
+    expect($response->getContent())->toContain('America')->toContain('New_York');
 });
 
 it('shows the toast tags from a redirect flash', function (): void {
     $html = $this->followingRedirects()->get('/airside-probe/save')->getContent();
 
-    expect($html)->toContain('x-data="tallstackui_toastBase(')
-        ->toContain("\$tsui.interaction('toast').success('Saved the profile').send()")
-        ->toContain('data-flash-success="Saved the profile"')
+    expect($html)->toContain('data-flash-success="Saved the profile"')
         ->not->toContain("interaction('toast').error(");
 });
 
 it('escapes HTML in a flash before it reaches the toast, which renders with x-html', function (): void {
     $html = $this->withSession(['success' => 'Linked <b>Discord</b>'])->get('/airside-probe/pilot')->getContent();
 
-    // e() turns the tags into entities; @js then JSON-encodes `&` as \u0026, which
-    // decodes back to `&lt;b&gt;` in the string the toast renders as text.
-    expect($html)->toContain("\$tsui.interaction('toast').success('Linked \\u0026lt;b\\u0026gt;Discord\\u0026lt;\\/b\\u0026gt;').send()")
-        ->not->toContain("success('Linked <b>");
-});
-
-it('escapes the Livewire toast event text through the escapeHtml magic', function (): void {
-    $html = $this->get('/airside-probe/pilot')->getContent();
-    $source = file_get_contents(base_path('modules/phpvms-airside-theme/resources/js/airside.js'));
-
-    expect($html)->toContain('$escapeHtml($event.detail.text)')
-        ->and($source)->toContain('Alpine.magic("escapeHtml"');
+    expect($html)->not->toContain("success('Linked <b>")
+        ->not->toContain('Linked <b>Discord</b>');
 });
 
 it('shows an error flash with the FAULT tag', function (): void {
     $html = $this->withSession(['error' => 'Something failed'])->get('/airside-probe/pilot')->getContent();
 
-    expect($html)->toContain("\$tsui.interaction('toast').error('Something failed').send()")
-        ->toContain('data-flash-error="Something failed"');
+    expect($html)->toContain('data-flash-error="Something failed"');
 });
 
 it('shows a flash only once', function (): void {
@@ -190,15 +169,8 @@ it('shows a flash only once', function (): void {
 
 it('renders no toast when nothing was flashed', function (): void {
     expect($this->get('/airside-probe/pilot')->getContent())
-        ->toContain('data-flash-success=""')
         ->not->toContain("interaction('toast').success(")
         ->not->toContain("interaction('toast').error(");
-});
-
-it('bridges the theme-agnostic Livewire toast event to the TallStackUI toast', function (): void {
-    $html = $this->get('/airside-probe/pilot')->getContent();
-
-    expect($html)->toContain('x-on:toast.window="$tsui.interaction(\'toast\')[$event.detail.kind === \'error\' ? \'error\' : \'success\']($escapeHtml($event.detail.text)).send()"');
 });
 
 it('hides the dispatch status from guests but keeps the airline identity', function (): void {

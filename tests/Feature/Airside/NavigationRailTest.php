@@ -72,10 +72,12 @@ it('renders the current item with aria-current, groups as nested items, and the 
 
     $html = $this->actingAs($pilot)->get('/flights/bids/probe')->getContent();
 
-    // TallStackUI renders the sidebar twice (mobile drawer and desktop panel), so every item appears in both.
-    expect($html)->toMatch('/<a\s+href="[^"]*\/flights\/bids"[^>]*aria-current="page"/s')
-        ->and(substr_count($html, 'aria-current="page"'))->toBe(2)
+    // The sidebar renders more than once (mobile, desktop, collapsed flyout), so assert on distinct current items, not a count.
+    preg_match_all('/<a\s[^>]*href="([^"]*)"[^>]*aria-current="page"/s', $html, $current);
+
+    expect(array_values(array_unique($current[1])))->toBe([url('/flights/bids')])
+        ->and($current[1])->not->toContain(url('/flights'))
         ->and($html)->not->toMatch('/<a[^>]*>\s*Operations\s*<\/a>/s')
-        ->and($html)->toMatch('/<button[^>]*>.*Operations.*<\/button>/s')
+        ->and($html)->toMatch('/<button[^>]*>(?:(?!<\/button>).)*Operations(?:(?!<\/button>).)*<\/button>/s')
         ->and($html)->toContain('My bids');
 });
