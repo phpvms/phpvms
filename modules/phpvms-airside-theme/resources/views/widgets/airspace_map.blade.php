@@ -1,6 +1,6 @@
 @inject('shell', 'App\Features\Shell\ShellData')
 {{-- Airspace map widget: the route map island with one airport (no destination). Data: config (width, height, lat, lon). --}}
-<div class="pv-widget min-w-0" style="width: {{ $config['width'] }}">
+<div class="vms-widget min-w-0" style="width: {{ $config['width'] }}">
     <div data-airside-island="route-map" wire:ignore>
         <script type="application/json">{!! json_encode([
             'from'        => ['icao' => '', 'lat' => (float) $config['lat'], 'lon' => (float) $config['lon']],

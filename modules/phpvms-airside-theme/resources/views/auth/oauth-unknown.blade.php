@@ -3,9 +3,9 @@
 @section('card_width', 'max-w-[440px]')
 
 @section('content')
-    <x-airside::auth-card :title="__('auth.oauth_not_linked_title')" :description="__('auth.oauth_not_linked_message', ['provider' => $connection->display_name])">
+    <x-vms::auth.card :title="__('auth.oauth_not_linked_title')" :description="__('auth.oauth_not_linked_message', ['provider' => $connection->display_name])">
         @if ($verifiedEmailMatch)
-            <x-airside::alert>{{ __('auth.oauth_verified_email_match', ['email' => $pending['email']]) }}</x-airside::alert>
+            <x-ts-alert color="primary" light shadowless role="status">{{ __('auth.oauth_verified_email_match', ['email' => $pending['email']]) }}</x-ts-alert>
         @endif
 
         <div class="grid gap-2">
@@ -30,5 +30,5 @@
                 <button type="submit">{{ __('auth.oauth_cancel') }}</button>
             </form>
         </x-slot:footer>
-    </x-airside::auth-card>
+    </x-vms::auth.card>
 @endsection

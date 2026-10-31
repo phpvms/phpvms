@@ -1,6 +1,6 @@
 @inject('shell', 'App\Features\Shell\ShellData')
 {{-- Live map widget: the live-map island. Data: config (width, height, table), center ([lat, lon]), pireps, positions, zoom. --}}
-<div class="pv-widget grid gap-4" data-airside-island="live-map" style="width: {{ $config['width'] }}">
+<div class="vms-widget grid gap-4" data-airside-island="live-map" style="width: {{ $config['width'] }}">
     <script type="application/json">{!! json_encode(['updateIntervalSeconds' => (int) setting('livemap.update_interval', 60), 'initialCenter' => ['lat' => $center[0], 'lon' => $center[1]], 'map' => $shell->map()->toArray()], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) !!}</script>
 
     <div class="grid grid-cols-1 gap-4 {{ $config['table'] === true ? 'min-[721px]:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]' : '' }}">

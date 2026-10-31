@@ -10,7 +10,7 @@
         ['label' => 'Cruise', 'value' => $pirep->cruise],
     ];
 @endphp
-<div class="pv-pirep-summary grid gap-3">
+<div class="vms-pirep-summary grid gap-3">
     <header class="flex items-start justify-between gap-3">
         <div>
             <h1 class="m-0 font-mono text-xl font-semibold">{{ $pirep->ident }}</h1>
@@ -22,7 +22,7 @@
                 Filed {{ $filed }}
             </div>
         </div>
-        <x-airside::state-badge :state-color="$pirep->stateColor" :label="$pirep->state" class="shrink-0" />
+        <x-ts-badge :color="\Modules\PhpvmsAirsideTheme\Support\StateColor::tallstack($pirep->stateColor)" light data-state="{{ $pirep->stateColor }}" class="shrink-0">{{ $pirep->state }}</x-ts-badge>
     </header>
 
     <div class="flex items-center gap-4 rounded-md px-3.5 py-3">

@@ -5,7 +5,7 @@
     $mineCount = count(array_filter($tours, fn ($tour): bool => $tour->status !== null));
 @endphp
 <div class="grid gap-6" x-data="{ filter: 'all', all: {{ $allCount }}, mine: {{ $mineCount }}, get count() { return this.filter === 'mine' ? this.mine : this.all } }">
-    <x-airside::page-header
+    <x-vms::page.header
         headline="Flights"
         title="Tours"
         description="Multi-leg journeys flown in order. Bid a tour once and every leg is reserved for you."
@@ -13,7 +13,7 @@
         <x-slot:links>
             <x-ts-badge color="slate" light><span x-text="count + (count === 1 ? ' tour' : ' tours')">{{ $allCount }} {{ $allCount === 1 ? 'tour' : 'tours' }}</span></x-ts-badge>
         </x-slot:links>
-    </x-airside::page-header>
+    </x-vms::page.header>
 
     <div class="flex w-fit gap-1 rounded-md p-1" role="tablist" aria-label="Tour filter">
         @foreach (['all' => 'All tours', 'mine' => 'My tours'] as $value => $label)
@@ -31,14 +31,14 @@
     @if ($allCount > 0)
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($tours as $tour)
-                <x-tours-card
+                <x-vms::tours.card
                     wire:key="tour-{{ $tour->id }}"
                     :tour="$tour"
                     :error="$cancelErrors[$tour->id] ?? null"
                 />
             @endforeach
         </div>
-        <x-airside::empty
+        <x-vms::ui.empty
             x-show="filter === 'mine' && mine === 0"
             x-cloak
             icon="map"
@@ -46,6 +46,6 @@
             description="Bid a tour from the All tours list and it will show up here."
         />
     @else
-        <x-airside::empty icon="map" title="No tours yet" description="When your airline publishes a tour, it will appear here ready to bid." />
+        <x-vms::ui.empty icon="map" title="No tours yet" description="When your airline publishes a tour, it will appear here ready to bid." />
     @endif
 </div>

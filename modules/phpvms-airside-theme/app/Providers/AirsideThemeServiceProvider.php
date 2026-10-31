@@ -15,7 +15,7 @@ use TallStackUi\Facades\TallStackUi;
  * airside: the bundled Blade + Livewire pilot theme.
  *
  * Everything TallStackUI-specific lives here, never in core: the component
- * prefix, the icon pack, the `<x-airside::*>` component namespace and the
+ * prefix, the icon pack, the `<x-vms::*>` component namespace and the
  * `@airsideVite` directive. Views reach the request-scoped ShellData with
  * `@inject('shell', ShellData::class)`. Components render with TallStackUI's
  * defaults; there is no soft customisation layer.
@@ -165,7 +165,7 @@ class AirsideThemeServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-        Blade::anonymousComponentPath($this->addonBasePath().'/resources/views/components', 'airside');
+        Blade::anonymousComponentNamespace('components', 'vms');
 
         $this->customizeSidebarWidth();
         $this->customizeAvatar();

@@ -1,7 +1,7 @@
 @props(['title' => null, 'description' => null])
 
 {{-- The card every auth page sits in: hairline border, no shadow, optional footer slot. --}}
-<section {{ $attributes->class('pv-auth-card w-full overflow-hidden rounded-xl') }}>
+<section {{ $attributes->class('vms-auth-card w-full overflow-hidden rounded-xl') }}>
     <div class="grid gap-4 p-6">
         @if ($title)
             <header class="grid gap-1">

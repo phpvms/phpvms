@@ -1,15 +1,15 @@
 {{-- PIREP main column: notes, custom fields, fares, ACARS log. Each panel shows only with content (PirepContent). Variable: $pirep (PirepData). --}}
-<main class="pv-pirep-content grid min-w-0 content-start gap-3">
+<main class="vms-pirep-content grid min-w-0 content-start gap-3">
     @if ($pirep->notes)
         <div class="rounded-md px-3.5 py-3">
-            <p class="pv-eyebrow">NOTES</p>
+            <p class="vms-eyebrow">NOTES</p>
             <p class="mt-1.5 mb-0 text-[13px] whitespace-pre-wrap">{{ $pirep->notes }}</p>
         </div>
     @endif
 
     @if (count($pirep->fields) > 0)
         <div class="rounded-md px-3.5 py-3">
-            <p class="pv-eyebrow">CUSTOM FIELDS</p>
+            <p class="vms-eyebrow">CUSTOM FIELDS</p>
             <dl class="m-0 mt-2 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1.5 text-xs">
                 @foreach ($pirep->fields as $field)
                     <dt class="whitespace-nowrap">{{ $field->name }}</dt>
@@ -21,7 +21,7 @@
 
     @if (count($pirep->fares) > 0)
         <div class="rounded-md px-3.5 py-3">
-            <p class="pv-eyebrow">FARES</p>
+            <p class="vms-eyebrow">FARES</p>
             <table class="mt-2 w-full border-collapse text-xs">
                 <thead>
                     <tr>
@@ -45,7 +45,7 @@
 
     @if (count($pirep->logs) > 0)
         <div class="rounded-md px-3.5 py-3">
-            <p class="pv-eyebrow">ACARS LOG</p>
+            <p class="vms-eyebrow">ACARS LOG</p>
             <ul class="m-0 mt-2 grid max-h-80 list-none gap-[3px] overflow-auto p-0">
                 @foreach ($pirep->logs as $entry)
                     <li class="flex gap-2.5 font-mono text-[11px]">

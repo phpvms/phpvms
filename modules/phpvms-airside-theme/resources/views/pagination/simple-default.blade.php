@@ -3,7 +3,7 @@
     $link = 'inline-flex items-center justify-center rounded-md px-3 py-1.5 text-[13px] no-underline';
 @endphp
 @if ($paginator->hasPages())
-    <nav class="pv-pagination flex items-center justify-center gap-2" role="navigation" aria-label="Pagination">
+    <nav class="vms-pagination flex items-center justify-center gap-2" role="navigation" aria-label="Pagination">
         @if ($paginator->onFirstPage())
             <span class="{{ $link }} opacity-50" aria-disabled="true">@lang('pagination.previous')</span>
         @else

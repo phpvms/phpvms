@@ -3,7 +3,7 @@
 @section('card_width', 'max-w-xl')
 
 @section('content')
-    <x-airside::auth-card :title="__('common.register')">
+    <x-vms::auth.card :title="__('common.register')">
         <form method="post" action="{{ url('/register') }}" class="grid gap-4" x-data="{ accepted: false }">
             @csrf
 
@@ -22,8 +22,20 @@
                     <p>{{ old('email') }}</p>
                 </div>
             @else
-                <x-airside::field name="name" :label="__('auth.full_name')" :value="old('name')" autocomplete="name" />
-                <x-airside::field name="email" type="email" :label="__('auth.email_address')" :value="old('email')" autocomplete="email" />
+                <div class="grid gap-1">
+                    <x-ts-input :label="__('auth.full_name')" name="name" id="name" type="text" :value="old('name')" invalidate autocomplete="name" />
+
+                    @error('name')
+                        <div role="alert"><x-ts-error property="name" /></div>
+                    @enderror
+                </div>
+                <div class="grid gap-1">
+                    <x-ts-input :label="__('auth.email_address')" name="email" id="email" type="email" :value="old('email')" invalidate autocomplete="email" />
+
+                    @error('email')
+                        <div role="alert"><x-ts-error property="email" /></div>
+                    @enderror
+                </div>
             @endif
 
             <div class="grid gap-1.5">
@@ -84,16 +96,40 @@
             </div>
 
             @if (setting('pilots.allow_transfer_hours') === true)
-                <x-airside::field name="transfer_time" type="number" :label="__('auth.transfer_hours')" :value="old('transfer_time')" />
+                <div class="grid gap-1">
+                    <x-ts-input :label="__('auth.transfer_hours')" name="transfer_time" id="transfer_time" type="number" :value="old('transfer_time')" invalidate />
+
+                    @error('transfer_time')
+                        <div role="alert"><x-ts-error property="transfer_time" /></div>
+                    @enderror
+                </div>
             @endif
 
             @unless ($oauthRegistration)
-                <x-airside::field name="password" type="password" :label="__('auth.password')" autocomplete="new-password" />
-                <x-airside::field name="password_confirmation" type="password" :label="__('passwords.confirm')" autocomplete="new-password" />
+                <div class="grid gap-1">
+                    <x-ts-password :label="__('auth.password')" name="password" id="password" invalidate autocomplete="new-password" />
+
+                    @error('password')
+                        <div role="alert"><x-ts-error property="password" /></div>
+                    @enderror
+                </div>
+                <div class="grid gap-1">
+                    <x-ts-password :label="__('passwords.confirm')" name="password_confirmation" id="password_confirmation" invalidate autocomplete="new-password" />
+
+                    @error('password_confirmation')
+                        <div role="alert"><x-ts-error property="password_confirmation" /></div>
+                    @enderror
+                </div>
             @endunless
 
             @foreach ($userFields ?? [] as $field)
-                <x-airside::field :name="'field_'.$field->slug" :label="$field->name" :value="old('field_'.$field->slug)" />
+                <div class="grid gap-1">
+                    <x-ts-input :label="$field->name" :name="'field_'.$field->slug" :id="'field_'.$field->slug" type="text" :value="old('field_'.$field->slug)" invalidate />
+
+                    @error('field_'.$field->slug)
+                        <div role="alert"><x-ts-error :property="'field_'.$field->slug" /></div>
+                    @enderror
+                </div>
             @endforeach
 
             @if ($captcha['enabled'] === true)
@@ -133,7 +169,7 @@
 
             <x-ts-button submit block id="register_button" x-bind:disabled="! accepted" disabled>{{ __('auth.register') }}</x-ts-button>
         </form>
-    </x-airside::auth-card>
+    </x-vms::auth.card>
 @endsection
 
 @section('scripts')

@@ -28,7 +28,7 @@
         </footer>
     </div>
 
-    <x-airside::shell.toasts :shell="$shell" />
+    <x-vms::shell.toasts :shell="$shell" />
 
     @livewireScripts
 

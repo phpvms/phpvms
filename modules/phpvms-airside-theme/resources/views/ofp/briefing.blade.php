@@ -21,9 +21,9 @@
 @endphp
 
 @section('content')
-<x-airside::page name="simbrief-briefing" label="SimBrief briefing">
+<x-vms::page name="simbrief-briefing" label="SimBrief briefing">
     <header class="flex flex-wrap items-center justify-between gap-4 pb-4">
-        <x-airside::flight-ident
+        <x-vms::flights.ident
             size="lg"
             :callsign="$flight->summary->callsign"
             :dpt="$flight->summary->dpt"
@@ -35,7 +35,7 @@
         <x-ts-badge color="slate" light class="uppercase">Completed briefing</x-ts-badge>
     </header>
 
-    <x-airside::card title="Route">
+    <x-ts-card header="Route">
         <div data-airside-island="briefing-globe" class="min-w-0">
             <script type="application/json">{!! json_encode($globeData, $jsonFlags) !!}</script>
             <div data-role="map" class="h-[280px] overflow-hidden rounded-md"></div>
@@ -43,10 +43,10 @@
                 Route map unavailable because airport coordinates are missing.
             </div>
         </div>
-    </x-airside::card>
+    </x-ts-card>
 
     <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.75fr)]">
-        <x-airside::card title="Operational summary">
+        <x-ts-card header="Operational summary">
             <div class="grid gap-3">
                 <dl class="grid gap-3 sm:grid-cols-2">
                     <div class="rounded-md p-3">
@@ -80,12 +80,12 @@
                     @endforeach
                 </dl>
             </div>
-        </x-airside::card>
+        </x-ts-card>
 
         <livewire:ofp::briefing-actions :briefing-id="$briefing->id" />
     </div>
 
-    <x-airside::card title="Text OFP">
+    <x-ts-card header="Text OFP">
         <div class="grid gap-3">
             @if (count($briefing->textSections))
                 <div x-data="{ tab: 0 }" class="grid gap-3">
@@ -119,8 +119,8 @@
                 </div>
             @endif
         </div>
-    </x-airside::card>
-</x-airside::page>
+    </x-ts-card>
+</x-vms::page>
 @endsection
 
 @section('scripts')

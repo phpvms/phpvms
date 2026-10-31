@@ -1,4 +1,4 @@
-<ul class="pv-widget m-0 grid list-none rounded-md p-0" role="list">
+<ul class="vms-widget m-0 grid list-none rounded-md p-0" role="list">
     @foreach ($pireps as $p)
         <li wire:key="latest-pirep-{{ $p->id }}" class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-2 text-[13px]">
             <span class="font-mono font-semibold">{{ $p->ident }}</span>

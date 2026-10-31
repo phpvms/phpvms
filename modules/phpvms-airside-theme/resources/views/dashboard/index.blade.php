@@ -37,7 +37,7 @@
     ];
 @endphp
 
-<x-airside::layouts.app :title="__('common.dashboard')">
+<x-vms::layouts.app :title="__('common.dashboard')">
     <div class="grid gap-6">
         <section class="grid gap-4" aria-label="Pilot summary">
             <x-ts-card>
@@ -85,4 +85,4 @@
 
         <livewire:dashboard::dashboard-board :route="$route" />
     </div>
-</x-airside::layouts.app>
+</x-vms::layouts.app>

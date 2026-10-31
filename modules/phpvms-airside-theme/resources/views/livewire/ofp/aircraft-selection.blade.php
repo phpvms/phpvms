@@ -4,7 +4,7 @@
     <p class="text-[13px]">Select the subfleet and aircraft to fly with.</p>
 
     @if ($failure)
-        <x-airside::alert kind="error">{{ $failure }}</x-airside::alert>
+        <x-ts-alert color="red" light shadowless role="alert">{{ $failure }}</x-ts-alert>
     @endif
 
     <div class="grid gap-2" role="radiogroup" aria-label="Eligible subfleet">
@@ -54,6 +54,6 @@
     @endif
 
     <div wire:loading wire:target="chooseAircraft">
-        <x-airside::loading text="Saving aircraft assignment" />
+        <div class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Saving aircraft assignment"><x-ts-spinner sm text="Saving aircraft assignment" /></div>
     </div>
 </fieldset>

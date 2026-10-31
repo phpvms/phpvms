@@ -20,7 +20,7 @@
     $lg = $size === 'lg';
     $tag = $href ? 'a' : 'div';
 @endphp
-<{{ $tag }} @if ($href) href="{{ $href }}" @endif {{ $attributes->class(['pv-flight-info flex min-w-0 max-w-full items-center', $lg ? 'gap-3' : 'gap-2.5', 'hover:underline' => $href]) }}>
+<{{ $tag }} @if ($href) href="{{ $href }}" @endif {{ $attributes->class(['vms-flight-info flex min-w-0 max-w-full items-center', $lg ? 'gap-3' : 'gap-2.5', 'hover:underline' => $href]) }}>
     <span @class(['grid shrink-0 place-items-center overflow-hidden rounded-md font-semibold', $lg ? 'size-12 text-sm' : 'size-8 text-[11px]'])>
         @if ($logo)
             <img src="{{ $logo }}" alt="{{ $airline ?? $callsign }}" class="size-full object-contain" />

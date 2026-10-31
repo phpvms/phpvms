@@ -1,23 +1,26 @@
 <div>
-    <x-airside::card title="Edit profile" description="Update your details. Leave the password fields blank to keep your current password." aria-label="Edit profile">
+    <x-ts-card aria-label="Edit profile">
+        <x-slot:header>
+        <div class="grid gap-0.5"><h2 class="text-sm font-semibold">{{ 'Edit profile' }}</h2><p class="text-xs font-normal text-dark-500 dark:text-dark-400">{{ 'Update your details. Leave the password fields blank to keep your current password.' }}</p></div>
+    </x-slot:header>
         <form wire:submit="save" class="grid gap-4 sm:grid-cols-2" enctype="multipart/form-data">
-            <x-airside::profile-field label="Name" for="profile_name" error="form.name" required>
+            <x-vms::profile.field label="Name" for="profile_name" error="form.name" required>
                 <input type="text" id="profile_name" autocomplete="name" wire:model="form.name" />
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="Email" for="profile_email" error="form.email" required>
+            <x-vms::profile.field label="Email" for="profile_email" error="form.email" required>
                 <input type="email" id="profile_email" autocomplete="email" wire:model="form.email" />
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="Airline" for="profile_airline" error="form.airline_id" required>
+            <x-vms::profile.field label="Airline" for="profile_airline" error="form.airline_id" required>
                 <select id="profile_airline" wire:model="form.airline_id">
                     @foreach ($this->edit->airlines as $airline)
                         <option value="{{ $airline->value }}" wire:key="airline-{{ $airline->value }}">{{ $airline->label }}</option>
                     @endforeach
                 </select>
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="Home airport" for="profile_home_airport" error="form.home_airport_id" :hint="$this->edit->hubsOnly ? 'Hubs only' : null">
+            <x-vms::profile.field label="Home airport" for="profile_home_airport" error="form.home_airport_id" :hint="$this->edit->hubsOnly ? 'Hubs only' : null">
                 <div class="relative">
                     <div class="flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-[13px]" data-role="home-airport-selected">
                         <span>{{ $airportLabel === '' ? 'No home airport selected' : $airportLabel }}</span>
@@ -40,32 +43,32 @@
                         </ul>
                     @endif
                 </div>
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="Country" for="profile_country" error="form.country">
+            <x-vms::profile.field label="Country" for="profile_country" error="form.country">
                 <select id="profile_country" wire:model="form.country">
                     @foreach ($this->edit->countries as $country)
                         <option value="{{ $country->value }}" wire:key="country-{{ $country->value }}">{{ $country->label }}</option>
                     @endforeach
                 </select>
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="Timezone" for="profile_timezone" error="form.timezone">
+            <x-vms::profile.field label="Timezone" for="profile_timezone" error="form.timezone">
                 <select id="profile_timezone" wire:model="form.timezone">
                     @foreach ($this->edit->timezones as $timezone)
                         <option value="{{ $timezone->value }}" wire:key="timezone-{{ $timezone->value }}">{{ $timezone->label }}</option>
                     @endforeach
                 </select>
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="SimBrief username" for="profile_simbrief" error="form.simbrief_username">
+            <x-vms::profile.field label="SimBrief username" for="profile_simbrief" error="form.simbrief_username">
                 <input type="text" id="profile_simbrief" wire:model="form.simbrief_username" />
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="Avatar" for="profile_avatar" error="form.avatar" :hint="'JPEG or PNG. Resized to '.$this->edit->avatarWidth.'x'.$this->edit->avatarHeight.'.'">
+            <x-vms::profile.field label="Avatar" for="profile_avatar" error="form.avatar" :hint="'JPEG or PNG. Resized to '.$this->edit->avatarWidth.'x'.$this->edit->avatarHeight.'.'">
                 <input type="file" id="profile_avatar" accept="image/jpeg,image/png" wire:model="form.avatar" />
                 <p class="text-xs" wire:loading wire:target="form.avatar">Uploading…</p>
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
             <div class="col-span-full">
                 <label class="flex items-start gap-2">
@@ -84,25 +87,25 @@
                 <p class="col-span-full pt-3">Additional details</p>
 
                 @foreach ($this->edit->fields as $field)
-                    <x-airside::profile-field :label="$field->name" :for="'profile_field_'.$field->slug" :error="'form.fields.field_'.$field->slug" :required="$field->required" wire:key="field-{{ $field->slug }}">
+                    <x-vms::profile.field :label="$field->name" :for="'profile_field_'.$field->slug" :error="'form.fields.field_'.$field->slug" :required="$field->required" wire:key="field-{{ $field->slug }}">
                         <input type="text" id="profile_field_{{ $field->slug }}" wire:model="form.fields.field_{{ $field->slug }}" />
-                    </x-airside::profile-field>
+                    </x-vms::profile.field>
                 @endforeach
             @endif
 
             <p class="col-span-full pt-3">Change password</p>
 
-            <x-airside::profile-field label="New password" for="profile_password" error="form.password">
+            <x-vms::profile.field label="New password" for="profile_password" error="form.password">
                 <input type="password" id="profile_password" autocomplete="new-password" wire:model="form.password" />
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
-            <x-airside::profile-field label="Confirm password" for="profile_password_confirmation" error="form.password_confirmation">
+            <x-vms::profile.field label="Confirm password" for="profile_password_confirmation" error="form.password_confirmation">
                 <input type="password" id="profile_password_confirmation" autocomplete="new-password" wire:model="form.password_confirmation" />
-            </x-airside::profile-field>
+            </x-vms::profile.field>
 
             <div class="col-span-full flex justify-end">
                 <x-ts-button submit wire:loading.attr="disabled" wire:target="save">Save changes</x-ts-button>
             </div>
         </form>
-    </x-airside::card>
+    </x-ts-card>
 </div>

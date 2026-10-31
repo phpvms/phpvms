@@ -6,10 +6,10 @@
 @php
     $filed = $pirep->submittedAt ? \Illuminate\Support\Carbon::parse($pirep->submittedAt)->format('d M Y') : null;
 @endphp
-<a href="{{ route('frontend.pireps.show', ['id' => $pirep->id]) }}" wire:navigate {{ $attributes->class('pv-pirep-card block rounded-md p-3 no-underline sm:p-4') }}>
+<a href="{{ route('frontend.pireps.show', ['id' => $pirep->id]) }}" wire:navigate {{ $attributes->class('vms-pirep-card block rounded-md p-3 no-underline sm:p-4') }}>
     <div class="mb-2 flex w-full items-center justify-between gap-2.5">
         <span class="font-mono text-[13px] font-semibold">{{ $pirep->ident }}</span>
-        <x-airside::state-badge :state-color="$pirep->stateColor" :label="$pirep->state" />
+        <x-ts-badge :color="\Modules\PhpvmsAirsideTheme\Support\StateColor::tallstack($pirep->stateColor)" light data-state="{{ $pirep->stateColor }}">{{ $pirep->state }}</x-ts-badge>
     </div>
 
     <div class="flex items-center gap-3">
@@ -24,7 +24,7 @@
         </span>
     </div>
 
-    <x-airside::stats
+    <x-vms::ui.stats
         class="mt-2.5 pt-2.5"
         :columns="5"
         :items="[

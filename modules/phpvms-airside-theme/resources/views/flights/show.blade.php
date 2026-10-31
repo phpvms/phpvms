@@ -6,14 +6,14 @@
         $summary = $flight->summary;
     @endphp
 
-    <x-airside::page name="flight-show" label="Flight details">
-        <x-airside::back-link :href="route('frontend.flights.index')" wire:navigate>flight manifest</x-airside::back-link>
+    <x-vms::page name="flight-show" label="Flight details">
+        <x-ts-link :href="route('frontend.flights.index')" text="Back to flight manifest" icon="phosphor.arrow-left.light" sm navigate class="w-fit" wire:navigate />
 
         <article class="grid min-w-0 gap-4">
             <header class="flex flex-wrap items-center justify-between gap-5 rounded-xl p-6">
                 <div>
                     <p class="mb-3">FLIGHT DISPATCH</p>
-                    <x-airside::flight-ident
+                    <x-vms::flights.ident
                         size="lg"
                         :callsign="$summary->callsign"
                         :dpt="$summary->dpt"
@@ -49,7 +49,7 @@
                     </div>
                     <p class="max-w-full font-mono text-[10px] sm:max-w-[50%] sm:text-right">{{ $flight->route ?? 'Route not published' }}</p>
                 </div>
-                <x-airside::flights-route-map :flight="$flight" />
+                <x-vms::flights.route-map :flight="$flight" />
             </section>
 
             <section class="grid gap-3.5 md:grid-cols-3" aria-label="Airport weather">
@@ -66,7 +66,7 @@
         </article>
 
         <livewire:bids::assignment-drawer />
-    </x-airside::page>
+    </x-vms::page>
 @endsection
 
 @section('scripts')

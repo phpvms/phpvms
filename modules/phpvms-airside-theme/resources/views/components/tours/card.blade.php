@@ -27,7 +27,7 @@
     };
 @endphp
 <article
-    {{ $attributes->class('pv-tour-card grid content-start overflow-hidden rounded-md') }}
+    {{ $attributes->class('vms-tour-card grid content-start overflow-hidden rounded-md') }}
     data-tour-id="{{ $tour->id }}"
     data-mine="{{ $tour->status !== null ? 'true' : 'false' }}"
     x-data="{ expanded: false }"
@@ -38,10 +38,10 @@
         @if ($tour->image)
             <img src="{{ $tour->image }}" alt="{{ $tour->name }}" class="size-full object-cover" loading="lazy" />
         @else
-            <div class="grid size-full place-items-center"><x-airside::icon name="photo" class="size-8" /></div>
+            <div class="grid size-full place-items-center"><x-vms::ui.icon name="photo" class="size-8" /></div>
         @endif
         @if ($status)
-            <x-airside::state-badge :state-color="$status[0]" :label="$status[1]" class="absolute right-2.5 top-2.5" />
+            <x-ts-badge :color="\Modules\PhpvmsAirsideTheme\Support\StateColor::tallstack($status[0])" light data-state="{{ $status[0] }}" class="absolute right-2.5 top-2.5">{{ $status[1] }}</x-ts-badge>
         @endif
     </div>
 
@@ -57,7 +57,7 @@
         </div>
 
         @if (count($tour->legs))
-            <x-tours-leg-timeline :tour="$tour" windowed />
+            <x-vms::tours.leg-timeline :tour="$tour" windowed />
             @if (count($tour->legs) > 8)
                 <div class="flex justify-center">
                     <x-ts-button type="button" sm color="slate" light x-on:click="expanded = ! expanded" x-bind:aria-expanded="expanded ? 'true' : 'false'">
@@ -74,11 +74,7 @@
         @endif
 
         @if ($tour->status === 'in_progress')
-            <x-airside::confirm prompt="Cancel this tour?" confirm-label="Yes, cancel it" keep-label="Keep flying" wire:click="cancelTour({{ $tour->id }})">
-                <x-slot:trigger>
-                    <x-ts-button type="button" sm color="slate" light>Cancel tour</x-ts-button>
-                </x-slot:trigger>
-            </x-airside::confirm>
+            <x-ts-button type="button" sm color="slate" light data-prompt="Cancel this tour?" data-confirm="Yes, cancel it" data-keep="Keep flying" x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm, 'cancelTour', {{ $tour->id }}).cancel($el.dataset.keep).send()">Cancel tour</x-ts-button>
         @endif
 
         @if ($tour->activeLegFlightId)

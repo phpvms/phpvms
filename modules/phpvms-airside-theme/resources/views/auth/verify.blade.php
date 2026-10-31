@@ -2,9 +2,9 @@
 @section('title', __('Verify Your Email Address'))
 
 @section('content')
-    <x-airside::auth-card :title="__('Verify Your Email Address')">
+    <x-vms::auth.card :title="__('Verify Your Email Address')">
         @if (session('resent'))
-            <x-airside::alert kind="success">{{ __('A fresh verification link has been sent to your email address.') }}</x-airside::alert>
+            <x-ts-alert color="green" light shadowless role="status">{{ __('A fresh verification link has been sent to your email address.') }}</x-ts-alert>
         @endif
 
         <p class="text-[13px]">
@@ -16,5 +16,5 @@
             @csrf
             <x-ts-button submit block>{{ __('click here to request another') }}</x-ts-button>
         </form>
-    </x-airside::auth-card>
+    </x-vms::auth.card>
 @endsection

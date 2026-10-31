@@ -3,7 +3,7 @@
 @section('title', $pirep->ident)
 
 @section('content')
-    <x-airside::page name="pirep-detail" label="PIREP detail">
+    <x-vms::page name="pirep-detail" label="PIREP detail">
         <div class="grid gap-3">
             <a href="{{ route('frontend.pireps.index') }}" wire:navigate class="w-fit text-xs no-underline">← Logbook</a>
 
@@ -16,5 +16,5 @@
 
             <x-slot-outlet name="pireps.detail.main" :context="['pirep' => $pirep]" />
         </div>
-    </x-airside::page>
+    </x-vms::page>
 @endsection

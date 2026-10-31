@@ -14,7 +14,7 @@
         : 0;
     $start = $collapsible ? min(max($current - 1, 0), $total - 6) : 0;
 @endphp
-<ol {{ $attributes->class('pv-tour-legs grid') }}>
+<ol {{ $attributes->class('vms-tour-legs grid') }}>
     @foreach ($legs as $index => $leg)
         @php
             $isCurrent = $tour->status === 'in_progress' && $leg->flightId === $tour->activeLegFlightId;
@@ -23,7 +23,7 @@
         @endphp
         <li
             wire:key="leg-{{ $tour->id }}-{{ $leg->flightId }}"
-            class="pv-tour-leg flex items-baseline gap-3 py-1.5"
+            class="vms-tour-leg flex items-baseline gap-3 py-1.5"
             data-leg-window="{{ $inWindow ? 'in' : 'out' }}"
             @if (! $inWindow) x-show="expanded" x-cloak @endif
         >
@@ -31,7 +31,7 @@
                 'grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold',
             ])>
                 @if ($leg->flown)
-                    <x-airside::icon name="check" class="size-3.5" />
+                    <x-vms::ui.icon name="check" class="size-3.5" />
                 @else
                     {{ $leg->routeLeg }}
                 @endif

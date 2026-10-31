@@ -38,7 +38,7 @@
 @endphp
 
 @section('content')
-<x-airside::page name="simbrief-planning" label="SimBrief flight planning">
+<x-vms::page name="simbrief-planning" label="SimBrief flight planning">
     <div @if ($attemptData) data-airside-island="simbrief-attempt" data-state="ready" @endif class="grid gap-6">
         @if ($attemptData)
             <script type="application/json">{!! json_encode($attemptData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!}</script>
@@ -46,7 +46,7 @@
 
         @if ($flight)
             <header class="flex flex-wrap items-center justify-between gap-4 pb-4">
-                <x-airside::flight-ident
+                <x-vms::flights.ident
                     size="lg"
                     :callsign="$flight->summary->callsign"
                     :dpt="$flight->summary->dpt"
@@ -64,7 +64,7 @@
         <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.75fr)]">
             @if ($planning)
                 <form class="grid min-w-0 gap-4" data-role="options" autocomplete="off" onsubmit="return false">
-                    <x-airside::card title="Flight Information">
+                    <x-ts-card header="Flight Information">
                         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             @if ($pilot)
                                 <p class="text-[13px] sm:col-span-2 lg:col-span-3">
@@ -74,52 +74,52 @@
                             @endif
 
                             @if ($planning->callsignEditable)
-                                <x-ofp-select name="callsign" label="ATC callsign" :options="$callsignOptions" :value="$fields['callsign'] ?? null" />
+                                <x-vms::ofp.select name="callsign" label="ATC callsign" :options="$callsignOptions" :value="$fields['callsign'] ?? null" />
                             @else
-                                <x-ofp-input name="callsign" label="ATC callsign" :value="$fields['callsign'] ?? ''" readonly />
+                                <x-vms::ofp.input name="callsign" label="ATC callsign" :value="$fields['callsign'] ?? ''" readonly />
                             @endif
-                            <x-ofp-input name="orig" label="Departure airport" :value="$fields['orig'] ?? ''" readonly />
-                            <x-ofp-input name="dest" label="Arrival airport" :value="$fields['dest'] ?? ''" readonly />
-                            <x-ofp-input name="altn" label="Alternate airport" :value="$fields['altn'] ?? 'AUTO'" maxlength="8" />
-                            <x-ofp-input name="std" label="Scheduled departure time (UTC)" :value="$planning->flight->scheduledDeparture ?? ''" readonly />
-                            <x-ofp-input name="etd" label="Estimated departure time (UTC)" value="" readonly data-role="etd" />
-                            <x-ofp-input name="date" label="Date of flight (UTC)" value="" readonly data-role="date" />
+                            <x-vms::ofp.input name="orig" label="Departure airport" :value="$fields['orig'] ?? ''" readonly />
+                            <x-vms::ofp.input name="dest" label="Arrival airport" :value="$fields['dest'] ?? ''" readonly />
+                            <x-vms::ofp.input name="altn" label="Alternate airport" :value="$fields['altn'] ?? 'AUTO'" maxlength="8" />
+                            <x-vms::ofp.input name="std" label="Scheduled departure time (UTC)" :value="$planning->flight->scheduledDeparture ?? ''" readonly />
+                            <x-vms::ofp.input name="etd" label="Estimated departure time (UTC)" value="" readonly data-role="etd" />
+                            <x-vms::ofp.input name="date" label="Date of flight (UTC)" value="" readonly data-role="date" />
 
                             <div class="grid gap-1.5 sm:col-span-2 lg:col-span-3">
                                 <label for="ofp-route" class="text-[13px] font-medium">Preferred company route</label>
                                 <textarea id="ofp-route" name="route" rows="3">{{ $fields['route'] ?? '' }}</textarea>
                             </div>
                         </div>
-                    </x-airside::card>
+                    </x-ts-card>
 
-                    <x-airside::card title="Planning Options">
+                    <x-ts-card header="Planning Options">
                         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" x-data="{ stepclimbs: @js((string) ($fields['stepclimbs'] ?? '0')) }">
                             <div class="grid gap-1.5">
                                 <label for="ofp-fl" class="text-[13px] font-medium">Preferred flight level</label>
                                 <input id="ofp-fl" type="text" name="fl" maxlength="5" value="{{ $fields['fl'] ?? '' }}" x-bind:disabled="stepclimbs === '1'" />
                             </div>
-                            <x-ofp-select name="contpct" label="Cont fuel" :options="$contingencyOptions" :value="$fields['contpct'] ?? '0.05/5'" />
-                            <x-ofp-select name="resvrule" label="Reserve fuel" :options="$reserveOptions" :value="$fields['resvrule'] ?? '30'" />
-                            <x-ofp-select name="find_sidstar" label="SID/STAR type" :options="['C' => 'Conventional', 'R' => 'RNAV']" :value="$fields['find_sidstar'] ?? 'R'" />
-                            <x-ofp-select name="stepclimbs" label="Plan stepclimbs" :options="$enabledOptions" :value="$fields['stepclimbs'] ?? '0'" x-model="stepclimbs" />
-                            <x-ofp-select name="etops" label="ETOPS planning" :options="$enabledOptions" :value="$fields['etops'] ?? '0'" />
+                            <x-vms::ofp.select name="contpct" label="Cont fuel" :options="$contingencyOptions" :value="$fields['contpct'] ?? '0.05/5'" />
+                            <x-vms::ofp.select name="resvrule" label="Reserve fuel" :options="$reserveOptions" :value="$fields['resvrule'] ?? '30'" />
+                            <x-vms::ofp.select name="find_sidstar" label="SID/STAR type" :options="['C' => 'Conventional', 'R' => 'RNAV']" :value="$fields['find_sidstar'] ?? 'R'" />
+                            <x-vms::ofp.select name="stepclimbs" label="Plan stepclimbs" :options="$enabledOptions" :value="$fields['stepclimbs'] ?? '0'" x-model="stepclimbs" />
+                            <x-vms::ofp.select name="etops" label="ETOPS planning" :options="$enabledOptions" :value="$fields['etops'] ?? '0'" />
                         </div>
-                    </x-airside::card>
+                    </x-ts-card>
 
-                    <x-airside::card title="Briefing Options">
+                    <x-ts-card header="Briefing Options">
                         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <x-ofp-select name="planformat" label="OFP layout" :options="$layoutOptions" :value="$fields['planformat'] ?? 'lido'" />
-                            <x-ofp-select name="units" label="Units" :options="['KGS' => 'KGS', 'LBS' => 'LBS']" :value="$fields['units'] ?? 'LBS'" />
-                            <x-ofp-select name="navlog" label="Detailed navlog" :options="$enabledOptions" :value="$fields['navlog'] ?? '1'" />
-                            <x-ofp-select name="tlr" label="Runway analysis" :options="$enabledOptions" :value="$fields['tlr'] ?? '1'" />
-                            <x-ofp-select name="notams" label="Include NOTAMs" :options="$enabledOptions" :value="$fields['notams'] ?? '1'" />
-                            <x-ofp-select name="firnot" label="FIR NOTAMs" :options="$enabledOptions" :value="$fields['firnot'] ?? '0'" />
-                            <x-ofp-select name="maps" label="Flight maps" :options="['detail' => 'Detailed', 'simple' => 'Simple', 'none' => 'None']" :value="$fields['maps'] ?? 'detail'" />
+                            <x-vms::ofp.select name="planformat" label="OFP layout" :options="$layoutOptions" :value="$fields['planformat'] ?? 'lido'" />
+                            <x-vms::ofp.select name="units" label="Units" :options="['KGS' => 'KGS', 'LBS' => 'LBS']" :value="$fields['units'] ?? 'LBS'" />
+                            <x-vms::ofp.select name="navlog" label="Detailed navlog" :options="$enabledOptions" :value="$fields['navlog'] ?? '1'" />
+                            <x-vms::ofp.select name="tlr" label="Runway analysis" :options="$enabledOptions" :value="$fields['tlr'] ?? '1'" />
+                            <x-vms::ofp.select name="notams" label="Include NOTAMs" :options="$enabledOptions" :value="$fields['notams'] ?? '1'" />
+                            <x-vms::ofp.select name="firnot" label="FIR NOTAMs" :options="$enabledOptions" :value="$fields['firnot'] ?? '0'" />
+                            <x-vms::ofp.select name="maps" label="Flight maps" :options="['detail' => 'Detailed', 'simple' => 'Simple', 'none' => 'None']" :value="$fields['maps'] ?? 'detail'" />
                         </div>
-                    </x-airside::card>
+                    </x-ts-card>
                 </form>
             @elseif ($flight)
-                <x-airside::card title="Route and schedule">
+                <x-ts-card header="Route and schedule">
                     <dl class="grid gap-3 sm:grid-cols-2">
                         <div class="rounded-md p-3">
                             <dt>Scheduled departure</dt>
@@ -131,24 +131,23 @@
                         </div>
                     </dl>
                     <p class="mt-3 rounded-md p-3 font-mono text-sm leading-relaxed">{{ $flight->route ?: 'No route published' }}</p>
-                </x-airside::card>
+                </x-ts-card>
             @endif
 
-            <x-airside::card
-                title="Flight Plan Generation"
-                description="Generate the SimBrief flight plan in a protected window. Keep this page open while the provider prepares the operational flight plan."
-                aria-label="Generate OFP"
-            >
+            <x-ts-card aria-label="Generate OFP">
+                <x-slot:header>
+                    <div class="grid gap-0.5"><h2 class="text-sm font-semibold">{{ 'Flight Plan Generation' }}</h2><p class="text-xs font-normal text-dark-500 dark:text-dark-400">{{ 'Generate the SimBrief flight plan in a protected window. Keep this page open while the provider prepares the operational flight plan.' }}</p></div>
+                </x-slot:header>
                 <div class="grid gap-3">
                     @if ($planning)
                         <div data-show="waiting-for-popup" hidden>
-                            <x-airside::alert>SimBrief is open. phpVMS is checking for the completed briefing.</x-airside::alert>
+                            <x-ts-alert color="primary" light shadowless role="status">SimBrief is open. phpVMS is checking for the completed briefing.</x-ts-alert>
                         </div>
                         <div data-show="polling" hidden>
-                            <x-airside::loading text="Checking for the completed OFP (0/60)" data-role="polling" />
+                            <div data-role="polling" class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Checking for the completed OFP (0/60)"><x-ts-spinner sm text="Checking for the completed OFP (0/60)" /></div>
                         </div>
                         <div data-show="error" hidden>
-                            <x-airside::alert kind="error"><span data-role="failure"></span></x-airside::alert>
+                            <x-ts-alert color="red" light shadowless role="alert"><span data-role="failure"></span></x-ts-alert>
                         </div>
 
                         <div class="grid gap-2">
@@ -176,10 +175,10 @@
                         />
                     @endif
                 </div>
-            </x-airside::card>
+            </x-ts-card>
         </div>
     </div>
-</x-airside::page>
+</x-vms::page>
 @endsection
 
 @if ($attemptData)

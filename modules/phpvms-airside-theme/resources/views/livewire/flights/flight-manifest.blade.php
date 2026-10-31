@@ -9,16 +9,14 @@
     $mono = fn (?string $value) => $value ?? '—';
 @endphp
 
-<div class="pv-flights-page grid min-w-0 gap-4" aria-label="Flight schedule">
-    <section class="rounded-xl p-5" aria-labelledby="flight-filter-heading" x-data="{ open: {{ count($active) > 0 ? 'true' : 'false' }} }">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <p>SCHEDULE MANIFEST</p>
-                <h1 id="flight-filter-heading" class="mt-1 text-2xl font-semibold">Find a flight</h1>
-            </div>
-            <span class="rounded-full px-2.5 py-1 font-mono text-[10px]">{{ count($active) }} active</span>
-        </div>
+<x-vms::page name="flights" label="Flights" class="min-w-0">
+    <x-vms::page.header headline="Schedule manifest" title="Find a flight">
+        <x-slot:links>
+            <x-ts-badge color="slate" light :text="count($active).' active'" />
+        </x-slot:links>
+    </x-vms::page.header>
 
+    <section class="rounded-xl p-5" aria-label="Flight filters" x-data="{ open: {{ count($active) > 0 ? 'true' : 'false' }} }">
         @if ($active)
             <div class="mt-3 flex flex-wrap gap-1.5" aria-label="Active filters">
                 @foreach ($active as $chip)
@@ -28,7 +26,7 @@
         @endif
 
         @if ($searchError)
-            <x-airside::alert kind="error" class="mt-3">{{ $searchError }}</x-airside::alert>
+            <x-ts-alert color="red" light shadowless role="alert" class="mt-3">{{ $searchError }}</x-ts-alert>
         @endif
 
         <div class="mt-4">
@@ -176,11 +174,11 @@
 
                             <div class="flex min-w-0 flex-wrap items-center gap-2 md:justify-end">
                                 @if ($flight->primaryAction === 'overview')
-                                    <x-airside::state-badge stateColor="info" label="On bid" />
+                                    <x-ts-badge color="sky" light data-state="info">On bid</x-ts-badge>
                                 @elseif ($flight->availability === 'available')
-                                    <x-airside::state-badge stateColor="success" label="Available" />
+                                    <x-ts-badge color="green" light data-state="success">Available</x-ts-badge>
                                 @else
-                                    <x-airside::state-badge stateColor="gray" label="Unavailable" />
+                                    <x-ts-badge color="slate" light data-state="gray">Unavailable</x-ts-badge>
                                 @endif
 
                                 <a href="{{ route('frontend.flights.show', $flightId) }}" wire:navigate class="text-[11px] font-semibold hover:underline" x-on:click.stop>Details</a>
@@ -208,7 +206,7 @@
                 @foreach ($flights as $flight)
                     <div wire:key="selected-{{ $flight->id }}" x-show="selected === @js($flight->id)" @if (! $loop->first) x-cloak @endif class="rounded-xl p-5">
                         <p class="mb-3" @if ($loop->first) id="selected-flight-heading" @endif>SELECTED FLIGHT</p>
-                        <x-airside::flight-ident
+                        <x-vms::flights.ident
                             size="lg"
                             :callsign="$flight->callsign"
                             :dpt="$flight->dpt"
@@ -253,9 +251,6 @@
             </nav>
         @endif
     @else
-        <section class="rounded-xl px-6 py-10 text-center" aria-live="polite">
-            <h2 class="text-xl font-semibold">No flights found</h2>
-            <p class="mt-2">Change or clear the active filters to see another part of the schedule.</p>
-        </section>
+        <x-vms::ui.empty icon="paper-airplane" title="No flights found" description="Change or clear the active filters to see another part of the schedule." aria-live="polite" />
     @endif
-</div>
+</x-vms::page>

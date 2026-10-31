@@ -3,10 +3,10 @@
     $briefing = $this->briefing;
     $prefileLinks = array_filter($briefing->prefileLinks);
 @endphp
-<x-airside::card title="Actions" class="min-w-0" aria-label="Actions">
+<x-ts-card header="Actions" class="min-w-0" aria-label="Actions">
     <div class="grid content-start gap-3">
         @if ($failure)
-            <x-airside::alert kind="error">{{ $failure }}</x-airside::alert>
+            <x-ts-alert color="red" light shadowless role="alert">{{ $failure }}</x-ts-alert>
         @endif
 
         <x-slot-outlet
@@ -27,24 +27,23 @@
             @endif
 
             @if ($briefing->canCancel)
-                <x-airside::confirm
-                    prompt="Cancel this unused briefing? This cannot be undone."
-                    confirm-label="Confirm cancellation"
-                    keep-label="Keep briefing"
-                    wire:click="cancel"
+                <x-ts-button
+                    type="button"
+                    color="red"
+                    light
                     class="w-full"
-                >
-                    <x-slot:trigger>
-                        <x-ts-button type="button" color="red" light class="w-full">Cancel unused briefing</x-ts-button>
-                    </x-slot:trigger>
-                </x-airside::confirm>
+                    data-prompt="Cancel this unused briefing? This cannot be undone."
+                    data-confirm="Confirm cancellation"
+                    data-keep="Keep briefing"
+                    x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm, 'cancel').cancel($el.dataset.keep).send()"
+                >Cancel unused briefing</x-ts-button>
             @endif
 
             @if (count($briefing->downloads))
-                <x-airside::drawer name="ofp-downloads" title="Downloads" description="Files generated with this SimBrief briefing.">
+                <x-vms::ui.drawer name="ofp-downloads" title="Downloads" description="Files generated with this SimBrief briefing.">
                     <x-slot:trigger>
                         <x-ts-button type="button" color="slate" light class="w-full">
-                            <x-airside::icon name="arrow-down-tray" />
+                            <x-vms::ui.icon name="arrow-down-tray" />
                             Downloads
                         </x-ts-button>
                     </x-slot:trigger>
@@ -55,7 +54,7 @@
                             <a class="text-sm hover:underline" href="{{ $download['url'] }}" target="_blank" rel="noopener">{{ $download['name'] }}</a>
                         @endforeach
                     </section>
-                </x-airside::drawer>
+                </x-vms::ui.drawer>
             @endif
 
             @if ($briefing->editorUrl)
@@ -70,14 +69,14 @@
                                     <p class="text-[13px]">Changes are made securely in SimBrief and remain subject to its own session and controls.</p>
                                 </div>
                                 <button type="button" class="rounded-md p-1" x-on:click="editorOpen = false" aria-label="Close OFP editor">
-                                    <x-airside::icon name="x-mark" />
+                                    <x-vms::ui.icon name="x-mark" />
                                 </button>
                             </header>
 
                             <div class="relative min-h-0">
                                 <div x-show="editorLoading" class="absolute inset-0 z-10 grid place-items-center" role="status" aria-live="polite">
                                     <div class="grid justify-items-center gap-1 text-center">
-                                        <x-airside::loading />
+                                        <div class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Loading"><x-ts-spinner sm /></div>
                                         <strong>Opening SimBrief editor</strong>
                                         <p class="text-[13px]">The editor is loading in a protected embedded window.</p>
                                     </div>
@@ -107,4 +106,4 @@
             @endforeach
         @endif
     </div>
-</x-airside::card>
+</x-ts-card>

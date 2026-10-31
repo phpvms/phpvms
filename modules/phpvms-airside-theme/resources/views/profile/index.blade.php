@@ -7,8 +7,8 @@
         $initials = collect(preg_split('/\s+/', trim($profile->name)))->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('');
     @endphp
 
-    <x-airside::page name="profile" :label="$profile->name.', pilot profile'">
-        <x-airside::page-header headline="Pilot profile">
+    <x-vms::page name="profile" :label="$profile->name.', pilot profile'">
+        <x-vms::page.header headline="Pilot profile">
             <div class="flex items-center gap-3">
                 <span x-data="{ failed: false }" class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full text-sm font-semibold">
                     @if ($profile->avatar)
@@ -37,20 +37,20 @@
                     <x-ts-button href="{{ route('frontend.profile.acars') }}" sm outline>ACARS config</x-ts-button>
                 </x-slot:links>
             @endif
-        </x-airside::page-header>
+        </x-vms::page.header>
 
         <div class="grid gap-4">
-            <x-airside::card title="Record" aria-label="Statistics">
+            <x-ts-card header="Record" aria-label="Statistics">
                 <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    <x-airside::stat label="Total Hours" :value="$profile->flightTimeMinutes" mono accent="cyan" />
-                    <x-airside::stat label="Flights" :value="$profile->flights" accent="green" />
-                    <x-airside::stat label="Home" :value="$profile->homeAirport?->icao" mono small accent="mag" />
-                    <x-airside::stat label="Current" :value="$profile->currentAirport?->icao" mono small accent="amber" />
+                    <x-ts-stats title="Total Hours"><span class="font-semibold tabular-nums text-cyan-600 dark:text-cyan-400 font-mono text-2xl">{{ $profile->flightTimeMinutes ?? '—' }}</span></x-ts-stats>
+                    <x-ts-stats title="Flights"><span class="font-semibold tabular-nums text-green-600 dark:text-green-400 text-2xl">{{ $profile->flights ?? '—' }}</span></x-ts-stats>
+                    <x-ts-stats title="Home"><span class="font-semibold tabular-nums text-primary-600 dark:text-primary-400 font-mono text-xl">{{ $profile->homeAirport?->icao ?? '—' }}</span></x-ts-stats>
+                    <x-ts-stats title="Current"><span class="font-semibold tabular-nums text-amber-600 dark:text-amber-400 font-mono text-xl">{{ $profile->currentAirport?->icao ?? '—' }}</span></x-ts-stats>
                 </div>
-            </x-airside::card>
+            </x-ts-card>
 
             @if (count($profile->typeRatings))
-                <x-airside::card title="Type ratings" aria-label="Type ratings">
+                <x-ts-card header="Type ratings" aria-label="Type ratings">
                     <div class="flex flex-wrap gap-2">
                         @foreach ($profile->typeRatings as $rating)
                             <x-ts-badge color="slate" light lg>
@@ -59,10 +59,10 @@
                             </x-ts-badge>
                         @endforeach
                     </div>
-                </x-airside::card>
+                </x-ts-card>
             @endif
 
-            <x-airside::card aria-label="Awards">
+            <x-ts-card aria-label="Awards">
                 <x-slot:header>
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-sm font-semibold">Awards &amp; merits</h2>
@@ -95,9 +95,9 @@
                         @endforeach
                     </div>
                 @endif
-            </x-airside::card>
+            </x-ts-card>
 
-            <x-airside::card aria-label="Tours completed">
+            <x-ts-card aria-label="Tours completed">
                 <x-slot:header>
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-sm font-semibold">Tours completed</h2>
@@ -115,7 +115,7 @@
                                     @if ($tour->image)
                                         <img src="{{ $tour->image }}" alt="" class="size-full object-cover" />
                                     @else
-                                        <x-airside::icon name="map" class="size-5" />
+                                        <x-vms::ui.icon name="map" class="size-5" />
                                     @endif
                                 </span>
                                 <div class="grid min-w-0 gap-0.5">
@@ -129,10 +129,10 @@
                         @endforeach
                     </div>
                 @endif
-            </x-airside::card>
+            </x-ts-card>
 
             @if (count($profile->fields))
-                <x-airside::card title="Details" aria-label="Fields">
+                <x-ts-card header="Details" aria-label="Fields">
                     <dl class="grid gap-3 sm:grid-cols-2">
                         @foreach ($profile->fields as $field)
                             <div class="grid gap-0.5">
@@ -141,7 +141,7 @@
                             </div>
                         @endforeach
                     </dl>
-                </x-airside::card>
+                </x-ts-card>
             @endif
 
             {{-- Addon extension point: cards for the profile body. The context carries the profile (with isOwnProfile). --}}
@@ -151,7 +151,10 @@
                 <livewire:profile::profile-edit />
 
                 @if (count($profileEdit->connections))
-                    <x-airside::card title="Connected accounts" description="Sign in to phpvms with an external account." aria-label="Connected accounts">
+                    <x-ts-card aria-label="Connected accounts">
+                        <x-slot:header>
+        <div class="grid gap-0.5"><h2 class="text-sm font-semibold">{{ 'Connected accounts' }}</h2><p class="text-xs font-normal text-dark-500 dark:text-dark-400">{{ 'Sign in to phpvms with an external account.' }}</p></div>
+    </x-slot:header>
                         <ul class="grid gap-3">
                             @foreach ($profileEdit->connections as $connection)
                                 <li class="flex flex-wrap items-center justify-between gap-3">
@@ -169,14 +172,7 @@
                                         <form method="post" action="{{ route('oauth.unlink', ['provider' => $connection->connectionId]) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <x-airside::confirm :prompt="'Unlink '.$connection->displayName.'?'" confirm-label="Unlink">
-                                                <x-slot:trigger>
-                                                    <x-ts-button sm outline color="red" type="button">Unlink</x-ts-button>
-                                                </x-slot:trigger>
-                                                <x-slot:confirm>
-                                                    <x-ts-button sm color="red" type="submit">Unlink</x-ts-button>
-                                                </x-slot:confirm>
-                                            </x-airside::confirm>
+                                            <x-ts-button sm outline color="red" type="button" data-prompt="{{ 'Unlink '.$connection->displayName.'?' }}" data-confirm="Unlink" data-keep="Keep" x-on:click="$tsui.interaction('dialog').wireable().question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm, () => $el.closest('form').submit()).cancel($el.dataset.keep).send()">Unlink</x-ts-button>
                                         </form>
                                     @elseif ($connection->linkable)
                                         <x-ts-button sm outline href="{{ url('/oauth/'.rawurlencode($connection->connectionId).'/redirect?intent=link') }}">Link</x-ts-button>
@@ -184,12 +180,12 @@
                                 </li>
                             @endforeach
                         </ul>
-                    </x-airside::card>
+                    </x-ts-card>
                 @endif
 
                 <livewire:profile::api-access />
                 <livewire:profile::api-connections />
             @endif
         </div>
-    </x-airside::page>
+    </x-vms::page>
 @endsection

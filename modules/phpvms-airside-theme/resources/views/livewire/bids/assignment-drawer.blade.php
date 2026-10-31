@@ -40,11 +40,11 @@
         },
     }"
 >
-    <x-airside::drawer name="assignment" title="Flight bid" wire:model="open">
+    <x-vms::ui.drawer name="assignment" title="Flight bid" wire:model="open">
         <x-slot:header>
             <p>FLIGHT ASSIGNMENT</p>
             @if ($flight)
-                <x-airside::flight-ident
+                <x-vms::flights.ident
                     size="lg"
                     :callsign="$flight->summary->callsign"
                     :dpt="$flight->summary->dpt"
@@ -60,7 +60,7 @@
 
         <section class="grid gap-4" aria-label="Flight bid">
             <div x-show="opening" x-cloak class="grid gap-2 py-6">
-                <x-airside::loading text="Loading policy and aircraft" />
+                <div class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Loading policy and aircraft"><x-ts-spinner sm text="Loading policy and aircraft" /></div>
                 <p class="text-[13px]">The latest availability is checked before you can continue.</p>
             </div>
 
@@ -92,7 +92,7 @@
                             </div>
                         </dl>
 
-                        <x-airside::bids-aircraft-card label="Aircraft" :aircraft="$selection->aircraft" />
+                        <x-vms::bids.aircraft-card label="Aircraft" :aircraft="$selection->aircraft" />
 
                         <div class="flex flex-wrap items-center gap-2">
                             <x-slot-outlet name="bids.drawer.overview.actions" :context="['bid' => $selection->bid, 'selection' => $selection]" />
@@ -114,7 +114,7 @@
                         </section>
 
                         @if ($failureMessage)
-                            <x-airside::alert kind="error" data-failure="{{ $failureType }}">{{ $failureMessage }}</x-airside::alert>
+                            <x-ts-alert color="red" light shadowless role="alert" data-failure="{{ $failureType }}">{{ $failureMessage }}</x-ts-alert>
                         @endif
 
                         <fieldset class="m-0 grid min-w-0 gap-3 rounded-lg p-3">
@@ -128,7 +128,7 @@
                                 @if ($chosenSubfleet)
                                     <div class="flex justify-end"><x-ts-button type="button" xs light wire:click="selectSubfleet({{ $chosenSubfleet->id }})">Cancel</x-ts-button></div>
                                 @endif
-                                <x-airside::bids-picker
+                                <x-vms::bids.picker
                                     label="Eligible subfleet"
                                     action="selectSubfleet"
                                     search-placeholder="Search subfleets"
@@ -155,7 +155,7 @@
 
                             @if ($subfleetId !== null)
                                 <div wire:loading wire:target="selectSubfleet,editAircraft,retryAircraft">
-                                    <x-airside::loading text="Loading current eligible aircraft" />
+                                    <div class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Loading current eligible aircraft"><x-ts-spinner sm text="Loading current eligible aircraft" /></div>
                                 </div>
 
                                 @if ($aircraft === null)
@@ -178,7 +178,7 @@
                                         @if ($chosenAircraft)
                                             <div class="flex justify-end"><x-ts-button type="button" xs light wire:click="selectAircraft({{ $chosenAircraft->id }})">Cancel</x-ts-button></div>
                                         @endif
-                                        <x-airside::bids-picker
+                                        <x-vms::bids.picker
                                             label="Eligible aircraft"
                                             action="selectAircraft"
                                             search-placeholder="Search registrations or types"
@@ -192,11 +192,11 @@
                                             ], $aircraft)"
                                         />
                                     @else
-                                        <x-airside::bids-aircraft-card label="Selected aircraft" :aircraft="$chosenAircraft">
+                                        <x-vms::bids.aircraft-card label="Selected aircraft" :aircraft="$chosenAircraft">
                                             <x-slot:action>
                                                 <x-ts-button type="button" xs light wire:click="editAircraft">Edit</x-ts-button>
                                             </x-slot:action>
-                                        </x-airside::bids-aircraft-card>
+                                        </x-vms::bids.aircraft-card>
                                     @endif
                                 @endif
                             @endif
@@ -220,5 +220,5 @@
                 @endif
             </div>
         </section>
-    </x-airside::drawer>
+    </x-vms::ui.drawer>
 </div>

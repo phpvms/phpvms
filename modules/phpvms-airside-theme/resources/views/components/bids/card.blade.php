@@ -13,11 +13,11 @@
         ['label' => 'Aircraft', 'value' => $row->aircraft ? $row->aircraft->registration.' · '.$row->aircraft->icaoType : null],
     ];
 @endphp
-<x-airside::card {{ $attributes->class('pv-bid-card') }}>
+<x-ts-card {{ $attributes->class('vms-bid-card') }}>
     <x-slot:header>
         <div class="flex items-start justify-between gap-2">
             @if ($flight)
-                <x-airside::flight-ident
+                <x-vms::flights.ident
                     stacked
                     :callsign="$flight->callsign"
                     :dpt="$flight->dpt"
@@ -36,7 +36,7 @@
         </div>
     </x-slot:header>
 
-    <x-airside::stats :items="$stats" :columns="3" />
+    <x-vms::ui.stats :items="$stats" :columns="3" />
     <p class="mt-2 text-xs">
         @if ($row->expiresAt)
             @php($expires = \Illuminate\Support\Carbon::parse($row->expiresAt)->utc())
@@ -49,16 +49,15 @@
     <x-slot:footer>
         <div class="flex w-full flex-wrap items-center justify-end gap-2">
             @if ($row->canRemove)
-                <x-airside::confirm
-                    :prompt="$row->tourName ? 'Cancelling this leg ends “'.$row->tourName.'”.' : 'Cancel this bid?'"
-                    :confirm-label="$row->tourName ? 'Cancel the tour' : 'Cancel bid'"
-                    keep-label="Keep"
-                    wire:click="removeBid({{ json_encode($row->bid->flightId) }})"
-                >
-                    <x-slot:trigger>
-                        <x-ts-button type="button" sm light>Cancel</x-ts-button>
-                    </x-slot:trigger>
-                </x-airside::confirm>
+                <x-ts-button
+                    type="button"
+                    sm
+                    light
+                    data-prompt="{{ $row->tourName ? 'Cancelling this leg ends “'.$row->tourName.'”.' : 'Cancel this bid?' }}"
+                    data-confirm="{{ $row->tourName ? 'Cancel the tour' : 'Cancel bid' }}"
+                    data-keep="Keep"
+                    x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm, 'removeBid', @js($row->bid->flightId)).cancel($el.dataset.keep).send()"
+                >Cancel</x-ts-button>
             @endif
 
             @if ($row->ofpUrl)
@@ -70,4 +69,4 @@
             <x-slot-outlet name="bids.row.actions" :context="['bid' => $row->bid, 'flight' => $row->flight]" />
         </div>
     </x-slot:footer>
-</x-airside::card>
+</x-ts-card>

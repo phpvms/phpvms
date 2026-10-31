@@ -4,7 +4,7 @@
   One side of the airport traffic board. Props: title, flights (a collection of Flight with the airports loaded),
   direction (inbound shows the departure airport, outbound the arrival airport).
 --}}
-<x-airside::card :title="$title">
+<x-ts-card :header="$title">
     @if ($flights->isEmpty())
         <p class="py-4 text-center text-[13px]">@lang('flights.none')</p>
     @else
@@ -40,4 +40,4 @@
             </table>
         </div>
     @endif
-</x-airside::card>
+</x-ts-card>

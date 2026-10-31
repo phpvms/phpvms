@@ -1,5 +1,5 @@
 @if ($awards->count() > 0)
-    <div class="pv-widget overflow-x-auto rounded-md">
+    <div class="vms-widget overflow-x-auto rounded-md">
         <table class="w-full text-left text-[13px]">
             <thead>
                 <tr>

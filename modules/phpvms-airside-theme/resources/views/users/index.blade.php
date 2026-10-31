@@ -17,15 +17,15 @@
         ];
     @endphp
 
-    <x-airside::page name="roster" label="Pilot roster">
-        <x-airside::page-header headline="Crew" :title="trans_choice('common.pilot', 2)">
+    <x-vms::page name="roster" label="Pilot roster">
+        <x-vms::page.header headline="Crew" :title="trans_choice('common.pilot', 2)">
             <x-slot:links>
                 <x-ts-badge color="slate" light :text="$users->total().' total'" />
             </x-slot:links>
-        </x-airside::page-header>
+        </x-vms::page.header>
 
         @if ($users->isEmpty())
-            <x-airside::empty icon="users" :title="trans_choice('common.pilot', 2)" description="No pilots to show." />
+            <x-vms::ui.empty icon="users" :title="trans_choice('common.pilot', 2)" description="No pilots to show." />
         @else
             <div class="overflow-x-auto rounded-md">
                 <table class="w-full text-[13px]" id="users-table">
@@ -79,5 +79,5 @@
                 {{ $users->withQueryString()->links('pagination.bootstrap-5') }}
             </div>
         @endif
-    </x-airside::page>
+    </x-vms::page>
 @endsection

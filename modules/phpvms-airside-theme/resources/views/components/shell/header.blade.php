@@ -24,14 +24,14 @@
     @if ($user)
         <x-slot:middle>
             <div class="hidden min-w-0 items-center gap-5 lg:flex" aria-label="Dispatch status">
-                <x-airside::shell.sector :sector="$chrome->activeSector" />
-                <x-airside::shell.duty :duty="$chrome->duty" />
+                <x-vms::shell.sector :sector="$chrome->activeSector" />
+                <x-vms::shell.duty :duty="$chrome->duty" />
                 <livewire:shell::header-metar :icao="$station?->icao" lazy />
             </div>
         </x-slot:middle>
     @endif
 
     <x-slot:right>
-        <x-airside::shell.clocks :station="$station" />
+        <x-vms::shell.clocks :station="$station" />
     </x-slot:right>
 </x-ts-layout.header>

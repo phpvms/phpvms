@@ -12,6 +12,7 @@
 @php($flash = $shell->flash())
 
 <x-ts-toast />
+<x-ts-dialog />
 
 <div
     x-data

@@ -11,9 +11,9 @@
         ['Block Fuel', $pirep->blockFuel],
     ])->filter(fn (array $detail): bool => filled($detail[1]));
 @endphp
-<aside class="pv-pirep-details grid content-start gap-3">
+<aside class="vms-pirep-details grid content-start gap-3">
     <div class="rounded-md px-3.5 py-3">
-        <p class="pv-eyebrow">FLIGHT DETAILS</p>
+        <p class="vms-eyebrow">FLIGHT DETAILS</p>
         <dl class="m-0 mt-2 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1.5 text-xs">
             @foreach ($details as [$label, $value])
                 <dt class="whitespace-nowrap">{{ $label }}</dt>

@@ -28,10 +28,10 @@
     </x-slot:brand-collapsed>
 
     @foreach (array_values($shell->navigation()) as $index => $item)
-        <x-airside::shell.sidebar-item :item="$item" :key="(string) $index" :active-keys="$activeKeys" />
+        <x-vms::shell.sidebar-item :item="$item" :key="(string) $index" :active-keys="$activeKeys" />
     @endforeach
 
     <x-slot:footer>
-        <x-airside::shell.pilot-menu :shell="$shell" />
+        <x-vms::shell.pilot-menu :shell="$shell" />
     </x-slot:footer>
 </x-ts-side-bar>

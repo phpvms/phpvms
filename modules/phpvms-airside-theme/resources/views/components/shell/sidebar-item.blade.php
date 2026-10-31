@@ -18,7 +18,7 @@
 @if ($isGroup)
     <x-ts-side-bar.item :text="$item['label']" :icon="$icon" :opened="$opened">
         @foreach ($children as $index => $child)
-            <x-airside::shell.sidebar-item :item="$child" :key="$key.'.'.$index" :active-keys="$activeKeys" />
+            <x-vms::shell.sidebar-item :item="$child" :key="$key.'.'.$index" :active-keys="$activeKeys" />
         @endforeach
     </x-ts-side-bar.item>
 @elseif ($item['new_window'] ?? false)

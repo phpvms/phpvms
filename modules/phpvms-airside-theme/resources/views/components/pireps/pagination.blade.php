@@ -14,7 +14,7 @@
     $link = 'inline-flex size-8 items-center justify-center rounded-md text-[13px]';
 @endphp
 @if ($lastPage > 1)
-    <nav {{ $attributes->class('pv-logbook-pager flex flex-wrap items-center justify-center gap-1') }} aria-label="Pagination">
+    <nav {{ $attributes->class('vms-logbook-pager flex flex-wrap items-center justify-center gap-1') }} aria-label="Pagination">
         @if ($currentPage > 1)
             <a href="{{ $url($currentPage - 1) }}" wire:navigate class="{{ $link }}" aria-label="Previous page" rel="prev"><span aria-hidden="true">‹</span></a>
         @else

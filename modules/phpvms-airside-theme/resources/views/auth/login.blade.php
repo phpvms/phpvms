@@ -2,26 +2,25 @@
 @section('title', __('common.login'))
 
 @section('content')
-    <x-airside::auth-card>
+    <x-vms::auth.card>
         <form method="post" action="{{ url('/login') }}" class="grid gap-4">
             @csrf
 
-            <x-airside::field
-                name="email"
-                :label="__('common.email').' '.__('common.or').' '.__('common.pilot_id')"
-                :value="old('email')"
-                autocomplete="username"
-                required
-                autofocus
-            />
+            <div class="grid gap-1">
+                <x-ts-input :label="__('common.email').' '.__('common.or').' '.__('common.pilot_id')" name="email" id="email" type="text" :value="old('email')" invalidate autocomplete="username" required autofocus />
 
-            <x-airside::field
-                name="password"
-                type="password"
-                :label="__('auth.password')"
-                autocomplete="current-password"
-                required
-            />
+                @error('email')
+                    <div role="alert"><x-ts-error property="email" /></div>
+                @enderror
+            </div>
+
+            <div class="grid gap-1">
+                <x-ts-password :label="__('auth.password')" name="password" id="password" invalidate autocomplete="current-password" required />
+
+                @error('password')
+                    <div role="alert"><x-ts-error property="password" /></div>
+                @enderror
+            </div>
 
             <x-ts-button submit block>{{ __('common.login') }}</x-ts-button>
         </form>
@@ -32,5 +31,5 @@
             <a href="{{ url('/register') }}" wire:navigate>{{ __('auth.create_account') }}</a>
             <a href="{{ url('/password/reset') }}" wire:navigate>{{ __('auth.forgot_password') }}?</a>
         </x-slot:footer>
-    </x-airside::auth-card>
+    </x-vms::auth.card>
 @endsection

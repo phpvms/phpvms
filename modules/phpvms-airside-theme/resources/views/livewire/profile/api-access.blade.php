@@ -1,10 +1,13 @@
 <div>
-    <x-airside::card title="API access" description="Used by ACARS clients and API integrations. Do not share it." aria-label="API access">
+    <x-ts-card aria-label="API access">
+        <x-slot:header>
+        <div class="grid gap-0.5"><h2 class="text-sm font-semibold">{{ 'API access' }}</h2><p class="text-xs font-normal text-dark-500 dark:text-dark-400">{{ 'Used by ACARS clients and API integrations. Do not share it.' }}</p></div>
+    </x-slot:header>
         <div class="grid gap-4" x-data="{ revealed: false }">
-            <x-airside::alert>
+            <x-ts-alert color="primary" light shadowless role="status">
                 <strong>Legacy API key.</strong>
                 Personal access tokens on the API connections page are preferred for new integrations.
-            </x-airside::alert>
+            </x-ts-alert>
 
             <div class="flex flex-wrap items-center gap-3">
                 @if ($this->apiKey)
@@ -20,12 +23,8 @@
             <div class="flex flex-wrap items-center gap-2">
                 <x-ts-button sm outline type="button" x-on:click="$dispatch('api-connections.open')">API connections</x-ts-button>
 
-                <x-airside::confirm prompt="Are you sure? This will reset your API key." confirm-label="Regenerate" color="amber" wire:click="regenerate">
-                    <x-slot:trigger>
-                        <x-ts-button sm outline color="amber" type="button">Regenerate API key</x-ts-button>
-                    </x-slot:trigger>
-                </x-airside::confirm>
+                <x-ts-button sm outline color="amber" type="button" data-prompt="Are you sure? This will reset your API key." data-confirm="Regenerate" data-keep="Keep" x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm, 'regenerate').cancel($el.dataset.keep).send()">Regenerate API key</x-ts-button>
             </div>
         </div>
-    </x-airside::card>
+    </x-ts-card>
 </div>

@@ -6,16 +6,16 @@
 @section('content')
     @php($map = $shell->map()->toArray())
 
-    <x-airside::page name="live-map" label="Live map">
+    <x-vms::page name="live-map" label="Live map">
         {{-- The live-map island (resources/js/islands/live-map.js) fills the list, the count, the map and the overlay. --}}
         <div data-airside-island="live-map" class="grid gap-6">
             <script type="application/json">{!! json_encode(['updateIntervalSeconds' => $updateIntervalSeconds, 'initialCenter' => $initialCenter, 'map' => $map], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) !!}</script>
 
-            <x-airside::page-header headline="Operations" title="Live flights" description="Flights currently in the air, plotted on the globe.">
+            <x-vms::page.header headline="Operations" title="Live flights" description="Flights currently in the air, plotted on the globe.">
                 <x-slot:links>
                     <x-ts-badge color="slate" light><span data-live-count>0 flights</span></x-ts-badge>
                 </x-slot:links>
-            </x-airside::page-header>
+            </x-vms::page.header>
 
             <div class="grid grid-cols-1 gap-4 min-[721px]:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
                 <aside data-live-list class="max-h-[40vh] min-w-0 overflow-y-auto rounded-lg p-3 min-[721px]:max-h-[70vh]" aria-label="Live flights"></aside>
@@ -36,7 +36,7 @@
             </template>
 
             <template data-tpl="empty">
-                <x-airside::empty icon="paper-airplane" title="No flights are live right now" description="Flights appear here as pilots depart." />
+                <x-vms::ui.empty icon="paper-airplane" title="No flights are live right now" description="Flights appear here as pilots depart." />
             </template>
 
             <template data-tpl="list-error">
@@ -59,7 +59,7 @@
                 </div>
             </template>
         </div>
-    </x-airside::page>
+    </x-vms::page>
 @endsection
 
 @section('scripts')

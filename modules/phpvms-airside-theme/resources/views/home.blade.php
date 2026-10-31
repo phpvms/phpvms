@@ -4,14 +4,14 @@
 @section('title', __('home.welcome.title'))
 
 @section('content')
-    <x-airside::page name="home" label="Home">
-        <x-airside::page-header
+    <x-vms::page name="home" label="Home">
+        <x-vms::page.header
             :headline="__('home.welcome.title')"
             :title="__('home.welcome.message', ['appname' => $shell->appName()])"
         />
 
         <section class="grid gap-3" aria-labelledby="newest-pilots-heading">
-            <h2 id="newest-pilots-heading" class="pv-eyebrow">{{ __('common.newest_pilots') }}</h2>
+            <h2 id="newest-pilots-heading" class="vms-eyebrow">{{ __('common.newest_pilots') }}</h2>
 
             <ul class="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4" role="list">
                 @foreach ($users as $user)
@@ -31,5 +31,5 @@
                 @endforeach
             </ul>
         </section>
-    </x-airside::page>
+    </x-vms::page>
 @endsection

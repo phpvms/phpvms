@@ -1,22 +1,22 @@
 <div>
-    <x-airside::drawer name="api-connections" wire:model="open" title="API connections" description="Applications and tokens that can access the API on your behalf.">
+    <x-vms::ui.drawer name="api-connections" wire:model="open" title="API connections" description="Applications and tokens that can access the API on your behalf.">
         @if ($open)
             <div class="grid gap-5">
                 @if ($plainTextToken)
-                    <x-airside::alert kind="success" data-role="plain-text-token">
+                    <x-ts-alert color="green" light shadowless role="status" data-role="plain-text-token">
                         <p class="font-semibold">Copy this token now</p>
                         <p>It is shown once and cannot be retrieved again.</p>
                         <code class="mt-1 block break-all font-mono text-xs">{{ $plainTextToken }}</code>
-                    </x-airside::alert>
+                    </x-ts-alert>
                 @endif
 
                 <section class="grid gap-3" aria-label="Create a personal access token">
                     <h3 class="text-sm font-semibold">Personal access tokens</h3>
                     <p class="text-[13px]">Create a token to use the API from your own scripts or ACARS client. Choose only the scopes you need.</p>
 
-                    <x-airside::profile-field label="Token name" for="api_token_name" error="name" required>
+                    <x-vms::profile.field label="Token name" for="api_token_name" error="name" required>
                         <input type="text" id="api_token_name" placeholder="My ACARS client" wire:model="name" />
-                    </x-airside::profile-field>
+                    </x-vms::profile.field>
 
                     <fieldset class="grid gap-2">
                         <legend class="mb-1 text-[13px] font-medium">Select scopes</legend>
@@ -45,11 +45,7 @@
                                 <span class="text-[13px] font-medium">{{ $token->name }}</span>
                                 <span class="break-words text-xs">{{ implode(', ', $token->scopes) ?: 'No scopes' }}</span>
                             </div>
-                            <x-airside::confirm :prompt="'Revoke '.$token->name.'? Anything using it stops working.'" confirm-label="Revoke" wire:click="revokeToken('{{ $token->id }}')">
-                                <x-slot:trigger>
-                                    <x-ts-button sm outline color="red" type="button">Revoke</x-ts-button>
-                                </x-slot:trigger>
-                            </x-airside::confirm>
+                            <x-ts-button sm outline color="red" type="button" data-prompt="{{ 'Revoke '.$token->name.'? Anything using it stops working.' }}" data-confirm="Revoke" data-keep="Keep" x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm, 'revokeToken', @js((string) $token->id)).cancel($el.dataset.keep).send()">Revoke</x-ts-button>
                         </div>
                     @empty
                         <p class="text-[13px]">No personal tokens yet.</p>
@@ -67,11 +63,7 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <x-ts-badge color="slate" light :text="$app->tokenCount.' '.($app->tokenCount === 1 ? 'token' : 'tokens')" />
-                                <x-airside::confirm :prompt="'Revoke access for '.$app->name.'?'" confirm-label="Revoke" wire:click="revokeApp('{{ $app->clientId }}')">
-                                    <x-slot:trigger>
-                                        <x-ts-button sm outline color="red" type="button">Revoke</x-ts-button>
-                                    </x-slot:trigger>
-                                </x-airside::confirm>
+                                <x-ts-button sm outline color="red" type="button" data-prompt="{{ 'Revoke access for '.$app->name.'?' }}" data-confirm="Revoke" data-keep="Keep" x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm, 'revokeApp', @js((string) $app->clientId)).cancel($el.dataset.keep).send()">Revoke</x-ts-button>
                             </div>
                         </div>
                     @empty
@@ -80,5 +72,5 @@
                 </section>
             </div>
         @endif
-    </x-airside::drawer>
+    </x-vms::ui.drawer>
 </div>

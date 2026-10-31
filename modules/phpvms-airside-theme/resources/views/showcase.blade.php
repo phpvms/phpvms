@@ -14,7 +14,7 @@
         $radii = ['sm' => ['6px', 'rounded-sm'], 'md' => ['8px', 'rounded-md'], 'lg' => ['10px', 'rounded-lg'], 'xl' => ['12px', 'rounded-xl']];
     @endphp
 
-    <div class="pv-container grid gap-8 py-8">
+    <div class="vms-container grid gap-8 py-8">
         <header class="flex items-center justify-between gap-4">
             <div>
                 <p class="micro">airside</p>
@@ -28,7 +28,7 @@
         </header>
 
         <section>
-            <h2 class="pv-eyebrow">Surfaces and ink</h2>
+            <h2 class="vms-eyebrow">Surfaces and ink</h2>
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
                 @foreach (['bg' => 'bg-bg', 'panel' => 'bg-panel', 'panel-inset' => 'bg-panel-inset', 'hover' => 'bg-hover', 'line' => 'bg-line', 'line-strong' => 'bg-line-strong', 'ink' => 'bg-ink'] as $label => $class)
                     <div class="rounded-md border border-line p-3 {{ $class }} {{ in_array($label, ['line', 'line-strong', 'ink']) ? 'h-16' : '' }}">
@@ -38,14 +38,14 @@
             </div>
             <div class="mt-3 grid grid-cols-7 gap-1 sm:grid-cols-13">
                 @foreach ($ink as $step)
-                    <div class="rounded-sm border border-line" style="background: var(--pv-ink-{{ $step }}); height: 40px" title="ink-{{ $step }}"></div>
+                    <div class="rounded-sm border border-line" style="background: var(--vms-ink-{{ $step }}); height: 40px" title="ink-{{ $step }}"></div>
                 @endforeach
             </div>
             <p class="mt-1 text-xs text-ink-dim">Ink ramp 50 to 950 (also <code>dark-*</code> in TallStackUI).</p>
         </section>
 
         <section>
-            <h2 class="pv-eyebrow">Accent (TallStackUI primary) and status</h2>
+            <h2 class="vms-eyebrow">Accent (TallStackUI primary) and status</h2>
             <div class="flex flex-wrap gap-1">
                 @foreach ($accent as $step => $class)
                     <div class="grid h-12 w-14 place-items-end rounded-sm p-1 text-[10px] {{ $class }} {{ $step >= 400 ? 'text-white' : 'text-ink' }}">{{ $step }}</div>
@@ -54,14 +54,14 @@
             <div class="mt-3 flex flex-wrap gap-2">
                 @foreach ($status as $token => $label)
                     <span class="inline-flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1 text-[13px]">
-                        <span class="size-2 rounded-full" style="background: var(--pv-{{ $token }})"></span>{{ $label }}
+                        <span class="size-2 rounded-full" style="background: var(--vms-{{ $token }})"></span>{{ $label }}
                     </span>
                 @endforeach
             </div>
         </section>
 
         <section>
-            <h2 class="pv-eyebrow">Type</h2>
+            <h2 class="vms-eyebrow">Type</h2>
             <div class="grid gap-1">
                 <p class="text-base font-semibold">Inter 600, 16px: Dispatch workspace</p>
                 <p>Inter 400, 14px body copy, line height 1.45, with <span class="tnum">tabular 0123456789</span> figures.</p>
@@ -71,7 +71,7 @@
         </section>
 
         <section>
-            <h2 class="pv-eyebrow">Radii, hairlines, no shadows</h2>
+            <h2 class="vms-eyebrow">Radii, hairlines, no shadows</h2>
             <div class="flex flex-wrap gap-3">
                 @foreach ($radii as $name => [$px, $class])
                     <div class="grid size-24 place-items-center border border-line bg-panel text-xs text-ink-dim {{ $class }}">{{ $name }} {{ $px }}</div>
@@ -80,7 +80,7 @@
         </section>
 
         <section>
-            <h2 class="pv-eyebrow">Components (TallStackUI, personalised)</h2>
+            <h2 class="vms-eyebrow">Components (TallStackUI, personalised)</h2>
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ts-card header="Card" class="!shadow-none">
                     <p class="text-[13px] text-ink-dim">Hairline border, panel surface, no shadow.</p>
@@ -98,87 +98,100 @@
                     </div>
                 </x-ts-card>
 
-                <x-airside::auth-card title="Form controls" description="Plain inputs share the same tokens.">
-                    <x-airside::field name="callsign" label="Callsign" value="PVA101" />
-                    <x-airside::field name="password" type="password" label="Password" />
+                <x-vms::auth.card title="Form controls" description="Plain inputs share the same tokens.">
+                    <div class="grid gap-1">
+                        <x-ts-input label="Callsign" name="callsign" id="callsign" type="text" value="PVA101" invalidate />
+
+                        @error('callsign')
+                            <div role="alert"><x-ts-error property="callsign" /></div>
+                        @enderror
+                    </div>
+                    <div class="grid gap-1">
+                        <x-ts-password label="Password" name="password" id="password" invalidate />
+
+                        @error('password')
+                            <div role="alert"><x-ts-error property="password" /></div>
+                        @enderror
+                    </div>
                     <label class="flex items-center gap-2 text-[13px]"><input type="checkbox" checked /> Remember me</label>
-                    <x-airside::alert kind="success">Saved the profile.</x-airside::alert>
-                    <x-airside::alert kind="error">The bid could not be removed.</x-airside::alert>
-                </x-airside::auth-card>
+                    <x-ts-alert color="green" light shadowless role="status">Saved the profile.</x-ts-alert>
+                    <x-ts-alert color="red" light shadowless role="alert">The bid could not be removed.</x-ts-alert>
+                </x-vms::auth.card>
             </div>
         </section>
 
         <section>
-            <h2 class="pv-eyebrow">Component kit (x-airside::)</h2>
+            <h2 class="vms-eyebrow">Component kit (x-vms::)</h2>
             <div class="grid gap-6">
-                <x-airside::page name="showcase" label="Kit page">
-                    <x-airside::page-header headline="Logbook" title="My PIREPs" description="Every flight you have filed, most recent first.">
+                <x-vms::page name="showcase" label="Kit page">
+                    <x-vms::page.header headline="Logbook" title="My PIREPs" description="Every flight you have filed, most recent first.">
                         <x-slot:links>
-                            <x-airside::state-badge state-color="gray" label="12 total" />
+                            <x-ts-badge color="slate" light data-state="gray">12 total</x-ts-badge>
                         </x-slot:links>
-                    </x-airside::page-header>
-                    <x-airside::back-link href="#">flight manifest</x-airside::back-link>
-                </x-airside::page>
+                    </x-vms::page.header>
+                    <x-ts-link href="#" text="Back to flight manifest" icon="phosphor.arrow-left.light" sm navigate class="w-fit" />
+                </x-vms::page>
 
                 <div class="grid gap-4 md:grid-cols-4">
-                    <x-airside::stat label="Flights" value="128" />
-                    <x-airside::stat label="Hours" value="342:10" mono accent="mag" />
-                    <x-airside::stat label="Landing rate" value="-142" small accent="green" />
-                    <x-airside::stat label="Rank" :value="null" accent="amber" />
+                    <x-ts-stats title="Flights"><span class="font-semibold tabular-nums text-2xl">128</span></x-ts-stats>
+                    <x-ts-stats title="Hours"><span class="font-semibold tabular-nums text-primary-600 dark:text-primary-400 font-mono text-2xl">342:10</span></x-ts-stats>
+                    <x-ts-stats title="Landing rate"><span class="font-semibold tabular-nums text-green-600 dark:text-green-400 text-xl">-142</span></x-ts-stats>
+                    <x-ts-stats title="Rank"><span class="font-semibold tabular-nums text-amber-600 dark:text-amber-400 text-2xl">—</span></x-ts-stats>
                 </div>
 
                 <div class="grid gap-4 md:grid-cols-3">
-                    <x-airside::card title="Flight ident" description="Initials fallback and stacked layout.">
+                    <x-ts-card>
+                        <x-slot:header>
+                            <div class="grid gap-0.5"><h2 class="text-sm font-semibold">Flight ident</h2><p class="text-xs font-normal text-dark-500 dark:text-dark-400">Initials fallback and stacked layout.</p></div>
+                        </x-slot:header>
                         <div class="grid gap-3">
-                            <x-airside::flight-ident callsign="PVA101" dpt="KJFK" arr="EGLL" airline="Phpvms Air" aircraft="N123PV · B738" />
-                            <x-airside::flight-ident callsign="AP9100" dpt="KJFK" arr="EGLL" stacked />
-                            <x-airside::flight-ident callsign="PVA202" dpt="LFPG" arr="LEMD" airline="Phpvms Air" size="lg" />
+                            <x-vms::flights.ident callsign="PVA101" dpt="KJFK" arr="EGLL" airline="Phpvms Air" aircraft="N123PV · B738" />
+                            <x-vms::flights.ident callsign="AP9100" dpt="KJFK" arr="EGLL" stacked />
+                            <x-vms::flights.ident callsign="PVA202" dpt="LFPG" arr="LEMD" airline="Phpvms Air" size="lg" />
                         </div>
                         <x-slot:footer>
-                            <x-airside::stats :items="[['label' => 'ETE', 'value' => '7:12'], ['label' => 'Dist', 'value' => '3 451 nm'], ['label' => 'Expires', 'value' => null]]" />
+                            <x-vms::ui.stats :items="[['label' => 'ETE', 'value' => '7:12'], ['label' => 'Dist', 'value' => '3 451 nm'], ['label' => 'Expires', 'value' => null]]" />
                         </x-slot:footer>
-                    </x-airside::card>
+                    </x-ts-card>
 
-                    <x-airside::card title="State badges" variant="subtle">
+                    <x-ts-card light header="State badges">
                         <div class="flex flex-wrap gap-2">
                             @foreach (['success' => 'Accepted', 'warning' => 'Pending', 'danger' => 'Rejected', 'info' => 'In progress', 'gray' => 'Draft'] as $state => $text)
-                                <x-airside::state-badge :state-color="$state" :label="$text" />
+                                <x-ts-badge :color="\Modules\PhpvmsAirsideTheme\Support\StateColor::tallstack($state)" light :data-state="$state">{{ $text }}</x-ts-badge>
                             @endforeach
                         </div>
-                        <div class="mt-4"><x-airside::loading text="Loading flights" /></div>
-                    </x-airside::card>
+                        <div class="mt-4"><div class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Loading flights"><x-ts-spinner sm text="Loading flights" /></div></div>
+                    </x-ts-card>
 
-                    <x-airside::card title="Confirm and drawer">
+                    <x-ts-card header="Confirm and drawer">
                         <div class="grid gap-3">
-                            <x-airside::confirm prompt="Cancel this bid?" confirm-label="Yes, cancel it" keep-label="Keep">
-                                <x-slot:trigger><x-ts-button sm light type="button">Cancel bid</x-ts-button></x-slot:trigger>
-                            </x-airside::confirm>
+                            <x-ts-button sm light type="button" data-prompt="Cancel this bid?" data-confirm="Yes, cancel it" data-keep="Keep" x-on:click="$tsui.interaction('dialog').question($escapeHtml($el.dataset.prompt)).confirm($el.dataset.confirm).cancel($el.dataset.keep).send()">Cancel bid</x-ts-button>
 
-                            <x-airside::drawer title="Flight details" description="Opens from the right.">
+                            <x-vms::ui.drawer title="Flight details" description="Opens from the right.">
                                 <x-slot:trigger><x-ts-button sm outline type="button">Open drawer</x-ts-button></x-slot:trigger>
                                 <p class="text-[13px] text-ink-dim">Escape, the backdrop or the close button dismiss it.</p>
                                 <x-slot:footer><x-ts-button sm type="button" x-on:click="open = false">Done</x-ts-button></x-slot:footer>
-                            </x-airside::drawer>
+                            </x-vms::ui.drawer>
 
-                            <x-airside::drawer title="Bottom sheet" side="bottom">
+                            <x-vms::ui.drawer title="Bottom sheet" side="bottom">
                                 <x-slot:trigger><x-ts-button sm outline type="button">Open bottom</x-ts-button></x-slot:trigger>
                                 <p class="text-[13px] text-ink-dim">Slides up on small screens.</p>
-                            </x-airside::drawer>
+                            </x-vms::ui.drawer>
                         </div>
-                    </x-airside::card>
+                    </x-ts-card>
                 </div>
 
-                <x-airside::empty icon="map" title="No PIREPs yet" description="Fly a flight and it will show up in your logbook.">
+                <x-vms::ui.empty icon="map" title="No PIREPs yet" description="Fly a flight and it will show up in your logbook.">
                     <x-slot:actions><x-ts-button sm type="button">Find a flight</x-ts-button></x-slot:actions>
-                </x-airside::empty>
+                </x-vms::ui.empty>
             </div>
         </section>
 
         <section>
-            <h2 class="pv-eyebrow">Toast and scroll</h2>
+            <h2 class="vms-eyebrow">Toast and scroll</h2>
             <div class="flex flex-wrap items-start gap-4">
-                <div class="pv-toast success"><span class="tag">OK</span><span class="text">Bid placed</span></div>
-                <div class="pv-toast error"><span class="tag">FAULT</span><span class="text">Aircraft already reserved</span></div>
+                <div class="vms-toast success"><span class="tag">OK</span><span class="text">Bid placed</span></div>
+                <div class="vms-toast error"><span class="tag">FAULT</span><span class="text">Aircraft already reserved</span></div>
                 <div class="scroll-thin h-20 w-48 overflow-auto rounded-md border border-line bg-panel p-2 text-xs">
                     @for ($i = 1; $i <= 12; $i++)
                         <p>scroll-thin row {{ $i }}</p>

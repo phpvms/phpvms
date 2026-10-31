@@ -67,31 +67,31 @@ function mountIsland(root) {
   const to = hasPoint(data.to) ? [data.to.lon, data.to.lat] : null;
   const height = Number.isFinite(data.height) ? data.height : DEFAULT_HEIGHT;
 
-  const header = element("div", "pv-route-map__head");
+  const header = element("div", "vms-route-map__head");
   header.append(
     element(
       "span",
-      "pv-route-map__title",
+      "vms-route-map__title",
       "ND · MAPLIBRE · GLOBE",
     ),
     element(
       "span",
-      "pv-route-map__route",
+      "vms-route-map__route",
       to && data.to.icao ? `${data.from.icao} ▸ ${data.to.icao}` : (data.from.icao ?? ""),
     ),
   );
 
-  const mapElement = element("div", "pv-route-map__map");
+  const mapElement = element("div", "vms-route-map__map");
   mapElement.dataset.role = "map";
   mapElement.style.height = `${height}px`;
 
-  const status = element("div", "pv-route-map__readout");
+  const status = element("div", "vms-route-map__readout");
   status.dataset.role = "readout";
   readout(from, to, data.cruiseLevel).forEach((text, index) => {
-    status.append(element("span", index === 0 ? "pv-route-map__track" : "", text));
+    status.append(element("span", index === 0 ? "vms-route-map__track" : "", text));
   });
 
-  const frame = element("div", "pv-route-map");
+  const frame = element("div", "vms-route-map");
   frame.setAttribute("role", "img");
   frame.setAttribute(
     "aria-label",
@@ -117,7 +117,7 @@ function mountIsland(root) {
 
     if (!result.ok) {
       mapElement.textContent = "Route map unavailable in this browser.";
-      mapElement.className = "pv-route-map__map pv-route-map__map--empty";
+      mapElement.className = "vms-route-map__map vms-route-map__map--empty";
       mapElement.style.height = "auto";
       mapElement.style.minHeight = "180px";
 

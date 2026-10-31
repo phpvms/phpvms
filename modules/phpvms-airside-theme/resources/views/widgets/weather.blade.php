@@ -1,6 +1,6 @@
 {{-- Decoded METAR widget. Data comes from App\Widgets\Weather: config, metar, taf, unit_alt, unit_dist, unit_temp. --}}
 @if ($metar)
-    <section class="pv-widget grid gap-2 rounded-md p-4" aria-label="@lang('dashboard.weatherat', ['ICAO' => $config['icao']])">
+    <section class="vms-widget grid gap-2 rounded-md p-4" aria-label="@lang('dashboard.weatherat', ['ICAO' => $config['icao']])">
         <p>@lang('dashboard.weatherat', ['ICAO' => $config['icao']])</p>
         <p class="break-words font-mono text-[11px] leading-relaxed">{{ $metar['raw'] }}</p>
 
@@ -76,5 +76,5 @@
         </details>
     </section>
 @else
-    <p class="pv-widget rounded-md p-4 text-center text-[13px]">@lang('widgets.weather.nometar')</p>
+    <p class="vms-widget rounded-md p-4 text-center text-[13px]">@lang('widgets.weather.nometar')</p>
 @endif

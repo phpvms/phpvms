@@ -3,7 +3,7 @@
 @section('card_width', 'max-w-[440px]')
 
 @section('content')
-    <x-airside::auth-card :title="$client->name">
+    <x-vms::auth.card :title="$client->name">
         <p class="text-[13px]">{{ __('oauth.authorize_request', ['client' => $client->name]) }}</p>
 
         @if (count($scopes) > 0)
@@ -35,5 +35,5 @@
                 <x-ts-button submit color="secondary" outline>{{ __('common.cancel') }}</x-ts-button>
             </form>
         </div>
-    </x-airside::auth-card>
+    </x-vms::auth.card>
 @endsection
