@@ -81,6 +81,14 @@ it('observes a write within the same request', function (): void {
     expect(addon_setting('memo/widget', 'label'))->toBe('new');
 });
 
+it('hands each read its own copy of a date', function (): void {
+    AddonSetting::factory()->create(['registry_id' => 'memo/widget', 'key' => 'day', 'type' => 'date', 'value' => '2026-01-15']);
+
+    addon_setting('memo/widget', 'day')->addDay();
+
+    expect(addon_setting('memo/widget', 'day')->toDateString())->toBe('2026-01-15');
+});
+
 it('is flushed by Octane before each request', function (): void {
     expect(config('octane.flush', []))->toContain(AddonSettingService::class);
 });

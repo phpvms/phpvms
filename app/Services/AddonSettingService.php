@@ -55,21 +55,26 @@ class AddonSettingService extends Service
         $formattedKey = AddonSetting::formatKey($key);
         $memoKey = $registryId.'.'.$formattedKey;
 
-        if (array_key_exists($memoKey, $this->memo)) {
-            return $this->memo[$memoKey];
+        if (!array_key_exists($memoKey, $this->memo)) {
+            $this->memo[$memoKey] = app()->environment('production')
+                ? Cache::remember(
+                    config('cache.keys.ADDON_SETTINGS.key').$memoKey,
+                    config('cache.keys.ADDON_SETTINGS.time'),
+                    fn (): mixed => $this->read($registryId, $formattedKey),
+                )
+                : $this->read($registryId, $formattedKey);
         }
 
-        if (app()->environment('production')) {
-            $cache = config('cache.keys.ADDON_SETTINGS');
+        return $this->copy($this->memo[$memoKey]);
+    }
 
-            return $this->memo[$memoKey] = Cache::remember(
-                $cache['key'].$memoKey,
-                $cache['time'],
-                fn (): mixed => $this->read($registryId, $formattedKey),
-            );
-        }
-
-        return $this->memo[$memoKey] = $this->read($registryId, $formattedKey);
+    /**
+     * A date setting is a mutable Carbon: each read gets its own, so a caller
+     * doing addon_setting(...)->addDay() doesn't change what the next read sees.
+     */
+    private function copy(mixed $value): mixed
+    {
+        return is_object($value) ? clone $value : $value;
     }
 
     /**
