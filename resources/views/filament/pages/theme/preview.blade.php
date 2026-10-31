@@ -21,7 +21,12 @@
     #customize,
     #customize > .fi-section,
     #customize .fi-section-content-ctn { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
-    #customize .fi-section-content { flex: 1 1 auto; }
+    #customize .fi-section-content { flex: 1 1 auto; grid-template-rows: minmax(0, 1fr); }
+    #customize .fi-section-footer { margin-top: auto; }
+    #customize .fi-section-content > .fi-grid-col,
+    #customize .fi-section-content > .fi-grid-col > .fi-sc-component { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+    #customize .cm-editor { max-height: 60vh; }
+    #customize .cm-scroller { overflow: auto; }
 </style>
 
 <div
@@ -33,12 +38,13 @@
             return this.theme ? `${this.base}?${this.param}=${encodeURIComponent(this.theme)}` : this.base;
         },
         fit() {
-            const top = this.$el.getBoundingClientRect().top + window.scrollY;
+            const top = this.$el.getBoundingClientRect().top;
             this.$el.style.height = `${Math.max(480, window.innerHeight - top - 24)}px`;
         },
     }"
     x-init="fit(); $nextTick(() => fit())"
     x-on:resize.window="fit()"
+    x-on:scroll.window.passive="fit()"
     class="fi-theme-preview"
 >
     <iframe

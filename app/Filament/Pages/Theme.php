@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Themes\ThemeFields;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Http\Middleware\SetActiveTheme;
@@ -13,14 +14,15 @@ use App\Services\SettingService;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CodeEditor;
+use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
@@ -47,6 +49,8 @@ class Theme extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Phosphor::PaintBrushLight;
 
+    protected string $view = 'filament.pages.theme';
+
     public ?array $data = [];
 
     public string $previousUrl;
@@ -61,8 +65,11 @@ class Theme extends Page
 
     public function mount(): void
     {
+        $theme = (string) setting('general.theme', config('themes.default'));
+
         $this->form->fill([
-            'theme' => setting('general.theme', config('themes.default')),
+            'theme' => $theme,
+            'css'   => app(ThemeFields::class)->get($theme, 'css'),
         ]);
 
         $this->previousUrl = url()->previous();
@@ -97,19 +104,50 @@ class Theme extends Page
                                     ->options(fn (): array => $this->themeOptions())
                                     ->in(fn (): array => array_keys($this->themeOptions()))
                                     ->required()
-                                    ->native(false),
+                                    ->native(false)
+                                    ->live()
+                                    ->afterStateUpdated(fn (Set $set, ?string $state): mixed => $set(
+                                        'css',
+                                        $state ? app(ThemeFields::class)->get($state, 'css') : '',
+                                    )),
                             ]),
 
                         Section::make(__('filament.theme_customize'))
                             ->id('customize')
+                            ->key('customize')
                             ->icon(Phosphor::SlidersLight)
                             ->schema([
-                                Tabs::make('customize')
-                                    ->tabs([
-                                        Tab::make('theme_styles')
-                                            ->label(__('filament.theme_styles'))
-                                            ->schema([]),
-                                    ]),
+                                CodeEditor::make('css')
+                                    ->label(__('filament.theme_css'))
+                                    ->helperText(__('filament.theme_css_hint'))
+                                    ->language(Language::Css),
+                            ])
+                            ->footerActions([
+                                Action::make('resetCss')
+                                    ->label(__('filament.theme_css_reset'))
+                                    ->color('gray')
+                                    ->icon(Phosphor::ArrowCounterClockwiseLight)
+                                    ->requiresConfirmation()
+                                    ->modalHeading(__('filament.theme_css_reset'))
+                                    ->modalDescription(__('filament.theme_css_reset_confirm'))
+                                    ->visible(fn (): bool => app(ThemeFields::class)->override((string) ($this->data['theme'] ?? ''), 'css') !== null)
+                                    ->action(function (): void {
+                                        abort_unless(static::canEdit(), 403);
+
+                                        $theme = (string) ($this->data['theme'] ?? '');
+                                        $fields = app(ThemeFields::class);
+                                        $fields->reset($theme, 'css');
+
+                                        $this->form->fill([
+                                            'theme' => $theme,
+                                            'css'   => $fields->get($theme, 'css'),
+                                        ]);
+
+                                        Notification::make()
+                                            ->success()
+                                            ->title(__('filament.theme_css_reset_done'))
+                                            ->send();
+                                    }),
                             ]),
                     ]),
 
@@ -142,7 +180,8 @@ class Theme extends Page
         abort_unless(static::canEdit(), 403);
 
         try {
-            $theme = (string) $this->form->getState()['theme'];
+            $data = $this->form->getState();
+            $theme = (string) $data['theme'];
 
             // store() returns null when the row does not exist; an install that
             // has not run `migrate-data` must hear that rather than see a green
@@ -157,6 +196,8 @@ class Theme extends Page
 
                 return;
             }
+
+            app(ThemeFields::class)->set($theme, 'css', $data['css'] ?? null);
 
             Notification::make()
                 ->success()

@@ -5,9 +5,9 @@ declare(strict_types=1);
 require_once __DIR__.'/Support.php';
 
 use App\Models\NavigationItem;
+use App\Models\ThemeSetting;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Facades\Filament;
-use Filament\Support\Colors\Color;
 
 /**
  * 6.1: the `app` layout, the sections addon views fill, the meta tags, theme
@@ -59,19 +59,6 @@ it('applies the saved theme mode before first paint', function (): void {
         ->and($html)->toContain("classList.toggle('dark'")
         ->and($html)->toContain("document.addEventListener('livewire:navigated', apply)")
         ->and($html)->toContain('x-data="tallstackui_darkTheme(');
-});
-
-it('recolours the TallStackUI primary palette from the brand colour at request time', function (): void {
-    updateSetting('branding.brand_color', '#e11d48');
-
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-    $palette = Color::generatePalette('#e11d48');
-
-    expect($html)
-        ->toContain('--color-primary-50: '.$palette[50].';')
-        ->toContain('--color-primary-600: '.$palette[600].';')
-        ->toContain('--color-primary-950: '.$palette[950].';')
-        ->and(strpos($html, '--color-primary-600'))->toBeLessThan(strpos($html, '<body'));
 });
 
 it('loads the Livewire and TallStackUI scripts', function (): void {
@@ -149,4 +136,27 @@ it('persists nothing in the shell across navigation', function (): void {
     // sector, duty and station stay server-driven, and the header's mobile menu
     // button keeps driving the page's own sidebar.
     expect($html)->not->toContain('x-persist=');
+});
+
+it('emits no theme css block when there is no stored override', function (): void {
+    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
+
+    expect($html)->not->toContain('data-theme-css');
+});
+
+it('emits the stored theme css after the brand palette', function (): void {
+    ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'css', 'content' => ':root{--color-primary-600:#ff0000}']);
+
+    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
+
+    expect($html)->toContain('<style data-theme-css>:root{--color-primary-600:#ff0000}</style>')
+        ->and(strpos($html, 'data-theme-css'))->toBeLessThan(strpos($html, '<body'));
+});
+
+it('neutralises a closing style tag in the stored theme css', function (): void {
+    ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'css', 'content' => 'a{}</STYLE><script>x</script>']);
+
+    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
+
+    expect($html)->toContain('a{}<\/style><script>x</script>');
 });

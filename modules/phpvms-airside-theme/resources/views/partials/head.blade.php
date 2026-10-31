@@ -40,17 +40,13 @@
 @airsideVite(['resources/css/airside.css', 'resources/js/airside.js'])
 
 {{--
-  TallStackUI defines `primary` as Tailwind @theme variables, so every utility
-  and component reads `var(--color-primary-*)`. Overriding those on :root with
-  the admin's brand palette recolours the theme per request, without a build.
+  Admin CSS from Content > Theme, raw by design (same trust level as Branding).
+  Any closing-tag sequence is neutralised so it cannot end the <style> early.
 --}}
-<style>
-    :root {
-        @foreach ($branding->brandPalette() as $shade => $color)
-            --color-primary-{{ $shade }}: {{ $color }};
-        @endforeach
-    }
-</style>
+@php($themeCss = app(\App\Features\Themes\ThemeFields::class)->override(\Igaster\LaravelTheme\Facades\Theme::get(), 'css'))
+@if ($themeCss !== null && trim($themeCss) !== '')
+    <style data-theme-css>{!! str_ireplace('</style', '<\/style', $themeCss) !!}</style>
+@endif
 
 <tallstackui:script />
 @livewireStyles
