@@ -231,13 +231,22 @@ class FinanceService extends Service
 
     /**
      * Change the currencies on the journals and transactions to the current currency value
+     *
+     * Only rows still on another currency are written: rewriting every
+     * transaction row (hundreds of thousands on a busy VA) takes seconds and
+     * holds row locks that block finance writes meanwhile.
+     *
+     * @param ?string $currency The currency to move to; the `units.currency`
+     *                          setting when omitted. ChangeJournalCurrencies passes
+     *                          the value read from the settings table, which the
+     *                          application cache can lag behind.
      */
-    public function changeJournalCurrencies(): void
+    public function changeJournalCurrencies(?string $currency = null): void
     {
-        $currency = setting('units.currency', 'USD');
+        $currency ??= setting('units.currency', 'USD');
         $update = ['currency' => $currency];
 
-        Journal::query()->update($update);
-        JournalTransaction::query()->update($update);
+        Journal::query()->where('currency', '!=', $currency)->update($update);
+        JournalTransaction::query()->where('currency', '!=', $currency)->update($update);
     }
 }

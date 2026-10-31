@@ -6,8 +6,8 @@ use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\FormActionIcons;
+use App\Jobs\ChangeJournalCurrencies;
 use App\Models\Setting;
-use App\Services\FinanceService;
 use App\Services\SettingService;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -116,22 +116,37 @@ class Settings extends Page
 
             $data = Arr::dot($data);
 
-            // Wrap the settings write + journal-currency migration in a single
-            // transaction so a partial failure rolls back BOTH halves rather
-            // than leaving the DB with half-saved settings or a half-migrated
-            // journal.
-            DB::transaction(function () use ($data): void {
+            // Wrap the settings writes in a single transaction so a partial
+            // failure doesn't leave the DB with half-saved settings.
+            $currencyChanged = DB::transaction(function () use ($data): bool {
+                // Read from the table, not setting(): the application cache can
+                // hold a currency that never committed (a save that rolled back),
+                // which would make the retry look unchanged and skip the migration.
+                $storedCurrency = static fn (): ?string => Setting::query()->byKey('units.currency')->value('value');
+                $previousCurrency = $storedCurrency();
+
                 $settingService = app(SettingService::class);
                 foreach ($data as $key => $value) {
                     $settingService->store($key, $value);
                 }
 
-                app(FinanceService::class)->changeJournalCurrencies();
+                $currency = $storedCurrency();
+
+                return $currency !== null && $currency !== $previousCurrency;
             });
+
+            // Only when the currency changed: the journals are already on it
+            // otherwise. Queued, because the migration touches every journal
+            // transaction row, and dispatched after the commit so the job reads
+            // the new currency.
+            if ($currencyChanged) {
+                ChangeJournalCurrencies::dispatch(auth()->id());
+            }
 
             Notification::make()
                 ->success()
                 ->title('Settings saved successfully')
+                ->body($currencyChanged ? 'The journals are being moved to the new currency. You will be notified when it is done.' : null)
                 ->send();
         } catch (Halt) {
             return;
