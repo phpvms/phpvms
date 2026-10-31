@@ -8,6 +8,7 @@ use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Http\Middleware\SetActiveTheme;
 use App\Services\SettingService;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -15,7 +16,12 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
@@ -68,24 +74,67 @@ class Theme extends Page
         return $schema->components([$this->getFormContentComponent()]);
     }
 
+    /**
+     * Two columns on large screens: the theme select and the Customize card
+     * stacked on the left, the live preview on the right.
+     */
     public function form(Schema $schema): Schema
     {
         return $schema
+            ->columns(['default' => 1, 'lg' => 3])
             ->components([
-                Section::make(__('filament.theme'))
-                    ->id('theme')
-                    ->icon(Phosphor::PaintBrushLight)
+                Grid::make(1)
+                    ->columnSpan(['lg' => 1])
+                    ->extraAttributes(['class' => 'fi-theme-left'])
                     ->schema([
-                        Select::make('theme')
-                            ->label(__('filament.theme_current'))
-                            ->helperText(__('filament.theme_current_hint'))
-                            ->options(fn (): array => $this->themeOptions())
-                            ->in(fn (): array => array_keys($this->themeOptions()))
-                            ->required()
-                            ->native(false),
+                        Section::make(__('filament.theme'))
+                            ->id('theme')
+                            ->icon(Phosphor::PaintBrushLight)
+                            ->schema([
+                                Select::make('theme')
+                                    ->label(__('filament.theme_current'))
+                                    ->helperText(__('filament.theme_current_hint'))
+                                    ->options(fn (): array => $this->themeOptions())
+                                    ->in(fn (): array => array_keys($this->themeOptions()))
+                                    ->required()
+                                    ->native(false),
+                            ]),
+
+                        Section::make(__('filament.theme_customize'))
+                            ->id('customize')
+                            ->icon(Phosphor::SlidersLight)
+                            ->schema([
+                                Tabs::make('customize')
+                                    ->tabs([
+                                        Tab::make('theme_styles')
+                                            ->label(__('filament.theme_styles'))
+                                            ->schema([]),
+                                    ]),
+                            ]),
                     ]),
+
+                View::make('filament.pages.theme.preview')
+                    ->viewData([
+                        'url'   => route('frontend.dashboard.index'),
+                        'param' => SetActiveTheme::PREVIEW_PARAM,
+                    ])
+                    ->columnSpan(['lg' => 2]),
             ])
             ->statePath('data');
+    }
+
+    /**
+     * The submit row belongs in the Customize card, which sits inside the
+     * left-column Grid where {@see ReversePrimaryButtons::lastFormSection()}
+     * (top-level only) would not see it.
+     */
+    protected function lastFormSection(): ?Section
+    {
+        $section = $this->getSchema('form')?->getComponent(
+            fn (Component $component): bool => $component instanceof Section && $component->getId() === 'customize',
+        );
+
+        return $section instanceof Section ? $section : null;
     }
 
     public function save(): void

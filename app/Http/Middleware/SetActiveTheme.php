@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Log;
  */
 class SetActiveTheme implements Middleware
 {
+    public const string PREVIEW_PARAM = 'preview_theme';
+
     private static array $skip = [
         'admin',
         'admin/*',
@@ -74,6 +76,8 @@ class SetActiveTheme implements Middleware
             $theme = config('themes.default');
         }
 
+        $theme = $this->previewTheme($request) ?? $theme;
+
         if ($request->is(self::$skip)) {
             // Skipped paths don't pick a per-request theme but still need a
             // deterministic baseline under Octane (see method PHPDoc).
@@ -84,6 +88,28 @@ class SetActiveTheme implements Middleware
         }
 
         Theme::set($this->registeredTheme($theme));
+    }
+
+    /**
+     * Theme requested for a one-request preview via `?preview_theme=`, used by
+     * the admin's Content > Theme page to frame the site under the theme being
+     * chosen before it is saved. Only honoured for a user with admin access and
+     * only for an installed theme, so the parameter cannot be used by a visitor
+     * to force a theme or to probe for ones that exist.
+     */
+    private function previewTheme(Request $request): ?string
+    {
+        $theme = $request->query(self::PREVIEW_PARAM);
+
+        if (!is_string($theme) || $theme === '') {
+            return null;
+        }
+
+        if (!$request->user()?->hasAdminAccess()) {
+            return null;
+        }
+
+        return Theme::exists($theme) ? $theme : null;
     }
 
     /**

@@ -51,6 +51,15 @@ it('saves the selected theme', function (): void {
     expect(setting('general.theme'))->toBe('airside');
 });
 
+it('frames the pilot dashboard under the selected theme as a preview', function (): void {
+    $this->actingAs(themeAdmin('view:theme'));
+
+    livewire(Theme::class)
+        ->assertSeeHtml('<iframe')
+        ->assertSeeHtml('?${this.param}=')
+        ->assertSeeHtml(str_replace('/', '\\/', route('frontend.dashboard.index')));
+});
+
 it('rejects a theme that is not installed', function (): void {
     $this->actingAs(themeAdmin('view:theme', 'edit:theme'));
 
