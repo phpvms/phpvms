@@ -48,11 +48,12 @@ class AddonSettingService extends Service
         if (app()->environment('production')) {
             $cache = config('cache.keys.ADDON_SETTINGS');
 
+            // Wrapped in an array, which keeps the value's type: see setting().
             return Cache::remember(
                 $cache['key'].$registryId.'.'.$formattedKey,
                 $cache['time'],
-                fn (): mixed => $this->read($registryId, $formattedKey),
-            );
+                fn (): array => [$this->read($registryId, $formattedKey)],
+            )[0];
         }
 
         return $this->read($registryId, $formattedKey);
