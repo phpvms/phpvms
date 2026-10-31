@@ -76,14 +76,15 @@ final readonly class UpdateProfile
         }
 
         // User needs to verify their new email address
-        if ($user->isDirty('email')) {
+        $emailChanged = $user->isDirty('email');
+        if ($emailChanged) {
             $user->email_verified_at = null;
         }
 
         $user->save();
         $user->refresh();
 
-        if ($user->email !== $validated['email']) {
+        if ($emailChanged) {
             $user->sendEmailVerificationNotification();
         }
 
