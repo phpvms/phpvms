@@ -57,3 +57,23 @@ it('parses an ATIS that SimBrief sends without a letter', function (): void {
         ->and($parsed->type)->toBe('')
         ->and($parsed->message)->toBe('');
 });
+
+it('parses a take-off and an en-route alternate SimBrief sends on their own, not in a list', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['takeoff_altn'] = $ofp['origin'];
+    $ofp['enroute_altn'] = $ofp['destination'];
+
+    $parsed = SimBriefOfp::from($ofp);
+
+    expect($parsed->takeoff_altn)->toHaveCount(1)
+        ->and($parsed->takeoff_altn[0]->icao_code)->toBe($ofp['origin']['icao_code'])
+        ->and($parsed->enroute_altn)->toHaveCount(1)
+        ->and($parsed->enroute_altn[0]->icao_code)->toBe($ofp['destination']['icao_code']);
+});
+
+it('parses a list of take-off alternates', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['takeoff_altn'] = [$ofp['origin'], $ofp['destination']];
+
+    expect(SimBriefOfp::from($ofp)->takeoff_altn)->toHaveCount(2);
+});
