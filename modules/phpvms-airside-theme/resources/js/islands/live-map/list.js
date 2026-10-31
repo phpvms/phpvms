@@ -32,16 +32,16 @@ export function createFlightList(root, container, onSelect) {
    * @param {{ flights: any[], loading: boolean, loadError: boolean, selected: string | null }} state
    */
   function render(state) {
-    if (!state.loading && state.flights.length === 0) {
+    if (state.loadError) {
       clearRows();
-      showNotice("empty");
+      showNotice("list-error");
 
       return;
     }
 
-    if (state.loadError) {
+    if (!state.loading && state.flights.length === 0) {
       clearRows();
-      showNotice("list-error");
+      showNotice("empty");
 
       return;
     }

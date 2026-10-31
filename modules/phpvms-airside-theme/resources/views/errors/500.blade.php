@@ -29,8 +29,8 @@
 <body>
     <main>
         <p class="code">500</p>
-        <h1>@lang('errors.503.title')</h1>
-        <p>Something went wrong on our side. If you are a pilot, tell your webmaster what you did to get here.</p>
+        <h1>@lang('errors.500.title')</h1>
+        <p>@lang('errors.500.message')</p>
 
         <div class="card">
             <h2>For administrators</h2>

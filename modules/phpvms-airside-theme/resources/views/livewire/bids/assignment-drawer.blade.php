@@ -133,7 +133,6 @@
                                     action="selectSubfleet"
                                     search-placeholder="Search subfleets"
                                     empty-text="No configured subfleet matches this search."
-                                    :selected="$subfleetId"
                                     :items="$subfleets->map(fn ($subfleet) => [
                                         'value' => $subfleet->id,
                                         'title' => $subfleet->displayName,
@@ -183,7 +182,6 @@
                                             action="selectAircraft"
                                             search-placeholder="Search registrations or types"
                                             empty-text="No eligible aircraft matches this search."
-                                            :selected="$aircraftId"
                                             :items="array_map(fn ($item) => [
                                                 'value' => $item->id,
                                                 'title' => $item->registration,

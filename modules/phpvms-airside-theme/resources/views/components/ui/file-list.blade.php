@@ -6,7 +6,6 @@
         <li wire:key="file-{{ $file->id }}" class="flex flex-wrap items-baseline justify-between gap-2 py-2 text-[13px]">
             <span class="min-w-0">
                 <a href="{{ route('frontend.downloads.download', [$file->id]) }}" target="_blank" rel="noopener"
-                   @if ($file->isExternalFile) data-external-redirect="{{ $file->url }}" @endif
                    class="font-medium hover:underline">{{ $file->name }}</a>
                 @if ($file->description)
                     <span>{{ $file->description }}</span>

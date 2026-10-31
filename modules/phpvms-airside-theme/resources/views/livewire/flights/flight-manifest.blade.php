@@ -157,8 +157,8 @@
                             x-bind:aria-current="selected === @js($flightId) ? 'true' : null"
                             aria-label="Show {{ $flight->callsign }} operational context"
                             x-on:click="selected = @js($flightId)"
-                            x-on:keydown.enter.prevent="selected = @js($flightId)"
-                            x-on:keydown.space.prevent="selected = @js($flightId)"
+                            x-on:keydown.enter.self.prevent="selected = @js($flightId)"
+                            x-on:keydown.space.self.prevent="selected = @js($flightId)"
                         >
                             <div class="grid min-w-0 gap-1">
                                 <span class="font-mono text-sm font-bold">{{ $flight->callsign }}</span>

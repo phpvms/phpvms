@@ -10,9 +10,8 @@ use Illuminate\Http\Request;
  * Flattens the shell's navigation tree into the rows the rail renders, and
  * marks the active one.
  *
- * Mirrors skylight's `navigation.ts`: the active row is the one whose
- * same-origin path equals the page path or is a prefix of it, and the longest
- * such path wins, so `/flights/bids` beats `/flights`.
+ * The active row is the one whose same-origin path equals the page path or is
+ * a prefix of it, and the longest such path wins, so `/flights/bids` beats `/flights`.
  *
  * @phpstan-type Item array{label: string, url: string, icon: string|null, new_window: bool, spa: bool, children: array<int, mixed>}
  * @phpstan-type Row array{key: string, item: Item, depth: int, active: bool, group: bool, path: string|null}

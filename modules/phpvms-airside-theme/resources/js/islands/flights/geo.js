@@ -1,6 +1,6 @@
 /**
- * Great-circle geometry for the route map island, ported from skylight's
- * shared/lib/geo.ts. Coordinates are [lon, lat].
+ * Great-circle geometry (path, bearing, distance) shared by the route map and
+ * the briefing globe. Coordinates are [lon, lat].
  */
 const R = Math.PI / 180;
 const D = 180 / Math.PI;

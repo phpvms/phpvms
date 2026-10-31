@@ -10,13 +10,7 @@
     $pilotName = $pilot['name'] ?? $name ?? 'Pilot';
     $initials = mb_strtoupper(collect(preg_split('/\s+/', trim($pilotName)))->filter()->map(fn (string $part): string => mb_substr($part, 0, 1))->take(2)->implode(''));
 
-    $stateColor = match ($state['color'] ?? null) {
-        'success' => 'green',
-        'warning' => 'amber',
-        'danger' => 'red',
-        'info' => 'sky',
-        default => 'gray',
-    };
+    $stateColor = \Modules\PhpvmsAirsideTheme\Support\StateColor::tallstack($state['color'] ?? null);
     $stateLabel = $state['label'] ?? ($onLeave ? __('ui.on_leave') : 'Status unavailable');
 
     $promotion = match (true) {

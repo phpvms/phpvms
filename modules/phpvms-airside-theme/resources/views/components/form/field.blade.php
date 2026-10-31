@@ -1,6 +1,6 @@
 @props(['label', 'for' => null, 'error' => null, 'hint' => null, 'required' => false])
 
-{{-- A labelled profile form row with its validation error. Props: label, for (control id), error (error-bag key), hint, required. Slot: the control. --}}
+{{-- A labelled form row with its validation error. Props: label, for (control id), error (error-bag key), hint, required. Slot: the control. --}}
 <div {{ $attributes->class('grid content-start gap-1.5') }}>
     <label @if ($for) for="{{ $for }}" @endif class="text-[13px] font-medium">
         {{ $label }}

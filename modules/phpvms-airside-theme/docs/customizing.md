@@ -77,8 +77,8 @@ airside's components are anonymous Blade components under
 `<x-vms::…>`. Folders map to dots: `components/page/header.blade.php` is
 `<x-vms::page.header>`, and `components/page/index.blade.php` is
 `<x-vms::page>`. Folders are by function, then by feature: `layouts/`, `shell/`,
-`page/`, `ui/`, then `auth/`, `errors/`, `airports/`, `flights/`, `bids/`,
-`ofp/`, `pireps/`, `profile/`, `tours/`, `dev/`.
+`page/`, `ui/`, `form/`, then `auth/`, `errors/`, `airports/`, `flights/`,
+`bids/`, `livemap/`, `ofp/`, `pireps/`, `profile/`, `tours/`, `dev/`.
 
 The prefix resolves through the active theme's view paths. A theme that
 `extends: airside` overrides a component by adding the same file under its own
@@ -90,6 +90,16 @@ To eject a TallStackUI component, a theme adds
 registers the `resources/views/vendor/ts-ui` override path only if that directory
 exists at boot, so phpvms ships it empty (with a `.gitkeep`). phpvms then maps it
 to each theme's `vendor/`. Do not delete that directory.
+
+airside ejects two components. The first is
+`vendor/ts-ui/components/slide/main.blade.php`. It is TallStackUI's slide with `role="dialog"`, `aria-modal`, an `aria-labelledby`
+title, a focus trap over the whole panel (close button, body and footer) and an
+`aria-label` on the close button. `<x-vms::ui.drawer>` wraps it.
+
+The second is `vendor/ts-ui/components/tab/main.blade.php` and `items.blade.php`.
+Each tab gets an id and `aria-controls`, each panel an id and `aria-labelledby`,
+tabs use a roving `tabindex`, and Left, Right, Home and End move the selection
+and focus.
 
 ## Shipped look: `airside.css`
 

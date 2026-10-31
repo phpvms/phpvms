@@ -1,9 +1,8 @@
 import { cloneTemplate, setField } from "./dom.js";
 
 /**
- * The selected-flight overlay on the map, as skylight builds it (LiveFlightDetail):
- * a loading line, an error line, or the flight's callsign and route as a link.
- * It has no stats and no close button.
+ * The selected-flight overlay on the map: a loading line, an error line, or the flight's
+ * callsign and route as a link. It has no stats and no close button.
  *
  * @param {HTMLElement} root the island root
  * @param {HTMLElement} container the overlay element

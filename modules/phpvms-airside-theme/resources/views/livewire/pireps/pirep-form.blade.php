@@ -17,13 +17,13 @@
         <div class="grid gap-4">
             <x-ts-card :header="__('pireps.flight_information')">
                 <div class="grid gap-4 sm:grid-cols-3">
-                    <x-vms::pireps.form-field :label="__('common.airline')" for="pirep_airline" error="form.airline_id">
+                    <x-vms::form.field :label="__('common.airline')" for="pirep_airline" error="form.airline_id">
                         <select id="pirep_airline" wire:model="form.airline_id" @disabled($locked)>
                             @foreach ($this->airlineOptions as $airlineId => $airlineName)
                                 <option value="{{ $airlineId }}" wire:key="airline-{{ $airlineId }}">{{ $airlineName }}</option>
                             @endforeach
                         </select>
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
 
                     <div class="grid content-start gap-1.5 sm:col-span-1">
                         <label for="pirep_flight_number" class="text-[13px] font-medium">{{ __('pireps.flight_ident') }}</label>
@@ -39,13 +39,13 @@
                         @endforeach
                     </div>
 
-                    <x-vms::pireps.form-field :label="__('flights.flighttype')" for="pirep_flight_type" error="form.flight_type">
+                    <x-vms::form.field :label="__('flights.flighttype')" for="pirep_flight_type" error="form.flight_type">
                         <select id="pirep_flight_type" wire:model="form.flight_type" @disabled($locked)>
                             @foreach (\App\Enums\FlightType::cases() as $flightType)
                                 <option value="{{ $flightType->value }}" wire:key="flight-type-{{ $flightType->value }}">{{ $flightType->value }} ({{ $flightType->getLabel() }})</option>
                             @endforeach
                         </select>
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
 
                     <div class="grid content-start gap-1.5 sm:col-span-2">
                         <label for="pirep_hours" class="text-[13px] font-medium">{{ __('flights.flight_time') }}</label>
@@ -60,16 +60,16 @@
                         @endforeach
                     </div>
 
-                    <x-vms::pireps.form-field :label="__('flights.level').' ('.config('phpvms.internal_units.altitude').')'" for="pirep_level" error="form.level">
+                    <x-vms::form.field :label="__('flights.level').' ('.config('phpvms.internal_units.altitude').')'" for="pirep_level" error="form.level">
                         <input type="number" id="pirep_level" min="0" step="0.01" wire:model="form.level" @disabled($locked) />
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
                 </div>
             </x-ts-card>
 
             <x-ts-card :header="__('pireps.deparr_information')">
                 <div class="grid gap-4 sm:grid-cols-2">
                     @foreach (['dpt' => ['airports.departure', 'dpt_airport_id', $dptLabel, $this->dptResults], 'arr' => ['airports.arrival', 'arr_airport_id', $arrLabel, $this->arrResults]] as $side => [$sideLabel, $sideProperty, $selectedLabel, $results])
-                        <x-vms::pireps.form-field :label="__($sideLabel)" :for="'pirep_'.$side.'_search'" :error="'form.'.$sideProperty" wire:key="airport-{{ $side }}">
+                        <x-vms::form.field :label="__($sideLabel)" :for="'pirep_'.$side.'_search'" :error="'form.'.$sideProperty" wire:key="airport-{{ $side }}">
                             <div class="relative" data-role="{{ $side }}-airport">
                                 <div class="rounded-md px-3 py-1.5 text-[13px]" data-role="{{ $side }}-selected">
                                     {{ $selectedLabel === '' ? 'No airport selected' : $selectedLabel }}
@@ -91,14 +91,14 @@
                                     @endif
                                 @endunless
                             </div>
-                        </x-vms::pireps.form-field>
+                        </x-vms::form.field>
                     @endforeach
                 </div>
             </x-ts-card>
 
             <x-ts-card :header="__('pireps.aircraft_information')">
                 <div class="grid gap-4 sm:grid-cols-3">
-                    <x-vms::pireps.form-field :label="__('common.aircraft')" for="pirep_aircraft" error="form.aircraft_id">
+                    <x-vms::form.field :label="__('common.aircraft')" for="pirep_aircraft" error="form.aircraft_id">
                         <select id="pirep_aircraft" wire:model.live="form.aircraft_id" @disabled($locked)>
                             @foreach ($this->aircraftOptions as $group => $items)
                                 @if (is_array($items))
@@ -112,15 +112,15 @@
                                 @endif
                             @endforeach
                         </select>
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
 
-                    <x-vms::pireps.form-field :label="__('pireps.block_fuel').' ('.setting('units.fuel').')'" for="pirep_block_fuel" error="form.block_fuel">
+                    <x-vms::form.field :label="__('pireps.block_fuel').' ('.setting('units.fuel').')'" for="pirep_block_fuel" error="form.block_fuel">
                         <input type="number" id="pirep_block_fuel" min="0" step="0.01" wire:model="form.block_fuel" @disabled($locked) />
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
 
-                    <x-vms::pireps.form-field :label="__('pireps.fuel_used').' ('.setting('units.fuel').')'" for="pirep_fuel_used" error="form.fuel_used">
+                    <x-vms::form.field :label="__('pireps.fuel_used').' ('.setting('units.fuel').')'" for="pirep_fuel_used" error="form.fuel_used">
                         <input type="number" id="pirep_fuel_used" min="0" step="0.01" wire:model="form.fuel_used" @disabled($locked) />
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
                 </div>
             </x-ts-card>
 
@@ -128,9 +128,9 @@
                 <x-ts-card :header="trans_choice('pireps.fare', 2)" data-role="fares">
                     <div class="grid gap-4 sm:grid-cols-2">
                         @foreach ($fares as $fare)
-                            <x-vms::pireps.form-field :label="$fare->name.' ('.$fare->type->getLabel().', code '.$fare->code.')'" :for="'pirep_fare_'.$fare->id" :error="'form.fares.'.$fare->id" wire:key="fare-{{ $fare->id }}">
+                            <x-vms::form.field :label="$fare->name.' ('.$fare->type->getLabel().', code '.$fare->code.')'" :for="'pirep_fare_'.$fare->id" :error="'form.fares.'.$fare->id" wire:key="fare-{{ $fare->id }}">
                                 <input type="number" id="pirep_fare_{{ $fare->id }}" min="0" wire:model="form.fares.{{ $fare->id }}" />
-                            </x-vms::pireps.form-field>
+                            </x-vms::form.field>
                         @endforeach
                     </div>
                 </x-ts-card>
@@ -138,13 +138,13 @@
 
             <x-ts-card :header="__('flights.route').' & '.trans_choice('common.remark', 2)">
                 <div class="grid gap-4">
-                    <x-vms::pireps.form-field :label="__('flights.route')" for="pirep_route" error="form.route">
+                    <x-vms::form.field :label="__('flights.route')" for="pirep_route" error="form.route">
                         <textarea id="pirep_route" rows="3" wire:model="form.route"></textarea>
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
 
-                    <x-vms::pireps.form-field :label="trans_choice('common.note', 2)" for="pirep_notes" error="form.notes">
+                    <x-vms::form.field :label="trans_choice('common.note', 2)" for="pirep_notes" error="form.notes">
                         <textarea id="pirep_notes" rows="3" wire:model="form.notes"></textarea>
-                    </x-vms::pireps.form-field>
+                    </x-vms::form.field>
                 </div>
             </x-ts-card>
         </div>
@@ -153,13 +153,13 @@
             <x-ts-card :header="trans_choice('common.field', 2)" data-role="custom-fields">
                 <div class="grid gap-4">
                     @foreach ($customFields as $field)
-                        <x-vms::pireps.form-field :label="$field['name']" :for="'pirep_field_'.$field['slug']" :error="'form.fields.'.$field['slug']" :required="$field['required']" :hint="$field['description']" wire:key="field-{{ $field['slug'] }}">
+                        <x-vms::form.field :label="$field['name']" :for="'pirep_field_'.$field['slug']" :error="'form.fields.'.$field['slug']" :required="$field['required']" :hint="$field['description']" wire:key="field-{{ $field['slug'] }}">
                             @if ($field['readOnly'])
                                 <input type="text" id="pirep_field_{{ $field['slug'] }}" value="{{ $field['value'] }}" readonly />
                             @else
                                 <input type="text" id="pirep_field_{{ $field['slug'] }}" wire:model="form.fields.{{ $field['slug'] }}" />
                             @endif
-                        </x-vms::pireps.form-field>
+                        </x-vms::form.field>
                     @endforeach
                 </div>
             </x-ts-card>

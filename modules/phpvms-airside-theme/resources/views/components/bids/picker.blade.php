@@ -1,9 +1,9 @@
-@props(['label', 'items' => [], 'action', 'searchPlaceholder' => 'Search', 'emptyText' => 'Nothing matches this search.', 'selected' => null])
+@props(['label', 'items' => [], 'action', 'searchPlaceholder' => 'Search', 'emptyText' => 'Nothing matches this search.'])
 
 {{--
   A searchable list of choices for the assignment drawer. Props: label, items (list of ['value' => int, 'title',
   'sub', 'meta', 'disabled' => bool]), action (the Livewire method each choice calls with its value), searchPlaceholder,
-  emptyText, selected (the chosen value, if any). The filter runs in the browser over the rendered rows.
+  emptyText. The filter runs in the browser over the rendered rows.
 --}}
 <div {{ $attributes->class('grid min-w-0 gap-2') }} x-data="{ q: '' }">
     <span class="text-[13px] font-semibold">{{ $label }}</span>
@@ -19,9 +19,7 @@
                     type="button"
                     wire:click="{{ $action }}({{ $item['value'] }})"
                     @disabled($item['disabled'] ?? false)
-                    @class([
-                        'flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left disabled:cursor-not-allowed disabled:opacity-60',
-                    ])
+                    class="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     <span class="grid min-w-0">
                         <strong class="truncate text-[13px]">{{ $item['title'] }}</strong>

@@ -88,23 +88,14 @@
     <x-ts-card header="Text OFP">
         <div class="grid gap-3">
             @if (count($briefing->textSections))
-                <div x-data="{ tab: 0 }" class="grid gap-3">
-                    <div class="flex flex-wrap gap-1" role="tablist" aria-label="Text OFP sections">
-                        @foreach ($briefing->textSections as $index => $section)
-                            <button
-                                type="button"
-                                role="tab"
-                                class="px-3 py-1.5 text-[13px] font-medium"
-                                x-bind:aria-selected="tab === {{ $index }} ? 'true' : 'false'"
-                                x-on:click="tab = {{ $index }}"
-                            >{{ $section['title'] }}</button>
-                        @endforeach
-                    </div>
+                <x-ts-tab selected="section-0">
                     @foreach ($briefing->textSections as $index => $section)
-                        {{-- Sanitised server-side by App\Support\SimBriefPlanHtml (allowlisted tags and attributes, script subtrees dropped, non-http URLs stripped). --}}
-                        <pre role="tabpanel" x-show="tab === {{ $index }}" @if ($index > 0) x-cloak @endif>{!! $section['html'] !!}</pre>
+                        <x-ts-tab.items tab="section-{{ $index }}" :title="$section['title']">
+                            {{-- Sanitised server-side by App\Support\SimBriefPlanHtml (allowlisted tags and attributes, script subtrees dropped, non-http URLs stripped). --}}
+                            <pre>{!! $section['html'] !!}</pre>
+                        </x-ts-tab.items>
                     @endforeach
-                </div>
+                </x-ts-tab>
             @else
                 <pre>No text OFP is available.</pre>
             @endif

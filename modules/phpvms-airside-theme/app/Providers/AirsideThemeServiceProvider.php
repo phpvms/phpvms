@@ -18,7 +18,8 @@ use TallStackUi\Facades\TallStackUi;
  * prefix, the icon pack, the `<x-vms::*>` component namespace and the
  * `@airsideVite` directive. Views reach the request-scoped ShellData with
  * `@inject('shell', ShellData::class)`. Components render with TallStackUI's
- * defaults; there is no soft customisation layer.
+ * defaults except for a small soft customisation: avatar border and sidebar
+ * widths (see `boot()`).
  */
 class AirsideThemeServiceProvider extends ServiceProvider
 {

@@ -14,9 +14,9 @@
                     <h3 class="text-sm font-semibold">Personal access tokens</h3>
                     <p class="text-[13px]">Create a token to use the API from your own scripts or ACARS client. Choose only the scopes you need.</p>
 
-                    <x-vms::profile.field label="Token name" for="api_token_name" error="name" required>
+                    <x-vms::form.field label="Token name" for="api_token_name" error="name" required>
                         <input type="text" id="api_token_name" placeholder="My ACARS client" wire:model="name" />
-                    </x-vms::profile.field>
+                    </x-vms::form.field>
 
                     <fieldset class="grid gap-2">
                         <legend class="mb-1 text-[13px] font-medium">Select scopes</legend>

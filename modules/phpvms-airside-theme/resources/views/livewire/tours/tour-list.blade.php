@@ -15,14 +15,12 @@
         </x-slot:links>
     </x-vms::page.header>
 
-    <div class="flex w-fit gap-1 rounded-md p-1" role="tablist" aria-label="Tour filter">
+    <div class="flex w-fit gap-1 rounded-md p-1" role="group" aria-label="Tour filter">
         @foreach (['all' => 'All tours', 'mine' => 'My tours'] as $value => $label)
             <button
                 type="button"
-                role="tab"
                 class="rounded px-3 py-1 text-[13px] font-medium"
-                x-bind:class="filter === '{{ $value }}' ? 'shadow-sm' : ''"
-                x-bind:aria-selected="filter === '{{ $value }}' ? 'true' : 'false'"
+                x-bind:aria-pressed="filter === '{{ $value }}' ? 'true' : 'false'"
                 x-on:click="filter = '{{ $value }}'"
             >{{ $label }}</button>
         @endforeach

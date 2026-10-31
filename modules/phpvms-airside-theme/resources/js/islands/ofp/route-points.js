@@ -1,43 +1,12 @@
+import { greatCircle } from "../flights/geo.js";
+
 /**
- * Pure route geometry for the briefing globe, ported from skylight's
- * BriefingRouteGlobe and its geo helpers. Coordinates are [lon, lat].
+ * Pure route geometry for the briefing globe: navlog legs, their SID/STAR/enroute
+ * labels and the line segments to draw. Coordinates are [lon, lat].
  */
-const R = Math.PI / 180;
-const D = 180 / Math.PI;
 
 /** Two points are the same place if they agree to about 1 km. */
 const SAME_PLACE_DEGREES = 0.01;
-
-/** Densified great circle (slerp) so the line curves on the globe. Returns n + 1 points. */
-export function greatCircle(a, b, n = 160) {
-  const la1 = a[1] * R;
-  const lo1 = a[0] * R;
-  const la2 = b[1] * R;
-  const lo2 = b[0] * R;
-  const d =
-    2 *
-    Math.asin(
-      Math.sqrt(
-        Math.sin((la2 - la1) / 2) ** 2 +
-          Math.cos(la1) * Math.cos(la2) * Math.sin((lo2 - lo1) / 2) ** 2,
-      ),
-    );
-
-  if (d === 0) return [a, b];
-
-  const out = [];
-  for (let i = 0; i <= n; i++) {
-    const f = i / n;
-    const A = Math.sin((1 - f) * d) / Math.sin(d);
-    const B = Math.sin(f * d) / Math.sin(d);
-    const x = A * Math.cos(la1) * Math.cos(lo1) + B * Math.cos(la2) * Math.cos(lo2);
-    const y = A * Math.cos(la1) * Math.sin(lo1) + B * Math.cos(la2) * Math.sin(lo2);
-    const z = A * Math.sin(la1) + B * Math.sin(la2);
-    out.push([Math.atan2(y, x) * D, Math.atan2(z, Math.hypot(x, y)) * D]);
-  }
-
-  return out;
-}
 
 function isSamePlace(point, airport) {
   return (
