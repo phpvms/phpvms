@@ -44,11 +44,18 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      # Stamp before installing so vendor/composer/installed.php and the lock
+      # hash agree with the shipped composer.json
+      - id: version
+        name: Stamp version
+        run: |
+          chmod +x ./.github/scripts/*
+          .github/scripts/version.sh
+
       - name: Install release dependencies (no scripts)
         run: |
           rm -rf vendor
           composer install --no-dev --prefer-dist --no-interaction --no-scripts
-          chmod +x ./.github/scripts/*
 
       - name: Install NPM dependencies
         run: pnpm install --frozen-lockfile
@@ -61,10 +68,6 @@ jobs:
 
       - name: Publish Filament assets
         run: php artisan filament:assets
-
-      - id: version
-        name: Stamp version
-        run: .github/scripts/version.sh
 
       - name: Build distro
         run: .github/scripts/build.sh
@@ -112,7 +115,11 @@ jobs:
       # Dockerfile.prod copies the tree in and runs composer install, so the
       # image reports the release tag the same way the package does.
       - name: Stamp version
-        run: composer config version "${{ github.event.release.tag_name }}"
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          composer config version "$RELEASE_TAG"
+          composer update --lock --no-install --no-scripts --no-interaction
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -121,14 +128,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # latest=auto only tags :latest for non-prerelease semver tags
+      # :latest follows the release's prerelease checkbox, not the tag suffix.
+      # Prerelease tags only get {{version}}; {{major}}.{{minor}} is stable-only.
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            latest=auto
+            latest=${{ !github.event.release.prerelease }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}

@@ -11,6 +11,7 @@ set -euo pipefail
 
 if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
   composer config version "${GITHUB_REF_NAME}"
+  composer update --lock --no-install --no-scripts --no-interaction
 fi
 
 VERSION=$(composer config version)
