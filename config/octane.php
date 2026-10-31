@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Services\AddonSettingService;
 use App\Services\SettingService;
 use Laravel\Octane\Contracts\OperationTerminated;
 use Laravel\Octane\Events\RequestHandled;
@@ -145,6 +146,7 @@ return [
 
     'flush' => [
         SettingService::class,
+        AddonSettingService::class,
     ],
 
     /*
