@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Features\Shell\Livewire;
 
-use App\Http\Controllers\Frontend\WeatherController;
+use App\Features\Flights\Actions\LoadStationWeather;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Throwable;
 
 /**
  * The dispatch header's METAR for the pilot's station.
@@ -52,31 +51,6 @@ class HeaderMetar extends Component
      */
     private function weather(): array
     {
-        if ($this->icao === null) {
-            return ['state' => 'missing-station', 'metar' => null, 'observedAt' => null];
-        }
-
-        try {
-            $response = app(WeatherController::class)->show(request(), $this->icao);
-            $payload = $response->getData(true);
-        } catch (Throwable) {
-            return ['state' => 'error', 'metar' => null, 'observedAt' => null];
-        }
-
-        if ($response->getStatusCode() !== 200 || !is_array($payload)) {
-            return ['state' => 'error', 'metar' => null, 'observedAt' => null];
-        }
-
-        $metar = $payload['metar'] ?? null;
-
-        if (!is_string($metar) || $metar === '') {
-            return ['state' => 'missing', 'metar' => null, 'observedAt' => null];
-        }
-
-        return [
-            'state'      => ($payload['isStale'] ?? false) ? 'stale' : 'loaded',
-            'metar'      => $metar,
-            'observedAt' => is_string($payload['observedAt'] ?? null) ? $payload['observedAt'] : null,
-        ];
+        return app(LoadStationWeather::class)->handle($this->icao);
     }
 }
