@@ -432,10 +432,10 @@ class PirepService extends Service
      * Find if there are duplicates to a given PIREP. Ideally, the passed
      * in PIREP hasn't been saved or gone through the create() method
      *
-     *
+     * @param  bool       $excludeSelf leave out the PIREP being checked when it is already saved
      * @return bool|Pirep
      */
-    public function findDuplicate(Pirep $pirep)
+    public function findDuplicate(Pirep $pirep, bool $excludeSelf = false)
     {
         $minutes = setting('pireps.duplicate_check_time', 10);
         $time_limit = Carbon::now('UTC')->subMinutes($minutes)->toDateTimeString();
@@ -460,6 +460,7 @@ class PirepService extends Service
             $found_pireps = Pirep::where($where)
                 ->where('state', '!=', PirepState::CANCELLED)
                 ->where('created_at', '>=', $time_limit)
+                ->when($excludeSelf && $pirep->exists, fn ($query) => $query->whereKeyNot($pirep->getKey()))
                 ->get();
 
             if ($found_pireps->count() === 0) {

@@ -121,6 +121,7 @@ final readonly class SaveManualPirep
      *
      * @param array<string, mixed> $input
      *
+     * @throws PirepFilingDenied when a submitted PIREP breaks a filing rule
      * @throws Exception
      */
     public function update(Pirep $pirep, array $input, string $submit): string
@@ -149,6 +150,7 @@ final readonly class SaveManualPirep
         $this->saveFares($pirep, $input);
 
         if ($submit === 'submit') {
+            $this->assertMayFile($pirep->user, $pirep);
             $this->pireps->submit($pirep);
         } elseif ($submit === 'delete' || $submit === 'cancel') {
             $this->pireps->delete($pirep);
@@ -201,7 +203,7 @@ final readonly class SaveManualPirep
         }
 
         // Make sure this isn't a duplicate
-        if ($this->pireps->findDuplicate($pirep) !== false) {
+        if ($this->pireps->findDuplicate($pirep, excludeSelf: true) !== false) {
             Log::info('Duplicate PIREP found');
 
             throw new PirepFilingDenied('This PIREP has already been filed.');
