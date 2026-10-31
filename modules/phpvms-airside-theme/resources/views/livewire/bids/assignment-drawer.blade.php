@@ -54,34 +54,34 @@
                     :aircraft="$selection?->aircraft ? $selection->aircraft->registration.' · '.$selection->aircraft->icaoType : null"
                 />
             @else
-                <span class="text-ink-dim">Loading flight</span>
+                <span>Loading flight</span>
             @endif
         </x-slot:header>
 
         <section class="grid gap-4" aria-label="Flight bid">
             <div x-show="opening" x-cloak class="grid gap-2 py-6">
                 <x-airside::loading text="Loading policy and aircraft" />
-                <p class="text-[13px] text-ink-dim">The latest availability is checked before you can continue.</p>
+                <p class="text-[13px]">The latest availability is checked before you can continue.</p>
             </div>
 
             <div x-show="! opening" class="grid gap-4">
                 @if ($state === 'error')
                     <div class="grid gap-2 py-4" role="alert">
-                        <strong class="text-ink">Flight data unavailable</strong>
-                        <p class="text-[13px] text-ink-dim">{{ $failureMessage }}</p>
+                        <strong>Flight data unavailable</strong>
+                        <p class="text-[13px]">{{ $failureMessage }}</p>
                         <div><x-ts-button type="button" sm wire:click="load">Try again</x-ts-button></div>
                     </div>
                 @elseif ($state === 'overview' && $selection)
                     <div class="grid gap-4" aria-live="polite">
                         <dl class="m-0 grid grid-cols-2 gap-4">
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Scheduled departure</dt><dd class="mt-0.5 break-words font-mono text-[11px] text-ink">{{ $selection->flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Scheduled arrival</dt><dd class="mt-0.5 break-words font-mono text-[11px] text-ink">{{ $selection->flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Route</dt><dd class="mt-0.5 break-words font-mono text-[11px] text-ink">{{ $selection->flight->route ?? 'Not published' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Block</dt><dd class="mt-0.5 break-words font-mono text-[11px] text-ink">{{ $selection->flight->summary->blockTime ?? '—' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Reservation</dt><dd class="mt-0.5 break-words font-mono text-[11px] text-ink">{{ $selection->aircraftReserved ? 'Exclusive' : ($selection->aircraft ? 'Preference' : 'Flight only') }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Scheduled departure</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Scheduled arrival</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Route</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->route ?? 'Not published' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Block</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->summary->blockTime ?? '—' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Reservation</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->aircraftReserved ? 'Exclusive' : ($selection->aircraft ? 'Preference' : 'Flight only') }}</dd></div>
                             <div class="min-w-0">
-                                <dt class="text-[9px] uppercase tracking-wider text-ink-faint">Expires</dt>
-                                <dd class="mt-0.5 break-words font-mono text-[11px] text-ink">
+                                <dt class="text-[9px] uppercase tracking-wider">Expires</dt>
+                                <dd class="mt-0.5 break-words font-mono text-[11px]">
                                     @if ($selection->expiresAt)
                                         @php($expires = \Illuminate\Support\Carbon::parse($selection->expiresAt)->utc())
                                         <time datetime="{{ $expires->toIso8601String() }}" x-data x-text="new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date($el.dateTime))">{{ $expires->format('M j, Y, g:i A') }} UTC</time>
@@ -105,11 +105,11 @@
                     </div>
                 @elseif ($state === 'selecting' && $payload)
                     <form class="grid gap-4" wire:submit="submit">
-                        <section class="rounded-md border border-line bg-panel-inset px-4 py-3" aria-label="Selected flight">
+                        <section class="rounded-md px-4 py-3" aria-label="Selected flight">
                             <dl class="m-0 grid grid-cols-3 gap-3">
-                                <div><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Departure</dt><dd class="mt-0.5 font-mono text-[11px] text-ink">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
-                                <div><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Arrival</dt><dd class="mt-0.5 font-mono text-[11px] text-ink">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
-                                <div><dt class="text-[9px] uppercase tracking-wider text-ink-faint">Block</dt><dd class="mt-0.5 font-mono text-[11px] text-ink">{{ $flight->summary->blockTime ?? '—' }}</dd></div>
+                                <div><dt class="text-[9px] uppercase tracking-wider">Departure</dt><dd class="mt-0.5 font-mono text-[11px]">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
+                                <div><dt class="text-[9px] uppercase tracking-wider">Arrival</dt><dd class="mt-0.5 font-mono text-[11px]">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
+                                <div><dt class="text-[9px] uppercase tracking-wider">Block</dt><dd class="mt-0.5 font-mono text-[11px]">{{ $flight->summary->blockTime ?? '—' }}</dd></div>
                             </dl>
                         </section>
 
@@ -117,11 +117,11 @@
                             <x-airside::alert kind="error" data-failure="{{ $failureType }}">{{ $failureMessage }}</x-airside::alert>
                         @endif
 
-                        <fieldset class="m-0 grid min-w-0 gap-3 rounded-lg border border-line-strong p-3">
-                            <legend class="px-1 text-[13px] font-semibold text-ink">Aircraft Assignment</legend>
+                        <fieldset class="m-0 grid min-w-0 gap-3 rounded-lg p-3">
+                            <legend class="px-1 text-[13px] font-semibold">Aircraft Assignment</legend>
 
                             @if (! $chosenSubfleet)
-                                <p class="text-xs text-ink-dim">Select the subfleet and aircraft to fly with.</p>
+                                <p class="text-xs">Select the subfleet and aircraft to fly with.</p>
                             @endif
 
                             @if ($editingSubfleet || ! $chosenSubfleet)
@@ -143,13 +143,13 @@
                                     ])->all()"
                                 />
                             @else
-                                <article class="grid min-w-0 gap-0.5 rounded-md border border-line-strong bg-panel-inset px-3 py-2.5" aria-label="Selected subfleet">
+                                <article class="grid min-w-0 gap-0.5 rounded-md px-3 py-2.5" aria-label="Selected subfleet">
                                     <header class="flex items-center justify-between gap-2">
                                         <span class="micro">Selected subfleet</span>
                                         <x-ts-button type="button" xs light wire:click="editSubfleet">Edit</x-ts-button>
                                     </header>
-                                    <strong class="text-[13px] text-ink">{{ $chosenSubfleet->displayName }}</strong>
-                                    <span class="text-xs text-ink-dim">{{ $chosenSubfleet->eligibleAircraftCount }} eligible aircraft currently available</span>
+                                    <strong class="text-[13px]">{{ $chosenSubfleet->displayName }}</strong>
+                                    <span class="text-xs">{{ $chosenSubfleet->eligibleAircraftCount }} eligible aircraft currently available</span>
                                 </article>
                             @endif
 
@@ -160,17 +160,17 @@
 
                                 @if ($aircraft === null)
                                     <div class="grid gap-1.5 rounded-md border border-bad/40 bg-bad/10 px-3 py-2.5 text-[13px]" role="alert">
-                                        <strong class="text-ink">Aircraft unavailable</strong>
-                                        <span class="text-ink-dim">Eligible aircraft could not be loaded. Choose another subfleet or try again.</span>
+                                        <strong>Aircraft unavailable</strong>
+                                        <span>Eligible aircraft could not be loaded. Choose another subfleet or try again.</span>
                                         <div><x-ts-button type="button" xs light wire:click="retryAircraft">Try again</x-ts-button></div>
                                     </div>
                                 @elseif ($aircraft === [])
-                                    <div class="grid gap-1 rounded-md border border-line-strong bg-panel-inset px-3 py-2.5 text-[13px]" role="status">
-                                        <strong class="text-ink">No eligible aircraft</strong>
+                                    <div class="grid gap-1 rounded-md px-3 py-2.5 text-[13px]" role="status">
+                                        <strong>No eligible aircraft</strong>
                                         @if ($policy->aircraftRequired)
-                                            <span class="text-ink-dim">No active, parked aircraft meets the current server policy for this flight.</span>
+                                            <span>No active, parked aircraft meets the current server policy for this flight.</span>
                                         @else
-                                            <span class="text-ink-dim">You can still create a flight-only bid.</span>
+                                            <span>You can still create a flight-only bid.</span>
                                         @endif
                                     </div>
                                 @else
@@ -202,7 +202,7 @@
                             @endif
                         </fieldset>
 
-                        <p class="text-xs text-ink-dim">
+                        <p class="text-xs">
                             {{ $policy->aircraftRequired
                                 ? 'The selected aircraft is reserved exclusively after server confirmation.'
                                 : 'Aircraft is optional. A selection is stored as a preference and is not reserved exclusively.' }}
@@ -215,7 +215,7 @@
                                 <span wire:loading wire:target="submit">Confirming bid</span>
                             </x-ts-button>
                         </div>
-                        <p class="m-0 text-xs text-ink-dim" aria-live="polite" wire:loading wire:target="submit">Server is revalidating flight and aircraft availability.</p>
+                        <p class="m-0 text-xs" aria-live="polite" wire:loading wire:target="submit">Server is revalidating flight and aircraft availability.</p>
                     </form>
                 @endif
             </div>

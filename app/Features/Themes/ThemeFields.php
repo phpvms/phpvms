@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * A value resolves through a fallback chain: the theme's own row, then the
  * global (`*`) row, then the default the theme ships under
- * `resources/customize/{theme}.css` (for `css`). Only overrides are stored; saving a value equal to
+ * `resources/customize/styles.css` (for `css`). Only overrides are stored; saving a value equal to
  * the shipped default deletes the row so a theme update can still change it.
  *
  * Octane: registered as a scoped binding, so an instance lives for one request
@@ -109,7 +109,7 @@ final class ThemeFields
     }
 
     /**
-     * The shipped default: `resources/customize/{theme}.css` for `css`,
+     * The shipped default: `resources/customize/styles.css` for `css`,
      * `resources/customize/{name}` otherwise, beside the theme's views.
      * Empty when the theme or the file is missing.
      */
@@ -151,7 +151,7 @@ final class ThemeFields
             return '';
         }
 
-        $file = $name === 'css' ? $theme.'.css' : $name;
+        $file = $name === 'css' ? 'styles.css' : $name;
         $path = dirname($viewsPath).'/customize/'.$file;
 
         if (!is_file($path)) {

@@ -13,7 +13,7 @@
 
 /*
  * airside's shipped colours: the phpvms scheme. Keep in sync with
- * resources/customize/airside.css, the same values as runtime defaults.
+ * resources/customize/styles.css, the same values as runtime defaults.
  */
 @theme {
     --font-sans: "Manrope Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";

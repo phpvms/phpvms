@@ -13,7 +13,7 @@
     @endif
 
     @if ($policy->simbriefEnabled && (! $policy->simbriefRequiresBid || $action === 'overview'))
-        <a href="{{ $flight->ofpPlanningUrl }}" wire:navigate class="text-xs font-semibold text-accent hover:underline">Generate OFP</a>
+        <a href="{{ $flight->ofpPlanningUrl }}" wire:navigate class="text-xs font-semibold hover:underline">Generate OFP</a>
     @endif
 
     <x-slot-outlet name="flights.detail.actions" :context="['flight' => $flight, 'policy' => $policy]" />

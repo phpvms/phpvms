@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 function shippedAirsideCss(): string
 {
-    return (string) file_get_contents(base_path('modules/phpvms-airside-theme/resources/customize/airside.css'));
+    return (string) file_get_contents(base_path('modules/phpvms-airside-theme/resources/customize/styles.css'));
 }
 
 it('reads the shipped default when there is no row', function (): void {

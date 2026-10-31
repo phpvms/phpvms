@@ -20,8 +20,8 @@
     $lg = $size === 'lg';
     $tag = $href ? 'a' : 'div';
 @endphp
-<{{ $tag }} @if ($href) href="{{ $href }}" @endif {{ $attributes->class(['pv-flight-info flex min-w-0 max-w-full items-center text-ink', $lg ? 'gap-3' : 'gap-2.5', 'hover:underline' => $href]) }}>
-    <span @class(['grid shrink-0 place-items-center overflow-hidden rounded-md border border-line-strong bg-panel-inset text-ink-dim font-semibold', $lg ? 'size-12 text-sm' : 'size-8 text-[11px]'])>
+<{{ $tag }} @if ($href) href="{{ $href }}" @endif {{ $attributes->class(['pv-flight-info flex min-w-0 max-w-full items-center', $lg ? 'gap-3' : 'gap-2.5', 'hover:underline' => $href]) }}>
+    <span @class(['grid shrink-0 place-items-center overflow-hidden rounded-md font-semibold', $lg ? 'size-12 text-sm' : 'size-8 text-[11px]'])>
         @if ($logo)
             <img src="{{ $logo }}" alt="{{ $airline ?? $callsign }}" class="size-full object-contain" />
         @else
@@ -36,7 +36,7 @@
             </span>
         </span>
         @if ($aircraft)
-            <span class="mt-0.5 truncate text-sm text-ink-dim">{{ $aircraft }}</span>
+            <span class="mt-0.5 truncate text-sm">{{ $aircraft }}</span>
         @endif
     </span>
 </{{ $tag }}>
