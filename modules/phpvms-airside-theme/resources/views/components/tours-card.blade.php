@@ -27,18 +27,18 @@
     };
 @endphp
 <article
-    {{ $attributes->class('pv-tour-card grid content-start overflow-hidden rounded-md border border-line bg-panel') }}
+    {{ $attributes->class('pv-tour-card grid content-start overflow-hidden rounded-md') }}
     data-tour-id="{{ $tour->id }}"
     data-mine="{{ $tour->status !== null ? 'true' : 'false' }}"
     x-data="{ expanded: false }"
     x-show="filter === 'all' || @js($tour->status !== null)"
     aria-label="{{ $tour->name }}"
 >
-    <div class="relative aspect-[16/7] bg-panel-inset">
+    <div class="relative aspect-[16/7]">
         @if ($tour->image)
             <img src="{{ $tour->image }}" alt="{{ $tour->name }}" class="size-full object-cover" loading="lazy" />
         @else
-            <div class="grid size-full place-items-center text-ink-faint"><x-airside::icon name="photo" class="size-8" /></div>
+            <div class="grid size-full place-items-center"><x-airside::icon name="photo" class="size-8" /></div>
         @endif
         @if ($status)
             <x-airside::state-badge :state-color="$status[0]" :label="$status[1]" class="absolute right-2.5 top-2.5" />
@@ -48,11 +48,11 @@
     <div class="grid gap-3 px-4 py-3">
         <div class="grid gap-1">
             @if ($window)
-                <p class="font-mono text-xs text-ink-dim">{{ $window }}</p>
+                <p class="font-mono text-xs">{{ $window }}</p>
             @endif
-            <h2 class="text-base font-semibold text-ink">{{ $tour->name }}</h2>
+            <h2 class="text-base font-semibold">{{ $tour->name }}</h2>
             @if ($tour->description)
-                <p class="text-[13px] text-ink-dim">{{ $tour->description }}</p>
+                <p class="text-[13px]">{{ $tour->description }}</p>
             @endif
         </div>
 
@@ -68,9 +68,9 @@
         @endif
     </div>
 
-    <div class="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-panel-inset px-4 py-2.5">
+    <div class="flex flex-wrap items-center justify-end gap-2 px-4 py-2.5">
         @if ($error)
-            <p class="basis-full text-right text-[13px] text-bad" role="alert">{{ $error }}</p>
+            <p class="basis-full text-right text-[13px]" role="alert">{{ $error }}</p>
         @endif
 
         @if ($tour->status === 'in_progress')
@@ -84,7 +84,7 @@
         @if ($tour->activeLegFlightId)
             <x-ts-button type="button" sm x-on:click="$dispatch('assignment-drawer.open', { flightId: '{{ $tour->activeLegFlightId }}' })">{{ $actionLabel }}</x-ts-button>
         @else
-            <span class="text-[13px] text-ink-dim">This tour's legs are still being set up.</span>
+            <span class="text-[13px]">This tour's legs are still being set up.</span>
         @endif
     </div>
 </article>

@@ -23,32 +23,32 @@
 <x-airside::page name="tour" :label="$tour->name">
     <x-airside::page-header headline="Flights · Tours" :title="$tour->name">
         @if ($tour->description)
-            <p class="max-w-prose text-[13px] text-ink-dim">{{ $tour->description }}</p>
+            <p class="max-w-prose text-[13px]">{{ $tour->description }}</p>
         @endif
         @if ($window)
-            <p class="font-mono text-xs text-ink-dim">{{ $window }}</p>
+            <p class="font-mono text-xs">{{ $window }}</p>
         @endif
 
         <x-slot:links>
             @if ($status)
                 <x-airside::state-badge :state-color="$status[0]" :label="$status[1]" />
             @endif
-            <a href="{{ route('frontend.tours.index') }}" class="text-xs font-semibold text-accent hover:underline" wire:navigate><span aria-hidden="true">← </span>All tours</a>
+            <a href="{{ route('frontend.tours.index') }}" class="text-xs font-semibold hover:underline" wire:navigate><span aria-hidden="true">← </span>All tours</a>
         </x-slot:links>
     </x-airside::page-header>
 
     @if ($tour->image)
-        <img src="{{ $tour->image }}" alt="{{ $tour->name }}" class="max-h-[280px] w-full rounded-md border border-line object-cover" />
+        <img src="{{ $tour->image }}" alt="{{ $tour->name }}" class="max-h-[280px] w-full rounded-md object-cover" />
     @endif
 
     <x-airside::card title="Legs">
         @if (count($tour->legs))
             <x-tours-leg-timeline :tour="$tour" />
         @else
-            <p class="text-sm text-ink-dim">This tour's legs are still being set up.</p>
+            <p class="text-sm">This tour's legs are still being set up.</p>
         @endif
     </x-airside::card>
 
-    <p class="text-sm"><a href="{{ route('frontend.flights.bids') }}" class="text-accent hover:underline" wire:navigate>Back to my bids</a></p>
+    <p class="text-sm"><a href="{{ route('frontend.flights.bids') }}" class="hover:underline" wire:navigate>Back to my bids</a></p>
 </x-airside::page>
 @endsection

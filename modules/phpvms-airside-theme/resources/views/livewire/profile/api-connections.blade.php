@@ -11,21 +11,21 @@
                 @endif
 
                 <section class="grid gap-3" aria-label="Create a personal access token">
-                    <h3 class="text-sm font-semibold text-ink">Personal access tokens</h3>
-                    <p class="text-[13px] text-ink-dim">Create a token to use the API from your own scripts or ACARS client. Choose only the scopes you need.</p>
+                    <h3 class="text-sm font-semibold">Personal access tokens</h3>
+                    <p class="text-[13px]">Create a token to use the API from your own scripts or ACARS client. Choose only the scopes you need.</p>
 
                     <x-airside::profile-field label="Token name" for="api_token_name" error="name" required>
                         <input type="text" id="api_token_name" placeholder="My ACARS client" wire:model="name" />
                     </x-airside::profile-field>
 
                     <fieldset class="grid gap-2">
-                        <legend class="mb-1 text-[13px] font-medium text-ink">Select scopes</legend>
+                        <legend class="mb-1 text-[13px] font-medium">Select scopes</legend>
                         @foreach ($this->connections?->scopes ?? [] as $scope)
                             <label class="flex items-start gap-2" wire:key="scope-{{ $scope->value }}">
                                 <input type="checkbox" class="mt-0.5" value="{{ $scope->value }}" wire:model="scopes" />
                                 <span class="grid gap-0.5">
-                                    <span class="font-mono text-[13px] text-ink">{{ $scope->value }}</span>
-                                    <span class="text-xs text-ink-dim">{{ $scope->label }}</span>
+                                    <span class="font-mono text-[13px]">{{ $scope->value }}</span>
+                                    <span class="text-xs">{{ $scope->label }}</span>
                                 </span>
                             </label>
                         @endforeach
@@ -36,14 +36,14 @@
                     </div>
                 </section>
 
-                <section class="grid gap-3 border-t border-line pt-4" aria-label="Active tokens">
-                    <h3 class="text-sm font-semibold text-ink">Active tokens</h3>
+                <section class="grid gap-3 pt-4" aria-label="Active tokens">
+                    <h3 class="text-sm font-semibold">Active tokens</h3>
 
                     @forelse ($this->connections?->personalTokens ?? [] as $token)
                         <div class="flex items-center justify-between gap-3" wire:key="token-{{ $token->id }}">
                             <div class="grid min-w-0 gap-0.5">
-                                <span class="text-[13px] font-medium text-ink">{{ $token->name }}</span>
-                                <span class="break-words text-xs text-ink-dim">{{ implode(', ', $token->scopes) ?: 'No scopes' }}</span>
+                                <span class="text-[13px] font-medium">{{ $token->name }}</span>
+                                <span class="break-words text-xs">{{ implode(', ', $token->scopes) ?: 'No scopes' }}</span>
                             </div>
                             <x-airside::confirm :prompt="'Revoke '.$token->name.'? Anything using it stops working.'" confirm-label="Revoke" wire:click="revokeToken('{{ $token->id }}')">
                                 <x-slot:trigger>
@@ -52,18 +52,18 @@
                             </x-airside::confirm>
                         </div>
                     @empty
-                        <p class="text-[13px] text-ink-dim">No personal tokens yet.</p>
+                        <p class="text-[13px]">No personal tokens yet.</p>
                     @endforelse
                 </section>
 
-                <section class="grid gap-3 border-t border-line pt-4" aria-label="Authorized applications">
-                    <h3 class="text-sm font-semibold text-ink">Authorized applications</h3>
+                <section class="grid gap-3 pt-4" aria-label="Authorized applications">
+                    <h3 class="text-sm font-semibold">Authorized applications</h3>
 
                     @forelse ($this->connections?->authorizedApps ?? [] as $app)
                         <div class="flex items-center justify-between gap-3" wire:key="app-{{ $app->clientId }}">
                             <div class="grid min-w-0 gap-0.5">
-                                <span class="text-[13px] font-medium text-ink">{{ $app->name }}</span>
-                                <span class="break-words text-xs text-ink-dim">{{ implode(', ', $app->scopes) ?: 'No scopes' }}</span>
+                                <span class="text-[13px] font-medium">{{ $app->name }}</span>
+                                <span class="break-words text-xs">{{ implode(', ', $app->scopes) ?: 'No scopes' }}</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <x-ts-badge color="slate" light :text="$app->tokenCount.' '.($app->tokenCount === 1 ? 'token' : 'tokens')" />
@@ -75,7 +75,7 @@
                             </div>
                         </div>
                     @empty
-                        <p class="text-[13px] text-ink-dim">No applications have been authorized.</p>
+                        <p class="text-[13px]">No applications have been authorized.</p>
                     @endforelse
                 </section>
             </div>

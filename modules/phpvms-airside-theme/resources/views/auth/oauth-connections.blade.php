@@ -6,9 +6,9 @@
 
 @if ($oauthConnections->isNotEmpty())
     <div class="flex items-center gap-3" aria-hidden="true">
-        <hr class="flex-1 border-line" />
-        <span class="text-xs text-ink-dim">{{ __('auth.or') }}</span>
-        <hr class="flex-1 border-line" />
+        <hr class="flex-1" />
+        <span class="text-xs">{{ __('auth.or') }}</span>
+        <hr class="flex-1" />
     </div>
 
     <div class="grid gap-2">
@@ -26,7 +26,7 @@
             <a
                 href="{{ route('oauth.redirect', $routeParameters) }}"
                 @class([
-                    'inline-flex items-center justify-center gap-2 rounded-md border border-line-strong bg-panel px-4 py-2 text-[13px] font-medium text-ink no-underline hover:bg-hover',
+                    'inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-[13px] font-medium no-underline',
                     $buttonClass => is_string($buttonClass) && $buttonClass !== '',
                 ])
             >

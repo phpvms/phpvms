@@ -45,7 +45,7 @@
         @endif
 
         @if ($flight)
-            <header class="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+            <header class="flex flex-wrap items-center justify-between gap-4 pb-4">
                 <x-airside::flight-ident
                     size="lg"
                     :callsign="$flight->summary->callsign"
@@ -67,8 +67,8 @@
                     <x-airside::card title="Flight Information">
                         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             @if ($pilot)
-                                <p class="text-[13px] text-ink-dim sm:col-span-2 lg:col-span-3">
-                                    <span class="font-semibold text-ink">{{ $pilot->name }}</span>
+                                <p class="text-[13px] sm:col-span-2 lg:col-span-3">
+                                    <span class="font-semibold">{{ $pilot->name }}</span>
                                     <span class="font-mono">{{ $pilot->ident }}</span>
                                 </p>
                             @endif
@@ -86,7 +86,7 @@
                             <x-ofp-input name="date" label="Date of flight (UTC)" value="" readonly data-role="date" />
 
                             <div class="grid gap-1.5 sm:col-span-2 lg:col-span-3">
-                                <label for="ofp-route" class="text-[13px] font-medium text-ink">Preferred company route</label>
+                                <label for="ofp-route" class="text-[13px] font-medium">Preferred company route</label>
                                 <textarea id="ofp-route" name="route" rows="3">{{ $fields['route'] ?? '' }}</textarea>
                             </div>
                         </div>
@@ -95,7 +95,7 @@
                     <x-airside::card title="Planning Options">
                         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" x-data="{ stepclimbs: @js((string) ($fields['stepclimbs'] ?? '0')) }">
                             <div class="grid gap-1.5">
-                                <label for="ofp-fl" class="text-[13px] font-medium text-ink">Preferred flight level</label>
+                                <label for="ofp-fl" class="text-[13px] font-medium">Preferred flight level</label>
                                 <input id="ofp-fl" type="text" name="fl" maxlength="5" value="{{ $fields['fl'] ?? '' }}" x-bind:disabled="stepclimbs === '1'" />
                             </div>
                             <x-ofp-select name="contpct" label="Cont fuel" :options="$contingencyOptions" :value="$fields['contpct'] ?? '0.05/5'" />
@@ -121,16 +121,16 @@
             @elseif ($flight)
                 <x-airside::card title="Route and schedule">
                     <dl class="grid gap-3 sm:grid-cols-2">
-                        <div class="rounded-md border border-line bg-panel-inset p-3">
-                            <dt class="micro">Scheduled departure</dt>
+                        <div class="rounded-md p-3">
+                            <dt>Scheduled departure</dt>
                             <dd class="mt-1 font-mono text-sm">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd>
                         </div>
-                        <div class="rounded-md border border-line bg-panel-inset p-3">
-                            <dt class="micro">Scheduled arrival</dt>
+                        <div class="rounded-md p-3">
+                            <dt>Scheduled arrival</dt>
                             <dd class="mt-1 font-mono text-sm">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd>
                         </div>
                     </dl>
-                    <p class="mt-3 overflow-wrap-anywhere rounded-md border border-line bg-panel-inset p-3 font-mono text-sm leading-relaxed">{{ $flight->route ?: 'No route published' }}</p>
+                    <p class="mt-3 rounded-md p-3 font-mono text-sm leading-relaxed">{{ $flight->route ?: 'No route published' }}</p>
                 </x-airside::card>
             @endif
 
@@ -161,13 +161,13 @@
                         </div>
                     @endif
 
-                    <p class="text-xs text-ink-dim">This uses a server-owned planning attempt. Your stored SimBrief username is not required.</p>
+                    <p class="text-xs">This uses a server-owned planning attempt. Your stored SimBrief username is not required.</p>
 
                     @if ($planning)
-                        <section class="grid gap-1 rounded-md border border-line-strong bg-panel-inset p-3" aria-label="Selected aircraft">
-                            <span class="micro">Aircraft assignment</span>
+                        <section class="grid gap-1 rounded-md p-3" aria-label="Selected aircraft">
+                            <span>Aircraft assignment</span>
                             <strong class="font-mono text-sm">{{ $planning->aircraft->registration }} · {{ $planning->aircraft->icaoType }}</strong>
-                            <span class="text-[13px] text-ink-dim">{{ $planning->aircraft->subfleetName }} · {{ $planning->aircraft->airport?->icao }}</span>
+                            <span class="text-[13px]">{{ $planning->aircraft->subfleetName }} · {{ $planning->aircraft->airport?->icao }}</span>
                         </section>
                     @elseif ($aircraftSelection)
                         <livewire:ofp::aircraft-selection

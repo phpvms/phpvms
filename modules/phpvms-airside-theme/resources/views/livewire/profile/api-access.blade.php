@@ -8,9 +8,9 @@
 
             <div class="flex flex-wrap items-center gap-3">
                 @if ($this->apiKey)
-                    <code class="break-all rounded-md border border-line bg-panel-inset px-3 py-1.5 font-mono text-[13px]" x-show="revealed" x-cloak>{{ $this->apiKey }}</code>
+                    <code class="break-all rounded-md px-3 py-1.5 font-mono text-[13px]" x-show="revealed" x-cloak>{{ $this->apiKey }}</code>
                 @endif
-                <code class="rounded-md border border-line bg-panel-inset px-3 py-1.5 font-mono text-[13px] text-ink-dim" @if ($this->apiKey) x-show="! revealed" @endif>••••••••••••••••••••</code>
+                <code class="rounded-md px-3 py-1.5 font-mono text-[13px]" @if ($this->apiKey) x-show="! revealed" @endif>••••••••••••••••••••</code>
 
                 <x-ts-button sm light type="button" :disabled="! $this->apiKey" x-on:click="revealed = ! revealed">
                     <span x-text="revealed ? 'Hide' : 'Show'">Show</span>

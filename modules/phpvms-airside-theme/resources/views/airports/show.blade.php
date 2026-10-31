@@ -22,7 +22,7 @@
 
                 @if (filled($airport->notes))
                     <x-airside::card :title="__('airports.notes')">
-                        <div class="text-[13px] text-ink">{!! $airport->notes !!}</div>
+                        <div class="text-[13px]">{!! $airport->notes !!}</div>
                     </x-airside::card>
                 @endif
             </div>

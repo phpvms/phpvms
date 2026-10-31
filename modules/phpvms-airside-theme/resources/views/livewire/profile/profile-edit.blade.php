@@ -19,23 +19,23 @@
 
             <x-airside::profile-field label="Home airport" for="profile_home_airport" error="form.home_airport_id" :hint="$this->edit->hubsOnly ? 'Hubs only' : null">
                 <div class="relative">
-                    <div class="flex items-center justify-between gap-2 rounded-md border border-line px-3 py-1.5 text-[13px]" data-role="home-airport-selected">
-                        <span class="{{ $airportLabel === '' ? 'text-ink-dim' : 'text-ink' }}">{{ $airportLabel === '' ? 'No home airport selected' : $airportLabel }}</span>
+                    <div class="flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-[13px]" data-role="home-airport-selected">
+                        <span>{{ $airportLabel === '' ? 'No home airport selected' : $airportLabel }}</span>
                         @if ($form->home_airport_id !== null)
-                            <button type="button" class="text-xs text-ink-dim hover:text-ink" wire:click="clearAirport">Clear</button>
+                            <button type="button" class="text-xs" wire:click="clearAirport">Clear</button>
                         @endif
                     </div>
 
                     <input type="search" id="profile_home_airport" class="mt-1.5" autocomplete="off" placeholder="Search by ICAO or name" wire:model.live.debounce.250ms="airportSearch" />
 
                     @if (mb_strlen(trim($airportSearch)) >= 2)
-                        <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md border border-line bg-panel text-[13px]" data-role="airport-results">
+                        <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md text-[13px]" data-role="airport-results">
                             @forelse ($this->airportResults as $airport)
                                 <li wire:key="airport-{{ $airport['value'] }}">
-                                    <button type="button" class="block w-full px-3 py-1.5 text-left hover:bg-hover" wire:click="chooseAirport('{{ $airport['value'] }}')">{{ $airport['label'] }}</button>
+                                    <button type="button" class="block w-full px-3 py-1.5 text-left" wire:click="chooseAirport('{{ $airport['value'] }}')">{{ $airport['label'] }}</button>
                                 </li>
                             @empty
-                                <li class="px-3 py-1.5 text-ink-dim">No airports found</li>
+                                <li class="px-3 py-1.5">No airports found</li>
                             @endforelse
                         </ul>
                     @endif
@@ -64,24 +64,24 @@
 
             <x-airside::profile-field label="Avatar" for="profile_avatar" error="form.avatar" :hint="'JPEG or PNG. Resized to '.$this->edit->avatarWidth.'x'.$this->edit->avatarHeight.'.'">
                 <input type="file" id="profile_avatar" accept="image/jpeg,image/png" wire:model="form.avatar" />
-                <p class="text-xs text-ink-dim" wire:loading wire:target="form.avatar">Uploading…</p>
+                <p class="text-xs" wire:loading wire:target="form.avatar">Uploading…</p>
             </x-airside::profile-field>
 
             <div class="col-span-full">
                 <label class="flex items-start gap-2">
                     <input type="checkbox" class="mt-0.5" wire:model="form.opt_in" />
                     <span class="grid gap-0.5">
-                        <span class="text-[13px] font-medium text-ink">Opt in to emails</span>
-                        <span class="text-xs text-ink-dim">Receive news and announcements from the airline.</span>
+                        <span class="text-[13px] font-medium">Opt in to emails</span>
+                        <span class="text-xs">Receive news and announcements from the airline.</span>
                     </span>
                 </label>
                 @error('form.opt_in')
-                    <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                    <p class="text-xs" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
             @if (count($this->edit->fields))
-                <p class="micro col-span-full border-t border-line pt-3">Additional details</p>
+                <p class="col-span-full pt-3">Additional details</p>
 
                 @foreach ($this->edit->fields as $field)
                     <x-airside::profile-field :label="$field->name" :for="'profile_field_'.$field->slug" :error="'form.fields.field_'.$field->slug" :required="$field->required" wire:key="field-{{ $field->slug }}">
@@ -90,7 +90,7 @@
                 @endforeach
             @endif
 
-            <p class="micro col-span-full border-t border-line pt-3">Change password</p>
+            <p class="col-span-full pt-3">Change password</p>
 
             <x-airside::profile-field label="New password" for="profile_password" error="form.password">
                 <input type="password" id="profile_password" autocomplete="new-password" wire:model="form.password" />

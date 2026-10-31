@@ -26,7 +26,7 @@
                     </x-airside::pirep-form-field>
 
                     <div class="grid content-start gap-1.5 sm:col-span-1">
-                        <label for="pirep_flight_number" class="text-[13px] font-medium text-ink">{{ __('pireps.flight_ident') }}</label>
+                        <label for="pirep_flight_number" class="text-[13px] font-medium">{{ __('pireps.flight_ident') }}</label>
                         <div class="grid grid-cols-3 gap-2">
                             <input type="text" id="pirep_flight_number" inputmode="numeric" placeholder="{{ __('flights.flightnumber') }}" wire:model="form.flight_number" @disabled($locked) />
                             <input type="text" placeholder="{{ __('pireps.code_optional') }}" aria-label="{{ __('pireps.code_optional') }}" wire:model="form.route_code" @disabled($locked) />
@@ -34,7 +34,7 @@
                         </div>
                         @foreach (['flight_number', 'route_code', 'route_leg'] as $identField)
                             @error('form.'.$identField)
-                                <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                                <p class="text-xs" role="alert">{{ $message }}</p>
                             @enderror
                         @endforeach
                     </div>
@@ -48,14 +48,14 @@
                     </x-airside::pirep-form-field>
 
                     <div class="grid content-start gap-1.5 sm:col-span-2">
-                        <label for="pirep_hours" class="text-[13px] font-medium text-ink">{{ __('flights.flight_time') }}</label>
+                        <label for="pirep_hours" class="text-[13px] font-medium">{{ __('flights.flight_time') }}</label>
                         <div class="grid max-w-sm grid-cols-2 gap-2">
                             <input type="number" id="pirep_hours" min="0" placeholder="{{ trans_choice('common.hour', 2) }}" aria-label="{{ trans_choice('common.hour', 2) }}" wire:model="form.hours" @disabled($locked) />
                             <input type="number" id="pirep_minutes" min="0" placeholder="{{ trans_choice('common.minute', 2) }}" aria-label="{{ trans_choice('common.minute', 2) }}" wire:model="form.minutes" @disabled($locked) />
                         </div>
                         @foreach (['hours', 'minutes'] as $timeField)
                             @error('form.'.$timeField)
-                                <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                                <p class="text-xs" role="alert">{{ $message }}</p>
                             @enderror
                         @endforeach
                     </div>
@@ -71,7 +71,7 @@
                     @foreach (['dpt' => ['airports.departure', 'dpt_airport_id', $dptLabel, $this->dptResults], 'arr' => ['airports.arrival', 'arr_airport_id', $arrLabel, $this->arrResults]] as $side => [$sideLabel, $sideProperty, $selectedLabel, $results])
                         <x-airside::pirep-form-field :label="__($sideLabel)" :for="'pirep_'.$side.'_search'" :error="'form.'.$sideProperty" wire:key="airport-{{ $side }}">
                             <div class="relative" data-role="{{ $side }}-airport">
-                                <div class="rounded-md border border-line px-3 py-1.5 text-[13px] {{ $selectedLabel === '' ? 'text-ink-dim' : 'text-ink' }}" data-role="{{ $side }}-selected">
+                                <div class="rounded-md px-3 py-1.5 text-[13px]" data-role="{{ $side }}-selected">
                                     {{ $selectedLabel === '' ? 'No airport selected' : $selectedLabel }}
                                 </div>
 
@@ -79,13 +79,13 @@
                                     <input type="search" id="pirep_{{ $side }}_search" class="mt-1.5" autocomplete="off" placeholder="Search by ICAO or name" wire:model.live.debounce.250ms="{{ $side }}Search" />
 
                                     @if (mb_strlen(trim($side === 'dpt' ? $dptSearch : $arrSearch)) >= 2)
-                                        <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md border border-line bg-panel text-[13px]" data-role="{{ $side }}-results">
+                                        <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md text-[13px]" data-role="{{ $side }}-results">
                                             @forelse ($results as $airport)
                                                 <li wire:key="{{ $side }}-airport-{{ $airport['value'] }}">
-                                                    <button type="button" class="block w-full px-3 py-1.5 text-left hover:bg-hover" wire:click="chooseAirport('{{ $side }}', '{{ $airport['value'] }}')">{{ $airport['label'] }}</button>
+                                                    <button type="button" class="block w-full px-3 py-1.5 text-left" wire:click="chooseAirport('{{ $side }}', '{{ $airport['value'] }}')">{{ $airport['label'] }}</button>
                                                 </li>
                                             @empty
-                                                <li class="px-3 py-1.5 text-ink-dim">No airports found</li>
+                                                <li class="px-3 py-1.5">No airports found</li>
                                             @endforelse
                                         </ul>
                                     @endif

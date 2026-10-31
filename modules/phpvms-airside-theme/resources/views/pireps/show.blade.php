@@ -5,7 +5,7 @@
 @section('content')
     <x-airside::page name="pirep-detail" label="PIREP detail">
         <div class="grid gap-3">
-            <a href="{{ route('frontend.pireps.index') }}" wire:navigate class="w-fit text-xs text-ink-dim no-underline hover:text-accent">← Logbook</a>
+            <a href="{{ route('frontend.pireps.index') }}" wire:navigate class="w-fit text-xs no-underline">← Logbook</a>
 
             @include('pireps.show-summary', ['pirep' => $pirep])
 

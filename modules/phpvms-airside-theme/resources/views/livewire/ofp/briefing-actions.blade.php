@@ -14,7 +14,7 @@
             :context="['flight' => $briefing->flight, 'bid' => $briefing->bid, 'briefing' => $briefing, 'aircraft' => $briefing->aircraft]"
         />
         @if ($this->hasSlotActions)
-            <hr class="border-line" />
+            <hr />
         @endif
 
         <div class="grid gap-2" x-data="{ editorOpen: false, editorLoading: true }">
@@ -50,9 +50,9 @@
                     </x-slot:trigger>
 
                     <section class="grid gap-2" aria-label="Downloads">
-                        <p class="micro">Briefing downloads</p>
+                        <p>Briefing downloads</p>
                         @foreach ($briefing->downloads as $download)
-                            <a class="text-sm text-accent hover:underline" href="{{ $download['url'] }}" target="_blank" rel="noopener">{{ $download['name'] }}</a>
+                            <a class="text-sm hover:underline" href="{{ $download['url'] }}" target="_blank" rel="noopener">{{ $download['name'] }}</a>
                         @endforeach
                     </section>
                 </x-airside::drawer>
@@ -62,24 +62,24 @@
                 <template x-teleport="body">
                     <div x-show="editorOpen" x-cloak class="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Edit OFP" x-on:keydown.escape.window="editorOpen = false">
                         <div class="absolute inset-0 bg-black/50" x-on:click="editorOpen = false" aria-hidden="true"></div>
-                        <section class="relative grid h-[min(920px,94dvh)] w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-lg border border-line-strong bg-bg text-ink" x-trap.noscroll="editorOpen" aria-label="Edit SimBrief operational flight plan">
-                            <header class="flex items-start justify-between gap-4 border-b border-line-strong bg-panel px-5 py-4">
+                        <section class="relative grid h-[min(920px,94dvh)] w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-lg" x-trap.noscroll="editorOpen" aria-label="Edit SimBrief operational flight plan">
+                            <header class="flex items-start justify-between gap-4 px-5 py-4">
                                 <div class="grid min-w-0 gap-1">
-                                    <p class="micro">SIMBRIEF · EDIT OFP</p>
+                                    <p>SIMBRIEF · EDIT OFP</p>
                                     <h2 class="font-mono text-xl" tabindex="-1">{{ $briefing->flight->summary->callsign }} · {{ $briefing->flight->summary->dpt ?? '—' }} → {{ $briefing->flight->summary->arr ?? '—' }}</h2>
-                                    <p class="text-[13px] text-ink-dim">Changes are made securely in SimBrief and remain subject to its own session and controls.</p>
+                                    <p class="text-[13px]">Changes are made securely in SimBrief and remain subject to its own session and controls.</p>
                                 </div>
-                                <button type="button" class="rounded-md p-1 text-ink-dim hover:bg-hover" x-on:click="editorOpen = false" aria-label="Close OFP editor">
+                                <button type="button" class="rounded-md p-1" x-on:click="editorOpen = false" aria-label="Close OFP editor">
                                     <x-airside::icon name="x-mark" />
                                 </button>
                             </header>
 
                             <div class="relative min-h-0">
-                                <div x-show="editorLoading" class="absolute inset-0 z-10 grid place-items-center bg-panel-inset" role="status" aria-live="polite">
+                                <div x-show="editorLoading" class="absolute inset-0 z-10 grid place-items-center" role="status" aria-live="polite">
                                     <div class="grid justify-items-center gap-1 text-center">
                                         <x-airside::loading />
                                         <strong>Opening SimBrief editor</strong>
-                                        <p class="text-[13px] text-ink-dim">The editor is loading in a protected embedded window.</p>
+                                        <p class="text-[13px]">The editor is loading in a protected embedded window.</p>
                                     </div>
                                 </div>
                                 <template x-if="editorOpen">
@@ -87,8 +87,8 @@
                                 </template>
                             </div>
 
-                            <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-line-strong bg-panel px-5 py-3">
-                                <p class="max-w-md text-xs text-ink-dim">The embedded editor is operated by SimBrief. phpVMS cannot inspect or control its cross-origin content.</p>
+                            <footer class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                                <p class="max-w-md text-xs">The embedded editor is operated by SimBrief. phpVMS cannot inspect or control its cross-origin content.</p>
                                 <div class="flex flex-wrap gap-2">
                                     <x-ts-button type="button" color="slate" light x-on:click="editorOpen = false">Close</x-ts-button>
                                     <x-ts-button type="button" x-on:click="$wire.syncEdited().then((ready) => { if (ready) editorOpen = false })" wire:loading.attr="disabled" wire:target="syncEdited">Return to briefing / Download updated OFP</x-ts-button>
@@ -101,9 +101,9 @@
         </div>
 
         @if (count($prefileLinks))
-            <p class="micro">Network prefile</p>
+            <p>Network prefile</p>
             @foreach ($prefileLinks as $name => $url)
-                <a class="text-sm text-accent hover:underline" href="{{ $url }}" target="_blank" rel="noopener">{{ $name }}</a>
+                <a class="text-sm hover:underline" href="{{ $url }}" target="_blank" rel="noopener">{{ $name }}</a>
             @endforeach
         @endif
     </div>

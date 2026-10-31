@@ -13,7 +13,7 @@
     <section class="rounded-xl p-5" aria-labelledby="flight-filter-heading" x-data="{ open: {{ count($active) > 0 ? 'true' : 'false' }} }">
         <div class="flex items-center justify-between gap-4">
             <div>
-                <p class="micro">SCHEDULE MANIFEST</p>
+                <p>SCHEDULE MANIFEST</p>
                 <h1 id="flight-filter-heading" class="mt-1 text-2xl font-semibold">Find a flight</h1>
             </div>
             <span class="rounded-full px-2.5 py-1 font-mono text-[10px]">{{ count($active) }} active</span>
@@ -142,7 +142,7 @@
             <section class="min-w-0 rounded-xl" aria-labelledby="manifest-heading">
                 <header class="flex items-end justify-between gap-4 px-5 py-4">
                     <div>
-                        <p class="micro">AVAILABLE OPERATIONS</p>
+                        <p>AVAILABLE OPERATIONS</p>
                         <h2 id="manifest-heading" class="mt-1 text-xl font-semibold">Flight manifest</h2>
                     </div>
                     <span class="font-mono text-[10px]">{{ count($flights) }} shown</span>
@@ -207,7 +207,7 @@
             <aside class="grid min-w-0 content-start xl:sticky xl:top-4 xl:self-start" aria-labelledby="selected-flight-heading">
                 @foreach ($flights as $flight)
                     <div wire:key="selected-{{ $flight->id }}" x-show="selected === @js($flight->id)" @if (! $loop->first) x-cloak @endif class="rounded-xl p-5">
-                        <p class="micro mb-3" @if ($loop->first) id="selected-flight-heading" @endif>SELECTED FLIGHT</p>
+                        <p class="mb-3" @if ($loop->first) id="selected-flight-heading" @endif>SELECTED FLIGHT</p>
                         <x-airside::flight-ident
                             size="lg"
                             :callsign="$flight->callsign"

@@ -27,7 +27,7 @@
                     :href="route('frontend.flights.show', $row->bid->flightId)"
                 />
             @else
-                <span class="font-mono text-ink-dim">{{ $row->bid->flightId }}</span>
+                <span class="font-mono">{{ $row->bid->flightId }}</span>
             @endif
 
             @if ($row->tourName)
@@ -37,7 +37,7 @@
     </x-slot:header>
 
     <x-airside::stats :items="$stats" :columns="3" />
-    <p class="mt-2 text-xs text-ink-dim">
+    <p class="mt-2 text-xs">
         @if ($row->expiresAt)
             @php($expires = \Illuminate\Support\Carbon::parse($row->expiresAt)->utc())
             Expires <time datetime="{{ $expires->toIso8601String() }}" x-data x-text="new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date($el.dateTime))">{{ $expires->format('M j, Y, g:i A') }} UTC</time>

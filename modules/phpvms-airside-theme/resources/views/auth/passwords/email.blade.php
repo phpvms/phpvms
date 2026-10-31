@@ -16,7 +16,7 @@
         </form>
 
         <x-slot:footer>
-            <a href="{{ url('/login') }}" class="text-accent" wire:navigate>{{ __('common.login') }}</a>
+            <a href="{{ url('/login') }}" wire:navigate>{{ __('common.login') }}</a>
         </x-slot:footer>
     </x-airside::auth-card>
 @endsection

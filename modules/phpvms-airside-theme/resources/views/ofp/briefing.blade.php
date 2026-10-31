@@ -22,7 +22,7 @@
 
 @section('content')
 <x-airside::page name="simbrief-briefing" label="SimBrief briefing">
-    <header class="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+    <header class="flex flex-wrap items-center justify-between gap-4 pb-4">
         <x-airside::flight-ident
             size="lg"
             :callsign="$flight->summary->callsign"
@@ -38,8 +38,8 @@
     <x-airside::card title="Route">
         <div data-airside-island="briefing-globe" class="min-w-0">
             <script type="application/json">{!! json_encode($globeData, $jsonFlags) !!}</script>
-            <div data-role="map" class="h-[280px] overflow-hidden rounded-md bg-panel-inset"></div>
-            <div data-role="empty" hidden class="grid min-h-[180px] place-items-center rounded-md border border-dashed border-line bg-panel-inset p-6 text-center text-ink-dim" role="status">
+            <div data-role="map" class="h-[280px] overflow-hidden rounded-md"></div>
+            <div data-role="empty" hidden class="grid min-h-[180px] place-items-center rounded-md p-6 text-center" role="status">
                 Route map unavailable because airport coordinates are missing.
             </div>
         </div>
@@ -49,33 +49,33 @@
         <x-airside::card title="Operational summary">
             <div class="grid gap-3">
                 <dl class="grid gap-3 sm:grid-cols-2">
-                    <div class="rounded-md border border-line bg-panel-inset p-3">
-                        <dt class="micro">Flight</dt>
+                    <div class="rounded-md p-3">
+                        <dt>Flight</dt>
                         <dd class="mt-1 font-mono text-sm">{{ $flight->summary->callsign }}</dd>
                     </div>
-                    <div class="rounded-md border border-line bg-panel-inset p-3">
-                        <dt class="micro">Aircraft</dt>
+                    <div class="rounded-md p-3">
+                        <dt>Aircraft</dt>
                         <dd class="mt-1 font-mono text-sm">{{ $briefing->aircraft->registration }}</dd>
                     </div>
-                    <div class="rounded-md border border-line bg-panel-inset p-3">
-                        <dt class="micro">Scheduled departure</dt>
+                    <div class="rounded-md p-3">
+                        <dt>Scheduled departure</dt>
                         <dd class="mt-1 font-mono text-sm">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd>
                     </div>
-                    <div class="rounded-md border border-line bg-panel-inset p-3">
-                        <dt class="micro">Scheduled arrival</dt>
+                    <div class="rounded-md p-3">
+                        <dt>Scheduled arrival</dt>
                         <dd class="mt-1 font-mono text-sm">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd>
                     </div>
                 </dl>
 
-                <p class="micro">ATC plan</p>
-                <pre class="ofp-text">{{ $briefing->atcPlan ?: 'No ATC flight plan published.' }}</pre>
+                <p>ATC plan</p>
+                <pre>{{ $briefing->atcPlan ?: 'No ATC flight plan published.' }}</pre>
 
-                <p class="micro">Weather</p>
+                <p>Weather</p>
                 <dl class="grid gap-3 sm:grid-cols-2">
                     @foreach ($weather as $label => $text)
-                        <div class="rounded-md border border-line bg-panel-inset p-3">
-                            <dt class="micro">{{ $label }}</dt>
-                            <dd class="mt-1 overflow-wrap-anywhere font-mono text-xs">{{ $text ?: 'Not available' }}</dd>
+                        <div class="rounded-md p-3">
+                            <dt>{{ $label }}</dt>
+                            <dd class="mt-1 font-mono text-xs">{{ $text ?: 'Not available' }}</dd>
                         </div>
                     @endforeach
                 </dl>
@@ -89,13 +89,12 @@
         <div class="grid gap-3">
             @if (count($briefing->textSections))
                 <div x-data="{ tab: 0 }" class="grid gap-3">
-                    <div class="flex flex-wrap gap-1 border-b border-line" role="tablist" aria-label="Text OFP sections">
+                    <div class="flex flex-wrap gap-1" role="tablist" aria-label="Text OFP sections">
                         @foreach ($briefing->textSections as $index => $section)
                             <button
                                 type="button"
                                 role="tab"
-                                class="-mb-px border-b-2 px-3 py-1.5 text-[13px] font-medium"
-                                x-bind:class="tab === {{ $index }} ? 'border-accent text-accent' : 'border-transparent text-ink-dim hover:text-ink'"
+                                class="px-3 py-1.5 text-[13px] font-medium"
                                 x-bind:aria-selected="tab === {{ $index }} ? 'true' : 'false'"
                                 x-on:click="tab = {{ $index }}"
                             >{{ $section['title'] }}</button>
@@ -103,17 +102,17 @@
                     </div>
                     @foreach ($briefing->textSections as $index => $section)
                         {{-- Sanitised server-side by App\Support\SimBriefPlanHtml (allowlisted tags and attributes, script subtrees dropped, non-http URLs stripped). --}}
-                        <pre class="ofp-text" role="tabpanel" x-show="tab === {{ $index }}" @if ($index > 0) x-cloak @endif>{!! $section['html'] !!}</pre>
+                        <pre role="tabpanel" x-show="tab === {{ $index }}" @if ($index > 0) x-cloak @endif>{!! $section['html'] !!}</pre>
                     @endforeach
                 </div>
             @else
-                <pre class="ofp-text">No text OFP is available.</pre>
+                <pre>No text OFP is available.</pre>
             @endif
 
             @if (count($briefing->images))
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     @foreach ($briefing->images as $image)
-                        <a href="{{ $image['url'] }}" target="_blank" rel="noopener" class="overflow-hidden rounded-md border border-line">
+                        <a href="{{ $image['url'] }}" target="_blank" rel="noopener" class="overflow-hidden rounded-md">
                             <img src="{{ $image['url'] }}" alt="{{ $image['name'] }}" class="w-full" loading="lazy" />
                         </a>
                     @endforeach

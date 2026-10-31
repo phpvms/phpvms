@@ -1,8 +1,8 @@
-<ul class="pv-widget m-0 grid list-none divide-y divide-line rounded-md border border-line bg-panel p-0" role="list">
+<ul class="pv-widget m-0 grid list-none rounded-md p-0" role="list">
     @foreach ($users as $u)
         <li wire:key="latest-pilot-{{ $u->id }}" class="flex items-baseline gap-3 px-4 py-2 text-[13px]">
-            <span class="font-mono font-semibold text-ink">{{ $u->ident }}</span>
-            <span class="min-w-0 truncate text-ink-dim">{{ $u->name_private }}</span>
+            <span class="font-mono font-semibold">{{ $u->ident }}</span>
+            <span class="min-w-0 truncate">{{ $u->name_private }}</span>
         </li>
     @endforeach
 </ul>

@@ -29,8 +29,8 @@
         @include('auth.oauth-connections', ['surface' => 'login'])
 
         <x-slot:footer>
-            <a href="{{ url('/register') }}" class="text-accent" wire:navigate>{{ __('auth.create_account') }}</a>
-            <a href="{{ url('/password/reset') }}" class="text-accent" wire:navigate>{{ __('auth.forgot_password') }}?</a>
+            <a href="{{ url('/register') }}" wire:navigate>{{ __('auth.create_account') }}</a>
+            <a href="{{ url('/password/reset') }}" wire:navigate>{{ __('auth.forgot_password') }}?</a>
         </x-slot:footer>
     </x-airside::auth-card>
 @endsection

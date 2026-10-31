@@ -4,14 +4,14 @@
 
 @section('content')
     <x-airside::auth-card :title="$client->name">
-        <p class="text-[13px] text-ink-dim">{{ __('oauth.authorize_request', ['client' => $client->name]) }}</p>
+        <p class="text-[13px]">{{ __('oauth.authorize_request', ['client' => $client->name]) }}</p>
 
         @if (count($scopes) > 0)
             <div class="grid gap-2">
-                <p class="micro">@lang('oauth.scopes')</p>
-                <ul class="grid gap-1 text-[13px] text-ink">
+                <p>@lang('oauth.scopes')</p>
+                <ul class="grid gap-1 text-[13px]">
                     @foreach ($scopes as $scope)
-                        <li class="rounded-md border border-line bg-panel-inset px-3 py-1.5">{{ $scope->description }}</li>
+                        <li class="rounded-md px-3 py-1.5">{{ $scope->description }}</li>
                     @endforeach
                 </ul>
             </div>

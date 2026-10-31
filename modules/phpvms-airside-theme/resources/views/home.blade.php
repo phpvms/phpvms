@@ -17,13 +17,13 @@
                 @foreach ($users as $user)
                     <li wire:key="pilot-{{ $user->id }}">
                         <a href="{{ route('frontend.profile.show', [$user->id]) }}" wire:navigate
-                           class="flex items-center gap-3 rounded-md border border-line bg-panel p-4 text-ink no-underline hover:bg-panel-inset">
-                            <img class="size-12 shrink-0 rounded-full border border-line-strong object-cover"
+                           class="flex items-center gap-3 rounded-md p-4 no-underline">
+                            <img class="size-12 shrink-0 rounded-full object-cover"
                                  src="{{ $user->avatar === null ? $user->gravatar(123) : $user->avatar->url }}" alt="" />
                             <span class="grid min-w-0">
                                 <span class="truncate font-semibold">{{ $user->name_private }}</span>
                                 @if (filled($user->home_airport))
-                                    <span class="font-mono text-[13px] text-ink-dim">{{ $user->home_airport->icao }}</span>
+                                    <span class="font-mono text-[13px]">{{ $user->home_airport->icao }}</span>
                                 @endif
                             </span>
                         </a>

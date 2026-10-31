@@ -13,9 +13,9 @@
 <div class="pv-pirep-summary grid gap-3">
     <header class="flex items-start justify-between gap-3">
         <div>
-            <h1 class="m-0 font-mono text-xl font-semibold text-accent">{{ $pirep->ident }}</h1>
-            <div class="mt-0.5 text-[13px] text-ink">{{ $pirep->aircraft ?? '—' }}</div>
-            <div class="mt-0.5 text-[11px] text-ink-dim">
+            <h1 class="m-0 font-mono text-xl font-semibold">{{ $pirep->ident }}</h1>
+            <div class="mt-0.5 text-[13px]">{{ $pirep->aircraft ?? '—' }}</div>
+            <div class="mt-0.5 text-[11px]">
                 @if ($pirep->pilotName)
                     {{ $pirep->pilotName }}@if ($pirep->pilotRank) · {{ $pirep->pilotRank }}@endif ·
                 @endif
@@ -25,23 +25,23 @@
         <x-airside::state-badge :state-color="$pirep->stateColor" :label="$pirep->state" class="shrink-0" />
     </header>
 
-    <div class="flex items-center gap-4 rounded-md border border-line bg-panel px-3.5 py-3">
+    <div class="flex items-center gap-4 rounded-md px-3.5 py-3">
         <div class="flex flex-col">
             <span class="font-mono text-[15px] font-semibold">{{ $pirep->dpt }}</span>
-            <span class="text-[11px] text-ink-dim">{{ $pirep->dptName ?? '' }}</span>
+            <span class="text-[11px]">{{ $pirep->dptName ?? '' }}</span>
         </div>
-        <span class="text-ink-faint" aria-hidden="true">→</span>
+        <span aria-hidden="true">→</span>
         <div class="ml-auto flex flex-col text-right">
             <span class="font-mono text-[15px] font-semibold">{{ $pirep->arr }}</span>
-            <span class="text-[11px] text-ink-dim">{{ $pirep->arrName ?? '' }}</span>
+            <span class="text-[11px]">{{ $pirep->arrName ?? '' }}</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(96px,1fr))] gap-px overflow-hidden rounded-md border border-line bg-line">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(96px,1fr))] gap-px overflow-hidden rounded-md">
         @foreach ($stats as $stat)
-            <div class="flex flex-col gap-[3px] bg-panel px-3 py-2.5">
-                <span class="text-[10px] text-ink-faint uppercase">{{ $stat['label'] }}</span>
-                <span class="text-[13px] tnum">{{ ($stat['value'] ?? '') === '' ? '—' : $stat['value'] }}</span>
+            <div class="flex flex-col gap-[3px] px-3 py-2.5">
+                <span class="text-[10px] uppercase">{{ $stat['label'] }}</span>
+                <span class="text-[13px]">{{ ($stat['value'] ?? '') === '' ? '—' : $stat['value'] }}</span>
             </div>
         @endforeach
     </div>

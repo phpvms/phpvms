@@ -3,6 +3,6 @@
 
 @section('content')
     <x-airside::auth-card :title="__('auth.registration_confirmation')">
-        <p class="text-[13px] text-ink-dim">@lang('auth.confirmation_message')</p>
+        <p class="text-[13px]">@lang('auth.confirmation_message')</p>
     </x-airside::auth-card>
 @endsection

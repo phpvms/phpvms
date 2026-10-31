@@ -6,26 +6,26 @@
 @php
     $filed = $pirep->submittedAt ? \Illuminate\Support\Carbon::parse($pirep->submittedAt)->format('d M Y') : null;
 @endphp
-<a href="{{ route('frontend.pireps.show', ['id' => $pirep->id]) }}" wire:navigate {{ $attributes->class('pv-pirep-card block rounded-md border border-line bg-panel p-3 no-underline hover:bg-panel-inset sm:p-4') }}>
+<a href="{{ route('frontend.pireps.show', ['id' => $pirep->id]) }}" wire:navigate {{ $attributes->class('pv-pirep-card block rounded-md p-3 no-underline sm:p-4') }}>
     <div class="mb-2 flex w-full items-center justify-between gap-2.5">
-        <span class="font-mono text-[13px] font-semibold text-accent">{{ $pirep->ident }}</span>
+        <span class="font-mono text-[13px] font-semibold">{{ $pirep->ident }}</span>
         <x-airside::state-badge :state-color="$pirep->stateColor" :label="$pirep->state" />
     </div>
 
     <div class="flex items-center gap-3">
         <span class="flex min-w-0 flex-col">
-            <span class="font-mono text-[13px] font-medium text-ink">{{ $pirep->dpt }}</span>
-            <span class="truncate text-[11px] text-ink-dim">{{ $pirep->dptName ?? '' }}</span>
+            <span class="font-mono text-[13px] font-medium">{{ $pirep->dpt }}</span>
+            <span class="truncate text-[11px]">{{ $pirep->dptName ?? '' }}</span>
         </span>
-        <span class="shrink-0 text-ink-faint" aria-hidden="true">→</span>
+        <span class="shrink-0" aria-hidden="true">→</span>
         <span class="flex min-w-0 flex-col text-right">
-            <span class="font-mono text-[13px] font-medium text-ink">{{ $pirep->arr }}</span>
-            <span class="truncate text-[11px] text-ink-dim">{{ $pirep->arrName ?? '' }}</span>
+            <span class="font-mono text-[13px] font-medium">{{ $pirep->arr }}</span>
+            <span class="truncate text-[11px]">{{ $pirep->arrName ?? '' }}</span>
         </span>
     </div>
 
     <x-airside::stats
-        class="mt-2.5 border-t border-line pt-2.5"
+        class="mt-2.5 pt-2.5"
         :columns="5"
         :items="[
             ['label' => 'Aircraft', 'value' => $pirep->aircraft],

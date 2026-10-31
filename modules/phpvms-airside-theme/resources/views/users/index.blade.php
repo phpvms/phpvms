@@ -27,10 +27,10 @@
         @if ($users->isEmpty())
             <x-airside::empty icon="users" :title="trans_choice('common.pilot', 2)" description="No pilots to show." />
         @else
-            <div class="overflow-x-auto rounded-md border border-line bg-panel">
+            <div class="overflow-x-auto rounded-md">
                 <table class="w-full text-[13px]" id="users-table">
                     <thead>
-                        <tr class="micro border-b border-line">
+                        <tr>
                             <th scope="col" class="w-12 px-4 py-2"><span class="sr-only">Avatar</span></th>
                             @foreach ($columns as $column => $meta)
                                 @php
@@ -39,7 +39,7 @@
                                 @endphp
                                 <th scope="col" class="px-4 py-2 font-medium {{ $meta['align'] }}" @if ($isActive) aria-sort="{{ $activeDirection === 'asc' ? 'ascending' : 'descending' }}" @endif>
                                     <a href="{{ request()->fullUrlWithQuery(['orderBy' => $column, 'sortedBy' => $nextDirection, 'page' => null]) }}" wire:navigate
-                                       class="inline-flex items-center gap-1 text-inherit no-underline hover:text-ink {{ $isActive ? 'text-ink' : '' }}">
+                                       class="inline-flex items-center gap-1 text-inherit no-underline">
                                         {{ $meta['label'] }}
                                         @if ($isActive)
                                             <span aria-hidden="true">{{ $activeDirection === 'asc' ? '↑' : '↓' }}</span>
@@ -51,18 +51,18 @@
                     </thead>
                     <tbody>
                         @foreach ($users as $user)
-                            <tr wire:key="user-{{ $user->id }}" class="border-b border-line last:border-b-0 hover:bg-panel-inset">
+                            <tr wire:key="user-{{ $user->id }}">
                                 <td class="px-4 py-2">
-                                    <img class="size-8 rounded-full border border-line-strong object-cover"
+                                    <img class="size-8 rounded-full object-cover"
                                          src="{{ $user->avatar === null ? $user->gravatar(128) : $user->avatar->url }}" alt="" />
                                 </td>
-                                <td class="px-4 py-2 font-mono text-ink-dim">{{ $user->id }}</td>
+                                <td class="px-4 py-2 font-mono">{{ $user->id }}</td>
                                 <td class="px-4 py-2">
-                                    <a href="{{ route('frontend.users.show.public', [$user->id]) }}" class="font-medium text-accent hover:underline" wire:navigate>
+                                    <a href="{{ route('frontend.users.show.public', [$user->id]) }}" class="font-medium hover:underline" wire:navigate>
                                         <span class="font-mono">{{ $user->ident }}</span> {{ $user->name_private }}
                                     </a>
                                     @if (filled($user->country))
-                                        <span class="ml-1 text-[11px] uppercase text-ink-faint" title="{{ $country->alpha2($user->country)['name'] ?? $user->country }}">{{ $user->country }}</span>
+                                        <span class="ml-1 text-[11px] uppercase" title="{{ $country->alpha2($user->country)['name'] ?? $user->country }}">{{ $user->country }}</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 font-mono">{{ $user->airline?->icao }}</td>

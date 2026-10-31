@@ -21,8 +21,8 @@
             <header class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-2">
                     <x-ts-badge color="primary" light sm>Tour</x-ts-badge>
-                    <h2 id="tour-group-{{ $group['id'] }}" class="text-base font-semibold text-ink">{{ $group['name'] }}</h2>
-                    <span class="font-mono text-[11px] text-ink-dim">{{ count($group['rows']) }} {{ count($group['rows']) === 1 ? 'leg' : 'legs' }}</span>
+                    <h2 id="tour-group-{{ $group['id'] }}" class="text-base font-semibold">{{ $group['name'] }}</h2>
+                    <span class="font-mono text-[11px]">{{ count($group['rows']) }} {{ count($group['rows']) === 1 ? 'leg' : 'legs' }}</span>
 
                     {{-- Cancelling any leg ends the run, so the action belongs to the tour. --}}
                     <x-airside::confirm
@@ -50,8 +50,8 @@
     @if ($loose)
         <section class="grid gap-3" aria-labelledby="loose-bids-heading">
             <header class="flex items-center gap-2">
-                <h2 id="loose-bids-heading" class="text-base font-semibold text-ink">Bids</h2>
-                <span class="font-mono text-[11px] text-ink-dim">Expiring first</span>
+                <h2 id="loose-bids-heading" class="text-base font-semibold">Bids</h2>
+                <span class="font-mono text-[11px]">Expiring first</span>
             </header>
 
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

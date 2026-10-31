@@ -10,7 +10,7 @@
             @include('auth.oauth-connections', ['surface' => 'registration'])
 
             @if ($oauthRegistration)
-                <p class="text-[13px] text-ink-dim">{{ __('auth.oauth_complete_registration', ['provider' => $oauthProviderName]) }}</p>
+                <p class="text-[13px]">{{ __('auth.oauth_complete_registration', ['provider' => $oauthProviderName]) }}</p>
 
                 <div class="grid gap-1">
                     <div class="text-[13px] font-medium">@lang('auth.full_name')</div>
@@ -34,7 +34,7 @@
                     @endforeach
                 </select>
                 @error('airline_id')
-                    <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                    <p class="text-xs" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -44,14 +44,14 @@
                 <input type="hidden" name="home_airport_id" :value="selected" value="{{ old('home_airport_id') }}" />
                 <div class="relative">
                     <input type="search" id="home_airport_search" autocomplete="off" x-model="query" @input.debounce.250ms="search()" :placeholder="selectedLabel" />
-                    <ul x-show="results.length" x-cloak class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md border border-line bg-panel text-[13px]">
+                    <ul x-show="results.length" x-cloak class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md text-[13px]">
                         <template x-for="airport in results" :key="airport.id">
-                            <li><button type="button" class="block w-full px-3 py-1.5 text-left hover:bg-hover" x-text="airport.description" @click="choose(airport)"></button></li>
+                            <li><button type="button" class="block w-full px-3 py-1.5 text-left" x-text="airport.description" @click="choose(airport)"></button></li>
                         </template>
                     </ul>
                 </div>
                 @error('home_airport_id')
-                    <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                    <p class="text-xs" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -63,7 +63,7 @@
                     @endforeach
                 </select>
                 @error('country')
-                    <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                    <p class="text-xs" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -79,7 +79,7 @@
                     @endforeach
                 </select>
                 @error('timezone')
-                    <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                    <p class="text-xs" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -101,7 +101,7 @@
                     <span class="text-[13px] font-medium">@lang('auth.fill_captcha')</span>
                     <div class="h-captcha" data-sitekey="{{ $captcha['site_key'] }}"></div>
                     @error('h-captcha-response')
-                        <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                        <p class="text-xs" role="alert">{{ $message }}</p>
                     @enderror
                 </div>
             @endif
@@ -122,7 +122,7 @@
                 <span>@lang('auth.toc_accept')</span>
             </label>
             @error('toc_accepted')
-                <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+                <p class="text-xs" role="alert">{{ $message }}</p>
             @enderror
 
             <label class="flex items-start gap-2 text-[13px]">

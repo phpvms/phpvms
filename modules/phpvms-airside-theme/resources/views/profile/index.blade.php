@@ -10,7 +10,7 @@
     <x-airside::page name="profile" :label="$profile->name.', pilot profile'">
         <x-airside::page-header headline="Pilot profile">
             <div class="flex items-center gap-3">
-                <span x-data="{ failed: false }" class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft text-sm font-semibold text-accent">
+                <span x-data="{ failed: false }" class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full text-sm font-semibold">
                     @if ($profile->avatar)
                         <img src="{{ $profile->avatar }}" alt="{{ $profile->name }}" class="size-full object-cover" x-show="! failed" x-on:error="failed = true" />
                         <span x-show="failed" x-cloak>{{ $initials }}</span>
@@ -18,7 +18,7 @@
                         {{ $initials }}
                     @endif
                 </span>
-                <h1 class="text-xl font-semibold text-ink">{{ $profile->name }}</h1>
+                <h1 class="text-xl font-semibold">{{ $profile->name }}</h1>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
@@ -29,7 +29,7 @@
                     <x-ts-badge color="primary" light :text="$profile->rank->name" />
                 @endif
                 <x-ts-badge color="slate" light :text="$profile->state->label" />
-                <span class="text-xs text-ink-dim">Member since {{ $memberYear }}</span>
+                <span class="text-xs">Member since {{ $memberYear }}</span>
             </div>
 
             @if ($profile->isOwnProfile && $profile->acars)
@@ -65,18 +65,18 @@
             <x-airside::card aria-label="Awards">
                 <x-slot:header>
                     <div class="flex items-center justify-between gap-2">
-                        <h2 class="text-sm font-semibold text-ink">Awards &amp; merits</h2>
+                        <h2 class="text-sm font-semibold">Awards &amp; merits</h2>
                         <x-ts-badge color="slate" light :text="count($profile->awards).' earned'" />
                     </div>
                 </x-slot:header>
 
                 @if (count($profile->awards) === 0)
-                    <p class="text-[13px] text-ink-dim">No awards earned yet.</p>
+                    <p class="text-[13px]">No awards earned yet.</p>
                 @else
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach ($profile->awards as $award)
-                            <div class="flex items-start gap-3 rounded-md border border-line bg-panel-inset p-3" aria-label="{{ $award->name }}, earned">
-                                <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-md bg-panel text-ink-faint">
+                            <div class="flex items-start gap-3 rounded-md p-3" aria-label="{{ $award->name }}, earned">
+                                <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-md">
                                     @if ($award->image)
                                         <img src="{{ $award->image }}" alt="" class="size-full object-contain" />
                                     @else
@@ -87,9 +87,9 @@
                                     @endif
                                 </span>
                                 <div class="grid min-w-0 gap-0.5">
-                                    <h3 class="text-[13px] font-semibold text-ink">{{ $award->name }}</h3>
-                                    <p class="text-xs text-ink-dim">{{ $award->description ?? 'Qualifier unavailable' }}</p>
-                                    <span class="micro">Earned</span>
+                                    <h3 class="text-[13px] font-semibold">{{ $award->name }}</h3>
+                                    <p class="text-xs">{{ $award->description ?? 'Qualifier unavailable' }}</p>
+                                    <span>Earned</span>
                                 </div>
                             </div>
                         @endforeach
@@ -100,18 +100,18 @@
             <x-airside::card aria-label="Tours completed">
                 <x-slot:header>
                     <div class="flex items-center justify-between gap-2">
-                        <h2 class="text-sm font-semibold text-ink">Tours completed</h2>
+                        <h2 class="text-sm font-semibold">Tours completed</h2>
                         <x-ts-badge color="slate" light :text="count($profile->tours).' completed'" />
                     </div>
                 </x-slot:header>
 
                 @if (count($profile->tours) === 0)
-                    <p class="text-[13px] text-ink-dim">No tours completed yet.</p>
+                    <p class="text-[13px]">No tours completed yet.</p>
                 @else
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach ($profile->tours as $tour)
-                            <div class="flex items-start gap-3 rounded-md border border-line bg-panel-inset p-3" aria-label="{{ $tour->name }}, completed">
-                                <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-panel text-ink-faint">
+                            <div class="flex items-start gap-3 rounded-md p-3" aria-label="{{ $tour->name }}, completed">
+                                <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full">
                                     @if ($tour->image)
                                         <img src="{{ $tour->image }}" alt="" class="size-full object-cover" />
                                     @else
@@ -119,10 +119,10 @@
                                     @endif
                                 </span>
                                 <div class="grid min-w-0 gap-0.5">
-                                    <h3 class="text-[13px] font-semibold text-ink">{{ $tour->name }}</h3>
-                                    <p class="text-xs text-ink-dim">{{ $tour->legs }} {{ $tour->legs === 1 ? 'leg' : 'legs' }}</p>
+                                    <h3 class="text-[13px] font-semibold">{{ $tour->name }}</h3>
+                                    <p class="text-xs">{{ $tour->legs }} {{ $tour->legs === 1 ? 'leg' : 'legs' }}</p>
                                     @if ($tour->completedAt)
-                                        <span class="micro">Completed {{ \Illuminate\Support\Carbon::parse($tour->completedAt)->utc()->format('M j, Y') }}</span>
+                                        <span>Completed {{ \Illuminate\Support\Carbon::parse($tour->completedAt)->utc()->format('M j, Y') }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -136,8 +136,8 @@
                     <dl class="grid gap-3 sm:grid-cols-2">
                         @foreach ($profile->fields as $field)
                             <div class="grid gap-0.5">
-                                <dt class="micro">{{ $field->name }}</dt>
-                                <dd class="text-[13px] text-ink">{{ $field->value ?: '—' }}</dd>
+                                <dt>{{ $field->name }}</dt>
+                                <dd class="text-[13px]">{{ $field->value ?: '—' }}</dd>
                             </div>
                         @endforeach
                     </dl>
@@ -156,11 +156,11 @@
                             @foreach ($profileEdit->connections as $connection)
                                 <li class="flex flex-wrap items-center justify-between gap-3">
                                     <div class="grid gap-1">
-                                        <span class="text-[13px] font-medium text-ink">{{ $connection->displayName }}</span>
+                                        <span class="text-[13px] font-medium">{{ $connection->displayName }}</span>
                                         <span class="flex flex-wrap items-center gap-2">
                                             <x-ts-badge :color="$connection->linked ? 'green' : 'slate'" light :text="$connection->linked ? 'Connected' : 'Not connected'" />
                                             @if ($connection->providerUserId)
-                                                <span class="font-mono text-xs text-ink-dim">{{ $connection->providerUserId }}</span>
+                                                <span class="font-mono text-xs">{{ $connection->providerUserId }}</span>
                                             @endif
                                         </span>
                                     </div>

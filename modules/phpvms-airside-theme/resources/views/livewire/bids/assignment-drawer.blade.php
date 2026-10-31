@@ -42,7 +42,7 @@
 >
     <x-airside::drawer name="assignment" title="Flight bid" wire:model="open">
         <x-slot:header>
-            <p class="micro">FLIGHT ASSIGNMENT</p>
+            <p>FLIGHT ASSIGNMENT</p>
             @if ($flight)
                 <x-airside::flight-ident
                     size="lg"
@@ -145,7 +145,7 @@
                             @else
                                 <article class="grid min-w-0 gap-0.5 rounded-md px-3 py-2.5" aria-label="Selected subfleet">
                                     <header class="flex items-center justify-between gap-2">
-                                        <span class="micro">Selected subfleet</span>
+                                        <span>Selected subfleet</span>
                                         <x-ts-button type="button" xs light wire:click="editSubfleet">Edit</x-ts-button>
                                     </header>
                                     <strong class="text-[13px]">{{ $chosenSubfleet->displayName }}</strong>
@@ -159,7 +159,7 @@
                                 </div>
 
                                 @if ($aircraft === null)
-                                    <div class="grid gap-1.5 rounded-md border border-bad/40 bg-bad/10 px-3 py-2.5 text-[13px]" role="alert">
+                                    <div class="grid gap-1.5 rounded-md px-3 py-2.5 text-[13px]" role="alert">
                                         <strong>Aircraft unavailable</strong>
                                         <span>Eligible aircraft could not be loaded. Choose another subfleet or try again.</span>
                                         <div><x-ts-button type="button" xs light wire:click="retryAircraft">Try again</x-ts-button></div>

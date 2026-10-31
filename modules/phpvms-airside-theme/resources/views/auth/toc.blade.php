@@ -1,7 +1,7 @@
 {{-- The terms and conditions text, read-only inside the registration form. --}}
 <div class="grid gap-1.5">
-    <h2 class="text-[13px] font-medium text-ink">@lang('toc.title')</h2>
-    <textarea readonly class="scroll-thin h-40 w-full resize-none rounded-md border border-line-strong bg-panel-inset p-3 text-xs leading-relaxed text-ink-dim">
+    <h2 class="text-[13px] font-medium">@lang('toc.title')</h2>
+    <textarea readonly class="h-40 w-full resize-none rounded-md p-3 text-xs leading-relaxed">
 {{ config('app.name') }} offers this Web site, including all information, software,
 products and services available from this Web site or offered as part of or in conjunction
 with this Web site (the “Web site”), to you, the user, conditioned upon your acceptance of

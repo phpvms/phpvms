@@ -18,20 +18,20 @@
             </x-airside::page-header>
 
             <div class="grid grid-cols-1 gap-4 min-[721px]:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
-                <aside data-live-list class="max-h-[40vh] min-w-0 overflow-y-auto rounded-lg border border-line bg-panel p-3 min-[721px]:max-h-[70vh]" aria-label="Live flights"></aside>
+                <aside data-live-list class="max-h-[40vh] min-w-0 overflow-y-auto rounded-lg p-3 min-[721px]:max-h-[70vh]" aria-label="Live flights"></aside>
 
-                <div class="relative min-w-0 overflow-hidden rounded-lg border border-line">
-                    <div data-live-map class="h-[70vh] min-h-[22rem] bg-panel-inset"></div>
+                <div class="relative min-w-0 overflow-hidden rounded-lg">
+                    <div data-live-map class="h-[70vh] min-h-[22rem]"></div>
                     <div data-live-overlay class="pointer-events-none absolute top-3 left-3 z-10 max-w-[min(320px,calc(100%-24px))]"></div>
                 </div>
             </div>
 
             {{-- Markup the island clones. It lives here so the theme build sees its classes. --}}
             <template data-tpl="row">
-                <button type="button" role="option" aria-selected="false" class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-panel-inset aria-selected:bg-accent-soft">
-                    <span data-field="ident" class="font-mono font-semibold text-accent"></span>
-                    <span data-field="route" class="min-w-0 flex-1 truncate font-mono text-ink-dim"></span>
-                    <span data-field="phase" class="rounded-md border border-line bg-panel-inset px-1.5 py-0.5 text-[11px] text-ink-dim"></span>
+                <button type="button" role="option" aria-selected="false" class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm">
+                    <span data-field="ident" class="font-mono font-semibold"></span>
+                    <span data-field="route" class="min-w-0 flex-1 truncate font-mono"></span>
+                    <span data-field="phase" class="rounded-md px-1.5 py-0.5 text-[11px]"></span>
                 </button>
             </template>
 
@@ -44,11 +44,11 @@
             </template>
 
             <template data-tpl="detail">
-                <div class="pointer-events-auto max-h-[min(50vh,22rem)] overflow-y-auto rounded-md border border-line bg-panel p-3" aria-label="Selected flight">
-                    <p data-field="status" class="m-0 text-sm text-ink-dim" hidden></p>
-                    <p data-field="error" class="m-0 text-sm text-ink-dim" role="alert" hidden>Flight details could not be loaded.</p>
-                    <a data-field="link" class="flex min-w-0 max-w-full items-center gap-2.5 text-ink hover:underline" hidden wire:navigate>
-                        <span class="grid size-8 shrink-0 place-items-center overflow-hidden rounded-md border border-line-strong bg-panel-inset text-[11px] font-semibold text-ink-dim">VA</span>
+                <div class="pointer-events-auto max-h-[min(50vh,22rem)] overflow-y-auto rounded-md p-3" aria-label="Selected flight">
+                    <p data-field="status" class="m-0 text-sm" hidden></p>
+                    <p data-field="error" class="m-0 text-sm" role="alert" hidden>Flight details could not be loaded.</p>
+                    <a data-field="link" class="flex min-w-0 max-w-full items-center gap-2.5 hover:underline" hidden wire:navigate>
+                        <span class="grid size-8 shrink-0 place-items-center overflow-hidden rounded-md text-[11px] font-semibold">VA</span>
                         <span class="flex min-w-0 flex-col items-start leading-tight">
                             <span data-field="callsign" class="max-w-full truncate font-mono font-bold"></span>
                             <span class="mt-0.5 inline-flex min-w-0 items-baseline gap-1.5 truncate font-mono font-medium">

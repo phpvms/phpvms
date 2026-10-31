@@ -2,13 +2,13 @@
 
 {{-- A labelled profile form row with its validation error. Props: label, for (control id), error (error-bag key), hint, required. Slot: the control. --}}
 <div {{ $attributes->class('grid content-start gap-1.5') }}>
-    <label @if ($for) for="{{ $for }}" @endif class="text-[13px] font-medium text-ink">
+    <label @if ($for) for="{{ $for }}" @endif class="text-[13px] font-medium">
         {{ $label }}
         @if ($required)
-            <span class="text-bad" aria-hidden="true">*</span>
+            <span aria-hidden="true">*</span>
         @endif
         @if ($hint)
-            <span class="ml-1 font-normal text-ink-dim">{{ $hint }}</span>
+            <span class="ml-1 font-normal">{{ $hint }}</span>
         @endif
     </label>
 
@@ -16,7 +16,7 @@
 
     @if ($error)
         @error($error)
-            <p class="text-xs text-bad" role="alert">{{ $message }}</p>
+            <p class="text-xs" role="alert">{{ $message }}</p>
         @enderror
     @endif
 </div>

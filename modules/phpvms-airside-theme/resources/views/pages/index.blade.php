@@ -6,7 +6,7 @@
     <x-airside::page name="content-page" label="{{ $page->name }}">
         <x-airside::page-header :title="$page->name" />
 
-        <article class="pv-prose max-w-3xl text-[14px] leading-relaxed text-ink">
+        <article class="pv-prose max-w-3xl text-[14px] leading-relaxed">
             {!! $page->body !!}
         </article>
     </x-airside::page>

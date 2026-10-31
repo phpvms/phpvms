@@ -7,7 +7,7 @@
             <x-airside::alert kind="success">{{ __('A fresh verification link has been sent to your email address.') }}</x-airside::alert>
         @endif
 
-        <p class="text-[13px] text-ink-dim">
+        <p class="text-[13px]">
             {{ __('Before proceeding, please check your email for a verification link.') }}
             {{ __('If you did not receive the email') }},
         </p>

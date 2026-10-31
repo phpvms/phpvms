@@ -15,13 +15,13 @@
         </x-slot:links>
     </x-airside::page-header>
 
-    <div class="flex w-fit gap-1 rounded-md border border-line bg-panel-inset p-1" role="tablist" aria-label="Tour filter">
+    <div class="flex w-fit gap-1 rounded-md p-1" role="tablist" aria-label="Tour filter">
         @foreach (['all' => 'All tours', 'mine' => 'My tours'] as $value => $label)
             <button
                 type="button"
                 role="tab"
                 class="rounded px-3 py-1 text-[13px] font-medium"
-                x-bind:class="filter === '{{ $value }}' ? 'bg-panel text-ink shadow-sm' : 'text-ink-dim hover:text-ink'"
+                x-bind:class="filter === '{{ $value }}' ? 'shadow-sm' : ''"
                 x-bind:aria-selected="filter === '{{ $value }}' ? 'true' : 'false'"
                 x-on:click="filter = '{{ $value }}'"
             >{{ $label }}</button>

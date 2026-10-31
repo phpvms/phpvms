@@ -28,10 +28,7 @@
             @if (! $inWindow) x-show="expanded" x-cloak @endif
         >
             <span @class([
-                'grid size-6 shrink-0 place-items-center rounded-full border text-[11px] font-semibold',
-                'border-ok bg-ok/10 text-ok' => $leg->flown,
-                'border-accent bg-accent-soft text-accent' => $isCurrent,
-                'border-line-strong text-ink-dim' => ! $leg->flown && ! $isCurrent,
+                'grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold',
             ])>
                 @if ($leg->flown)
                     <x-airside::icon name="check" class="size-3.5" />
@@ -43,7 +40,7 @@
                 <span class="font-mono font-semibold">{{ $leg->ident }}</span>
                 <span class="font-mono">{{ $leg->dpt }} <span aria-hidden="true">→</span><span class="sr-only">to</span> {{ $leg->arr }}</span>
                 @if ($state)
-                    <span @class(['text-[11px] font-bold uppercase', 'text-accent' => $state === 'next', 'text-ok' => $state === 'flown']) data-state="{{ $state }}">{{ $state === 'next' ? 'Up next' : 'Flown' }}</span>
+                    <span @class(['text-[11px] font-bold uppercase']) data-state="{{ $state }}">{{ $state === 'next' ? 'Up next' : 'Flown' }}</span>
                 @endif
             </span>
         </li>

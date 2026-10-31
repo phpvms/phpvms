@@ -8,7 +8,7 @@
 <div {{ $attributes->class('grid min-w-0 gap-2') }} x-data="{ q: '' }">
     <span class="text-[13px] font-semibold">{{ $label }}</span>
     <input type="search" x-model="q" placeholder="{{ $searchPlaceholder }}" autocomplete="off" aria-label="{{ $searchPlaceholder }}" />
-    <ul class="scroll-thin m-0 grid max-h-64 list-none gap-1.5 overflow-y-auto p-0" aria-label="{{ $label }}">
+    <ul class="m-0 grid max-h-64 list-none gap-1.5 overflow-y-auto p-0" aria-label="{{ $label }}">
         @foreach ($items as $item)
             <li
                 wire:key="{{ $action }}-{{ $item['value'] }}"

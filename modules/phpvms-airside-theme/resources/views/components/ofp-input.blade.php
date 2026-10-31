@@ -2,7 +2,7 @@
 
 {{-- A labelled SimBrief option input. Props: name, label, value, readonly (shown, never submitted). --}}
 <div class="grid gap-1.5">
-    <label for="ofp-{{ $name }}" class="text-[13px] font-medium text-ink">{{ $label }}</label>
+    <label for="ofp-{{ $name }}" class="text-[13px] font-medium">{{ $label }}</label>
     <input
         id="ofp-{{ $name }}"
         type="text"

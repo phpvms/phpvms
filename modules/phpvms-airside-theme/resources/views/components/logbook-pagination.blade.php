@@ -11,7 +11,7 @@
         ->sort()
         ->values();
     $url = fn (int $page): string => route('frontend.pireps.index', ['page' => $page]);
-    $link = 'inline-flex size-8 items-center justify-center rounded-md border border-line bg-panel text-[13px] text-ink hover:bg-panel-inset';
+    $link = 'inline-flex size-8 items-center justify-center rounded-md text-[13px]';
 @endphp
 @if ($lastPage > 1)
     <nav {{ $attributes->class('pv-logbook-pager flex flex-wrap items-center justify-center gap-1') }} aria-label="Pagination">
@@ -23,11 +23,11 @@
 
         @foreach ($pages as $page)
             @if (! $loop->first && $page - $pages[$loop->index - 1] > 1)
-                <span class="inline-flex size-8 items-center justify-center text-ink-faint" aria-hidden="true">…</span>
+                <span class="inline-flex size-8 items-center justify-center" aria-hidden="true">…</span>
             @endif
 
             @if ($page === $currentPage)
-                <span class="{{ $link }} border-accent bg-accent-soft font-semibold text-accent" aria-current="page">{{ $page }}</span>
+                <span class="{{ $link }} font-semibold" aria-current="page">{{ $page }}</span>
             @else
                 <a href="{{ $url($page) }}" wire:navigate class="{{ $link }}" aria-label="Page {{ $page }}">{{ $page }}</a>
             @endif

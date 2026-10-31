@@ -27,7 +27,7 @@
         <x-slot:footer>
             <form method="post" action="{{ route('oauth.cancel') }}">
                 @csrf
-                <button type="submit" class="text-accent">{{ __('auth.oauth_cancel') }}</button>
+                <button type="submit">{{ __('auth.oauth_cancel') }}</button>
             </form>
         </x-slot:footer>
     </x-airside::auth-card>

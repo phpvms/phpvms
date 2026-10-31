@@ -26,7 +26,7 @@
         <script type="application/json">{!! json_encode($payload, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES) !!}</script>
     </div>
 @else
-    <div class="grid min-h-[180px] place-items-center rounded-md border border-dashed border-line bg-panel-inset p-6 text-center text-ink-dim" role="status">
+    <div class="grid min-h-[180px] place-items-center rounded-md p-6 text-center" role="status">
         Route map unavailable because airport coordinates are missing.
     </div>
 @endif
