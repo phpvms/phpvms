@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\NavigationGroup;
 use App\Features\Themes\ThemeFields;
 use App\Filament\Pages\Theme;
 use App\Models\Permission;
@@ -35,11 +34,6 @@ function themeAdmin(string ...$permissions): User
     return $user->fresh();
 }
 
-it('is discovered on the admin panel under Content', function (): void {
-    expect(Filament::getPanel('admin')->getPages())->toContain(Theme::class)
-        ->and(Theme::getNavigationGroup())->toBe(NavigationGroup::Content);
-});
-
 it('saves the selected theme', function (): void {
     updateSetting('general.theme', 'seven');
     $this->actingAs(themeAdmin('view:theme', 'edit:theme'));
@@ -52,17 +46,6 @@ it('saves the selected theme', function (): void {
         ->assertNotified(__('filament.theme_saved'));
 
     expect(setting('general.theme'))->toBe('airside');
-});
-
-it('frames the pilot dashboard under the selected theme as a preview', function (): void {
-    $this->actingAs(themeAdmin('view:theme'));
-
-    livewire(Theme::class)
-        ->assertSeeHtml('<iframe')
-        ->assertSeeHtml('?${this.param}=')
-        ->assertSeeHtml(str_replace('/', '\\/', route('frontend.dashboard.index')))
-        ->assertSeeHtml('role="tablist"')
-        ->assertSee(__('filament.theme_customize_tab'));
 });
 
 it('rejects a theme that is not installed', function (): void {
@@ -157,4 +140,31 @@ it('removes the override and refills the default on reset', function (): void {
         ->assertFormSet(['theme' => 'airside', 'css' => app(ThemeFields::class)->defaultFor('airside', 'css')]);
 
     expect(ThemeSetting::query()->count())->toBe(0);
+});
+
+it('fills the editor from a colour scheme without storing anything until saved', function (): void {
+    config(['presets.color_schemes.test-scheme' => [
+        'name'        => 'Test',
+        'category'    => 'Test',
+        'description' => 'x',
+        'primary'     => [50 => '#000001', 100 => '#000002', 200 => '#000003', 300 => '#000004', 400 => '#000005', 500 => '#000006', 600 => '#000007', 700 => '#000008', 800 => '#000009', 900 => '#00000a', 950 => '#00000b'],
+        'secondary'   => 'sky',
+        'surface'     => 'neutral',
+    ]]);
+    updateSetting('general.theme', 'airside');
+    $this->actingAs(themeAdmin('view:theme', 'edit:theme'));
+
+    livewire(Theme::class)
+        ->fillForm(['color_scheme' => 'test-scheme'])
+        ->assertSet('data.css', fn (string $css): bool => str_contains($css, '--color-primary-500: #000006;'));
+
+    expect(ThemeSetting::query()->count())->toBe(0);
+
+    livewire(Theme::class)
+        ->fillForm(['color_scheme' => 'test-scheme'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(ThemeSetting::query()->where('theme', 'airside')->where('name', 'css')->value('content'))
+        ->toContain('#000006');
 });

@@ -1,48 +1,50 @@
 /*
  * Theme CSS override.
  *
- * This file is the theme's runtime CSS variables with their defaults. The
- * admin's Custom CSS box starts from it; saving it unchanged stores nothing.
+ * This file is the theme's runtime CSS variables with their defaults, plus a
+ * :root.dark block for the primary and secondary colours in dark mode. The
+ * defaults are the phpvms colour scheme. The admin's Custom CSS box starts
+ * from it; saving it unchanged stores nothing.
  */
 :root {
     /* Primary */
-    --color-primary-50: #eef2ff;
-    --color-primary-100: #e0e7ff;
-    --color-primary-200: #c7d2fe;
-    --color-primary-300: #a5b4fc;
-    --color-primary-400: #818cf8;
-    --color-primary-500: #6366f1;
-    --color-primary-600: #4f46e5;
-    --color-primary-700: #4338ca;
-    --color-primary-800: #3730a3;
-    --color-primary-900: #312e81;
-    --color-primary-950: #1e1b4b;
+    --color-primary-50: #f1f9fe;
+    --color-primary-100: #c9e0f3;
+    --color-primary-200: #a1c8e8;
+    --color-primary-300: #78afdb;
+    --color-primary-400: #4c97ce;
+    --color-primary-500: #067ec1;
+    --color-primary-600: #0d6da7;
+    --color-primary-700: #105d8d;
+    --color-primary-800: #114d75;
+    --color-primary-900: #113e5d;
+    --color-primary-950: #0f2f46;
 
     /* Secondary */
-    --color-secondary-50: oklch(96.9% 0.016 293.756);
-    --color-secondary-100: oklch(94.3% 0.029 294.588);
-    --color-secondary-200: oklch(89.4% 0.057 293.283);
-    --color-secondary-300: oklch(81.1% 0.111 293.571);
-    --color-secondary-400: oklch(70.2% 0.183 293.541);
-    --color-secondary-500: oklch(60.6% 0.25 292.717);
-    --color-secondary-600: oklch(54.1% 0.281 293.009);
-    --color-secondary-700: oklch(49.1% 0.27 292.581);
-    --color-secondary-800: oklch(43.2% 0.232 292.759);
-    --color-secondary-900: oklch(38% 0.189 293.745);
-    --color-secondary-950: oklch(28.3% 0.141 291.089);
+    --color-secondary-50: oklch(0.977 0.013 236.62);
+    --color-secondary-100: oklch(0.951 0.026 236.824);
+    --color-secondary-200: oklch(0.901 0.058 230.902);
+    --color-secondary-300: oklch(0.828 0.111 230.318);
+    --color-secondary-400: oklch(0.746 0.16 232.661);
+    --color-secondary-500: oklch(0.685 0.169 237.323);
+    --color-secondary-600: oklch(0.588 0.158 241.966);
+    --color-secondary-700: oklch(0.5 0.134 242.749);
+    --color-secondary-800: oklch(0.443 0.11 240.79);
+    --color-secondary-900: oklch(0.391 0.09 240.876);
+    --color-secondary-950: oklch(0.293 0.066 243.157);
 
     /* Dark (surfaces in dark mode) */
     --color-dark-50: oklch(0.985 0 0);
     --color-dark-100: oklch(0.97 0 0);
     --color-dark-200: oklch(0.922 0 0);
     --color-dark-300: oklch(0.87 0 0);
-    --color-dark-400: oklch(0.683 0 0);
-    --color-dark-500: oklch(0.51 0 0);
-    --color-dark-600: oklch(0.36 0 0);
-    --color-dark-700: oklch(0.253 0 0);
-    --color-dark-800: oklch(0.185 0 0);
-    --color-dark-900: oklch(0.145 0 0);
-    --color-dark-950: oklch(0.11 0 0);
+    --color-dark-400: oklch(0.708 0 0);
+    --color-dark-500: oklch(0.556 0 0);
+    --color-dark-600: oklch(0.439 0 0);
+    --color-dark-700: oklch(0.371 0 0);
+    --color-dark-800: oklch(0.269 0 0);
+    --color-dark-900: oklch(0.205 0 0);
+    --color-dark-950: oklch(0.145 0 0);
 
     /* Radius */
     --radius-xs: .125rem;
@@ -54,5 +56,34 @@
     --radius-3xl: 1.5rem;
 
     /* Font */
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-sans: "Manrope Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Dark mode: primary and secondary used when the pilot site is in dark mode. :root.dark outranks :root. */
+:root.dark {
+    /* Primary */
+    --color-primary-50: #f1f9fe;
+    --color-primary-100: #c9e0f3;
+    --color-primary-200: #a1c8e8;
+    --color-primary-300: #78afdb;
+    --color-primary-400: #4c97ce;
+    --color-primary-500: #067ec1;
+    --color-primary-600: #0d6da7;
+    --color-primary-700: #105d8d;
+    --color-primary-800: #114d75;
+    --color-primary-900: #113e5d;
+    --color-primary-950: #0f2f46;
+
+    /* Secondary */
+    --color-secondary-50: oklch(0.977 0.013 236.62);
+    --color-secondary-100: oklch(0.951 0.026 236.824);
+    --color-secondary-200: oklch(0.901 0.058 230.902);
+    --color-secondary-300: oklch(0.828 0.111 230.318);
+    --color-secondary-400: oklch(0.746 0.16 232.661);
+    --color-secondary-500: oklch(0.685 0.169 237.323);
+    --color-secondary-600: oklch(0.588 0.158 241.966);
+    --color-secondary-700: oklch(0.5 0.134 242.749);
+    --color-secondary-800: oklch(0.443 0.11 240.79);
+    --color-secondary-900: oklch(0.391 0.09 240.876);
+    --color-secondary-950: oklch(0.293 0.066 243.157);
 }

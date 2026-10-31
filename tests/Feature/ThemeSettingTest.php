@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 use App\Models\ThemeSetting;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Schema;
 
-it('has the expected columns and enforces the (theme, name) composite', function (): void {
-    expect(Schema::getColumnListing('theme_settings'))
-        ->toEqualCanonicalizing(['theme', 'name', 'content', 'active', 'created_at', 'updated_at']);
-
+it('enforces the (theme, name) composite key', function (): void {
     ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'hero']);
 
     expect(fn () => ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'hero']))

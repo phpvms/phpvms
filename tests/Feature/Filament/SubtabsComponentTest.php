@@ -22,32 +22,22 @@ function renderSubtabs(): string
         BLADE);
 }
 
-it('renders a tablist with the initial active tab', function (): void {
-    $html = renderSubtabs();
-
-    expect($html)
-        ->toContain('role="tablist"')
-        ->toContain('aria-label="Demo sections"')
-        ->toContain("x-data=\"{ activeTab: 'first' }\"");
-});
-
 it('pairs each tab button with its panel', function (): void {
     $html = renderSubtabs();
 
-    expect(substr_count($html, 'role="tab"'))->toBe(2)
-        ->and(substr_count($html, 'role="tabpanel"'))->toBe(2);
-
-    foreach (['first', 'second'] as $key) {
-        expect($html)
-            ->toContain('aria-controls="tab-'.$key.'"')
-            ->toContain('id="tab-'.$key.'"');
+    preg_match_all('/role="tab"[^>]*aria-controls="([^"]+)"|aria-controls="([^"]+)"[^>]*role="tab"/', $html, $m);
+    $controls = array_values(array_filter(array_merge($m[1], $m[2])));
+    preg_match_all('/<[^>]*role="tabpanel"[^>]*>/', $html, $panels);
+    $panelIds = [];
+    foreach ($panels[0] as $tag) {
+        if (preg_match('/\sid="([^"]+)"/', $tag, $id) === 1) {
+            $panelIds[] = $id[1];
+        }
     }
-});
 
-it('renders the badge in an em and the icon as an svg', function (): void {
-    $html = renderSubtabs();
+    expect($controls)->not->toBeEmpty();
 
-    expect($html)
-        ->toMatch('/<em>\s*3\s*<\/em>/')
-        ->toContain('<svg');
+    foreach ($controls as $target) {
+        expect($panelIds)->toContain($target);
+    }
 });

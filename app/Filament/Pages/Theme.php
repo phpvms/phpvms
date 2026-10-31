@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Themes\ColorSchemeCss;
 use App\Features\Themes\ThemeFields;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\ReversePrimaryButtons;
@@ -22,6 +23,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
@@ -117,6 +119,28 @@ class Theme extends Page
                             ->key('customize')
                             ->icon(Phosphor::SlidersLight)
                             ->schema([
+                                Select::make('color_scheme')
+                                    ->label(__('filament.theme_color_scheme'))
+                                    ->placeholder(__('filament.theme_color_scheme_placeholder'))
+                                    ->helperText(__('filament.theme_color_scheme_hint'))
+                                    ->options(fn (): array => app(ColorSchemeCss::class)->options())
+                                    ->searchable()
+                                    ->native(false)
+                                    ->live()
+                                    ->dehydrated(false)
+                                    ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
+                                        if (!$state) {
+                                            return;
+                                        }
+
+                                        $scheme = config("presets.color_schemes.$state");
+                                        if (!$scheme) {
+                                            return;
+                                        }
+
+                                        $base = app(ThemeFields::class)->defaultFor((string) $get('theme'), 'css');
+                                        $set('css', app(ColorSchemeCss::class)->render($base, $scheme));
+                                    }),
                                 CodeEditor::make('css')
                                     ->label(__('filament.theme_css'))
                                     ->helperText(__('filament.theme_css_hint'))

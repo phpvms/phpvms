@@ -102,6 +102,15 @@ class AirsideThemeServiceProvider extends ServiceProvider
     }
 
     /**
+     * Avatars drop TallStackUI's default `border-2`. The avatar has no ring or
+     * outline class in another block; `border.radius` stays so it stays round.
+     */
+    private function customizeAvatar(): void
+    {
+        TallStackUi::customize()->avatar()->block('border.base', 'border-0');
+    }
+
+    /**
      * Sidebar width. TallStackUI ships `w-72`; the pilot menu is short, so the
      * rail takes 16rem and the layout's content padding follows it. The
      * collapsed width is left at the package default. These classes must be
@@ -159,6 +168,7 @@ class AirsideThemeServiceProvider extends ServiceProvider
         Blade::anonymousComponentPath($this->addonBasePath().'/resources/views/components', 'airside');
 
         $this->customizeSidebarWidth();
+        $this->customizeAvatar();
 
         $this->registerViteDirective();
     }
