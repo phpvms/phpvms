@@ -82,6 +82,16 @@ it('loads the Livewire and TallStackUI scripts', function (): void {
         ->toContain('/tallstackui/script/');
 });
 
+it('renders a collapsible sidebar at 16rem with no section label', function (): void {
+    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
+
+    expect($html)
+        ->toContain('$store[\'tsui.side-bar\'].toggle()')
+        ->toContain('md:w-64')
+        ->toContain('md:pl-64')
+        ->not->toContain('Workspace');
+});
+
 it('lets a guest see the layout with a sign in entry', function (): void {
     $html = $this->get('/airside-probe')->assertOk()->getContent();
 

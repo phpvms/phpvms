@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Blade;
 use Modules\PhpvmsAirsideTheme\Support\AirsideVite;
 use Modules\PhpvmsAirsideTheme\Support\NavigationIcon;
 use Override;
+use TallStackUi\Facades\TallStackUi;
 
 /**
  * airside: the bundled Blade + Livewire pilot theme.
@@ -101,6 +102,33 @@ class AirsideThemeServiceProvider extends ServiceProvider
     }
 
     /**
+     * Sidebar width. TallStackUI ships `w-72`; the pilot menu is short, so the
+     * rail takes 16rem and the layout's content padding follows it. The
+     * collapsed width is left at the package default. These classes must be
+     * in the theme build: `resources/css/airside.css` sources this directory.
+     */
+    private function customizeSidebarWidth(): void
+    {
+        TallStackUi::customize()
+            ->sideBar()
+            ->block('desktop.wrapper.first.size', 'md:w-64')
+            ->block('desktop.sizes.expanded', 'w-64');
+
+        TallStackUi::customize()
+            ->layout()
+            ->block('wrapper.second.expanded', 'md:pl-64');
+
+        // The pilot menu dropdown in the sidebar footer: the package wraps
+        // its trigger in an inline-block, which shrinks to the avatar on the
+        // collapsed rail and leaves it off-centre. Full width lets the
+        // trigger's own layout centre it.
+        TallStackUi::customize()
+            ->dropdown(scope: 'airside.pilot-menu')
+            ->block('wrapper.first', 'flex')
+            ->block('wrapper.second', 'relative block w-full text-left');
+    }
+
+    /**
      * Draw TallStackUI's icons from the Phosphor pack the admin panel uses
      * (BasePanelProvider, light style). `type` names the BladeUI package, which
      * switches the icon component to custom mode; `custom.guide` maps every
@@ -129,6 +157,8 @@ class AirsideThemeServiceProvider extends ServiceProvider
         parent::boot();
 
         Blade::anonymousComponentPath($this->addonBasePath().'/resources/views/components', 'airside');
+
+        $this->customizeSidebarWidth();
 
         $this->registerViteDirective();
     }

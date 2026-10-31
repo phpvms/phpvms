@@ -13,7 +13,6 @@ declare(strict_types=1);
 return [
     // Nav rail
     'brand_tagline' => 'Fleet Ops',
-    'nav_section'   => 'Workspace',
     'nav_flights'   => 'Flights',
     'nav_bids'      => 'My Bids',
     'nav_tours'     => 'Tours',
