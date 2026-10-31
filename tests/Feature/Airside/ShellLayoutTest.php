@@ -7,6 +7,7 @@ require_once __DIR__.'/Support.php';
 use App\Models\NavigationItem;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Facades\Filament;
+use Filament\Support\Colors\Color;
 
 /**
  * 6.1: the `app` layout, the sections addon views fill, the meta tags, theme
@@ -58,6 +59,19 @@ it('applies the saved theme mode before first paint', function (): void {
         ->and($html)->toContain("classList.toggle('dark'")
         ->and($html)->toContain("document.addEventListener('livewire:navigated', apply)")
         ->and($html)->toContain('x-data="tallstackui_darkTheme(');
+});
+
+it('recolours the TallStackUI primary palette from the brand colour at request time', function (): void {
+    updateSetting('branding.brand_color', '#e11d48');
+
+    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
+    $palette = Color::generatePalette('#e11d48');
+
+    expect($html)
+        ->toContain('--color-primary-50: '.$palette[50].';')
+        ->toContain('--color-primary-600: '.$palette[600].';')
+        ->toContain('--color-primary-950: '.$palette[950].';')
+        ->and(strpos($html, '--color-primary-600'))->toBeLessThan(strpos($html, '<body'));
 });
 
 it('loads the Livewire and TallStackUI scripts', function (): void {

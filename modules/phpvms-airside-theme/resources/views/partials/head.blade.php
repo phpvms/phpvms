@@ -38,5 +38,19 @@
 <link rel="shortcut icon" href="{{ $branding->favicon() }}" />
 
 @airsideVite(['resources/css/airside.css', 'resources/js/airside.js'])
+
+{{--
+  TallStackUI defines `primary` as Tailwind @theme variables, so every utility
+  and component reads `var(--color-primary-*)`. Overriding those on :root with
+  the admin's brand palette recolours the theme per request, without a build.
+--}}
+<style>
+    :root {
+        @foreach ($branding->brandPalette() as $shade => $color)
+            --color-primary-{{ $shade }}: {{ $color }};
+        @endforeach
+    }
+</style>
+
 <tallstackui:script />
 @livewireStyles
