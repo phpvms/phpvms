@@ -126,7 +126,7 @@ class Maintenance extends Page
                 $new_version_avail = $kvpRepo->get('new_version_available', false);
                 $new_version_tag = $kvpRepo->get('latest_version_tag');
 
-                $current_version = app(VersionService::class)->getCurrentVersion(include_build: false);
+                $current_version = app(VersionService::class)->getCurrentVersion();
 
                 Log::info('Force check, available='.$new_version_avail.', tag='.$new_version_tag);
 

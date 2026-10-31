@@ -1,7 +1,7 @@
 {
   "name": "phpvms/phpvms",
   "description": "phpVMS - Virtual Airline Administration",
-  "version": "8.0",
+  "version": "8.0.0-dev",
   "keywords": [
     "phpvms",
     "virtual",

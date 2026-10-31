@@ -215,7 +215,6 @@ jobs:
       - name: Install NPM dependencies
         run: |
           pnpm install --frozen-lockfile
-          pnpm run fmt config/version.yml
 
       - name: Compile assets
         run: pnpm run build
@@ -335,9 +334,6 @@ jobs:
         with:
           php-version: "8.5"
 
-      - uses: olegtarasov/get-tag@v2.1.2
-        id: tagName
-
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -371,16 +367,16 @@ jobs:
       - name: Build Distro
         run: .github/scripts/build.sh
 
-      - uses: BetaHuhn/do-spaces-action@v2
-        id: spaces
-        with:
-          access_key: ${{ secrets.SPACE_ACCESS_KEY}}
-          secret_key: ${{ secrets.SPACE_SECRET_KEY }}
-          space_name: ${{ secrets.SPACE_NAME }}
-          space_region: ${{ secrets.SPACE_REGION }}
-          source: dist
-          cdn_domain: phpvms.cdn.vmslabs.net
-          permission: public-read
+      - name: Upload to Bunny storage
+        env:
+          AWS_ACCESS_KEY_ID: phpvms
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BUNNY_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+          # AWS CLI v2.23+ sends checksum headers many S3-compatible stores reject
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+        run: |
+          aws s3 cp dist/ s3://phpvms/ --recursive \
+            --endpoint-url https://ny-s3.storage.bunnycdn.com
 
       - name: Discord notification
         uses: Ilshidur/action-discord@0.3.2

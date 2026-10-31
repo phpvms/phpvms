@@ -2,6 +2,7 @@
 
 use App\Services\KvpService;
 use App\Services\VersionService;
+use Illuminate\Support\Facades\File;
 
 test('greater than version strings', function (): void {
     $test = [
@@ -79,4 +80,10 @@ test('new version is available', function (): void {
         $versionSvc = app(VersionService::class);
         expect($versionSvc->isNewVersionAvailable($v))->toBeTrue();
     }
+});
+
+test('current version is read from composer.json', function (): void {
+    $composer = json_decode(File::get(base_path('composer.json')), true, 512, JSON_THROW_ON_ERROR);
+
+    expect(app(VersionService::class)->getCurrentVersion())->toEqual($composer['version']);
 });
