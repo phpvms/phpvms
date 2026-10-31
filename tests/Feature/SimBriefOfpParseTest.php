@@ -71,6 +71,16 @@ it('parses a take-off and an en-route alternate SimBrief sends on their own, not
         ->and($parsed->enroute_altn[0]->icao_code)->toBe($ofp['destination']['icao_code']);
 });
 
+it('parses a lone alternate SimBrief sends on its own, not in a list', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['alternate'] = $ofp['alternate'][0];
+
+    $parsed = SimBriefOfp::from($ofp);
+
+    expect($parsed->alternate)->toHaveCount(1)
+        ->and($parsed->alternate[0]->icao_code)->toBe($ofp['alternate']['icao_code']);
+});
+
 it('parses a list of take-off alternates', function (): void {
     $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
     $ofp['takeoff_altn'] = [$ofp['origin'], $ofp['destination']];
