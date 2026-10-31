@@ -6,6 +6,11 @@
 @import "@fontsource-variable/manrope";
 @import "../../../../vendor/tallstackui/tallstackui/css/v4.css";
 
+@source "../views";
+@source "../../app/Providers/*.php";
+@source "../../../../vendor/tallstackui/tallstackui";
+@source "../../../../resources/views/components/slot-outlet.blade.php";
+
 /*
  * airside's shipped colours: the phpvms scheme. Keep in sync with
  * resources/customize/airside.css, the same values as runtime defaults.
@@ -46,8 +51,3 @@
     --color-dark-900: oklch(0.205 0 0);
     --color-dark-950: oklch(0.145 0 0);
 }
-
-@source "../views";
-@source "../../app";
-@source "../../../../vendor/tallstackui/tallstackui";
-@source "../../../../resources/views/components/slot-outlet.blade.php";
