@@ -3941,6 +3941,12 @@ html[data-density="comfortable"] .fi-page-content {
   @apply not-italic font-mono text-[12px] text-(--ink-4);
 }
 
+/* Filament Sections inside a subtabs tabpanel sit flush like the PIREP blocks,
+ * so drop the global rounded-xl section corners there. */
+.panel > [role="tabpanel"] .fi-section:not(.fi-section-not-contained) {
+  @apply rounded-none;
+}
+
 /* ---------------------------------------------------------------------------
  * PIREP view — split layout with a sticky context rail (mockup .with-context/
  * .context, theme.css:1311-1318, responsive collapse theme.css:2080-2088).
