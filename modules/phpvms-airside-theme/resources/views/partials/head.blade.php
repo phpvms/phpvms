@@ -31,7 +31,6 @@
 
 {{-- Start of required lines block. DON'T REMOVE THESE LINES! They're required or might break things --}}
 <meta name="base-url" content="{!! url('') !!}">
-<meta name="api-key" content="{!! Auth::check() ? Auth::user()->api_key : '' !!}">
 <meta name="csrf-token" content="{!! csrf_token() !!}">
 {{-- End the required lines block --}}
 
