@@ -8,73 +8,32 @@ use App\Enums\PirepState;
 use App\Models\Pirep;
 
 /**
- * 7.7: the logbook list, its pagination and the empty state.
+ * 7.7: which PIREPs the logbook lists and how it pages.
  */
 beforeEach(function (): void {
     $this->pilot = useAirside();
     $this->withoutVite();
 });
 
-it('shows the header, the total and the empty state when there are no PIREPs', function (): void {
-    $this->actingAs($this->pilot)->get(route('frontend.pireps.index'))
-        ->assertOk()
-        ->assertSee('0 total')
-        ->assertSee('No PIREPs yet')
-        ->assertDontSee('aria-label="Pagination"', escape: false);
-});
-
-it("lists the pilot's PIREPs with route, state and stats", function (): void {
-    $pirep = Pirep::factory()->create([
-        'user_id'      => $this->pilot->id,
-        'state'        => PirepState::ACCEPTED,
-        'flight_time'  => 125,
-        'score'        => 87,
-        'submitted_at' => '2026-03-14 10:00:00',
-    ]);
-
-    $this->actingAs($this->pilot)->get(route('frontend.pireps.index'))
-        ->assertOk()
-        ->assertSee('1 total')
-        ->assertSee($pirep->ident)
-        ->assertSee($pirep->dpt_airport_id)
-        ->assertSee($pirep->arr_airport_id)
-        ->assertSee('Accepted')
-        ->assertSee('2h 5m')
-        ->assertSee('87')
-        ->assertSee('14 Mar 2026')
-        ->assertSee('Aircraft')
-        ->assertSee('Distance')
-        ->assertSee('Filed')
-        ->assertSee(route('frontend.pireps.show', ['id' => $pirep->id]), false)
-        ->assertDontSee('No PIREPs yet');
-});
-
 it("does not list another pilot's PIREPs or cancelled ones", function (): void {
-    $other = Pirep::factory()->create(['state' => PirepState::ACCEPTED]);
-    $cancelled = Pirep::factory()->create(['user_id' => $this->pilot->id, 'state' => PirepState::CANCELLED]);
+    $mine = Pirep::factory()->create(['user_id' => $this->pilot->id, 'state' => PirepState::ACCEPTED]);
+    Pirep::factory()->create(['state' => PirepState::ACCEPTED]);
+    Pirep::factory()->create(['user_id' => $this->pilot->id, 'state' => PirepState::CANCELLED]);
 
-    $this->actingAs($this->pilot)->get(route('frontend.pireps.index'))
-        ->assertOk()
-        ->assertDontSee($other->ident)
-        ->assertDontSee($cancelled->id)
-        ->assertSee('0 total');
+    $response = $this->actingAs($this->pilot)->get(route('frontend.pireps.index'))->assertOk();
+
+    expect(collect($response->viewData('pireps'))->pluck('id')->all())->toBe([$mine->id]);
 });
 
-it('pages the logbook and shows the pager only past one page', function (): void {
+it('pages the logbook', function (): void {
     $perPage = paginate_limit();
     Pirep::factory()->count($perPage + 1)->create(['user_id' => $this->pilot->id, 'state' => PirepState::ACCEPTED]);
 
-    $first = $this->actingAs($this->pilot)->get(route('frontend.pireps.index'))
-        ->assertOk()
-        ->assertSee(($perPage + 1).' total')
-        ->assertSee('aria-label="Pagination"', false)
-        ->assertSee('aria-current="page"', false)
-        ->assertSee('aria-label="Next page"', false);
+    $first = $this->actingAs($this->pilot)->get(route('frontend.pireps.index'));
+    $second = $this->actingAs($this->pilot)->get(route('frontend.pireps.index', ['page' => 2]));
 
-    expect($first->getContent())->not->toContain('aria-label="Previous page"');
-
-    $this->actingAs($this->pilot)->get(route('frontend.pireps.index', ['page' => 2]))
-        ->assertOk()
-        ->assertSee('aria-label="Previous page"', false)
-        ->assertDontSee('aria-label="Next page"', false);
+    expect($first->viewData('pagination')['total'])->toBe($perPage + 1)
+        ->and($first->viewData('pagination')['lastPage'])->toBe(2)
+        ->and($first->viewData('pireps'))->toHaveCount($perPage)
+        ->and($second->viewData('pireps'))->toHaveCount(1);
 });

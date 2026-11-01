@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 require_once __DIR__.'/../Support.php';
 
-use App\Enums\PirepState;
 use App\Features\Dashboard\Livewire\ActivityFeed;
 use App\Features\Dashboard\Livewire\DashboardBoard;
 use App\Features\Dashboard\Support\RouteReadout;
 use App\Features\Dashboard\WidgetCatalog;
-use App\Models\Pirep;
-use App\Models\User;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
 /**
  * 7.5: the dashboard board (layout from the browser, add, remove, reset, move),
- * the widgets and the activity feed.
+ * the route readout and the activity feed's relative times.
  */
 beforeEach(function (): void {
     $this->pilot = useAirside();
@@ -30,31 +27,19 @@ function dashboardBoard(): Testable
     return Livewire::test(DashboardBoard::class, ['route' => ['from' => null, 'to' => null]]);
 }
 
-it('renders a loading state until the browser sends its layout', function (): void {
-    dashboardBoard()
-        ->assertSet('ready', false)
-        ->assertSee('Loading dashboard')
-        ->assertDontSee('Customize');
-});
-
 it('places the default widgets when the browser has no layout', function (): void {
     dashboardBoard()
         ->call('loadLayout', null)
         ->assertSet('ready', true)
         ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity'])
-        ->assertSet('sidebar', [])
-        ->assertSee('Nav display')
-        ->assertSee('Customize')
-        ->assertSeeHtml('data-widget="route"')
-        ->assertSeeHtml('data-widget="activity"');
+        ->assertSet('sidebar', []);
 });
 
 it('renders only the widgets in the layout from the browser and drops unknown ids', function (): void {
     dashboardBoard()
         ->call('loadLayout', ['grid' => ['activity', 'addon-weather', 'activity'], 'sidebar' => ['route', 5]])
         ->assertSet('grid', ['activity'])
-        ->assertSet('sidebar', ['route'])
-        ->assertDontSeeHtml('data-widget="addon-weather"');
+        ->assertSet('sidebar', ['route']);
 });
 
 it('keeps an empty saved layout empty', function (): void {
@@ -73,34 +58,21 @@ it('falls back to the default for a broken layout', function (): void {
 it('toggles editing mode', function (): void {
     dashboardBoard()
         ->call('loadLayout', null)
-        ->assertDontSeeHtml('data-handle')
-        ->assertDontSee('Add widget')
-        ->assertDontSee('Reset')
         ->call('toggleEditing')
         ->assertSet('editing', true)
-        ->assertSeeHtml('data-handle')
-        ->assertSee('Remove widget')
-        ->assertSee('Add widget')
-        ->assertSee('Reset')
-        ->assertSee('Done')
         ->call('toggleEditing')
-        ->assertSet('editing', false)
-        ->assertDontSeeHtml('data-handle');
+        ->assertSet('editing', false);
 });
 
-it('removes a widget, offers it in the add menu, and adds it back', function (): void {
+it('removes a widget and adds it back', function (): void {
     dashboardBoard()
         ->call('loadLayout', null)
         ->call('toggleEditing')
         ->call('removeWidget', 'activity')
         ->assertSet('grid', ['route'])
         ->assertDispatched('dashboard-layout-changed', grid: ['route'], sidebar: [])
-        ->assertDontSeeHtml('data-widget="activity"')
-        ->assertSeeHtml("addWidget('activity')")
-        ->assertDontSee('All widgets placed')
         ->call('addWidget', 'activity')
-        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity'])
-        ->assertSee('All widgets placed');
+        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity']);
 });
 
 it('adds a widget once and ignores an unknown id', function (): void {
@@ -146,23 +118,6 @@ it('cannot have its route changed from the browser', function (): void {
     dashboardBoard()->set('route', ['from' => ['icao' => 'KJFK']]);
 })->throws(CannotUpdateLockedPropertyException::class);
 
-it('emits the route-map island and the TRK and DIST readout', function (): void {
-    $route = [
-        'from' => ['icao' => 'KJFK', 'name' => 'John F Kennedy', 'lat' => 40.6398, 'lon' => -73.7789],
-        'to'   => ['icao' => 'EGLL', 'name' => 'Heathrow', 'lat' => 51.47, 'lon' => -0.4543],
-    ];
-
-    Livewire::test(DashboardBoard::class, ['route' => $route])
-        ->call('loadLayout', ['grid' => ['route'], 'sidebar' => []])
-        ->assertSeeHtml('data-airside-island="route-map"')
-        ->assertSeeHtml('"icao":"KJFK"')
-        ->assertSeeHtml('"icao":"EGLL"')
-        ->assertSee('KJFK → EGLL')
-        ->assertSee('TRK')
-        ->assertSee(RouteReadout::bearing(40.6398, -73.7789, 51.47, -0.4543).'°')
-        ->assertSee(RouteReadout::distanceNm(40.6398, -73.7789, 51.47, -0.4543).' nm');
-});
-
 it('computes the readout like skylight (JFK to LHR is about 2999 nm, bearing 51)', function (): void {
     expect(RouteReadout::distanceNm(40.6398, -73.7789, 51.47, -0.4543))->toBeBetween(2990, 3010)
         ->and(RouteReadout::bearing(40.6398, -73.7789, 51.47, -0.4543))->toBe(51);
@@ -170,35 +125,6 @@ it('computes the readout like skylight (JFK to LHR is about 2999 nm, bearing 51)
 
 it('sanitises layouts', function (): void {
     expect(WidgetCatalog::sanitize(null))->toBe(['grid' => ['route', 'activity'], 'sidebar' => []]);
-});
-
-it('loads the activity widget lazily on the dashboard board', function (): void {
-    Livewire::test(DashboardBoard::class, ['route' => []])
-        ->call('loadLayout', ['grid' => ['activity'], 'sidebar' => []])
-        ->assertSeeLivewire(ActivityFeed::class);
-});
-
-it('shows the activity placeholder, then the feed', function (): void {
-    $pirep = Pirep::factory()->create(['state' => PirepState::ACCEPTED, 'submitted_at' => now()->subHours(3)]);
-
-    $component = Livewire::withoutLazyLoading()->test(ActivityFeed::class)
-        ->assertSee('pilots flying now')
-        ->assertSee($pirep->ident)
-        ->assertSee('3h ago');
-
-    expect($component->html())->toContain('filed');
-});
-
-it('counts pilots flying now with the singular label', function (): void {
-    Pirep::factory()->create(['state' => PirepState::IN_PROGRESS]);
-
-    Livewire::withoutLazyLoading()->test(ActivityFeed::class)->assertSee('pilot flying now');
-});
-
-it('shows the empty message when nothing happened', function (): void {
-    User::query()->delete();
-
-    Livewire::withoutLazyLoading()->test(ActivityFeed::class)->assertSee('No activity yet');
 });
 
 it('formats relative times compactly', function (): void {

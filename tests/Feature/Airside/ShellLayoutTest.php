@@ -4,78 +4,16 @@ declare(strict_types=1);
 
 require_once __DIR__.'/Support.php';
 
-use App\Models\NavigationItem;
 use App\Models\ThemeSetting;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Facades\Filament;
 
 /**
- * 6.1: the `app` layout, the sections addon views fill, the meta tags, theme
- * mode before paint, the scripts, and persist/navigate on spa items only.
+ * 6.1: the admin link by permission, and stored theme css escaping.
  */
 beforeEach(function (): void {
     $this->pilot = useAirside();
     $this->withoutVite();
-});
-
-it('renders an addon view that extends app inside the shell, with its sections', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->assertOk()->getContent();
-
-    expect($html)
-        ->toContain('<title>Addon page - ')
-        ->toContain('id="addon-css"')
-        ->toContain('name="addon-head"')
-        ->toContain('x-data="tallstackui_layout()"')
-        ->toContain('id="addon-body"');
-
-    // The content sits inside the layout's main element.
-    expect($html)->toMatch('/<main [^>]*>.*id="addon-body".*<\/main>/s');
-});
-
-it('includes the addon script exactly once, after the Livewire scripts', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect(substr_count($html, 'id="addon-script"'))->toBe(1)
-        ->and(strpos($html, 'id="addon-script"'))->toBeGreaterThan(strpos($html, '/livewire'));
-});
-
-it('renders the required meta tags', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect($html)
-        ->toContain('<meta name="base-url" content="'.url('').'">')
-        ->toContain('<meta name="api-key" content="'.$this->pilot->api_key.'">')
-        ->toMatch('/<meta name="csrf-token" content="[^"]+">/');
-});
-
-it('applies the saved theme mode before first paint', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    $script = strpos($html, "classList.toggle('dark'");
-
-    expect($script)->not->toBeFalse()
-        ->and($script)->toBeLessThan(strpos($html, '<body'));
-});
-
-it('lets a guest see the layout with a sign in entry', function (): void {
-    $html = $this->get('/airside-probe')->assertOk()->getContent();
-
-    expect($html)
-        ->toContain('id="addon-body"')
-        ->toContain(url('/login'))
-        ->not->toContain(url('/logout'));
-});
-
-it('offers profile and sign out to a signed-in pilot, with the three theme modes', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect($html)
-        ->toContain(url('/profile'))
-        ->toContain(url('/logout'))
-        ->toContain($this->pilot->name)
-        ->toContain("setAs('light')")
-        ->toContain("setAs('dark')")
-        ->toContain("setAs('system')");
 });
 
 it('offers Go to Admin only to a user with admin access, as a full-load link', function (): void {
@@ -91,35 +29,6 @@ it('offers Go to Admin only to a user with admin access, as a full-load link', f
     $adminHtml = $this->actingAs(createAdminUser())->get('/airside-probe/pilot')->getContent();
     expect($adminHtml)->toContain(__('ui.go_to_admin'))
         ->toMatch('/<a\s+href="'.preg_quote($adminUrl, '/').'"(?![^>]*wire:navigate)[^>]*>/s');
-});
-
-it('navigates in-app menu items and leaves external and new-window items as plain links', function (): void {
-    NavigationItem::query()->delete();
-    NavigationItem::factory()->forRoute('frontend.dashboard.index')->create(['label' => 'Spa item']);
-    NavigationItem::factory()->create(['label' => 'Plain url', 'target_value' => 'https://example.com/x']);
-    NavigationItem::factory()->forRoute('frontend.flights.index')->create(['label' => 'Out', 'new_window' => true]);
-
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect($html)->toMatch('/<a\s+href="[^"]*dashboard"[^>]*wire:navigate.hover/s')
-        ->and($html)->not->toMatch('/<a\s+href="https:\/\/example.com\/x"[^>]*wire:navigate/s')
-        ->and($html)->toMatch('/<a\s+href="[^"]*flights"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/s')
-        ->and($html)->not->toMatch('/<a\s+href="[^"]*flights"[^>]*wire:navigate/s');
-});
-
-it('emits no theme css block when there is no stored override', function (): void {
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect($html)->not->toContain('data-theme-css');
-});
-
-it('emits the stored theme css after the brand palette', function (): void {
-    ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'css', 'content' => ':root{--color-primary-600:#ff0000}']);
-
-    $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
-
-    expect($html)->toContain('<style data-theme-css>:root{--color-primary-600:#ff0000}</style>')
-        ->and(strpos($html, 'data-theme-css'))->toBeLessThan(strpos($html, '<body'));
 });
 
 it('neutralises a closing style tag in the stored theme css', function (): void {

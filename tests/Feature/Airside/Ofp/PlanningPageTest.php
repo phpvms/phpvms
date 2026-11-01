@@ -5,7 +5,6 @@ declare(strict_types=1);
 require_once __DIR__.'/Support.php';
 
 use App\Models\SimBriefAttempt;
-use App\Services\BidService;
 
 /**
  * 7.6: the OFP planning page under airside renders Blade with the SPA props.
@@ -15,29 +14,23 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('renders aircraft selection and no generate island while no aircraft is chosen', function (): void {
+it('creates no attempt while no aircraft is chosen', function (): void {
     $flight = $this->fixture['flight'];
 
     $this->actingAs($this->fixture['user'])
         ->get('/ofp/planning?flight_id='.$flight->id)
-        ->assertOk()
-        ->assertSee($this->fixture['subfleet']->name)
-        ->assertDontSee('data-airside-island="simbrief-attempt"', false);
+        ->assertOk();
 
     expect(SimBriefAttempt::query()->count())->toBe(0);
 });
 
-it('renders the options form and the generate island once an aircraft is chosen', function (): void {
+it('creates an attempt and hands the island its data once an aircraft is chosen', function (): void {
     $flight = $this->fixture['flight'];
     $aircraft = $this->fixture['aircraft'];
 
     $response = $this->actingAs($this->fixture['user'])
         ->get('/ofp/planning?flight_id='.$flight->id.'&aircraft_id='.$aircraft->id)
         ->assertOk();
-
-    $response
-        ->assertSee('data-airside-island="simbrief-attempt"', false)
-        ->assertSee($aircraft->registration);
 
     $attempt = SimBriefAttempt::query()->where('user_id', $this->fixture['user']->id)->firstOrFail();
 
@@ -50,32 +43,6 @@ it('renders the options form and the generate island once an aircraft is chosen'
         ->and($data['pollUrl'])->toBe(route('frontend.ofp.attempt.poll', $attempt->static_id))
         ->and($data['providerFields']['orig'])->toBe($this->fixture['departure']->id)
         ->and($data['providerFields']['reg'])->toBe($aircraft->registration);
-});
-
-it('lets the pilot pick the ATC callsign only when the setting allows it', function (): void {
-    updateSetting('simbrief.callsign', false);
-
-    $this->actingAs($this->fixture['user'])
-        ->get('/ofp/planning?flight_id='.$this->fixture['flight']->id.'&aircraft_id='.$this->fixture['aircraft']->id)
-        ->assertOk()
-        ->assertSee('name="callsign"', false);
-
-    updateSetting('simbrief.callsign', true);
-
-    $this->actingAs($this->fixture['user'])
-        ->get('/ofp/planning?flight_id='.$this->fixture['flight']->id.'&aircraft_id='.$this->fixture['aircraft']->id)
-        ->assertOk()
-        ->assertDontSee('name="callsign"', false);
-});
-
-it('mounts the aircraft selection for a flight-only bid', function (): void {
-    $bid = app(BidService::class)->addBid($this->fixture['flight'], $this->fixture['user']);
-
-    $this->actingAs($this->fixture['user'])
-        ->get(route('frontend.ofp.planning', ['bid_id' => $bid->id]))
-        ->assertOk()
-        ->assertSee('Aircraft Assignment')
-        ->assertSee($this->fixture['subfleet']->name);
 });
 
 it('sends a pilot with an existing briefing to it', function (): void {

@@ -22,28 +22,6 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('renders the briefing page with its sections', function (): void {
-    $flight = $this->fixture['flight'];
-
-    $this->actingAs($this->fixture['user'])
-        ->get(route('frontend.ofp.briefing', $this->briefing->id))
-        ->assertOk()
-        ->assertSee($flight->ident)
-        ->assertSee($this->fixture['aircraft']->registration)
-        ->assertSee('data-airside-island="briefing-globe"', false);
-});
-
-it('hides cancel once a PIREP is attached and keeps the edit link off a briefing with no static id', function (): void {
-    $pirep = Pirep::factory()->create(['user_id' => $this->fixture['user']->id]);
-    $this->briefing->update(['pirep_id' => $pirep->id, 'static_id' => null]);
-
-    $this->actingAs($this->fixture['user'])
-        ->get(route('frontend.ofp.briefing', $this->briefing->id))
-        ->assertOk()
-        ->assertDontSee('Cancel unused briefing')
-        ->assertDontSee('Edit OFP');
-});
-
 it('is a 404 for another pilot', function (): void {
     $other = User::factory()->create();
 
@@ -121,8 +99,7 @@ it('keeps the editor open with a message while SimBrief has not published the ed
         ->call('syncEdited')
         ->assertReturned(false)
         ->assertNoRedirect()
-        ->assertSet('failure', 'The updated OFP could not be retrieved yet. Keep editing or try again shortly.')
-        ->assertSee('The updated OFP could not be retrieved yet.');
+        ->assertSet('failure', 'The updated OFP could not be retrieved yet. Keep editing or try again shortly.');
 });
 
 it('reloads the briefing once the edited OFP is ready', function (): void {

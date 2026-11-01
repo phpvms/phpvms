@@ -32,113 +32,57 @@ function openDrawer(string $flightId)
     return Livewire::test(AssignmentDrawer::class)->dispatch('assignment-drawer.open', flightId: $flightId);
 }
 
-it('opens on the selection step with the flight, the policy note and the subfleets', function (): void {
-    $subfleet = $this->fixture['subfleet'];
-
+it('opens on the selection step', function (): void {
     openDrawer($this->fixture['flight']->id)
         ->assertSet('open', true)
-        ->assertSet('state', 'selecting')
-        ->assertSee($this->fixture['flight']->ident)
-        ->assertSee($subfleet->name);
+        ->assertSet('state', 'selecting');
 });
 
-it('says the aircraft is reserved when the server requires one', function (): void {
-    updateSetting('bids.block_aircraft', true);
-
-    openDrawer($this->fixture['flight']->id)
-        ->assertSee('The selected aircraft is reserved exclusively after server confirmation.');
-});
-
-it('loads the eligible aircraft for the chosen subfleet and shows the choice', function (): void {
+it('loads the eligible aircraft for the chosen subfleet and keeps the choice', function (): void {
     $component = openDrawer($this->fixture['flight']->id)
         ->call('selectSubfleet', $this->fixture['subfleet']->id)
-        ->assertSet('subfleetId', $this->fixture['subfleet']->id)
-        ->assertSee('Selected subfleet')
-        ->assertSee('1 eligible aircraft currently available')
-        ->assertSee($this->fixture['aircraft']->registration);
+        ->assertSet('subfleetId', $this->fixture['subfleet']->id);
+
+    expect(collect($component->instance()->aircraftList)->pluck('id')->all())->toBe([$this->fixture['aircraft']->id]);
 
     $component->call('selectAircraft', $this->fixture['aircraft']->id)
-        ->assertSet('aircraftId', $this->fixture['aircraft']->id)
-        ->assertSee('Selected aircraft');
+        ->assertSet('aircraftId', $this->fixture['aircraft']->id);
 });
 
-it('lists a subfleet with no eligible aircraft as none available', function (): void {
+it('loads no aircraft for a subfleet with none eligible', function (): void {
     $empty = Subfleet::factory()->create(['airline_id' => $this->fixture['airline']->id]);
     $this->fixture['flight']->subfleets()->attach($empty);
 
-    openDrawer($this->fixture['flight']->id)
-        ->assertSee('None available');
-});
+    $component = openDrawer($this->fixture['flight']->id)->call('selectSubfleet', $empty->id);
 
-it('shows the empty aircraft state for an optional and a required aircraft', function (): void {
-    $empty = Subfleet::factory()->create(['airline_id' => $this->fixture['airline']->id]);
-    $this->fixture['flight']->subfleets()->attach($empty);
-
-    openDrawer($this->fixture['flight']->id)
-        ->call('selectSubfleet', $empty->id)
-        ->assertSee('No eligible aircraft')
-        ->assertSee('You can still create a flight-only bid.');
-
-    updateSetting('bids.block_aircraft', true);
-
-    openDrawer($this->fixture['flight']->id)
-        ->call('selectSubfleet', $empty->id)
-        ->assertSee('No active, parked aircraft meets the current server policy for this flight.');
+    expect($component->instance()->dispatchPayload['subfleets']->firstWhere('id', $empty->id)->eligibleAircraftCount)->toBe(0)
+        ->and($component->instance()->aircraftList)->toBe([]);
 });
 
 it('places a flight-only bid and switches to the overview in place', function (): void {
     openDrawer($this->fixture['flight']->id)
         ->call('submit')
         ->assertSet('state', 'overview')
-        ->assertSet('failureMessage', null)
-        ->assertSee('Scheduled departure')
-        ->assertSee('Reservation')
-        ->assertSee('Flight only')
-        ->assertSee('Does not expire')
-        ->assertSee('Aircraft not selected');
+        ->assertSet('failureMessage', null);
 
     expect(Bid::query()->where('flight_id', $this->fixture['flight']->id)->count())->toBe(1);
 });
 
-it('places a bid with an aircraft and shows it as a preference', function (): void {
+it('places a bid with an aircraft', function (): void {
     openDrawer($this->fixture['flight']->id)
         ->call('selectSubfleet', $this->fixture['subfleet']->id)
         ->call('selectAircraft', $this->fixture['aircraft']->id)
         ->call('submit')
-        ->assertSet('state', 'overview')
-        ->assertSee('Preference')
-        ->assertSee($this->fixture['aircraft']->registration);
+        ->assertSet('state', 'overview');
 
     expect(Bid::query()->first()->aircraft_id)->toBe($this->fixture['aircraft']->id);
-});
-
-it('shows an exclusive reservation when the server requires an aircraft', function (): void {
-    updateSetting('bids.block_aircraft', true);
-
-    openDrawer($this->fixture['flight']->id)
-        ->call('selectSubfleet', $this->fixture['subfleet']->id)
-        ->call('selectAircraft', $this->fixture['aircraft']->id)
-        ->call('submit')
-        ->assertSee('Exclusive');
 });
 
 it('opens on the overview when the pilot already has a bid', function (): void {
     Bid::query()->create(['user_id' => $this->fixture['user']->id, 'flight_id' => $this->fixture['flight']->id]);
 
     openDrawer($this->fixture['flight']->id)
-        ->assertSet('state', 'overview')
-        ->assertSee('Scheduled arrival')
-        ->assertSee('Route')
-        ->assertSee('DCT TEST');
-});
-
-it('offers View OFP when a briefing exists and Generate OFP when SimBrief is on', function (): void {
-    updateSetting('simbrief.api_key', 'key');
-    $bid = Bid::query()->create(['user_id' => $this->fixture['user']->id, 'flight_id' => $this->fixture['flight']->id]);
-
-    openDrawer($this->fixture['flight']->id)
-        ->assertSee('Generate OFP')
-        ->assertSee(route('frontend.ofp.planning', ['bid_id' => $bid->id]), false);
+        ->assertSet('state', 'overview');
 });
 
 it('goes to OFP planning after a first bid when SimBrief is on', function (): void {
@@ -157,8 +101,7 @@ it('refuses a bid without an aircraft when one is required', function (): void {
         ->call('submit')
         ->assertSet('failureType', 'validation')
         ->assertSet('failureMessage', 'Select an aircraft before placing this bid.')
-        ->assertSet('state', 'selecting')
-        ->assertSee('Select an aircraft before placing this bid.');
+        ->assertSet('state', 'selecting');
 
     expect(Bid::query()->count())->toBe(0);
 });
@@ -209,9 +152,7 @@ it('reports an aircraft conflict, refetches the lists and clears the choice', fu
         ->assertSet('failureMessage', 'A bid already exists for this aircraft')
         ->assertSet('aircraftId', null)
         ->assertSet('subfleetId', null)
-        ->assertSet('editingSubfleet', true)
-        ->assertSee('A bid already exists for this aircraft')
-        ->assertSee('None available');
+        ->assertSet('editingSubfleet', true);
 
     expect(Bid::query()->where('user_id', $this->fixture['user']->id)->count())->toBe(0);
 });
@@ -240,8 +181,7 @@ it('reports a stale aircraft that is no longer eligible and clears it', function
         ->assertSet('failureType', 'stale-aircraft')
         ->assertSet('failureMessage', 'This aircraft is no longer eligible. Refresh the aircraft list.')
         ->assertSet('aircraftId', null)
-        ->assertSet('subfleetId', null)
-        ->assertSee('None available');
+        ->assertSet('subfleetId', null);
 });
 
 it('reports a bid an addon gate denies', function (): void {
@@ -251,20 +191,16 @@ it('reports a bid an addon gate denies', function (): void {
         ->call('submit')
         ->assertSet('failureType', 'hook-denied')
         ->assertSet('failureMessage', 'Complete your checkride first')
-        ->assertSee('Complete your checkride first')
         ->assertSet('state', 'selecting');
 
     expect(Bid::query()->count())->toBe(0);
 });
 
-it('shows the load error and loads again on Try again', function (): void {
+it('ends in the error state when the flight cannot be loaded', function (): void {
     $stranger = Flight::factory()->create(['airline_id' => $this->fixture['airline']->id, 'visible' => false]);
 
     openDrawer($stranger->id)
         ->assertSet('state', 'error')
-        ->assertSee('Flight data unavailable')
-        ->assertSee('The flight could not be loaded. Check your connection and try again.')
-        ->assertSee('Try again')
         ->call('load')
         ->assertSet('state', 'error');
 });

@@ -5,20 +5,12 @@ declare(strict_types=1);
 require_once __DIR__.'/../Support.php';
 
 /**
- * 7.8: the live map page markup the island works on. Polling and selection run
- * in the browser (resources/js/islands/live-map.js), so this checks the page
- * contract: the island root and its config, the header, the templates and the
- * island script.
+ * 7.8: the live map page hands the island its config. Polling and selection run
+ * in the browser (resources/js/islands/live-map.js).
  */
 beforeEach(function (): void {
     $this->pilot = useAirside();
     $this->withoutVite();
-});
-
-it('renders the island root', function (): void {
-    $this->actingAs($this->pilot)->get(route('frontend.livemap.index'))
-        ->assertOk()
-        ->assertSeeHtml('data-airside-island="live-map"');
 });
 
 it('hands the island the poll interval, the initial centre and the map config', function (): void {

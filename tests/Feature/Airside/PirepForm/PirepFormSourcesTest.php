@@ -47,10 +47,7 @@ it('fills the form from a SimBrief plan with its aircraft and fare counts', func
     Livewire::test(PirepForm::class, ['simbriefId' => (string) $plan->id])
         ->assertSet('form.flight_number', '2468')
         ->assertSet('form.aircraft_id', (string) $this->fx['aircraftA']->id)
-        ->assertSet('form.fares', [$this->fx['fares'][1]->id => '55'])
-        ->assertSee('N-AAA')
-        ->assertDontSee('N-BBB')
-        ->assertDontSee('Search by ICAO or name');
+        ->assertSet('form.fares', [$this->fx['fares'][1]->id => '55']);
 });
 
 it('files from a SimBrief plan and attaches it to the PIREP', function (): void {

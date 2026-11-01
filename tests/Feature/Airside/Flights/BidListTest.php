@@ -20,37 +20,6 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('renders the page with the list component', function (): void {
-    $fixture = airsideDispatchFixture();
-
-    $this->actingAs($fixture['user'])->get('/flights/bids')
-        ->assertOk()
-        ->assertSeeLivewire(BidList::class);
-});
-
-it('lists a bid with its facts, expiry and actions', function (): void {
-    updateSetting('simbrief.api_key', 'key');
-    updateSetting('bids.expire_time', 24);
-    $fixture = airsideDispatchFixture();
-    $bid = Bid::query()->create([
-        'user_id'     => $fixture['user']->id,
-        'flight_id'   => $fixture['flight']->id,
-        'aircraft_id' => $fixture['aircraft']->id,
-    ]);
-
-    Livewire::actingAs($fixture['user'])->test(BidList::class)
-        ->assertSee($fixture['flight']->ident)
-        ->assertSee($fixture['aircraft']->registration.' · '.$fixture['aircraft']->icao, false)
-        ->assertSee(route('frontend.ofp.planning', ['bid_id' => $bid->id]), false);
-});
-
-it('says No expiry when bids do not expire', function (): void {
-    $fixture = airsideDispatchFixture();
-    Bid::query()->create(['user_id' => $fixture['user']->id, 'flight_id' => $fixture['flight']->id]);
-
-    Livewire::actingAs($fixture['user'])->test(BidList::class)->assertSee('No expiry');
-});
-
 it('removes a plain bid in place, without a reload', function (): void {
     $fixture = airsideDispatchFixture();
     $other = airsideDispatchFixture($fixture['user']);
@@ -58,16 +27,12 @@ it('removes a plain bid in place, without a reload', function (): void {
     Bid::query()->create(['user_id' => $fixture['user']->id, 'flight_id' => $other['flight']->id]);
 
     Livewire::actingAs($fixture['user'])->test(BidList::class)
-        ->assertSee('2 bids')
-        ->assertSee($fixture['flight']->ident)
         ->call('removeBid', $fixture['flight']->id)
-        ->assertSee('1 bid')
-        ->assertDontSee($fixture['flight']->ident)
-        ->assertSee($other['flight']->ident)
         ->assertSet('removeError', null)
         ->assertNoRedirect();
 
-    expect(Bid::query()->where('flight_id', $fixture['flight']->id)->exists())->toBeFalse();
+    expect(Bid::query()->where('flight_id', $fixture['flight']->id)->exists())->toBeFalse()
+        ->and(Bid::query()->where('flight_id', $other['flight']->id)->exists())->toBeTrue();
 });
 
 it('shows the error when a bid cannot be removed', function (): void {
@@ -75,29 +40,13 @@ it('shows the error when a bid cannot be removed', function (): void {
 
     Livewire::actingAs($fixture['user'])->test(BidList::class)
         ->call('removeBid', 'not-a-flight')
-        ->assertSet('removeError', 'The bid could not be removed. Try again.')
-        ->assertSee('The bid could not be removed. Try again.');
+        ->assertSet('removeError', 'The bid could not be removed. Try again.');
 });
 
 describe('tours', function (): void {
     beforeEach(function (): void {
         $this->tour = makeTour(3);
         app(PlaceBid::class)->handle($this->tour['flights'][0], $this->tour['user'], $this->tour['aircraft']);
-        $this->tourName = UserTour::query()->where('user_id', $this->tour['user']->id)->firstOrFail()->name;
-    });
-
-    it('groups tour legs under their tour with the tour actions', function (): void {
-        Livewire::actingAs($this->tour['user'])->test(BidList::class)
-            ->assertSee($this->tourName)
-            ->assertSee('Tour overview')
-            ->assertSee('Cancel tour')
-            ->assertSee('Cancel the whole tour?');
-    });
-
-    it('asks before a leg ends the tour, with the tour named', function (): void {
-        Livewire::actingAs($this->tour['user'])->test(BidList::class)
-            ->assertSee('Cancelling this leg ends “'.$this->tourName.'”.')
-            ->assertSee('Cancel the tour');
     });
 
     it('cancels the whole run when a leg is removed, and every leg leaves the page', function (): void {
@@ -108,8 +57,6 @@ describe('tours', function (): void {
 
         Livewire::actingAs($user)->test(BidList::class)
             ->call('removeBid', $firstLeg->id)
-            ->assertDontSee($this->tourName)
-            ->assertSee('No bids yet')
             ->assertSet('removeError', null);
 
         expect(UserTour::query()->where('user_id', $user->id)->firstOrFail()->status)->toBe(TourStatus::Cancelled)

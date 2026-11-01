@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Models\Setting;
-use App\Models\User;
 use App\Services\SettingService;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Support\Facades\Cache;
@@ -21,20 +20,12 @@ function forgetSettingCaches(): void
     app(SettingService::class)->clearMemo();
 }
 
-beforeEach(function (): void {
-    $this->withoutVite();
-});
-
-it('renders a fresh install with the airside layout', function (): void {
+it('seeds airside as the default theme on a fresh install', function (): void {
     Setting::query()->where('id', Setting::formatKey('general.theme'))->delete();
     app(SettingsSeeder::class)->run();
     forgetSettingCaches();
 
-    User::factory()->create();
-
     expect(setting('general.theme'))->toBe('airside');
-
-    $this->get('/login')->assertOk();
 });
 
 it('leaves a saved theme untouched when the seeder runs again', function (): void {

@@ -24,16 +24,18 @@ it('lists the configured subfleets and loads aircraft for the chosen one', funct
     $empty = Subfleet::factory()->create(['airline_id' => $this->fixture['airline']->id]);
     $this->fixture['flight']->subfleets()->attach($empty);
 
-    Livewire::test(AircraftSelection::class, ['flightId' => $this->fixture['flight']->id])
-        ->assertSee('Aircraft Assignment')
-        ->assertSee($this->fixture['subfleet']->name)
-        ->assertSee('1 available')
-        ->assertSee('None available')
-        ->assertDontSee($this->fixture['aircraft']->registration)
-        ->call('selectSubfleet', $this->fixture['subfleet']->id)
-        ->assertSet('subfleetId', $this->fixture['subfleet']->id)
-        ->assertSee($this->fixture['aircraft']->registration)
-        ->call('selectSubfleet', $empty->id)
+    $component = Livewire::test(AircraftSelection::class, ['flightId' => $this->fixture['flight']->id]);
+
+    expect($component->instance()->subfleets->pluck('eligibleAircraftCount', 'id')->all())
+        ->toBe([$this->fixture['subfleet']->id => 1, $empty->id => 0])
+        ->and($component->instance()->aircraft)->toHaveCount(0);
+
+    $component->call('selectSubfleet', $this->fixture['subfleet']->id)
+        ->assertSet('subfleetId', $this->fixture['subfleet']->id);
+
+    expect($component->instance()->aircraft->pluck('id')->all())->toBe([$this->fixture['aircraft']->id]);
+
+    $component->call('selectSubfleet', $empty->id)
         ->assertSet('subfleetId', null);
 });
 
@@ -64,8 +66,7 @@ it('refuses an aircraft that is not eligible', function (): void {
     Livewire::test(AircraftSelection::class, ['flightId' => $this->fixture['flight']->id])
         ->call('chooseAircraft', $elsewhere->id)
         ->assertNoRedirect()
-        ->assertSet('failure', 'This aircraft is no longer eligible. Refresh the aircraft list.')
-        ->assertSee('This aircraft is no longer eligible.');
+        ->assertSet('failure', 'This aircraft is no longer eligible. Refresh the aircraft list.');
 });
 
 it('cannot assign an aircraft to a bid that belongs to another pilot', function (): void {

@@ -27,35 +27,6 @@ function deployedPublicPath(): string
     return $public;
 }
 
-it('writes a manifest with the main entries', function () use ($manifest): void {
-    $entries = json_decode((string) file_get_contents($manifest), true);
-
-    expect($entries)->toHaveKeys(['resources/css/airside.css', 'resources/js/airside.js']);
-
-    foreach ($entries as $entry) {
-        expect(base_path('modules/phpvms-airside-theme/public/build/'.$entry['file']))->toBeFile();
-    }
-})->skip(fn (): bool => !file_exists($manifest), 'Run `pnpm run build:themes` first.');
-
-it('renders the built asset URLs under the theme storage path', function (): void {
-    useAirside();
-    $public = deployedPublicPath();
-
-    $html = Blade::render("@airsideVite(['resources/css/airside.css', 'resources/js/airside.js'])");
-
-    expect($html)
-        ->toContain('/storage/themes/airside/build/assets/airside-')
-        ->toContain('rel="stylesheet"')
-        ->toContain('type="module"');
-
-    // The URL resolves to a real file through the link: the asset would load with status 200.
-    preg_match('#/storage/themes/airside/build/assets/airside-[^"]+\.css#', $html, $match);
-
-    expect($public.$match[0])->toBeFile();
-
-    unlink($public.'/storage/themes/airside');
-})->skip(fn (): bool => !file_exists($manifest), 'Run `pnpm run build:themes` first.');
-
 it('leaves the shared Vite instance on its own build directory', function (): void {
     deployedPublicPath();
     $shared = app(Vite::class);

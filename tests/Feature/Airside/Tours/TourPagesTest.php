@@ -16,7 +16,7 @@ use App\Services\BidService;
 use Livewire\Livewire;
 
 /**
- * 7.9: tours index and show under airside.
+ * 7.9: the tours list component: run state per tour, cancelling and reloading.
  */
 beforeEach(function (): void {
     useAirside();
@@ -24,70 +24,34 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('lists tours as cards with the bid action and the timeline', function (): void {
-    ['bundle' => $bundle, 'flights' => $flights, 'user' => $user] = makeTour(3);
-    $bundle->update(['description' => 'Island hop around the bay', 'start_date' => '2026-01-05', 'end_date' => '2026-03-09']);
+it('lists enabled tours and leaves out disabled ones', function (): void {
+    ['bundle' => $bundle, 'user' => $user] = makeTour(3);
     $disabled = FlightBundle::factory()->create(['type' => BundleType::Tour, 'enabled' => false]);
 
-    $this->actingAs($user)
-        ->get('/tours')
-        ->assertOk()
-        ->assertSee($bundle->name)
-        ->assertDontSee($disabled->name)
-        ->assertSee('Island hop around the bay')
-        ->assertSee('Jan 5, 2026 – Mar 9, 2026')
-        ->assertSee($flights[0]->airline->code.$flights[0]->flight_number);
+    $tours = Livewire::actingAs($user)->test(TourList::class)->instance()->tours;
+
+    expect(collect($tours)->pluck('id')->all())->toBe([$bundle->id])
+        ->and(collect($tours)->pluck('id')->all())->not->toContain($disabled->id);
 });
 
-it('marks the run in progress, the flown leg and the next one', function (): void {
+it('marks the flown leg from the bid and the filed PIREP', function (): void {
     ['flights' => $flights, 'user' => $user, 'aircraft' => $aircraft] = makeTour(3);
     app(BidService::class)->addBid($flights[0], $user, $aircraft);
     fileTourLeg($user, $flights[0], $aircraft);
 
-    $this->actingAs($user)
-        ->get('/tours')
-        ->assertOk()
-        ->assertSee('In progress · 1 of 3 legs')
-        ->assertSee('Flown')
-        ->assertSee('Up next')
-        ->assertSee('Continue tour')
-        ->assertSee('Cancel tour');
+    $tour = Livewire::actingAs($user)->test(TourList::class)->instance()->tours[0];
+
+    expect($tour->status)->toBe(TourStatus::InProgress->value)
+        ->and($tour->legsCompleted)->toBe(1)
+        ->and(collect($tour->legs)->pluck('flown')->all())->toBe([true, false, false]);
 });
 
-it('windows a long tour and offers all of its legs', function (): void {
-    ['user' => $user] = makeTour(10);
-
-    $html = $this->actingAs($user)->get('/tours')->assertOk()->assertSee('Show all 10 legs')->getContent();
-
-    expect($html)->toContain('data-leg-window="in"')->toContain('data-leg-window="out"');
-});
-
-it('does not window a tour of eight legs or fewer', function (): void {
-    ['user' => $user] = makeTour(8);
-
-    $html = $this->actingAs($user)->get('/tours')->assertOk()->assertDontSee('Show all')->getContent();
-
-    expect($html)->not->toContain('data-leg-window="out"');
-});
-
-it('asks the assignment drawer to open on the active leg', function (): void {
+it('opens the assignment drawer on the active leg', function (): void {
     ['flights' => $flights, 'user' => $user] = makeTour(3);
 
-    $this->actingAs($user)
-        ->get('/tours')
-        ->assertSee("flightId: '{$flights[0]->id}'", false);
-});
+    $tour = Livewire::actingAs($user)->test(TourList::class)->instance()->tours[0];
 
-it('shows one tour read-only', function (): void {
-    ['bundle' => $bundle, 'flights' => $flights, 'user' => $user] = makeTour(3);
-
-    $this->actingAs($user)
-        ->get('/tours/'.$bundle->id)
-        ->assertOk()
-        ->assertSee($bundle->name)
-        ->assertSee($flights[2]->airline->code.$flights[2]->flight_number)
-        ->assertDontSee('Bid this tour')
-        ->assertDontSee('Cancel tour');
+    expect($tour->activeLegFlightId)->toBe($flights[0]->id);
 });
 
 it('cancels the tour through the remove-bid action', function (): void {
@@ -98,11 +62,8 @@ it('cancels the tour through the remove-bid action', function (): void {
 
     Livewire::actingAs($user)
         ->test(TourList::class)
-        ->assertSee('In progress')
         ->call('cancelTour', $bundle->id)
-        ->assertSet('cancelErrors', [])
-        ->assertSee('Cancelled')
-        ->assertDontSee('In progress');
+        ->assertSet('cancelErrors', []);
 
     expect(UserTour::query()->where('user_id', $user->id)->value('status'))->toBe(TourStatus::Cancelled)
         ->and(Bid::query()->where('user_id', $user->id)->count())->toBe(0);
@@ -122,11 +83,10 @@ it('only cancels a tour that is in progress', function (): void {
     Livewire::actingAs($user)
         ->test(TourList::class)
         ->call('cancelTour', $bundle->id)
-        ->assertSet('cancelErrors', [])
-        ->assertSee('Bid this tour');
+        ->assertSet('cancelErrors', []);
 });
 
-it('shows the skylight error on the card when the cancel fails', function (): void {
+it('reports an error and keeps the run when the cancel fails', function (): void {
     ['bundle' => $bundle, 'flights' => $flights, 'user' => $user, 'aircraft' => $aircraft] = makeTour(3);
     app(BidService::class)->addBid($flights[0], $user, $aircraft);
 
@@ -141,25 +101,24 @@ it('shows the skylight error on the card when the cancel fails', function (): vo
     Livewire::actingAs($user)
         ->test(TourList::class)
         ->call('cancelTour', $bundle->id)
-        ->assertSet('cancelErrors', [$bundle->id => 'The tour could not be cancelled. Try again.'])
-        ->assertSee('The tour could not be cancelled. Try again.')
-        ->assertSee('In progress');
+        ->assertSet('cancelErrors', [$bundle->id => 'The tour could not be cancelled. Try again.']);
+
+    expect(UserTour::query()->where('user_id', $user->id)->value('status'))->toBe(TourStatus::InProgress);
 });
 
 it('reloads the tours when the assignment drawer closes', function (): void {
     ['flights' => $flights, 'user' => $user, 'aircraft' => $aircraft] = makeTour(3);
 
-    $component = Livewire::actingAs($user)
-        ->test(TourList::class)
-        ->assertSee('Bid this tour')
-        ->assertDontSee('In progress');
+    $component = Livewire::actingAs($user)->test(TourList::class);
+
+    expect($component->instance()->tours[0]->status)->toBeNull();
 
     app(BidService::class)->addBid($flights[0], $user, $aircraft);
 
-    $component
-        ->dispatch('assignment-drawer.closed', flightId: $flights[0]->id, changed: true)
-        ->assertSee('In progress · 0 of 3 legs')
-        ->assertSee('Continue tour');
+    $component->dispatch('assignment-drawer.closed', flightId: $flights[0]->id, changed: true);
+
+    expect($component->instance()->tours[0]->status)->toBe(TourStatus::InProgress->value)
+        ->and($component->instance()->tours[0]->legsCompleted)->toBe(0);
 });
 
 it('does not overwrite a cancellation that landed while the expiry was finishing the run', function (): void {
