@@ -113,13 +113,15 @@ jobs:
       - uses: actions/checkout@v4
 
       # Dockerfile.prod copies the tree in and runs composer install, so the
-      # image reports the release tag the same way the package does.
+      # image reports the release tag the same way the package does. The lock
+      # refresh only rewrites the hash; the runner's PHP isn't the image's, so
+      # skip the platform check.
       - name: Stamp version
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           composer config version "$RELEASE_TAG"
-          composer update --lock --no-install --no-scripts --no-interaction
+          composer update --lock --no-install --no-scripts --no-interaction --ignore-platform-reqs
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -128,8 +130,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # :latest follows the release's prerelease checkbox, not the tag suffix.
-      # Prerelease tags only get {{version}}; {{major}}.{{minor}} is stable-only.
+      # :latest and :major.minor follow the release's prerelease checkbox, not
+      # the tag suffix. The action also never expands {{major}}.{{minor}} for a
+      # suffixed tag, so a prerelease only ever gets :<tag>.
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -139,7 +142,7 @@ jobs:
             latest=${{ !github.event.release.prerelease }}
           tags: |
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ !github.event.release.prerelease }}
 
       - name: Build and push
         id: push

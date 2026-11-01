@@ -5,9 +5,9 @@ A release is a published GitHub release. Publishing one triggers
 target commit, stamps the tag into the shipped `composer.json`, attaches the
 zip and tarball to the release, uploads them to bunny storage
 (`https://downloads.phpvms.net/<file>`), and posts to Discord. A second job
-builds `Dockerfile.prod` and pushes `ghcr.io/phpvms/phpvms:<tag>`. Stable
-releases also get `:<major>.<minor>`; prereleases get only `:<tag>`. `:latest`
-moves only when the release is not marked as a prerelease.
+builds `Dockerfile.prod` and pushes `ghcr.io/phpvms/phpvms:<tag>`.
+`:<major>.<minor>` and `:latest` move only when the release is not marked as a
+prerelease; a prerelease gets only `:<tag>`.
 
 There is no release tooling beyond `gh` and that workflow. Nothing is committed
 back to the repo by a release.
