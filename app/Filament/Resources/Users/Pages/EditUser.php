@@ -6,8 +6,8 @@ use App\Enums\UserState;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
 use App\Filament\Actions\EditDetailsAction;
+use App\Filament\Concerns\HasRelationManagerTabs;
 use App\Filament\Concerns\ReversePrimaryButtons;
-use App\Filament\Concerns\StacksRelationManagers;
 use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
 use App\Filament\Resources\Users\Actions\VerifyEmailAction;
 use App\Filament\Resources\Users\Schemas\UserForm;
@@ -36,8 +36,8 @@ use Override;
  */
 class EditUser extends EditRecord
 {
+    use HasRelationManagerTabs;
     use ReversePrimaryButtons;
-    use StacksRelationManagers;
 
     private ?UserState $oldState = null;
 
@@ -52,7 +52,7 @@ class EditUser extends EditRecord
         $record = $this->getRecord();
 
         return new HtmlString(sprintf(
-            '%s <span class="id fi-header-heading-route">· %s</span>',
+            '<span class="fi-header-heading-ident">%s</span> <span class="id fi-header-heading-route">· %s</span>',
             e($record->ident),
             e($record->name),
         ));

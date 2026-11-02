@@ -12,7 +12,7 @@ use App\Services\Pirep\PerformanceChartService;
 use App\Support\PirepView\PirepViewTabRegistry;
 use Closure;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
-use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
@@ -20,7 +20,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\IconPosition;
+use Filament\Support\Enums\Size;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -247,33 +247,39 @@ class ViewPirep extends ViewRecord
     }
 
     /**
-     * Order is deliberate: destructive first (left-most, away from the
-     * primary flow), then Edit, then the state decision as a dropdown
-     * button on the right (Tailwind Plus dropdown pattern).
+     * Accept button for the record rail. Same action as the list and the
+     * old header menu, so the visibility rule (pending only) is unchanged.
+     */
+    public function acceptAction(): Action
+    {
+        return AcceptAction::make()->record($this->record)->button()->size(Size::Medium);
+    }
+
+    /**
+     * Reject button for the record rail; see acceptAction().
+     */
+    public function rejectAction(): Action
+    {
+        return RejectAction::make()->record($this->record)->button()->size(Size::Medium);
+    }
+
+    /**
+     * Destructive first (left-most, away from the primary flow), then Edit.
+     * The state decision (Accept/Reject) lives in the record rail.
      */
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()->icon(Phosphor::TrashLight)
-                ->icon(Phosphor::TrashLight),
+            DeleteAction::make()->icon(Phosphor::TrashLight),
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
             RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
             /* Default EditAction color is primary, which takes the hero's
-             * inverted-ink fill — too loud next to Delete/Status. Neutral
+             * inverted-ink fill — too loud next to Delete. Neutral
              * field, intent in the icon tint, like its neighbours. */
             EditAction::make()
                 ->icon(Phosphor::PencilSimpleLight)
                 ->color('info'),
-            ActionGroup::make([
-                AcceptAction::make(),
-                RejectAction::make(),
-            ])
-                ->label(__('common.status'))
-                ->icon(Phosphor::CaretDownLight)
-                ->iconPosition(IconPosition::After)
-                ->button()
-                ->color('gray'),
         ];
     }
 

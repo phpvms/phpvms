@@ -40,6 +40,7 @@
     @endif
 @endcapture
 
+<div class="fi-sidebar-top">
 @if (count($panels) > 1)
     <x-filament::dropdown placement="bottom-start" :offset="2" width="none" class="fi-brand-switcher">
         <x-slot name="trigger">
@@ -92,3 +93,4 @@
         {{ $brandButtonContent(withChevron: false) }}
     </div>
 @endif
+</div>

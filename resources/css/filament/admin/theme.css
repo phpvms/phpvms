@@ -110,8 +110,8 @@
   /* Type scale. --text-sm is the workhorse: table cells, buttons, inputs. */
   --text-xs: 11px;
   --text-xs--line-height: 15px;
-  --text-sm: 12.5px;
-  --text-sm--line-height: 17px;
+  --text-sm: 13.5px;
+  --text-sm--line-height: 18px;
   --text-3xl: 21px;
   --text-3xl--line-height: 26px;
 
@@ -298,7 +298,7 @@
  * sizes most components via the text tokens above; this catches everything
  * that just inherits. */
 .fi-body {
-  @apply text-[13px] leading-[1.45];
+  @apply text-[14px] leading-[1.45];
 }
 
 /* Inconsolata sets a smaller x-height than IBM Plex Sans, so mono runs read
@@ -408,7 +408,7 @@
 }
 
 .fi-section-header-heading {
-  @apply text-xs font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
   /* Vendor sets its own line-height on the h3, which survives `text-xs` and
    * makes the band 9px taller than the .panel__head it has to match. */
   line-height: var(--text-xs--line-height);
@@ -491,7 +491,7 @@
  * painting text outside the ink scale.
  * ------------------------------------------------------------------------- */
 .fi-fo-field-label {
-  @apply text-[11.5px] text-(--ink-2);
+  @apply text-[12.5px] text-(--ink-2);
   font-weight: 550;
 }
 
@@ -595,7 +595,7 @@
 }
 
 .fi-section-header-description {
-  @apply text-[12px] text-(--ink-3);
+  @apply text-[13px] text-(--ink-3);
   text-transform: none;
 }
 
@@ -618,7 +618,7 @@
 }
 
 .fi-tabs .fi-tabs-item {
-  @apply rounded-none bg-transparent py-1.75 px-2.5 text-[12.5px] font-medium text-(--ink-3);
+  @apply rounded-none bg-transparent py-1.75 px-2.5 text-[13.5px] font-medium text-(--ink-3);
   /* Sits on the nav's 1px rule; the active underline replaces it. */
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
@@ -682,35 +682,64 @@
   z-index: 3;
   height: 34px;
   margin: -34px calc(-1 * var(--page-pad)) 0;
-  padding-inline: 10px;
 }
 
+/* The 10px strip inset sits on the strip itself, not on .fi-sc-tabs, so the
+ * panels below it run flush. */
 .fi-sc-tabs:not(.fi-contained) > .fi-tabs {
   @apply mx-0 h-full w-full items-end gap-1 border-b-0 p-0;
+  padding-inline: 10px;
   overflow: visible;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item {
-  @apply relative h-[30px] gap-1.5 rounded-t-[7px] rounded-b-none px-3.5 text-[13px] font-medium;
-  margin-bottom: 0;
-  border-bottom: 0;
-  color: rgb(255 255 255 / 0.82);
+/* <x-admin.banner-tabs>: the same strip for custom pages that cannot use
+ * Filament's tabs. Everything below that lists both selectors is one
+ * definition shared by the two. */
+.banner-tabs {
+  @apply relative z-3 flex flex-none items-end gap-1 overflow-visible;
+  height: 34px;
+  margin-top: -34px;
+  padding-inline: 10px;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item:hover {
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item,
+.banner-tab {
+  @apply relative inline-flex h-[30px] items-center gap-1.5 whitespace-nowrap rounded-t-[7px] rounded-b-none px-3.5 py-0 text-[14px] leading-[1.45] font-medium;
+  margin-bottom: 0;
+  border-bottom: 0;
+  /* AA (4.5:1) on every banner gradient stop, light and dark: >=5.0 measured. */
+  color: rgb(255 255 255 / 0.88);
+}
+
+/* Vendor colours the label and icon span themselves (gray-500, primary-700 when
+ * active), which would override the tab's own colour; take it from the tab. */
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item .fi-tabs-item-label,
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item > .fi-icon {
+  color: inherit;
+}
+
+.banner-tab svg {
+  @apply size-3.5;
+}
+
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item:hover,
+.banner-tab:hover {
   background-color: rgb(255 255 255 / 0.13);
   color: #fff;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active {
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active,
+.banner-tab[aria-selected="true"] {
   @apply h-[34px] font-semibold;
   z-index: 1;
-  background-color: var(--canvas);
+  background-color: var(--surface);
   color: var(--ink);
 }
 
 .fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::before,
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::after {
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::after,
+.banner-tab[aria-selected="true"]::before,
+.banner-tab[aria-selected="true"]::after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -719,27 +748,36 @@
   pointer-events: none;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::before {
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::before,
+.banner-tab[aria-selected="true"]::before {
   left: -8px;
-  background: radial-gradient(circle at 0 0, transparent 7.5px, var(--canvas) 8px);
+  background: radial-gradient(circle at 0 0, transparent 7.5px, var(--surface) 8px);
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::after {
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::after,
+.banner-tab[aria-selected="true"]::after {
   right: -8px;
-  background: radial-gradient(circle at 100% 0, transparent 7.5px, var(--canvas) 8px);
+  background: radial-gradient(circle at 100% 0, transparent 7.5px, var(--surface) 8px);
 }
 
-/* Counts: translucent white on the fill, accent on the active tab. */
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item .fi-badge {
-  @apply border-transparent bg-transparent p-0;
-  color: rgb(255 255 255 / 0.72);
+/* Counts: translucent white on the fill (>=4.8:1 on the lightest stop; the
+ * mockup's .72 gives 3.9), accent on the active tab. */
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item .fi-badge,
+.banner-tab em {
+  @apply border-transparent bg-transparent p-0 font-mono text-[12px] leading-[1.45] font-normal tracking-normal;
+  color: rgb(255 255 255 / 0.85);
+}
+
+.banner-tab em {
+  @apply font-mono text-[12px] not-italic;
 }
 
 .fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item .fi-badge::before {
   display: none;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active .fi-badge {
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active .fi-badge,
+.banner-tab[aria-selected="true"] em {
   color: var(--primary-600);
 }
 
@@ -752,13 +790,14 @@
  * is a separate pass (see the console tokens comment).
  * ------------------------------------------------------------------------- */
 .fi-main {
-  @apply p-4;
-  /* The page banner bleeds through this padding to the content edges. */
-  --page-pad: 1rem;
+  /* Edge to edge: the banner and the page sheet touch the window edges.
+   * --page-pad stays as the banner's bleed, now nil. */
+  @apply flex flex-col p-0;
+  --page-pad: 0px;
 }
 
 .fi-page {
-  @apply flex flex-col gap-3.5;
+  @apply flex flex-1 flex-col gap-3.5;
 }
 
 .fi-page-header-main-ctn {
@@ -848,7 +887,8 @@
 }
 
 .fi-header-heading {
-  @apply text-[21px] font-semibold tracking-[-0.02em] leading-[1.2] text-white;
+  /* Banner standard: 34px/1. Word titles are sans; identifiers (below) are mono. */
+  @apply font-sans text-[34px] font-semibold tracking-[-0.01em] leading-none text-white;
 }
 
 /* Breadcrumbs -> eyebrow (mockup .page-head__eyebrow, theme.css:1064-1078).
@@ -877,8 +917,8 @@
 /* Inverted onto the hero fill (mockup solid: secondary text is white mixed
  * back toward the accent, never gray — theme.css:565-578). */
 .fi-breadcrumbs-item-label {
-  @apply text-[10.5px] font-semibold tracking-[0.13em] uppercase;
-  color: color-mix(in oklab, white 84%, var(--primary-600));
+  @apply text-[10.5px] font-semibold tracking-[0.1em] uppercase;
+  color: rgb(255 255 255 / 0.7);
 }
 
 .fi-breadcrumbs-item-separator {
@@ -896,6 +936,10 @@
   grid-template-columns: auto minmax(0, 1fr);
   column-gap: 28px;
   align-items: baseline;
+}
+
+.fi-header-heading-ident {
+  @apply font-mono font-medium;
 }
 
 .fi-header-heading {
@@ -1014,6 +1058,8 @@
 
 .fi-pirep-record .rec-route {
   @apply inline-flex items-center gap-1.5 font-mono text-[22px];
+  font-weight: 450;
+  letter-spacing: normal;
   color: rgb(255 255 255 / 0.9);
 }
 
@@ -1107,6 +1153,155 @@
   .fi-pirep-record .rec-arc {
     display: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP record body (direction E's .e-rec): folder tabs on the banner's
+ * bottom edge, then a full-bleed sheet of a main pane and a 320px properties
+ * rail. No cards: regions are ruled, with 10.5px uppercase head bands.
+ * ------------------------------------------------------------------------- */
+.fi-pirep-record .fi-page-header-main-ctn {
+  gap: 0;
+}
+
+/* Reserve the 34px tab strip under the title row (list pages do the same). */
+.fi-pirep-record .fi-header {
+  padding-bottom: 44px;
+}
+
+.fi-pirep-record .fi-page-main {
+  padding: 0;
+  background-color: var(--surface);
+}
+
+.fi-pirep-record .fi-page-content {
+  @apply gap-0;
+}
+
+.fi-pirep-record .rec {
+  @apply flex flex-1 flex-col;
+}
+
+.rec-sheet {
+  @apply grid flex-1 bg-(--surface);
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+@media (max-width: 1100px) {
+  .rec-sheet {
+    grid-template-columns: minmax(0, 1fr) 270px;
+  }
+}
+
+.rec-main {
+  @apply min-w-0;
+}
+
+/* The figures strip is a ruled row, not a bordered card. */
+.rec-main .overview {
+  @apply rounded-none border-0 border-b border-b-(--line);
+}
+
+.rec-main .overview__icon {
+  @apply hidden;
+}
+
+.rec-main .overview__cell {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 16px 20px 15px;
+}
+
+.rec-main .route-bar {
+  padding-inline: 20px;
+}
+
+.rec-main .route-string {
+  padding-inline: 20px;
+}
+
+.rec-rail {
+  @apply min-w-0 border-l border-l-(--line) bg-(--surface);
+}
+
+.rec-acts {
+  @apply flex gap-2 border-b border-b-(--line);
+  padding: 14px 16px;
+}
+
+.rec-acts .fi-btn {
+  @apply h-8 flex-1 justify-center;
+}
+
+.rec-rail__sec + .rec-rail__sec {
+  @apply border-t border-t-(--line);
+}
+
+.rec-rail__head {
+  @apply border-b border-b-(--line) bg-(--surface-2) px-4 py-2 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
+}
+
+.rec-props {
+  padding: 6px 10px 12px;
+}
+
+.rec-props > div {
+  @apply grid items-center gap-2 rounded-md px-1.5 py-1;
+  grid-template-columns: 92px minmax(0, 1fr);
+  min-height: 30px;
+}
+
+.rec-props dt {
+  @apply text-[12.5px] text-(--ink-3);
+}
+
+.rec-props dd {
+  @apply flex min-w-0 items-center gap-2 text-[13px] text-(--ink);
+}
+
+.rec-props__stack {
+  @apply grid min-w-0 leading-[1.25];
+}
+
+.rec-props__stack small {
+  @apply text-[11.5px] text-(--ink-3);
+}
+
+.rec-avatar {
+  @apply block size-8 flex-none rounded-lg border border-(--line) bg-(--sunken) object-cover;
+}
+
+.rec-avatar--sm {
+  @apply size-5 rounded-md;
+}
+
+.rec-who {
+  @apply flex items-center gap-2.5;
+  padding: 12px 16px 6px;
+}
+
+.rec-who b {
+  @apply block font-semibold;
+}
+
+.rec-who span {
+  @apply text-[12px] text-(--ink-3);
+}
+
+.rec-mini {
+  @apply grid grid-cols-2 gap-x-2 gap-y-3;
+  padding: 8px 16px 18px;
+}
+
+.rec-mini span {
+  @apply block text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
+}
+
+.rec-mini b {
+  @apply font-medium tabular-nums;
+}
+
+.rec-mini .chip {
+  @apply inline-flex w-fit;
 }
 
 .fi-header-actions-ctn {
@@ -1228,7 +1423,7 @@
 }
 
 .fi-ta-header-heading {
-  @apply text-[11px] font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 .fi-ta-header-description {
@@ -1391,7 +1586,7 @@
  * Block padding only: a select's inline-end padding clears its chevron. */
 .fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-input,
 .fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-select-input {
-  @apply h-full py-0 text-[12.5px] leading-none;
+  @apply h-full py-0 text-[13.5px] leading-none;
 }
 
 /* A searchable select is not a form control at all: .fi-select-input is a div
@@ -1442,7 +1637,7 @@
  * Pagination footer (mockup .panel__foot, theme.css:1280-1282).
  * ------------------------------------------------------------------------- */
 .fi-pagination {
-  @apply py-1.75 px-3 border-t border-t-(--line-soft) text-[12px] text-(--ink-3);
+  @apply py-1.75 px-3 border-t border-t-(--line-soft) text-[13px] text-(--ink-3);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1688,7 +1883,7 @@
 
 /* Group labels read as section rules in the expanded state. */
 .fi-sidebar .fi-sidebar-group-label {
-  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em];
+  @apply text-[11.5px] font-semibold uppercase tracking-[0.07em];
   color: #8f9daf;
 }
 
@@ -1736,7 +1931,7 @@
 }
 
 .fi-sidebar.fi-sidebar-open .fi-sidebar-group-label {
-  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em];
+  @apply text-[11.5px] font-semibold uppercase tracking-[0.1em];
   color: var(--chrome-faint);
 }
 
@@ -1789,7 +1984,7 @@
 }
 
 .fi-sidebar.fi-sidebar-open .fi-sidebar-item-label {
-  @apply text-[13px];
+  @apply text-[14px];
   font-weight: 450;
 }
 
@@ -1812,11 +2007,6 @@
   top: 6px;
   bottom: 6px;
   background: var(--primary-600);
-}
-
-/* Icon-less items keep a dot in the 16px icon slot. */
-.fi-sidebar.fi-sidebar-open .fi-sidebar-item-grouped-border {
-  @apply w-4 h-4;
 }
 
 /* The counted badge reads as quiet text, like E's .hx-count. */
@@ -1962,6 +2152,69 @@
   @apply w-3.5 h-3.5;
   color: #8f9daf;
   flex: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Brand band (mockup e.css:20-26 .e-top). The switcher lives in a 44px band
+ * at the top of the sidebar: same height, background and 2px accent rule as
+ * the topbar, so the two read as one full-width bar. The band shows the
+ * brand mark alone in the icon rail.
+ * ------------------------------------------------------------------------- */
+.fi-topbar-start > .fi-sidebar-top {
+  display: contents;
+}
+
+/* The vendor's mobile drawer header repeats the logo the band now carries. */
+.fi-sidebar-header-ctn {
+  @apply hidden;
+}
+
+.fi-sidebar > .fi-sidebar-top {
+  @apply flex items-center shrink-0 h-11 min-h-11 px-2;
+  background: var(--chrome-top);
+  border-bottom: 2px solid color-mix(in srgb, var(--primary-600) 55%, var(--chrome-top));
+}
+
+.fi-sidebar-top .fi-brand-switcher {
+  @apply flex-1 min-w-0;
+  order: 0;
+}
+
+.fi-sidebar-top .fi-brand-switcher .fi-dropdown-trigger {
+  @apply w-full;
+}
+
+.fi-sidebar-top .fi-brandbtn {
+  @apply flex-1 min-w-0 h-8 px-1.5 rounded-[5px] border-0;
+}
+
+.fi-sidebar-top .fi-brandbtn-text {
+  @apply flex-1 min-w-0;
+}
+
+.fi-sidebar-top .fi-brandbtn-name,
+.fi-sidebar-top .fi-brandbtn-panel {
+  @apply truncate;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) > .fi-sidebar-top {
+  @apply justify-center px-0;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top .fi-brand-switcher {
+  @apply flex-none;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top .fi-brand-switcher .fi-dropdown-trigger {
+  @apply w-auto;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top .fi-brandbtn {
+  @apply flex-none px-1.5;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top :is(.fi-brandbtn-text, .fi-brandbtn-chev) {
+  @apply hidden;
 }
 
 .fi-brand-switcher .fi-dropdown-panel {
@@ -2323,7 +2576,7 @@
 }
 
 .fi-sidebar-group .fi-dropdown-header {
-  @apply h-7.5 gap-2 px-2 mb-0.5 py-0 text-[11px] font-semibold uppercase tracking-[0.1em] rounded-[0px];
+  @apply h-7.5 gap-2 px-2 mb-0.5 py-0 text-[11.5px] font-semibold uppercase tracking-[0.1em] rounded-[0px];
   background: transparent;
   border-bottom: 1px solid var(--chrome-line);
   color: var(--chrome-ink);
@@ -2338,7 +2591,7 @@
 }
 
 .fi-sidebar-group .fi-dropdown-list-item {
-  @apply relative h-7.5 gap-2.5 px-2 py-0 text-[13px] rounded-[5px];
+  @apply relative h-7.5 gap-2.5 px-2 py-0 text-[14px] rounded-[5px];
   font-weight: 450;
   color: var(--chrome-dim);
 }
@@ -2421,7 +2674,7 @@
 }
 
 .fi-sidebar.fi-sidebar-open .fi-user-menu-trigger-text {
-  @apply text-[13px] font-medium truncate;
+  @apply text-[14px] font-medium truncate;
   color: var(--chrome-ink);
 }
 
@@ -2580,7 +2833,7 @@ html[data-density="comfortable"]
 }
 
 html[data-density="comfortable"] .fi-body {
-  @apply text-[13.5px];
+  @apply text-[14.5px];
 }
 
 /* Comfortable reaches the console surfaces too, not just table rows —
@@ -2785,7 +3038,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .overview__label {
-  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 .overview__value {
@@ -3133,11 +3386,160 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * 32px — tightened for page-level content only; grids INSIDE sections
  * (form layouts) keep vendor spacing. */
 .fi-page-content {
-  @apply gap-3.5;
+  @apply gap-0;
 }
 
 .fi-page-content .fi-grid:not(.fi-section *) {
-  @apply gap-3.5;
+  @apply gap-0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Page body fill (direction E).
+ *
+ * The body under the banner spans the full width and runs to the window
+ * bottom as one flush sheet on every page: lists, edit/create/view pages,
+ * dashboard, settings and addon pages alike.
+ * ------------------------------------------------------------------------- */
+.fi-page-header-main-ctn {
+  @apply flex-1;
+}
+
+/* Every page is the sheet: edge to edge under the banner, surface-filled to
+ * the window bottom. Regions inside it are separated by rules (see "Sheet
+ * regions" below), not by gutters. */
+.fi-page-main {
+  @apply flex flex-1 flex-col;
+  padding: 0;
+  background-color: var(--surface);
+}
+
+.fi-page-main > .fi-page-content {
+  @apply flex-1 content-start;
+}
+
+.fi-page,
+.fi-page-header-main-ctn {
+  @apply gap-0;
+}
+
+/* The main table is the sheet: no card box, no outer radius, no side rules. */
+
+.fi-resource-list-records-page .fi-ta-ctn,
+.fi-resource-relation-manager .fi-ta-ctn {
+  @apply rounded-none border-0 bg-transparent;
+}
+
+.fi-resource-list-records-page .fi-ta-header-ctn,
+.fi-resource-relation-manager .fi-ta-header-ctn {
+  @apply rounded-none;
+}
+
+.fi-resource-list-records-page .fi-ta-header-toolbar,
+.fi-resource-relation-manager .fi-ta-header-toolbar,
+.fi-resource-list-records-page .filters {
+  @apply rounded-none;
+}
+
+/* A custom filter bar (PIREPs) and the table's own toolbar share one row:
+ * filters left, count, then Filter/Display controls right. */
+.fi-resource-list-records-page .fi-ta-header-ctn:has(> .filters) {
+  @apply grid items-stretch;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.fi-resource-list-records-page .fi-ta-header-ctn > .filters {
+  @apply border-b border-b-(--line);
+}
+
+.fi-resource-list-records-page .fi-ta-header-ctn:has(> .filters) > .fi-ta-header-toolbar {
+  @apply items-center border-b border-b-(--line) bg-(--surface-2);
+}
+
+/* Filters panel opens from the toolbar's right edge; keep it above the rows. */
+.fi-resource-list-records-page .fi-ta-header-ctn {
+  position: relative;
+  z-index: 5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Sheet regions (direction E). A top-level Section is a ruled region of the
+ * page sheet, not a card: no radius, no outer border, no fill of its own, a
+ * 1px rule under it. Its head stays the 10.5px uppercase band. Nested sections
+ * are untouched here — "Sequent inner section" above already makes them head
+ * bands. Scoped to page content so modals and slide-overs keep their cards.
+ * ------------------------------------------------------------------------- */
+.fi-page-content .fi-section:not(.fi-section-content *, .fi-modal *, .fi-section-not-contained) {
+  @apply rounded-none border-0 border-b border-b-(--line) bg-transparent;
+}
+
+.fi-page-content
+  .fi-section:not(.fi-section-content *, .fi-modal *, .fi-section-not-contained)
+  > .fi-section-header {
+  @apply rounded-none;
+}
+
+/* Side-by-side sections are ruled columns: a vertical hairline between
+ * sibling grid cells that hold a region, not a gap between cards. */
+.fi-page-content .fi-grid:not(.fi-section *) > .fi-grid-col:has(> .fi-sc-section) {
+  @apply border-r border-r-(--line);
+}
+
+.fi-page-content .fi-grid:not(.fi-section *) > .fi-grid-col:has(> .fi-sc-section):last-child {
+  @apply border-r-0;
+}
+
+/* Page-level strips and tab panels sit in the sheet, not on it. */
+.fi-page-content .overview:not(.fi-section-content *, .fi-pirep-record *) {
+  @apply rounded-none border-x-0 border-t-0;
+}
+
+.fi-page-content .fi-sc-tabs.fi-contained {
+  @apply rounded-none border-0 bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+/* Content that is not inside a Section still keeps the section inset, taken
+ * from the same --section-pad the density picker drives: a bare form's action
+ * row and a contained tab panel's fields. */
+.fi-page-content {
+  --section-pad: 12px;
+}
+
+html[data-density="comfortable"] .fi-page-content {
+  --section-pad: 16px;
+}
+
+.fi-page-content .fi-sc-actions:not(.fi-section *, .fi-modal *) {
+  padding: var(--section-pad);
+}
+
+.fi-page-content .fi-sc-tabs.fi-contained > .fi-sc-tabs-tab {
+  padding: var(--section-pad);
+}
+
+/* Stats overview widgets: one ruled strip, rules between the cells. */
+.fi-wi-stats-overview-stats-ctn {
+  @apply gap-0;
+}
+
+.fi-wi-stats-overview-stat {
+  @apply rounded-none border-r border-r-(--line-soft) bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-wi-stats-overview-stat:last-child {
+  @apply border-r-0;
+}
+
+/* Property rows: an infolist entry is a key/value row on a hairline (mockup
+ * .hx-prop: 13px --ink-3 key, value beside it, 34px dense row). */
+.fi-page-content .fi-in-entry {
+  @apply grid min-h-8.5 items-center gap-x-2 border-b border-b-(--line-soft);
+  grid-template-columns: 7rem minmax(0, 1fr);
+}
+
+.fi-page-content .fi-in-entry-label {
+  @apply text-[13px] font-normal text-(--ink-3);
 }
 
 /* The package owns GridStack. phpVMS adds only the explicit edit-state grid. */
@@ -3201,7 +3603,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 
 .dashboard-widget-body {
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: none;
 }
 
@@ -3337,12 +3739,12 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .queue__text > strong {
-  @apply block overflow-hidden text-ellipsis text-[12.5px] text-(--ink);
+  @apply block overflow-hidden text-ellipsis text-[13.5px] text-(--ink);
   font-weight: 550;
 }
 
 .queue__text > span {
-  @apply block overflow-hidden text-ellipsis text-[11.5px] text-(--ink-3);
+  @apply block overflow-hidden text-ellipsis text-[12.5px] text-(--ink-3);
 }
 
 .queue__when {
@@ -3689,12 +4091,12 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 
 .dl dt,
 .dl dd {
-  @apply flex items-center min-h-7.25 m-0 py-1.5 px-3 border-b border-b-(--line-soft) text-[12.5px];
+  @apply flex items-center min-h-7.25 m-0 py-1.5 px-3 border-b border-b-(--line-soft) text-[13.5px];
   gap: 0.34em;
 }
 
 .dl dt {
-  @apply bg-(--surface-2) border-r border-r-(--line-soft) text-(--ink-3) text-[11.5px];
+  @apply bg-(--surface-2) border-r border-r-(--line-soft) text-(--ink-3) text-[12.5px];
 }
 
 .dl dd {
@@ -3732,7 +4134,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .context__eyebrow {
-  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 .context__title {
@@ -3859,7 +4261,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .panel__title {
-  @apply flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  @apply flex items-baseline gap-2 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 /* Header glyph (one Tabler icon per panel head). self-center because the
@@ -3957,7 +4359,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .tbl {
-  @apply w-full border-collapse text-[12.5px];
+  @apply w-full border-collapse text-[13.5px];
 }
 
 .tbl thead th {
@@ -4093,12 +4495,12 @@ html[data-density="comfortable"] .tbl tbody td {
 }
 
 .notice__text > strong {
-  @apply block text-[12.5px];
+  @apply block text-[13.5px];
   font-weight: 550;
 }
 
 .notice__text > span {
-  @apply block text-[11.5px] opacity-85;
+  @apply block text-[12.5px] opacity-85;
 }
 
 /* List left, detail right. 430px and "whatever is left" is not a ratio the

@@ -21,6 +21,12 @@ class Backups extends BaseBackups
     protected static ?int $navigationSort = 4;
 
     #[Override]
+    public static function getNavigationIcon(): string|BackedEnum|null
+    {
+        return Phosphor::DatabaseLight;
+    }
+
+    #[Override]
     public static function getNavigationGroup(): UnitEnum
     {
         return NavigationGroup::System;

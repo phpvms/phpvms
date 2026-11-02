@@ -1,10 +1,11 @@
 {{--
-    Sticky section-jump bar for edit pages that stack their relation managers
-    (see App\Filament\Concerns\StacksRelationManagers).
+    Sticky section-jump bar inside the form tab of edit pages that use
+    App\Filament\Concerns\HasRelationManagerTabs. It lists the form's own
+    sections only; relation managers are tabs.
 
-    Sits at the top of the page body rather than in the hero band: the band
-    scrolls away, this stays. Links scroll to (and expand) the matching section
-    by DOM id. The optional switcher jumps to a sibling record.
+    Sits in the page body rather than in the hero band: the band scrolls away,
+    this stays. Links scroll to (and expand) the matching section by DOM id.
+    The optional switcher jumps to a sibling record.
 
     Reuses .subtab from the PIREP view's in-page tabs so every page with an
     in-page nav navigates the same way.
@@ -53,9 +54,6 @@
                 x-bind:aria-selected="active === '{{ $link['id'] }}' ? 'true' : 'false'"
             >
                 {{ $link['label'] }}
-                @if (($link['count'] ?? null) !== null)
-                    <em>{{ $link['count'] }}</em>
-                @endif
             </a>
         @endforeach
     </div>

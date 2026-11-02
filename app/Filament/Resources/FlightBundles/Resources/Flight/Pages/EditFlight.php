@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Pages;
 
 use App\Filament\Actions\EditDetailsAction;
+use App\Filament\Concerns\HasRelationManagerTabs;
 use App\Filament\Concerns\ReversePrimaryButtons;
-use App\Filament\Concerns\StacksRelationManagers;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\Schemas\FlightForm;
@@ -30,8 +30,8 @@ use Override;
 
 class EditFlight extends EditRecord
 {
+    use HasRelationManagerTabs;
     use ReversePrimaryButtons;
-    use StacksRelationManagers;
 
     protected static string $resource = FlightResource::class;
 
@@ -63,7 +63,7 @@ class EditFlight extends EditRecord
         $record = $this->getRecord();
 
         return new HtmlString(sprintf(
-            '%s <span class="id fi-header-heading-route">%s → %s</span>',
+            '<span class="fi-header-heading-ident">%s</span> <span class="id fi-header-heading-route">%s → %s</span>',
             e($record->ident),
             e($record->dpt_airport->icao),
             e($record->arr_airport->icao),

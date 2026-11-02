@@ -236,9 +236,9 @@ class PirepsTable
                             .' <= ?', [$data['to']]),
                         )),
             ])
-            // No funnel/dropdown: the quick bar below and the always-visible
-            // filters card in the page's context column are the filter UI.
-            ->filtersLayout(FiltersLayout::Hidden)
+            // Full filter set lives in the toolbar's Filter dropdown; the
+            // quick bar below carries the state + airline selects.
+            ->filtersLayout(FiltersLayout::Dropdown)
             ->deferFilters(false)
             ->filtersFormColumns(1)
             ->persistFiltersInSession()

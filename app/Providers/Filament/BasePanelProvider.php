@@ -127,9 +127,9 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 fn (): string => view('filament.shared.back-to-site')->render(),
             )
             // Workspace navigator: the active module's items as topbar tabs,
-            // so moving inside a module never needs the rail. Hooked after the
-            // logo rather than at TOPBAR_START, which would render it ahead of
-            // the brand.
+            // so moving inside a module never needs the rail. The brand switcher
+            // lives in the sidebar's top band (PanelSwitcherPlugin), so this
+            // is the first thing in the bar.
             ->renderHook(
                 PanelsRenderHook::TOPBAR_LOGO_AFTER,
                 fn (): string => view('filament.shared.workspace-nav')->render(),

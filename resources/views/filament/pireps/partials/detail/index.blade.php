@@ -15,107 +15,81 @@
        cannot be rendered from inside this view.
        @var array<int, array{id: string, domId: string, label: string, badge: string|int|null, html: string}> $extensionTabs */
     $extensionTabs = $extensionTabs ?? [];
+
+    $bannerTabs = [
+        ['key' => 'flight', 'label' => 'Flight', 'icon' => 'phosphor-airplane-light', 'panel' => 'tab-flight'],
+        ['key' => 'log', 'label' => __('pireps.flight_log'), 'icon' => 'phosphor-list-light', 'badge' => $logEntries->count(), 'panel' => 'tab-log'],
+        ['key' => 'finances', 'label' => __('pireps.finance'), 'icon' => 'phosphor-money-light', 'panel' => 'tab-fin'],
+        ['key' => 'archive', 'label' => __('filament.original_flight'), 'icon' => 'phosphor-archive-light', 'panel' => 'tab-arc'],
+        ...collect($extensionTabs)->map(fn (array $tab): array => [
+            'key'   => $tab['id'],
+            'label' => $tab['label'],
+            'badge' => $tab['badge'],
+            'panel' => 'tab-'.$tab['domId'],
+        ])->all(),
+    ];
 @endphp
 
-@include('filament.pireps.partials.detail.header', ['record' => $record])
+{{-- Folder tabs ride the banner's bottom edge (<x-admin.banner-tabs> pulls the
+     strip up over the header's reserved padding); the sheet below is the main
+     pane plus the properties rail. One Alpine scope covers strip and panels. --}}
+<div
+    class="rec"
+    x-data="{
+        activeTab: 'flight',
+        order: @js(['flight', 'log', 'finances', 'archive', ...collect($extensionTabs)->pluck('id')->all()]),
+        pick(event) {
+            if (event.metaKey || event.ctrlKey || event.altKey || event.target.closest('input, textarea, select, [contenteditable], [role=dialog]')) {
+                return;
+            }
+            const tab = this.order[Number(event.key) - 1];
+            if (tab) {
+                this.activeTab = tab;
+            }
+        },
+    }"
+    @keydown.window="pick($event)"
+>
+    <x-admin.banner-tabs model="activeTab" aria-label="Report sections" :tabs="$bannerTabs" />
 
-<div class="with-context">
-    <section class="panel" x-data="{ activeTab: 'flight' }">
-        <div class="subtabs" role="tablist" aria-label="Report sections">
-            <button
-                type="button"
-                class="subtab"
-                role="tab"
-                :aria-selected="activeTab === 'flight'"
-                aria-controls="tab-flight"
-                id="t-flight"
-                @click="activeTab = 'flight'"
-            >
-                @svg('phosphor-airplane-light') Flight
-            </button>
-            <button
-                type="button"
-                class="subtab"
-                role="tab"
-                :aria-selected="activeTab === 'log'"
-                aria-controls="tab-log"
-                id="t-log"
-                @click="activeTab = 'log'"
-            >
-                @svg('phosphor-list-light') {{ __('pireps.flight_log') }} <em>{{ $logEntries->count() }}</em>
-            </button>
-            <button
-                type="button"
-                class="subtab"
-                role="tab"
-                :aria-selected="activeTab === 'finances'"
-                aria-controls="tab-fin"
-                id="t-fin"
-                @click="activeTab = 'finances'"
-            >
-                @svg('phosphor-money-light') {{ __('pireps.finance') }}
-            </button>
-            <button
-                type="button"
-                class="subtab"
-                role="tab"
-                :aria-selected="activeTab === 'archive'"
-                aria-controls="tab-arc"
-                id="t-arc"
-                @click="activeTab = 'archive'"
-            >
-                @svg('phosphor-archive-light') {{ __('filament.original_flight') }}
-            </button>
+    <div class="rec-sheet">
+        <div class="rec-main">
+            {{-- Flight tab: figures strip + route + map + vertical profile + touchdown + notes --}}
+            <div id="tab-flight" role="tabpanel" aria-labelledby="t-flight" x-show="activeTab === 'flight'" x-cloak>
+                @include('filament.pireps.partials.detail.header', ['record' => $record])
+                @include('filament.pireps.partials.detail.route-performance', [
+                    'record'      => $record,
+                    'performance' => $performance,
+                ])
+            </div>
 
+            {{-- Flight log tab --}}
+            <div id="tab-log" role="tabpanel" aria-labelledby="t-log" x-show="activeTab === 'log'" x-cloak>
+                @include('filament.pireps.partials.detail.flight-log', [
+                    'record'     => $record,
+                    'logEntries' => $logEntries,
+                ])
+            </div>
+
+            {{-- Finances tab --}}
+            <div id="tab-fin" role="tabpanel" aria-labelledby="t-finances" x-show="activeTab === 'finances'" x-cloak>
+                @include('filament.pireps.partials.detail.finances', ['record' => $record])
+            </div>
+
+            {{-- Original flight tab --}}
+            <div id="tab-arc" role="tabpanel" aria-labelledby="t-archive" x-show="activeTab === 'archive'" x-cloak>
+                @include('filament.pireps.partials.detail.archive', ['record' => $record])
+            </div>
+
+            {{-- Addon-registered panels, pre-rendered (and error-contained) by the
+                 page class. --}}
             @foreach ($extensionTabs as $tab)
-                <button
-                    type="button"
-                    class="subtab"
-                    role="tab"
-                    :aria-selected="activeTab === @js($tab['id'])"
-                    aria-controls="tab-{{ $tab['domId'] }}"
-                    id="t-{{ $tab['domId'] }}"
-                    @click="activeTab = @js($tab['id'])"
-                >
-                    {{ $tab['label'] }}@if (filled($tab['badge'])) <em>{{ $tab['badge'] }}</em>@endif
-                </button>
+                <div id="tab-{{ $tab['domId'] }}" role="tabpanel" aria-labelledby="t-{{ $tab['id'] }}" x-show="activeTab === @js($tab['id'])" x-cloak>
+                    {!! $tab['html'] !!}
+                </div>
             @endforeach
         </div>
 
-        {{-- Flight tab: route bar + map + vertical profile chart + touchdown + notes --}}
-        <div id="tab-flight" role="tabpanel" aria-labelledby="t-flight" x-show="activeTab === 'flight'" x-cloak>
-            @include('filament.pireps.partials.detail.route-performance', [
-                'record'      => $record,
-                'performance' => $performance,
-            ])
-        </div>
-
-        {{-- Flight log tab --}}
-        <div id="tab-log" role="tabpanel" aria-labelledby="t-log" x-show="activeTab === 'log'" x-cloak>
-            @include('filament.pireps.partials.detail.flight-log', [
-                'record'     => $record,
-                'logEntries' => $logEntries,
-            ])
-        </div>
-
-        {{-- Finances tab --}}
-        <div id="tab-fin" role="tabpanel" aria-labelledby="t-fin" x-show="activeTab === 'finances'" x-cloak>
-            @include('filament.pireps.partials.detail.finances', ['record' => $record])
-        </div>
-
-        {{-- Original flight tab --}}
-        <div id="tab-arc" role="tabpanel" aria-labelledby="t-arc" x-show="activeTab === 'archive'" x-cloak>
-            @include('filament.pireps.partials.detail.archive', ['record' => $record])
-        </div>
-
-        {{-- Addon-registered panels, pre-rendered (and error-contained) by the
-             page class. --}}
-        @foreach ($extensionTabs as $tab)
-            <div id="tab-{{ $tab['domId'] }}" role="tabpanel" aria-labelledby="t-{{ $tab['domId'] }}" x-show="activeTab === @js($tab['id'])" x-cloak>
-                {!! $tab['html'] !!}
-            </div>
-        @endforeach
-    </section>
-
-    @include('filament.pireps.partials.detail.sidebar', ['record' => $record])
+        @include('filament.pireps.partials.detail.sidebar', ['record' => $record])
+    </div>
 </div>

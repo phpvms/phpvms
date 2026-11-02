@@ -8,14 +8,13 @@ use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Actions\PirepFieldsAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Pirep;
-use App\Support\Units\Time;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Override;
 use Throwable;
 
@@ -24,8 +23,7 @@ class ListPireps extends ListRecords
     protected static string $resource = PirepResource::class;
 
     /**
-     * Custom view: wraps the table and the hover-preview context panel in
-     * the mockup's .with-context split (table + 350px sticky aside).
+     * Custom view: the tab strip above the table, with no side column.
      */
     protected string $view = 'filament.pireps.pages.list-pireps';
 
@@ -138,13 +136,17 @@ class ListPireps extends ListRecords
     {
         return [
             'needs_review' => Tab::make(__('pireps.needs_review'))
+                ->icon(Phosphor::ClipboardTextLight)
                 ->badge(fn (): int => Pirep::where('state', PirepState::PENDING)->count())
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('state', PirepState::PENDING)),
             'accepted' => Tab::make(PirepState::ACCEPTED->getLabel())
+                ->icon(Phosphor::CheckCircleLight)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('state', PirepState::ACCEPTED)),
             'rejected' => Tab::make(PirepState::REJECTED->getLabel())
+                ->icon(Phosphor::XCircleLight)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('state', PirepState::REJECTED)),
-            'all' => Tab::make(__('pireps.tab_all')),
+            'all' => Tab::make(__('pireps.tab_all'))
+                ->icon(Phosphor::ListBulletsLight),
         ];
     }
 
@@ -181,90 +183,6 @@ class ListPireps extends ListRecords
         return [
             PirepFieldsAction::make(),
         ];
-    }
-
-    /**
-     * Per-row payload for the hover preview panel, keyed by record key.
-     * Only the current page's records are included, and the blade re-embeds
-     * this on every Livewire render so pagination/filtering keep it fresh.
-     * Rows omit empty fields; the panel renders whatever is present.
-     *
-     * @return array<string, array<string, string>>
-     */
-    public function getPreviewData(): array
-    {
-        return $this->getTableRecords()
-            ->mapWithKeys(fn (Pirep $record): array => [
-                (string) $record->getKey() => $this->previewRow($record),
-            ])
-            ->all();
-    }
-
-    /**
-     * One cached preview row. The key rides on updated_at, so the payload is
-     * built once while the report sits pending and regenerates on any state
-     * change (accept/reject touch the row) — no invalidation hooks, old
-     * entries just age out. Locale is in the key because the state and
-     * flight-type labels are translated.
-     *
-     * @return array<string, string>
-     */
-    private function previewRow(Pirep $record): array
-    {
-        $key = sprintf(
-            'pirep:preview:%s:%s:%s',
-            $record->getKey(),
-            $record->updated_at?->getTimestamp() ?? 0,
-            app()->getLocale(),
-        );
-
-        return Cache::remember($key, now()->addDay(), function () use ($record): array {
-            $filed = $record->submitted_at
-                ? 'filed '.$record->submitted_at->format('j M H:i').'Z'
-                : null;
-
-            $aircraft = $record->aircraft
-                ? trim($record->aircraft->registration.' · '.($record->aircraft->name ?? ''), ' ·')
-                : null;
-
-            $blockTime = $record->flight_time
-                ? sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) $record->flight_time)))
-                : null;
-
-            $source = filled($record->source_name)
-                ? $record->source?->getLabel().' · '.$record->source_name
-                : $record->source?->getLabel();
-
-            $chip = match ($record->state->getColor()) {
-                'success' => 'chip--ok',
-                'warning' => 'chip--warn',
-                'danger'  => 'chip--bad',
-                'info'    => 'chip--info',
-                default   => 'chip--mute',
-            };
-
-            return array_filter([
-                'ident'    => $record->ident,
-                'sub'      => implode(' · ', array_filter([$record->user?->name, $filed])),
-                'state'    => $record->state->getLabel(),
-                'chip'     => $chip,
-                'route'    => $record->dpt_airport_id.' → '.$record->arr_airport_id,
-                'aircraft' => $aircraft,
-                'block'    => $blockTime,
-                'distance' => $record->distance
-                    ? number_format((float) $record->distance->local()).' '.setting('units.distance')
-                    : null,
-                'landing' => $record->landing_rate !== null && (int) $record->landing_rate !== 0
-                    ? number_format((float) $record->landing_rate).' fpm'
-                    : null,
-                'fuel' => $record->fuel_used
-                    ? number_format((float) $record->fuel_used->local()).' '.setting('units.fuel')
-                    : null,
-                'source' => $source,
-                'type'   => $record->flight_type->getLabel(),
-                'url'    => PirepResource::getUrl('view', ['record' => $record]),
-            ], filled(...));
-        });
     }
 
     /**

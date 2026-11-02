@@ -2,7 +2,7 @@
     Quick-filter bar (mockup pireps.html:426-465, .filters/.field family).
     Renders in the table's header slot, above the toolbar. The selects bind
     directly onto Filament's tableFilters state — same source of truth as
-    the filters card in the context column — and apply live (the table has
+    the toolbar Filter dropdown — and apply live (the table has
     deferFilters(false)).
 
     @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $records
