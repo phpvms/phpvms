@@ -193,7 +193,7 @@ class AddonDiscoveryService
             }
 
             foreach (File::directories($base) as $dir) {
-                foreach (['module.json', 'composer.json'] as $file) {
+                foreach ([...ManifestParser::MANIFEST_FILES, 'composer.json'] as $file) {
                     $path = $dir.'/'.$file;
 
                     if (!File::exists($path)) {
@@ -487,7 +487,7 @@ class AddonDiscoveryService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof AddonManifest) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json (or module.json) is missing or invalid", $resolved));
 
                 continue;
             }

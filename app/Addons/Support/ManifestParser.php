@@ -8,9 +8,10 @@ use App\Addons\Models\AddonManifest;
 use App\Support\Filesystem;
 
 /**
- * Lenient parser for addon module.json + composer.json manifests.
+ * Lenient parser for addon manifests (addon.json, or the older module.json)
+ * + composer.json.
  *
- * Returns a typed ManifestData on success, or null when the module.json is
+ * Returns a typed ManifestData on success, or null when the manifest is
  * missing or unparseable (D-15 — caller is responsible for logging + skipping).
  *
  * Stateless and Octane-safe: no mutable instance properties.
@@ -18,17 +19,37 @@ use App\Support\Filesystem;
 class ManifestParser
 {
     /**
+     * Manifest file names, in lookup order. module.json is the older name and is
+     * read only when there is no addon.json.
+     */
+    public const MANIFEST_FILES = ['addon.json', 'module.json'];
+
+    /**
+     * The addon's manifest file: addon.json, else module.json. Null when there is neither.
+     */
+    public static function manifestPath(string $addonPath): ?string
+    {
+        foreach (self::MANIFEST_FILES as $file) {
+            if (file_exists($addonPath.'/'.$file)) {
+                return $addonPath.'/'.$file;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Parse a module directory's manifest files into a typed ManifestData.
      *
-     * Returns null when module.json OR composer.json is absent or contains
-     * invalid JSON (both are required) so the caller can skip-and-log rather
-     * than crashing boot (D-15).
+     * Returns null when the manifest (addon.json or module.json) OR composer.json
+     * is absent or contains invalid JSON (both are required) so the caller can
+     * skip-and-log rather than crashing boot (D-15).
      */
     public function parse(string $addonPath): ?AddonManifest
     {
-        $manifestPath = $addonPath.'/module.json';
+        $manifestPath = self::manifestPath($addonPath);
 
-        if (!file_exists($manifestPath)) {
+        if ($manifestPath === null) {
             return null;
         }
 
@@ -39,7 +60,7 @@ class ManifestParser
             return null;
         }
 
-        // A valid addon MUST ship both module.json and composer.json. The
+        // A valid addon MUST ship both a manifest and composer.json. The
         // composer.json is authoritative for the PSR-4 namespace + autoload path,
         // so an addon without it is not loadable — skip it (D-07).
         $composerPath = $addonPath.'/composer.json';
