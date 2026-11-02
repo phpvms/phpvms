@@ -1,5 +1,5 @@
 {
-    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "$schema": "https://addons.phpvms.net/schema/addon.json",
     "schema_version": 1,
     "name": "PhpvmsDashboard",
     "alias": "phpvms-dashboard",
@@ -7,7 +7,13 @@
     "version": "1.0.0",
     "type": "module",
     "description": "First-party home for phpVMS skylight dashboard widgets. Ships the weather (METAR) widget as a pre-built Vue (ESM) widget that owns its own data endpoint.",
-    "keywords": ["skylight", "dashboard", "widget", "weather", "metar"],
+    "keywords": [
+        "skylight",
+        "dashboard",
+        "widget",
+        "weather",
+        "metar"
+    ],
     "active": 0,
     "order": 0,
     "providers": [
@@ -18,5 +24,15 @@
     "requires": [],
     "database": {
         "tables": []
-    }
+    },
+    "license": "BSD-3-Clause",
+    "requirements": {
+        "php": ">=8.4.1",
+        "phpvms": ">=8.0"
+    },
+    "screenshots": [],
+    "readme": "README.md",
+    "documentation_url": "https://docs.phpvms.net",
+    "homepage": "https://phpvms.net",
+    "support_url": "https://forum.phpvms.net"
 }
