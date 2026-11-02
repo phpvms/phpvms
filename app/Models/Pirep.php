@@ -101,6 +101,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, PirepFieldValue> $field_values
  * @property-read int|null $field_values_count
  * @property-read mixed $fields
+ * @property-read \Illuminate\Support\Collection<int, PirepFieldValue> $editable_fields
  * @property-read Flight|null $flight
  * @property-read string $ident
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
@@ -429,6 +430,21 @@ class Pirep extends Model
             }
 
             return $field_values;
+        });
+    }
+
+    /**
+     * The custom fields a pilot can fill in on the PIREP form: the same as
+     * fields(), without the system-only ones, which only server code sets.
+     */
+    public function editableFields(): Attribute
+    {
+        return Attribute::make(get: function () {
+            $system_only = PirepField::whereSystemOnly(true)->pluck('slug')->all();
+
+            return $this->fields
+                ->reject(fn (PirepFieldValue $field): bool => in_array($field->slug, $system_only, true))
+                ->values();
         });
     }
 

@@ -33,8 +33,9 @@ class CreatePirepRequest extends FormRequest
         $field_rules['hours'] = 'required|integer';
         $field_rules['minutes'] = 'required|integer';
 
-        // Add the validation rules for the custom fields
-        $custom_fields = PirepField::all();
+        // Add the validation rules for the custom fields a pilot can fill in.
+        // System-only fields aren't on the form, so they're never required.
+        $custom_fields = PirepField::editableByPilots()->get();
         foreach ($custom_fields as $field) {
             // Log::info('field:', $field->toArray());
             $field_rules[$field->slug] = $field->required ? 'required' : 'nullable';

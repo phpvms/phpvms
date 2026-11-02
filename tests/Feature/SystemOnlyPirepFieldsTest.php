@@ -42,6 +42,14 @@ function serverSetsField(Pirep $pirep, string $name, string $value): void
     ]);
 }
 
+function usePilotForm(): void
+{
+    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    Theme::set('seven');
+    updateSetting('general.theme', 'seven');
+}
+
 function measuredValues(Pirep $pirep): array
 {
     return PirepFieldValue::where('pirep_id', $pirep->id)
@@ -110,10 +118,7 @@ it('ignores a system-only field sent when filing', function (): void {
 });
 
 it('keeps system-only fields off the PIREP form and ignores them when submitted', function (): void {
-    updateSetting('pilots.only_flights_from_current', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    Theme::set('seven');
-    updateSetting('general.theme', 'seven');
+    usePilotForm();
 
     $this->actingAs($this->pilot)
         ->get(route('frontend.pireps.create'))
@@ -137,6 +142,51 @@ it('keeps system-only fields off the PIREP form and ignores them when submitted'
     $manual = Pirep::where('flight_number', '100')->latest()->first();
     expect($manual)->not->toBeNull()
         ->and(measuredValues($manual))->toBe([]);
+});
+
+it('keeps system-only fields off the edit form but shows them on the report', function (): void {
+    usePilotForm();
+    $draft = Pirep::factory()->create(['user_id' => $this->pilot->id, 'state' => PirepState::DRAFT]);
+    serverSetsField($draft, 'Measured Value', '42');
+    serverSetsField($draft, 'Departure Gate', 'G26');
+
+    $this->actingAs($this->pilot)
+        ->get(route('frontend.pireps.edit', $draft->id))
+        ->assertSuccessful()
+        ->assertDontSee('Measured Value')
+        ->assertSee('Departure Gate');
+
+    $this->actingAs($this->pilot)
+        ->get(route('frontend.pireps.show', $draft->id))
+        ->assertSuccessful()
+        ->assertSee('Measured Value');
+});
+
+it('does not require a required system-only field on the PIREP form', function (): void {
+    usePilotForm();
+    PirepField::whereSlug('measured-value')->update(['required' => true]);
+    $form = [
+        'airline_id'     => $this->pirep->airline_id,
+        'aircraft_id'    => $this->pirep->aircraft_id,
+        'flight_number'  => 200,
+        'dpt_airport_id' => $this->pirep->dpt_airport_id,
+        'arr_airport_id' => $this->pirep->arr_airport_id,
+        'hours'          => 1,
+        'minutes'        => 0,
+        'block_fuel'     => 100,
+        'fuel_used'      => 50,
+        'submit'         => 'submit',
+    ];
+
+    $this->actingAs($this->pilot)
+        ->post(route('frontend.pireps.store'), $form)
+        ->assertSessionHasNoErrors();
+
+    $draft = Pirep::factory()->create(['user_id' => $this->pilot->id, 'state' => PirepState::DRAFT]);
+
+    $this->actingAs($this->pilot)
+        ->put(route('frontend.pireps.update', $draft->id), $form)
+        ->assertSessionHasNoErrors();
 });
 
 it('still saves fields that are not system-only', function (): void {

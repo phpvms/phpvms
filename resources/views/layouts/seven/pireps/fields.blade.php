@@ -9,7 +9,7 @@ flight reports that have been filed. You've been warned!
 
 --}}
 @php
-  $custom_fields_exist = (isset($pirep) && $pirep->fields && $pirep->fields->isNotEmpty()) || (!isset($pirep) && $pirep_fields && $pirep_fields->isNotEmpty());
+  $custom_fields_exist = (isset($pirep) && $pirep->editable_fields->isNotEmpty()) || (!isset($pirep) && $pirep_fields && $pirep_fields->isNotEmpty());
 
   $form_width = $custom_fields_exist ? 'col-lg-8' : 'col-lg-12';
 @endphp
@@ -349,8 +349,8 @@ flight reports that have been filed. You've been warned!
       <div class="card-body">
         <table class="table table-striped">
 
-            @if(isset($pirep) && $pirep->fields)
-              @each('pireps.custom_fields', $pirep->fields, 'field')
+            @if(isset($pirep))
+              @each('pireps.custom_fields', $pirep->editable_fields, 'field')
             @else
               @each('pireps.custom_fields', $pirep_fields, 'field')
             @endif
