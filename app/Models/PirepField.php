@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Enums\PirepFieldSource;
 use App\Traits\HasSlug;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -22,6 +23,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null           $description
  * @property bool|null             $required
  * @property PirepFieldSource|null $pirep_source
+ * @property bool                  $system_only
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  *
@@ -34,6 +36,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder<static>|PirepField wherePirepSource($value)
  * @method static Builder<static>|PirepField whereRequired($value)
  * @method static Builder<static>|PirepField whereSlug($value)
+ * @method static Builder<static>|PirepField whereSystemOnly($value)
+ * @method static Builder<static>|PirepField editableByPilots()
  *
  * @mixin \Eloquent
  */
@@ -51,6 +55,7 @@ class PirepField extends Model
         'description',
         'required',
         'pirep_source',
+        'system_only',
     ];
 
     public static array $rules = [
@@ -71,6 +76,16 @@ class PirepField extends Model
         );
     }
 
+    /**
+     * Fields a pilot may fill in. System-only fields are set by server code
+     * alone, so they're left off the PIREP form and out of pilot input.
+     */
+    #[Scope]
+    protected function editableByPilots(Builder $query): void
+    {
+        $query->where('system_only', false);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -85,6 +100,7 @@ class PirepField extends Model
         return [
             'required'     => 'boolean',
             'pirep_source' => PirepFieldSource::class,
+            'system_only'  => 'boolean',
         ];
     }
 }
