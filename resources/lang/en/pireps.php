@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 return [
     'new_flight_report'    => 'New Flight Report',
+    'needs_review'         => 'Needs review',
+    'tab_all'              => 'All',
+    'back_to_list'         => 'Back to list',
     'edit_flight_report'   => 'Edit Flight Report',
     'save_pirep'           => 'Save PIREP',
     'submit_pirep'         => 'Submit PIREP',

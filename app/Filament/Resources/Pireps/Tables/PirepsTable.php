@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pireps\Tables;
 
 use App\Enums\PirepState;
+use App\Filament\Resources\Pireps\Actions\PeekAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Models\Airport;
@@ -142,9 +143,14 @@ class PirepsTable
             ->paginated([25])
             ->defaultPaginationPageOption(25)
             ->defaultSort('submitted_at', 'desc')
-            // Row click opens the report, not the edit form (Filament's
-            // default recordUrl prefers the edit page when one exists).
-            ->recordUrl(fn (Pirep $record): string => PirepResource::getUrl('view', ['record' => $record]))
+            // Row click opens the read-only slide-over. Filament renders a
+            // recordUrl in preference to a recordAction, and ListRecords falls
+            // back to the edit page unless a custom URL is set, so null is
+            // set explicitly. pirep-panel.js re-adds ctrl/cmd/middle-click
+            // via the ident link.
+            ->recordUrl(null)
+            ->recordAction(PeekAction::NAME)
+            ->extraAttributes(['data-pirep-table' => true])
             ->filters([
                 SelectFilter::make('state')
                     ->label(__('common.state'))
@@ -244,6 +250,7 @@ class PirepsTable
             ]))
             ->recordActions([
                 ActionGroup::make([
+                    PeekAction::make(),
                     EditAction::make(),
                     DeleteAction::make(),
                     ForceDeleteAction::make(),

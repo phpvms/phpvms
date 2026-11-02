@@ -6,6 +6,8 @@
     morphs (pagination, filters) refresh it without re-initing Alpine.
 --}}
 <x-filament-panels::page>
+    {{ $this->content }}
+
     <div
         class="with-context"
         x-data="{

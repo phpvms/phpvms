@@ -10,7 +10,10 @@ use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Pirep;
 use App\Support\Units\Time;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Override;
@@ -109,6 +112,66 @@ class ListPireps extends ListRecords
             return Carbon::parse($value)->format('Y-m-d H:i:s');
         } catch (Throwable) {
             return null;
+        }
+    }
+
+    /**
+     * The tab strip is rendered by the custom list view above the table, so
+     * the page content schema carries the tabs only; the view embeds the
+     * table itself.
+     */
+    #[Override]
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([$this->getTabsContentComponent()]);
+    }
+
+    /**
+     * Triage tabs (direction E): the review queue first, then the two
+     * outcomes, then everything. The table already excludes drafts and
+     * cancelled reports, so "All" is the same set the list shows untabbed.
+     *
+     * @return array<string, Tab>
+     */
+    #[Override]
+    public function getTabs(): array
+    {
+        return [
+            'needs_review' => Tab::make(__('pireps.needs_review'))
+                ->badge(fn (): int => Pirep::where('state', PirepState::PENDING)->count())
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('state', PirepState::PENDING)),
+            'accepted' => Tab::make(PirepState::ACCEPTED->getLabel())
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('state', PirepState::ACCEPTED)),
+            'rejected' => Tab::make(PirepState::REJECTED->getLabel())
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('state', PirepState::REJECTED)),
+            'all' => Tab::make(__('pireps.tab_all')),
+        ];
+    }
+
+    /**
+     * Land on "All", the same set the list showed before tabs existed. The
+     * review queue is one click away; making it the default would silently
+     * hide accepted reports from every direct visit and deep link.
+     */
+    #[Override]
+    public function getDefaultActiveTab(): string|int|null
+    {
+        return 'all';
+    }
+
+    /**
+     * A tab owns the state, so switching tabs clears the persisted `state`
+     * filter; otherwise "Accepted" + a stale "Rejected" filter shows nothing.
+     */
+    #[Override]
+    public function updatedActiveTab(): void
+    {
+        parent::updatedActiveTab();
+
+        if (filled(data_get($this->tableFilters, 'state.value'))) {
+            data_set($this->tableFilters, 'state.value', null);
+            $this->getTableFiltersForm()->fill($this->tableFilters);
+            $this->handleTableFilterUpdates();
         }
     }
 

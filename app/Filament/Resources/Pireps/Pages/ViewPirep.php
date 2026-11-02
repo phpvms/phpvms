@@ -24,7 +24,7 @@ use Filament\Support\Enums\IconPosition;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\HtmlString;
+use Livewire\Attributes\Computed;
 use Override;
 use Throwable;
 
@@ -57,24 +57,21 @@ class ViewPirep extends ViewRecord
      */
     protected string $view = 'filament.pireps.pages.view-pirep';
 
+    /**
+     * Banner title row (direction E): mono ident, mono route and the state
+     * chip, rendered by a partial so the markup stays out of the page class.
+     */
     #[Override]
-    public function getHeading(): string
+    public function getHeading(): string|Htmlable
     {
-        $record = $this->record;
-        $parts = [$record->ident];
-        if ($record->aircraft) {
-            $parts[] = $record->aircraft->registration;
-        }
-
-        $parts[] = $record->dpt_airport_id.'→'.$record->arr_airport_id;
-
-        return implode(' ', $parts);
+        return view('filament.pireps.partials.record-heading', ['record' => $this->record]);
     }
 
     /**
-     * Plain-text subline under the heading (mockup pirep.html:476):
-     * "{pilot name} · filed {date} via {source}". Mirrors the source-label
-     * logic the old avatar-hero header partial used to compute.
+     * Banner extras under the title: "Back to list", the
+     * "{pilot name} · filed {date} via {source}" line (mockup pirep.html:476)
+     * and the route arc. Mirrors the source-label logic the old avatar-hero
+     * header partial used to compute.
      */
     #[Override]
     public function getSubheading(): string|Htmlable|null
@@ -95,20 +92,20 @@ class ViewPirep extends ViewRecord
 
         $parts = array_filter([$record->user?->name, $filed], filled(...));
 
-        /* State chip rides the subline (mockup puts it beside the actions) so
-         * the report's state is visible without opening a tab. */
-        $chipClass = match ($record->state->getColor()) {
-            'success' => 'chip--ok',
-            'warning' => 'chip--warn',
-            'danger'  => 'chip--bad',
-            'info'    => 'chip--info',
-            default   => 'chip--mute',
-        };
-        $chip = '<span class="chip '.$chipClass.'">'.e($record->state->getLabel()).'</span>';
+        return view('filament.pireps.partials.record-banner', [
+            'record'  => $record,
+            'backUrl' => PirepResource::getUrl('index'),
+            'filed'   => $parts === [] ? null : implode(' · ', $parts),
+        ]);
+    }
 
-        return new HtmlString(
-            $chip.($parts === [] ? '' : '<span>'.e(implode(' · ', $parts)).'</span>'),
-        );
+    /**
+     * @return array<string>
+     */
+    #[Override]
+    public function getPageClasses(): array
+    {
+        return [...parent::getPageClasses(), 'fi-pirep-record'];
     }
 
     #[Override]
@@ -219,7 +216,8 @@ class ViewPirep extends ViewRecord
      *
      * @return Collection<int, PirepEvent>
      */
-    public function getLogEntriesProperty(): Collection
+    #[Computed]
+    public function logEntries(): Collection
     {
         return PirepEvent::query()
             ->where('pirep_id', $this->record->id)

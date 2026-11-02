@@ -7,6 +7,7 @@ namespace App\Providers\Filament;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
+use App\Filament\Plugins\SidebarCollapseTogglePlugin;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\PhosphorIcons;
 use Filament\Enums\UserMenuPosition;
@@ -58,7 +59,7 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 Authenticate::class,
             ])
             ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('14.5rem')
+            ->sidebarWidth('14.75rem')
             // 76px collapsed — the console rail width, wide enough for the
             // module label the theme draws under each icon.
             ->collapsedSidebarWidth('4.75rem')
@@ -79,6 +80,7 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 // exists through IconSet::__call(), so static analysis can't see it.
                 PhosphorIcons::make()->style('light'),
                 PanelSwitcherPlugin::make(),
+                SidebarCollapseTogglePlugin::make(),
                 ClearCachesPlugin::make(),
                 LanguageSwitcherPlugin::make(),
             ])
