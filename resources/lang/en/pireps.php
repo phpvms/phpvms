@@ -22,6 +22,8 @@ return [
     'flight_time'          => 'Flight Time',
     'flight_level'         => 'Flight Level',
     'fields_readonly'      => 'Once a PIREP has been submitted, certain fields go into read-only mode.',
+    'system_only'          => 'System only',
+    'system_only_help'     => "Only set by the server, for example by an addon. Pilots and ACARS clients can't set or change it.",
     'flight_information'   => 'Flight Information',
     'flight_ident'         => 'Flight Number/Code/Leg',
     'block_fuel'           => 'Block Fuel',

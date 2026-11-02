@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 use App\Enums\PirepFieldSource;
 use App\Enums\PirepState;
+use App\Filament\Resources\PirepFields\Pages\ManagePirepFields;
 use App\Models\Pirep;
 use App\Models\PirepField;
 use App\Models\PirepFieldValue;
 use App\Models\User;
 use App\Services\PirepService;
+use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\CreateAction;
 use Igaster\LaravelTheme\Facades\Theme;
+use Livewire\Livewire;
 
 /**
  * A system-only PIREP field is set by server code and never from pilot input.
@@ -128,4 +132,19 @@ it('still saves fields that are not system-only', function (): void {
     ])->assertOk();
 
     expect(measuredValues($this->pirep))->toBe(['100']);
+});
+
+it('lets an admin mark a field as system-only', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->actingAs(createAdminUser());
+
+    Livewire::test(ManagePirepFields::class)
+        ->callAction(CreateAction::class, [
+            'name'         => 'Network Check',
+            'pirep_source' => PirepFieldSource::ACARS->value,
+            'system_only'  => true,
+        ])
+        ->assertHasNoActionErrors();
+
+    expect(PirepField::where('slug', 'network-check')->value('system_only'))->toBeTrue();
 });

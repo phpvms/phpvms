@@ -22,6 +22,8 @@ return [
     'flight_time'          => 'Temps de vol',
     'flight_level'         => 'Niveau de vol',
     'fields_readonly'      => 'Une fois qu\'un PIREP est envoyé, certains champs passent en lecture seul.',
+    'system_only'          => 'Système uniquement',
+    'system_only_help'     => 'Défini uniquement par le serveur, par exemple par un addon. Les pilotes et les clients ACARS ne peuvent ni le définir ni le modifier.',
     'flight_information'   => 'Informations du vol',
     'flight_ident'         => 'Numéro/Code/Etape du vol',
     'block_fuel'           => 'Carburant emporté',

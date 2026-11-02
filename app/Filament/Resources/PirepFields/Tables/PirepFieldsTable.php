@@ -37,6 +37,11 @@ class PirepFieldsTable
                     ->label(__('common.required'))
                     ->boolean()
                     ->sortable(),
+
+                IconColumn::make('system_only')
+                    ->label(__('pireps.system_only'))
+                    ->boolean()
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('pirep_source')
