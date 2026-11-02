@@ -39,7 +39,7 @@ class AddonValidator
         $manifest = $this->parser->parse($dir);
 
         if (!$manifest instanceof AddonManifest) {
-            throw new AddonInstallException('Invalid or missing module.json.');
+            throw new AddonInstallException('Invalid or missing addon.json (or module.json).');
         }
 
         if (!is_dir($manifest->autoloadPath)) {

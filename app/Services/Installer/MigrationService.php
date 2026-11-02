@@ -130,7 +130,7 @@ class MigrationService extends Service
                     continue;
                 }
 
-                if (!file_exists($resolved.'/module.json')) {
+                if (ManifestParser::manifestPath($resolved) === null) {
                     continue;
                 }
 
