@@ -32,10 +32,15 @@ beforeEach(function (): void {
     ]);
 
     // Server code (an addon, a listener) writes the value.
-    app(PirepService::class)->updateCustomFields($this->pirep->id, [
-        ['name' => 'Measured Value', 'value' => '42', 'source' => PirepFieldSource::ACARS],
-    ]);
+    serverSetsField($this->pirep, 'Measured Value', '42');
 });
+
+function serverSetsField(Pirep $pirep, string $name, string $value): void
+{
+    app(PirepService::class)->updateCustomFields($pirep->id, [
+        new PirepFieldValue(['name' => $name, 'value' => $value, 'source' => PirepFieldSource::ACARS]),
+    ]);
+}
 
 function measuredValues(Pirep $pirep): array
 {
@@ -48,9 +53,7 @@ function measuredValues(Pirep $pirep): array
 it('lets server code set a system-only field', function (): void {
     expect(measuredValues($this->pirep))->toBe(['42']);
 
-    app(PirepService::class)->updateCustomFields($this->pirep->id, [
-        ['name' => 'Measured Value', 'value' => '55', 'source' => PirepFieldSource::ACARS],
-    ]);
+    serverSetsField($this->pirep, 'Measured Value', '55');
 
     expect(measuredValues($this->pirep))->toBe(['55']);
 });
@@ -70,6 +73,19 @@ it('ignores a system-only field posted to the fields endpoint', function (string
     'by slug' => 'measured-value',
     'by case' => 'MEASURED VALUE',
 ]);
+
+it('protects a system-only field whose slug is falsy', function (): void {
+    PirepField::create(['name' => '0', 'pirep_source' => PirepFieldSource::ACARS, 'system_only' => true]);
+    serverSetsField($this->pirep, '0', 'measured');
+    apiAs($this->pilot);
+
+    $this->postJson('/api/pireps/'.$this->pirep->id.'/fields', [
+        'fields' => ['0' => 'forged'],
+    ])->assertOk();
+
+    expect(PirepFieldValue::where('pirep_id', $this->pirep->id)->where('slug', '0')->pluck('value')->all())
+        ->toBe(['measured']);
+});
 
 it('ignores a system-only field sent with an update', function (): void {
     apiAs($this->pilot);

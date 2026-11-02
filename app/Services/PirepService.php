@@ -734,13 +734,13 @@ class PirepService extends Service
             return [];
         }
 
-        $system_only = PirepField::whereSystemOnly(true)->pluck('slug')->filter()->all();
+        $system_only = PirepField::whereSystemOnly(true)->pluck('slug')->all();
         if ($system_only === []) {
             return $field_values;
         }
 
         return array_values(array_filter($field_values, function (PirepFieldValue|array $fv) use ($system_only): bool {
-            if (!in_array(Str::slug($fv['name']), $system_only, true)) {
+            if (!in_array(Str::slug((string) $fv['name']), $system_only, true)) {
                 return true;
             }
 
