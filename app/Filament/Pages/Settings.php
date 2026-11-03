@@ -9,6 +9,7 @@ use App\Filament\Concerns\FormActionIcons;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
+use App\Support\SettingsTabs;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
@@ -176,7 +177,7 @@ class Settings extends Page
             ->orderBy('order')
             ->get();
 
-        foreach ($grouped_settings->groupBy('group') as $group => $settings) {
+        foreach (SettingsTabs::group($grouped_settings) as $group => $settings) {
             $tabs[] = Tab::make(Str::ucfirst($group))
                 ->schema(
                     $settings->map(function (Setting $setting): DatePicker|Toggle|TextInput|Select {
