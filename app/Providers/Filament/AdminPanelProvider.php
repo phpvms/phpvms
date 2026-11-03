@@ -24,6 +24,9 @@ class AdminPanelProvider extends BasePanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            // Every banner gets a trail, plain pages included: Filament builds
+            // it from the page's navigation group ("Settings › Theme").
+            ->breadcrumbs(hasNavigationHierarchy: true)
             ->colors(fn (): array => [
                 'primary' => app(Branding::class)->brandPalette(),
             ])
