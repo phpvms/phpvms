@@ -180,22 +180,24 @@ it('restores a revision to the draft through the relation manager', function ():
 });
 
 it('reloads the edit form draft after a restore, so saving keeps it', function (): void {
+    // HTML bodies, as the rich editor stores them: from Filament 5.11 it reports
+    // a plain-text body wrapped in a paragraph.
     $this->actingAs(createAdminUser());
-    $page = Page::factory()->create(['draft_body' => 'First']);
+    $page = Page::factory()->create(['draft_body' => '<p>First</p>']);
     app(PageService::class)->publish($page);
-    $page->forceFill(['draft_body' => 'Second'])->save();
+    $page->forceFill(['draft_body' => '<p>Second</p>'])->save();
     app(PageService::class)->publish($page);
 
     $edit = Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
-        ->assertSchemaStateSet(['draft_body' => 'Second']);
+        ->assertSchemaStateSet(['draft_body' => '<p>Second</p>']);
 
     // What the relation manager does on the same page.
-    app(PageService::class)->restoreRevision($page, $page->revisions()->where('body', 'First')->firstOrFail());
+    app(PageService::class)->restoreRevision($page, $page->revisions()->where('body', '<p>First</p>')->firstOrFail());
     $edit->dispatch(PageRevisionsRelationManager::RESTORED_EVENT);
 
     $edit->call('save')->assertHasNoFormErrors();
 
-    expect($page->refresh()->draft_body)->toBe('First');
+    expect($page->refresh()->draft_body)->toBe('<p>First</p>');
 });
 
 it('dispatches the restore event from the relation manager', function (): void {
