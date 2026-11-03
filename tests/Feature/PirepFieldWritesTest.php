@@ -133,3 +133,29 @@ it('saves a manual field the pilot fills in on the web form', function (): void 
 
     expect(fieldValue($pirep, 'remarks'))->toBe('Diverted for weather');
 });
+
+it('keeps the name a field was first saved with', function (): void {
+    $pirep = pilotPirep($this->pilot, PirepState::IN_PROGRESS);
+    apiAs($this->pilot);
+
+    $this->postJson('/api/pireps/'.$pirep->id.'/fields', ['fields' => ['Departure Gate' => 'G26']])->assertOk();
+    $this->postJson('/api/pireps/'.$pirep->id.'/fields', ['fields' => ['departure-gate' => 'G27']])->assertOk();
+
+    $value = PirepFieldValue::where('pirep_id', $pirep->id)->sole();
+    expect($value->name)->toBe('Departure Gate')
+        ->and($value->value)->toBe('G27')
+        ->and($pirep->fresh()->field('Departure Gate'))->toBe('G27');
+});
+
+it('updates the oldest of the values older data already holds under one slug', function (): void {
+    $pirep = pilotPirep($this->pilot, PirepState::IN_PROGRESS);
+    // Inserted first, but created later: the row an unordered lookup finds.
+    PirepFieldValue::create(['pirep_id' => $pirep->id, 'name' => 'departure-gate', 'value' => 'G2', 'source' => PirepFieldSource::ACARS]);
+    $oldest = PirepFieldValue::create(['pirep_id' => $pirep->id, 'name' => 'Departure Gate', 'value' => 'G1', 'source' => PirepFieldSource::ACARS]);
+    $oldest->forceFill(['created_at' => now()->subMinute()])->save();
+
+    setFieldAsServer($pirep, 'Departure Gate', 'G3');
+
+    expect($oldest->fresh()->value)->toBe('G3')
+        ->and($pirep->fresh()->fields->firstWhere('slug', 'departure-gate')->value)->toBe('G3');
+});

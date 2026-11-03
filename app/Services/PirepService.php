@@ -719,8 +719,10 @@ class PirepService extends Service
 
     /**
      * Update any custom PIREP fields. Values are matched on their slug, so a
-     * field sent under another casing or as its slug updates the same value
-     * instead of adding a second one.
+     * field sent under another casing or as its slug updates the same value,
+     * and keeps the name it was first saved with, instead of adding a second
+     * one. If older data already holds several values with the same slug, the
+     * oldest is updated, which is the one Pirep::fields() shows.
      *
      * @param PirepFieldValue[] $field_values
      */
@@ -733,10 +735,13 @@ class PirepService extends Service
         foreach ($field_values as $fv) {
             $name = (string) $fv['name'];
 
-            PirepFieldValue::updateOrCreate(
-                ['pirep_id' => $pirep_id, 'slug' => Str::slug($name)],
-                ['name' => $name, 'value' => $fv['value'], 'source' => $fv['source']]
-            );
+            $value = PirepFieldValue::where('pirep_id', $pirep_id)
+                ->where('slug', Str::slug($name))
+                ->orderBy('created_at')
+                ->orderBy('id')
+                ->first() ?? new PirepFieldValue(['pirep_id' => $pirep_id, 'name' => $name]);
+
+            $value->fill(['value' => $fv['value'], 'source' => $fv['source']])->save();
         }
     }
 
