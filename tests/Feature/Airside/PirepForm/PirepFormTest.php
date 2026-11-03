@@ -41,7 +41,7 @@ function validFilingInput(array $fx): array
 }
 
 it('lists the aircraft the pilot may fly, grouped by subfleet type', function (): void {
-    $options = Livewire::test(PirepForm::class)->instance()->aircraftOptions;
+    $options = Livewire::test(PirepForm::class)->get('aircraftOptions');
 
     expect(array_values(array_filter(array_keys($options))))->toBe(['A320', 'B738'])
         ->and(array_keys($options['A320']))->toBe([$this->fx['aircraftA']->id])
@@ -209,10 +209,10 @@ it('searches airports from two characters when the route is open', function (): 
     $match = Airport::factory()->create(['icao' => 'KJFK', 'name' => 'Kennedy']);
 
     $component = Livewire::test(PirepForm::class)->set('dptSearch', 'K');
-    expect($component->instance()->dptResults)->toBe([]);
+    expect($component->get('dptResults'))->toBe([]);
 
     $component->set('dptSearch', 'KJ');
-    expect(collect($component->instance()->dptResults)->pluck('label')->all())->toContain('KJFK - Kennedy');
+    expect(collect($component->get('dptResults'))->pluck('label')->all())->toContain('KJFK - Kennedy');
 
     $component
         ->call('chooseAirport', 'dpt', $match->id)

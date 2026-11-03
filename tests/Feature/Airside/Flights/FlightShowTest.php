@@ -88,16 +88,16 @@ it('needs a bid for Generate OFP when SimBrief only serves bids, and follows a b
 
     $component = Livewire::test(FlightActions::class, ['flightId' => $this->fixture['flight']->id]);
 
-    expect($component->instance()->detail['policy']->simbriefEnabled)->toBeTrue()
-        ->and($component->instance()->detail['policy']->simbriefRequiresBid)->toBeTrue()
-        ->and($component->instance()->detail['flight']->summary->bidId)->toBeNull();
+    expect($component->get('detail')['policy']->simbriefEnabled)->toBeTrue()
+        ->and($component->get('detail')['policy']->simbriefRequiresBid)->toBeTrue()
+        ->and($component->get('detail')['flight']->summary->bidId)->toBeNull();
 
     $bid = Bid::query()->create(['user_id' => $this->fixture['user']->id, 'flight_id' => $this->fixture['flight']->id]);
 
     $component->dispatch('assignment-drawer.closed', flightId: $this->fixture['flight']->id, changed: true);
 
-    expect($component->instance()->detail['flight']->summary->bidId)->toBe($bid->id)
-        ->and($component->instance()->detail['flight']->summary->primaryAction)->toBe('overview');
+    expect($component->get('detail')['flight']->summary->bidId)->toBe($bid->id)
+        ->and($component->get('detail')['flight']->summary->primaryAction)->toBe('overview');
 });
 
 it('marks the flight unavailable when another pilot holds it', function (): void {
@@ -105,7 +105,7 @@ it('marks the flight unavailable when another pilot holds it', function (): void
     Bid::query()->create(['user_id' => User::factory()->create()->id, 'flight_id' => $this->fixture['flight']->id]);
     $this->fixture['flight']->update(['has_bid' => true]);
 
-    $summary = Livewire::test(FlightActions::class, ['flightId' => $this->fixture['flight']->id])->instance()->detail['flight']->summary;
+    $summary = Livewire::test(FlightActions::class, ['flightId' => $this->fixture['flight']->id])->get('detail')['flight']->summary;
 
     expect($summary->primaryAction)->toBe('unavailable')
         ->and($summary->availabilityReason)->toBe('Another pilot has a bid on this flight');

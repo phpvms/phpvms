@@ -129,7 +129,7 @@ it('does not search for fewer than two characters', function (): void {
 
     $component = Livewire::test(ProfileEdit::class)->set('airportSearch', 'K');
 
-    expect($component->instance()->airportResults)->toBe([]);
+    expect($component->get('airportResults'))->toBe([]);
 });
 
 it('searches airports from two characters and picks one as the home airport', function (): void {
@@ -138,7 +138,7 @@ it('searches airports from two characters and picks one as the home airport', fu
 
     $component = Livewire::test(ProfileEdit::class)->set('airportSearch', 'KJ');
 
-    expect(collect($component->instance()->airportResults)->pluck('label')->all())->toBe(['KJFK - John F Kennedy']);
+    expect(collect($component->get('airportResults'))->pluck('label')->all())->toBe(['KJFK - John F Kennedy']);
 
     $component
         ->call('chooseAirport', $airport->id)
@@ -158,7 +158,7 @@ it('limits the search to hubs when pilots.home_hubs_only is on', function (): vo
 
     $component = Livewire::test(ProfileEdit::class)->set('airportSearch', 'Hub');
 
-    expect(collect($component->instance()->airportResults)->pluck('label')->all())->toBe(['KHUB - Hub Field']);
+    expect(collect($component->get('airportResults'))->pluck('label')->all())->toBe(['KHUB - Hub Field']);
 });
 
 it('clears the home airport', function (): void {

@@ -31,14 +31,14 @@ parameters:
         - identifier: class.notFound
           path: tests/fixtures/Addons/badhooks/app/Listeners/MissingPointListener.php
 
-        # Livewire components in the feature slices name a view that the active
-        # theme supplies (`livewire.<slice>.*`, resolved through the theme finder).
-        # Core ships none of them, so no analysed view path contains the file and
-        # the literal is not a view-string. The airside tests name theme views too.
+        # The legacy Blade-theme controllers name views that only the seven theme
+        # supplies (`flights.simbrief_*`, `profile.*`), and the default theme is now
+        # airside, so no analysed view path contains them and the literal is not a
+        # view-string. The airside tests name theme views too.
         - identifier: argument.type
           message: '#Parameter \#1 \$view of function view expects view-string\|null, string given#'
           paths:
-              - app/Features/*/Livewire/*
+              - app/Http/Controllers/Frontend/*
               - tests/Feature/Airside/
 
         # PHPStan is not able to understand the pivot attributes at the moment
@@ -187,13 +187,6 @@ parameters:
         # the accessors Filament defines on the concrete page are invisible.
         - identifier: method.notFound
           message: '#Call to an undefined method Livewire\\Component::(getSchema|getMountedAction|getMountedActionSchemaName|getBreadcrumbs)\(\)#'
-          path: tests/
-
-        # Livewire adds assertSeeLivewire()/assertDontSeeLivewire() as macros to
-        # both TestResponse and its Testable at runtime, so there is no
-        # declaration to resolve.
-        - identifier: method.notFound
-          message: '#Call to an undefined method (Illuminate\\Testing\\TestResponse|Livewire\\Features\\SupportTesting\\Testable)::(assertSeeLivewire|assertDontSeeLivewire)\(\)#'
           path: tests/
 
         # Invader is intentionally untyped -- it exists to reach private members.

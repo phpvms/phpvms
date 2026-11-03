@@ -26,14 +26,14 @@ it('lists the configured subfleets and loads aircraft for the chosen one', funct
 
     $component = Livewire::test(AircraftSelection::class, ['flightId' => $this->fixture['flight']->id]);
 
-    expect($component->instance()->subfleets->pluck('eligibleAircraftCount', 'id')->all())
+    expect($component->get('subfleets')->pluck('eligibleAircraftCount', 'id')->all())
         ->toBe([$this->fixture['subfleet']->id => 1, $empty->id => 0])
-        ->and($component->instance()->aircraft)->toHaveCount(0);
+        ->and($component->get('aircraft'))->toHaveCount(0);
 
     $component->call('selectSubfleet', $this->fixture['subfleet']->id)
         ->assertSet('subfleetId', $this->fixture['subfleet']->id);
 
-    expect($component->instance()->aircraft->pluck('id')->all())->toBe([$this->fixture['aircraft']->id]);
+    expect($component->get('aircraft')->pluck('id')->all())->toBe([$this->fixture['aircraft']->id]);
 
     $component->call('selectSubfleet', $empty->id)
         ->assertSet('subfleetId', null);

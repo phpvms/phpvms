@@ -101,8 +101,8 @@ it('reports a missing METAR when only a TAF came back', function (): void {
 it('says the METAR is unavailable and retries', function (): void {
     fakeMetarProvider(exception: new RuntimeException('down'));
 
-    $component = Livewire::withoutLazyLoading()->test(HeaderMetar::class, ['icao' => 'KJFK'])
-        ->assertViewHas('state', 'error');
+    $component = Livewire::withoutLazyLoading()->test(HeaderMetar::class, ['icao' => 'KJFK']);
+    $component->assertViewHas('state', 'error');
 
     $raw = metarObservedAt(time());
     fakeMetarProvider($raw);

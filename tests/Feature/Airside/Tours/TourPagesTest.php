@@ -28,7 +28,7 @@ it('lists enabled tours and leaves out disabled ones', function (): void {
     ['bundle' => $bundle, 'user' => $user] = makeTour(3);
     $disabled = FlightBundle::factory()->create(['type' => BundleType::Tour, 'enabled' => false]);
 
-    $tours = Livewire::actingAs($user)->test(TourList::class)->instance()->tours;
+    $tours = Livewire::actingAs($user)->test(TourList::class)->get('tours');
 
     expect(collect($tours)->pluck('id')->all())->toBe([$bundle->id])
         ->and(collect($tours)->pluck('id')->all())->not->toContain($disabled->id);
@@ -39,7 +39,7 @@ it('marks the flown leg from the bid and the filed PIREP', function (): void {
     app(BidService::class)->addBid($flights[0], $user, $aircraft);
     fileTourLeg($user, $flights[0], $aircraft);
 
-    $tour = Livewire::actingAs($user)->test(TourList::class)->instance()->tours[0];
+    $tour = Livewire::actingAs($user)->test(TourList::class)->get('tours')[0];
 
     expect($tour->status)->toBe(TourStatus::InProgress->value)
         ->and($tour->legsCompleted)->toBe(1)
@@ -49,7 +49,7 @@ it('marks the flown leg from the bid and the filed PIREP', function (): void {
 it('opens the assignment drawer on the active leg', function (): void {
     ['flights' => $flights, 'user' => $user] = makeTour(3);
 
-    $tour = Livewire::actingAs($user)->test(TourList::class)->instance()->tours[0];
+    $tour = Livewire::actingAs($user)->test(TourList::class)->get('tours')[0];
 
     expect($tour->activeLegFlightId)->toBe($flights[0]->id);
 });
@@ -111,14 +111,14 @@ it('reloads the tours when the assignment drawer closes', function (): void {
 
     $component = Livewire::actingAs($user)->test(TourList::class);
 
-    expect($component->instance()->tours[0]->status)->toBeNull();
+    expect($component->get('tours')[0]->status)->toBeNull();
 
     app(BidService::class)->addBid($flights[0], $user, $aircraft);
 
     $component->dispatch('assignment-drawer.closed', flightId: $flights[0]->id, changed: true);
 
-    expect($component->instance()->tours[0]->status)->toBe(TourStatus::InProgress->value)
-        ->and($component->instance()->tours[0]->legsCompleted)->toBe(0);
+    expect($component->get('tours')[0]->status)->toBe(TourStatus::InProgress->value)
+        ->and($component->get('tours')[0]->legsCompleted)->toBe(0);
 });
 
 it('does not overwrite a cancellation that landed while the expiry was finishing the run', function (): void {

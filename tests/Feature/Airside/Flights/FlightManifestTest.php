@@ -19,7 +19,7 @@ use Livewire\Livewire;
  */
 function manifestIdents(Testable $component): array
 {
-    return collect($component->instance()->results['flights'])->pluck('callsign')->all();
+    return collect($component->get('results')['flights'])->pluck('callsign')->all();
 }
 
 beforeEach(function (): void {
@@ -33,7 +33,7 @@ beforeEach(function (): void {
 it('marks a flight the pilot has a bid on as such', function (): void {
     $bid = Bid::query()->create(['user_id' => $this->fixture['user']->id, 'flight_id' => $this->fixture['flight']->id]);
 
-    $flight = Livewire::test(FlightManifest::class)->instance()->results['flights'][0];
+    $flight = Livewire::test(FlightManifest::class)->get('results')['flights'][0];
 
     expect($flight->availability)->toBe('bid')
         ->and($flight->primaryAction)->toBe('overview')
@@ -45,7 +45,7 @@ it('locks a flight when the pilot is at the bid limit', function (): void {
     $other = airsideDispatchFixture($this->fixture['user']);
     Bid::query()->create(['user_id' => $this->fixture['user']->id, 'flight_id' => $other['flight']->id]);
 
-    $flights = collect(Livewire::test(FlightManifest::class)->instance()->results['flights'])->keyBy('id');
+    $flights = collect(Livewire::test(FlightManifest::class)->get('results')['flights'])->keyBy('id');
 
     expect($flights[$this->fixture['flight']->id]->availability)->toBe('locked')
         ->and($flights[$this->fixture['flight']->id]->availabilityReason)->toBe('Remove your current bid before selecting another flight')
@@ -78,7 +78,7 @@ it('filters only on submit and puts the applied filters in the URL', function ()
         ->assertSet('page', 1);
 
     expect(manifestIdents($component))->toBe([$other['flight']->ident])
-        ->and($component->instance()->activeFilters)->toBe(['Flight: 999']);
+        ->and($component->get('activeFilters'))->toBe(['Flight: 999']);
 });
 
 it('filters on a url that arrives with the filter already set', function (): void {
@@ -103,7 +103,7 @@ it('clears every filter', function (): void {
         ->assertSet('flightNumber', null)
         ->assertSet('search', null);
 
-    expect($component->instance()->activeFilters)->toBe([])
+    expect($component->get('activeFilters'))->toBe([])
         ->and(manifestIdents($component))->toBe([$this->fixture['flight']->ident]);
 });
 
@@ -133,12 +133,12 @@ it('pages through the results', function (): void {
         ->set('limit', '1')
         ->call('apply');
 
-    expect($component->instance()->results['page'])->toBe(['current' => 1, 'last' => 3, 'total' => 3]);
+    expect($component->get('results')['page'])->toBe(['current' => 1, 'last' => 3, 'total' => 3]);
 
     $component->call('nextPage')
         ->assertSet('page', 2);
 
-    expect($component->instance()->results['page'])->toBe(['current' => 2, 'last' => 3, 'total' => 3]);
+    expect($component->get('results')['page'])->toBe(['current' => 2, 'last' => 3, 'total' => 3]);
 
     $component->call('nextPage')
         ->call('nextPage')
