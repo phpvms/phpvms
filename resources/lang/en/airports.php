@@ -52,4 +52,7 @@ return [
     'missing_populated'          => 'Added :count missing airport|Added :count missing airports',
     'missing_added'              => 'Added: :ids.',
     'missing_not_found'          => 'Not found by the lookup: :ids.',
+    'update'                     => 'Update',
+    'runways'                    => 'Runways',
+    'runways_placeholder'        => 'Runway data is not available yet.',
 ];

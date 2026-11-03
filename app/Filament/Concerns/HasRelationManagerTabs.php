@@ -85,6 +85,8 @@ trait HasRelationManagerTabs
             ->schema([
                 ...$this->contentHeader(),
                 View::make('filament.shared.section-nav')
+                    // Nothing to jump to: no bar, rather than an empty strip.
+                    ->hidden(fn (): bool => $this->getSectionLinks() === [] && $this->jumpBarSwitcher() === [])
                     ->viewData(fn (): array => [
                         'sectionLinks'  => $this->getSectionLinks(),
                         'switcher'      => $this->jumpBarSwitcher(),

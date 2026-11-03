@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Airports;
 use App\Enums\NavigationGroup;
 use App\Filament\RelationManagers\ExpensesRelationManager;
 use App\Filament\RelationManagers\FilesRelationManager;
+use App\Filament\Resources\Airports\Pages\EditAirport;
 use App\Filament\Resources\Airports\Pages\ListAirports;
 use App\Filament\Resources\Airports\Schemas\AirportForm;
 use App\Filament\Resources\Airports\Tables\AirportsTable;
@@ -57,6 +58,7 @@ class AirportResource extends Resource
     {
         return [
             'index' => ListAirports::route('/'),
+            'edit'  => EditAirport::route('/{record}/edit'),
         ];
     }
 

@@ -29,6 +29,9 @@ class PeekAction
             ->label(__('filament-actions::view.single.label'))
             ->icon(Phosphor::EyeLight)
             ->slideOver()
+            // Read-only: leaving via "Open full page" loses nothing, so skip
+            // the vendor's leave-page prompt for open actions.
+            ->unsavedChangesAlert(false)
             ->modalWidth(Width::ThreeExtraLarge)
             ->modalHeading(fn (Pirep $record): string => $record->ident)
             ->modalSubmitAction(false)

@@ -669,8 +669,8 @@
     .fi-page-content > .fi-sc:first-child > .fi-grid-col:first-child > .fi-sc-component:first-child > .fi-sc-tabs:not(.fi-contained)
   )
   > .fi-header {
-  /* 10px under the title row, then the 34px tab strip. */
-  padding-bottom: 44px;
+  /* 18px under the title row, then the 34px tab strip. */
+  padding-bottom: 52px;
 }
 
 .fi-page-content
@@ -1183,7 +1183,7 @@
 
 /* Reserve the 34px tab strip under the title row (list pages do the same). */
 .fi-pirep-record .fi-header {
-  padding-bottom: 44px;
+  padding-bottom: 52px;
 }
 
 .fi-pirep-record .fi-page-main {
@@ -3409,7 +3409,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   @apply gap-0;
 }
 
-.fi-page-content .fi-grid:not(.fi-section *) {
+.fi-page-content .fi-grid:not(.fi-section *, .fi-modal *) {
   @apply gap-0;
 }
 

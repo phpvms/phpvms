@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Airports\Actions;
 
+use App\Filament\Resources\Airports\Pages\EditAirport;
 use App\Services\AirportService;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
@@ -14,7 +15,9 @@ class LookupAction
     public static function make(): Action
     {
         return Action::make('lookup')
-            ->label(__('airports.lookup'))
+            // On the full edit page the airport already exists, so the lookup
+            // reads as updating its data.
+            ->label(fn (mixed $livewire): string => $livewire instanceof EditAirport ? __('airports.update') : __('airports.lookup'))
             ->icon(Phosphor::MagnifyingGlassLight)
             ->extraAttributes(['id' => 'airport-icao-lookup'])
             ->action(function (Get $get, Set $set): void {
