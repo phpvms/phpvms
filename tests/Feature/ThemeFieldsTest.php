@@ -16,21 +16,21 @@ it('reads the shipped default when there is no row', function (): void {
         ->and(shippedAirsideCss())->not->toBe('');
 });
 
-it('prefers the theme row over the global row over the default', function (): void {
+it('prefers the theme row over the default and ignores a global row', function (): void {
     $fields = app(ThemeFields::class);
 
     ThemeSetting::factory()->create(['theme' => ThemeSetting::GLOBAL_THEME, 'name' => 'css', 'content' => 'global']);
-    expect($fields->get('airside', 'css'))->toBe('global');
+    expect($fields->get('airside', 'css'))->toBe(shippedAirsideCss());
 
     ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'css', 'content' => 'own']);
     expect($fields->get('airside', 'css'))->toBe('own');
 });
 
-it('applies the global row to a theme without its own', function (): void {
+it('does not apply the global row to a theme without its own', function (): void {
     ThemeSetting::factory()->create(['theme' => ThemeSetting::GLOBAL_THEME, 'name' => 'css', 'content' => 'global']);
     ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'css', 'content' => 'own']);
 
-    expect(app(ThemeFields::class)->get('seven', 'css'))->toBe('global');
+    expect(app(ThemeFields::class)->get('seven', 'css'))->toBe('');
 });
 
 it('ignores inactive rows', function (): void {
@@ -45,12 +45,13 @@ it('stores an override with set', function (): void {
     expect(ThemeSetting::query()->where('theme', 'airside')->where('name', 'css')->value('content'))->toBe(':root{--x:1}');
 });
 
-it('deletes the row when set receives an empty value', function (): void {
+it('stores a blank value that differs from the default', function (): void {
     ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'css', 'content' => 'own']);
 
-    app(ThemeFields::class)->set('airside', 'css', "  \n ");
+    app(ThemeFields::class)->set('airside', 'css', '');
 
-    expect(ThemeSetting::query()->count())->toBe(0);
+    expect(ThemeSetting::query()->where('theme', 'airside')->where('name', 'css')->value('content'))->toBe('')
+        ->and(app(ThemeFields::class)->get('airside', 'css'))->toBe('');
 });
 
 it('deletes the row when set receives null', function (): void {
@@ -105,10 +106,10 @@ it('returns the theme row as the override', function (): void {
     expect(app(ThemeFields::class)->override('airside', 'css'))->toBe('own');
 });
 
-it('falls back to the global row for the override', function (): void {
+it('does not fall back to the global row for the override', function (): void {
     ThemeSetting::factory()->create(['theme' => ThemeSetting::GLOBAL_THEME, 'name' => 'css', 'content' => 'global']);
 
-    expect(app(ThemeFields::class)->override('airside', 'css'))->toBe('global');
+    expect(app(ThemeFields::class)->override('airside', 'css'))->toBeNull();
 });
 
 it('returns a null override when the table is missing', function (): void {

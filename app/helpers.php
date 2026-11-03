@@ -2,6 +2,7 @@
 
 use App\Addons\Support\AddonAssetLinker;
 use App\Exceptions\SettingNotFound;
+use App\Features\Themes\ThemeFields;
 use App\Models\Addon;
 use App\Models\Setting;
 use App\Services\AddonSettingService;
@@ -601,5 +602,16 @@ if (!function_exists('theme_uses_spa_data')) {
     function theme_uses_spa_data(): bool
     {
         return theme_setting('data') === 'spa';
+    }
+}
+
+if (!function_exists('theme_option')) {
+    /**
+     * Read one of the active theme's options: the value an admin saved, cast to
+     * its recorded type, else the default of the field the theme registered.
+     */
+    function theme_option(string $name): mixed
+    {
+        return app(ThemeFields::class)->get(Theme::get(), $name);
     }
 }

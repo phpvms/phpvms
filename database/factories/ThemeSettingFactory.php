@@ -31,6 +31,7 @@ class ThemeSettingFactory extends Factory
         return [
             'theme'   => 'airside',
             'name'    => fake()->unique()->slug(2),
+            'type'    => 'string',
             'content' => fake()->sentence(),
             'active'  => true,
         ];

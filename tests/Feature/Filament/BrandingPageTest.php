@@ -49,8 +49,8 @@ it('renders for a user with the view permission', function (): void {
     Livewire::test(Branding::class)->assertSuccessful();
 });
 
-it('appears in the Config navigation group', function (): void {
-    expect(Branding::getNavigationGroup())->toBe(NavigationGroup::Config);
+it('appears in the Customize navigation group', function (): void {
+    expect(Branding::getNavigationGroup())->toBe(NavigationGroup::Customize);
 });
 
 it('denies access without the view permission', function (): void {

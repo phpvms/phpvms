@@ -15,7 +15,7 @@
     $origin = request()->getSchemeAndHttpHost();
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="tallstackui_darkTheme({ default: 'system' })" x-bind:class="{ 'dark': darkTheme }">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-airside-layout="{{ theme_option('layout') }}" x-data="tallstackui_darkTheme({ default: 'system' })" x-bind:class="{ 'dark': darkTheme }">
 
 <head>
     @include('partials.head', ['title' => $title])
@@ -71,6 +71,8 @@
     @livewireScripts
 
     {{ $scripts ?? '' }}
+
+    <x-theme-footer />
 </body>
 
 </html>

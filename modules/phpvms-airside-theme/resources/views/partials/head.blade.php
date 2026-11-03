@@ -38,14 +38,7 @@
 
 @airsideVite(['resources/css/airside.css', 'resources/js/airside.js'])
 
-{{--
-  Admin CSS from Content > Theme, raw by design (same trust level as Branding).
-  Any closing-tag sequence is neutralised so it cannot end the <style> early.
---}}
-@php($themeCss = app(\App\Features\Themes\ThemeFields::class)->override(\Igaster\LaravelTheme\Facades\Theme::get(), 'css'))
-@if ($themeCss !== null && trim($themeCss) !== '')
-    <style data-theme-css>{!! str_ireplace('</style', '<\/style', $themeCss) !!}</style>
-@endif
+<x-theme-head />
 
 <tallstackui:script />
 @livewireStyles

@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace Modules\PhpvmsAirsideTheme\Providers;
 
 use App\Contracts\Modules\ServiceProvider;
+use App\Features\Themes\ThemeFields;
+use App\Features\Themes\ThemeOptions;
+use Filament\Forms\Components\CodeEditor;
+use Filament\Forms\Components\CodeEditor\Enums\Language;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Support\Facades\Blade;
 use Modules\PhpvmsAirsideTheme\Support\AirsideVite;
 use Modules\PhpvmsAirsideTheme\Support\NavigationIcon;
@@ -172,6 +178,52 @@ class AirsideThemeServiceProvider extends ServiceProvider
         $this->customizeAvatar();
 
         $this->registerViteDirective();
+        $this->registerThemeOptions();
+    }
+
+    /**
+     * The form on the Theme admin page. The closure builds fresh components on
+     * each call and holds no request state, so it is safe under Octane.
+     */
+    private function registerThemeOptions(): void
+    {
+        app(ThemeOptions::class)->register('airside', fn (string $theme): array => [
+            Tab::make(__('airside::customize.tab_css'))->schema([
+                ThemeOptions::preview(),
+                ThemeOptions::colorSchemeSelect('style_css')
+                    ->label(__('airside::customize.color_scheme')),
+                CodeEditor::make('style_css')
+                    ->label(__('airside::customize.style_css'))
+                    ->language(Language::Css)
+                    ->default(fn (): string => app(ThemeFields::class)->defaultFor($theme, 'styles.css'))
+                    ->meta('emit', 'css'),
+                CodeEditor::make('custom_css')
+                    ->label(__('airside::customize.custom_css'))
+                    ->language(Language::Css)
+                    ->meta('emit', 'css'),
+            ]),
+            Tab::make(__('airside::customize.tab_inserts'))->schema([
+                CodeEditor::make('header')
+                    ->label(__('airside::customize.header'))
+                    ->language(Language::Html)
+                    ->meta('emit', 'head'),
+                CodeEditor::make('footer')
+                    ->label(__('airside::customize.footer'))
+                    ->language(Language::Html)
+                    ->meta('emit', 'footer'),
+            ]),
+            Tab::make(__('airside::customize.tab_layout'))->schema([
+                Select::make('layout')
+                    ->label(__('airside::customize.layout'))
+                    ->options([
+                        'sidebar' => __('airside::customize.layout_sidebar'),
+                        'topbar'  => __('airside::customize.layout_topbar'),
+                    ])
+                    ->in(['sidebar', 'topbar'])
+                    ->default('sidebar')
+                    ->required(),
+            ]),
+        ]);
     }
 
     private function registerViteDirective(): void

@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Creates the `theme_settings` table, which stores global and per-theme
- * configuration keyed by (theme, name). The reserved theme name `*` marks a
- * global row that applies to every theme, and a real theme can never be named
- * that. A consumer looks a value
- * up by a name instead of growing a new settings key for each need.
+ * configuration keyed by (theme, name). `type` is the PHP type of the saved
+ * value (string, bool, int, float, array) and `content` its text form; an array
+ * is stored as JSON. A consumer looks a value up by a name instead of growing a
+ * new settings key for each need.
  */
 return new class() extends Migration
 {
@@ -24,6 +24,7 @@ return new class() extends Migration
         Schema::create('theme_settings', function (Blueprint $table): void {
             $table->string('theme', 64);
             $table->string('name');
+            $table->string('type', 16)->default('string');
             $table->text('content')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();

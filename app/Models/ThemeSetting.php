@@ -24,6 +24,7 @@ use Override;
  *
  * @property string      $theme
  * @property string      $name
+ * @property string      $type
  * @property string|null $content
  * @property bool        $active
  * @property Carbon|null $created_at
@@ -51,6 +52,7 @@ class ThemeSetting extends Model
     protected $fillable = [
         'theme',
         'name',
+        'type',
         'content',
         'active',
     ];
@@ -64,6 +66,49 @@ class ThemeSetting extends Model
         return [
             'active' => 'boolean',
         ];
+    }
+
+    /**
+     * The PHP type name stored in `type` for a value: string, bool, int,
+     * float or array. Anything else is stored as its string form.
+     */
+    public static function typeOf(mixed $value): string
+    {
+        return match (true) {
+            is_bool($value)  => 'bool',
+            is_int($value)   => 'int',
+            is_float($value) => 'float',
+            is_array($value) => 'array',
+            default          => 'string',
+        };
+    }
+
+    /**
+     * The text form of a value as stored in `content`; an array is JSON.
+     */
+    public static function encode(mixed $value): string
+    {
+        return match (self::typeOf($value)) {
+            'bool'  => $value ? '1' : '0',
+            'array' => (string) json_encode($value),
+            default => (string) $value,
+        };
+    }
+
+    /**
+     * The row's content cast back to the PHP type recorded in `type`.
+     */
+    public function typedContent(): mixed
+    {
+        $content = (string) $this->content;
+
+        return match ($this->type) {
+            'bool'  => $content === '1',
+            'int'   => (int) $content,
+            'float' => (float) $content,
+            'array' => json_decode($content, true) ?? [],
+            default => $content,
+        };
     }
 
     /**

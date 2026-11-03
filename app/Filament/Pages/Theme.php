@@ -6,36 +6,32 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
-use App\Features\Themes\ColorSchemeCss;
 use App\Features\Themes\ThemeFields;
+use App\Features\Themes\ThemeOptions;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\ReversePrimaryButtons;
-use App\Http\Middleware\SetActiveTheme;
 use App\Services\SettingService;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
-use Filament\Forms\Components\CodeEditor;
-use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Component;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Igaster\LaravelTheme\Facades\Theme as Themes;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Js;
 use Override;
 use UnitEnum;
 
 /**
- * Content → Theme: the theme the site renders with (`general.theme`). The
+ * Customize → Theme: the theme the site renders with (`general.theme`). The
  * setting row itself is hidden from the Settings page.
  *
  * @property-read Schema $form
@@ -45,7 +41,7 @@ class Theme extends Page
     use AuthorizesAccess;
     use ReversePrimaryButtons;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Content;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Customize;
 
     protected static ?int $navigationSort = 3;
 
@@ -58,6 +54,14 @@ class Theme extends Page
     public string $previousUrl;
 
     /**
+     * Names of the selected theme's `css`-tagged fields, in schema order. The
+     * live preview concatenates their state.
+     *
+     * @var array<int, string>
+     */
+    public array $cssFields = [];
+
+    /**
      * @return array<int, Ability>
      */
     public static function getPermissionAbilities(): array
@@ -67,12 +71,7 @@ class Theme extends Page
 
     public function mount(): void
     {
-        $theme = (string) setting('general.theme', config('themes.default'));
-
-        $this->form->fill([
-            'theme' => $theme,
-            'css'   => app(ThemeFields::class)->get($theme, 'css'),
-        ]);
+        $this->fillOptions((string) setting('general.theme', config('themes.default')));
 
         $this->previousUrl = url()->previous();
     }
@@ -84,119 +83,167 @@ class Theme extends Page
     }
 
     /**
-     * Two columns on large screens: the theme select and the Customize card
-     * stacked on the left, the live preview on the right.
+     * The theme select, then the selected theme's registered option tabs. The
+     * tabs are built lazily from the form's own `theme` state, so a theme
+     * change rebuilds them.
      */
     public function form(Schema $schema): Schema
     {
         return $schema
-            ->columns(['default' => 1, 'lg' => 3])
+            ->disabled(fn (): bool => !static::canEdit())
             ->components([
-                Grid::make(1)
-                    ->columnSpan(['lg' => 1])
-                    ->extraAttributes(['class' => 'fi-theme-left'])
+                Section::make(__('filament.theme'))
+                    ->id('theme')
+                    ->icon(Phosphor::PaintBrushLight)
                     ->schema([
-                        Section::make(__('filament.theme'))
-                            ->id('theme')
-                            ->icon(Phosphor::PaintBrushLight)
-                            ->schema([
-                                Select::make('theme')
-                                    ->label(__('filament.theme_current'))
-                                    ->helperText(__('filament.theme_current_hint'))
-                                    ->options(fn (): array => $this->themeOptions())
-                                    ->in(fn (): array => array_keys($this->themeOptions()))
-                                    ->required()
-                                    ->native(false)
-                                    ->live()
-                                    ->afterStateUpdated(fn (Set $set, ?string $state): mixed => $set(
-                                        'css',
-                                        $state ? app(ThemeFields::class)->get($state, 'css') : '',
-                                    )),
-                            ]),
-
-                        Section::make(__('filament.theme_customize'))
-                            ->id('customize')
-                            ->key('customize')
-                            ->icon(Phosphor::SlidersLight)
-                            ->schema([
-                                Select::make('color_scheme')
-                                    ->label(__('filament.theme_color_scheme'))
-                                    ->placeholder(__('filament.theme_color_scheme_placeholder'))
-                                    ->helperText(__('filament.theme_color_scheme_hint'))
-                                    ->options(fn (): array => app(ColorSchemeCss::class)->options())
-                                    ->searchable()
-                                    ->native(false)
-                                    ->live()
-                                    ->dehydrated(false)
-                                    ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
-                                        if (!$state) {
-                                            return;
-                                        }
-
-                                        $scheme = config("presets.color_schemes.$state");
-                                        if (!$scheme) {
-                                            return;
-                                        }
-
-                                        $base = app(ThemeFields::class)->defaultFor((string) $get('theme'), 'css');
-                                        $set('css', app(ColorSchemeCss::class)->render($base, $scheme));
-                                    }),
-                                CodeEditor::make('css')
-                                    ->label(__('filament.theme_css'))
-                                    ->helperText(__('filament.theme_css_hint'))
-                                    ->language(Language::Css),
-                            ])
-                            ->footerActions([
-                                Action::make('resetCss')
-                                    ->label(__('filament.theme_css_reset'))
-                                    ->color('gray')
-                                    ->icon(Phosphor::ArrowCounterClockwiseLight)
-                                    ->requiresConfirmation()
-                                    ->modalHeading(__('filament.theme_css_reset'))
-                                    ->modalDescription(__('filament.theme_css_reset_confirm'))
-                                    ->visible(fn (): bool => app(ThemeFields::class)->override((string) ($this->data['theme'] ?? ''), 'css') !== null)
-                                    ->action(function (): void {
-                                        abort_unless(static::canEdit(), 403);
-
-                                        $theme = (string) ($this->data['theme'] ?? '');
-                                        $fields = app(ThemeFields::class);
-                                        $fields->reset($theme, 'css');
-
-                                        $this->form->fill([
-                                            'theme' => $theme,
-                                            'css'   => $fields->get($theme, 'css'),
-                                        ]);
-
-                                        Notification::make()
-                                            ->success()
-                                            ->title(__('filament.theme_css_reset_done'))
-                                            ->send();
-                                    }),
-                            ]),
+                        Select::make('theme')
+                            ->label(__('filament.theme_current'))
+                            ->helperText(__('filament.theme_current_hint'))
+                            ->options(fn (): array => $this->themeOptions())
+                            ->in(fn (): array => array_keys($this->themeOptions()))
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->afterStateUpdated(function (?string $state): void {
+                                if ($state && array_key_exists($state, $this->themeOptions())) {
+                                    $this->fillOptions($state);
+                                }
+                            }),
                     ]),
 
-                View::make('filament.pages.theme.preview')
-                    ->viewData([
-                        'url'   => route('frontend.dashboard.index'),
-                        'param' => SetActiveTheme::PREVIEW_PARAM,
+                Section::make(__('filament.theme_customize'))
+                    ->id('customize')
+                    ->key('customize')
+                    ->icon(Phosphor::SlidersLight)
+                    ->schema([
+                        Tabs::make('options')
+                            ->tabs(fn (Get $get): array => app(ThemeOptions::class)->tabsFor((string) $get('theme'))),
                     ])
-                    ->columnSpan(['lg' => 2]),
+                    ->hidden(fn (Get $get): bool => app(ThemeOptions::class)->defaults((string) $get('theme')) === [])
+                    ->footerActions([
+                        Action::make('resetField')
+                            ->label(__('filament.theme_field_reset'))
+                            ->color('gray')
+                            ->icon(Phosphor::ArrowCounterClockwiseLight)
+                            ->modalHeading(__('filament.theme_field_reset'))
+                            ->modalDescription(__('filament.theme_field_reset_confirm'))
+                            ->visible(fn (): bool => $this->overriddenFields() !== [])
+                            ->schema([
+                                Select::make('field')
+                                    ->label(__('filament.theme_field'))
+                                    ->options(fn (): array => $this->overriddenFieldOptions())
+                                    ->required()
+                                    ->native(false),
+                            ])
+                            ->action(function (array $data): void {
+                                abort_unless(static::canEdit(), 403);
+
+                                $this->resetField((string) $data['field']);
+
+                                Notification::make()
+                                    ->success()
+                                    ->title(__('filament.theme_field_reset_done'))
+                                    ->send();
+                            }),
+                    ]),
             ])
             ->statePath('data');
     }
 
     /**
-     * The submit row belongs in the Customize card, which sits inside the
-     * left-column Grid where {@see ReversePrimaryButtons::lastFormSection()}
-     * (top-level only) would not see it.
+     * The submit row belongs in the Customize card, which is where the
+     * registered options are. A theme with no options hides that card, so the
+     * row falls back to the theme card.
      */
     protected function lastFormSection(): ?Section
     {
-        $section = $this->getSchema('form')?->getComponent(
-            fn (Component $component): bool => $component instanceof Section && $component->getId() === 'customize',
+        foreach (['customize', 'theme'] as $id) {
+            $section = $this->getSchema('form')?->getComponent(
+                fn (Component $component): bool => $component instanceof Section && $component->getId() === $id,
+            );
+
+            if ($section instanceof Section) {
+                return $section;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Fills the form for $theme: its defaults, replaced by its stored
+     * overrides. Filament applies `default()` only when filled with no data,
+     * so the merge is explicit.
+     */
+    private function fillOptions(string $theme): void
+    {
+        $defaults = app(ThemeOptions::class)->defaults($theme);
+        $fields = app(ThemeFields::class);
+
+        $this->cssFields = array_map(
+            strval(...),
+            array_keys(array_filter($defaults, fn (array $field): bool => $field['emit'] === 'css')),
         );
 
-        return $section instanceof Section ? $section : null;
+        $state = [];
+
+        foreach ($defaults as $name => $field) {
+            $override = $fields->override($theme, (string) $name);
+
+            data_set($state, (string) $name, $override ?? $field['default']);
+        }
+
+        $this->form->fill([...$state, 'theme' => $theme]);
+    }
+
+    /**
+     * Deletes one field's stored override and puts its default back in the
+     * form. The other fields keep their unsaved edits.
+     */
+    private function resetField(string $name): void
+    {
+        $theme = (string) ($this->data['theme'] ?? '');
+        $defaults = app(ThemeOptions::class)->defaults($theme);
+
+        if (!array_key_exists($name, $defaults)) {
+            return;
+        }
+
+        app(ThemeFields::class)->reset($theme, $name);
+        data_set($this->data, $name, $defaults[$name]['default']);
+    }
+
+    /**
+     * The fields of the selected theme that have a stored override, by name.
+     *
+     * @return array<int, string>
+     */
+    private function overriddenFields(): array
+    {
+        $theme = (string) ($this->data['theme'] ?? '');
+        $fields = app(ThemeFields::class);
+
+        return array_values(array_filter(
+            array_map(strval(...), array_keys(app(ThemeOptions::class)->defaults($theme))),
+            fn (string $name): bool => $fields->override($theme, $name) !== null,
+        ));
+    }
+
+    /**
+     * The overridden fields as `[name => label]`, for the reset select.
+     *
+     * @return array<string, string>
+     */
+    private function overriddenFieldOptions(): array
+    {
+        $fields = $this->form->getFlatFields(withHidden: true);
+        $options = [];
+
+        foreach ($this->overriddenFields() as $name) {
+            $options[$name] = isset($fields[$name]) ? (string) $fields[$name]->getLabel() : $name;
+        }
+
+        return $options;
     }
 
     public function save(): void
@@ -221,7 +268,28 @@ class Theme extends Page
                 return;
             }
 
-            app(ThemeFields::class)->set($theme, 'css', $data['css'] ?? null);
+            // getState() leaves out non-dehydrated and hidden fields, so their
+            // stored rows stay as they are.
+            $defaults = app(ThemeOptions::class)->defaults($theme);
+            $fields = app(ThemeFields::class);
+
+            foreach (array_keys($defaults) as $name) {
+                $name = (string) $name;
+
+                if (!Arr::has($data, $name)) {
+                    continue;
+                }
+
+                $value = data_get($data, $name);
+
+                // An emptied text field comes back as null; over a non-empty
+                // default that is a deliberate blank, which must be stored.
+                if ($value === null && is_string($defaults[$name]['default']) && $defaults[$name]['default'] !== '') {
+                    $value = '';
+                }
+
+                $fields->set($theme, $name, $value);
+            }
 
             Notification::make()
                 ->success()

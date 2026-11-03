@@ -7,9 +7,10 @@
     changing the select only swaps the frame's URL. Navigating inside the
     frame drops the parameter, so the frame falls back to the saved theme.
 
-    The frame also previews unsaved CSS live: the editor's `data.css` state is
-    written into the frame's `style[data-theme-css]` element (replacing its
-    content, so a saved override never keeps stale properties). Save persists it.
+    The frame also previews unsaved CSS live: the state of the theme's
+    css-tagged fields (`$wire.cssFields`, in schema order) is joined and written
+    into the frame's `style[data-theme-css]` element (replacing its content, so
+    a saved override never keeps stale properties). Save persists it.
 
     The light/dark control drives the frame's own TallStackUI `tallstackui_darkTheme`
     component on its <html> (`x-bind:class="{ dark: darkTheme }"`). It sets only
@@ -50,7 +51,10 @@
         mode: 'light',
         userChose: false,
         theme: $wire.$entangle('data.theme'),
-        css: $wire.$entangle('data.css'),
+        data: $wire.$entangle('data'),
+        get css() {
+            return ($wire.cssFields ?? []).map((name) => name.split('.').reduce((value, key) => value?.[key], this.data) ?? '').join('\n');
+        },
         base: @js($url),
         param: @js($param),
         get src() {
@@ -68,7 +72,7 @@
                     style.setAttribute('data-theme-css', '');
                     doc.head.appendChild(style);
                 }
-                style.textContent = this.css ?? '';
+                style.textContent = this.css;
             } catch (e) {
                 // cross-origin or not-yet-loaded document
             }
