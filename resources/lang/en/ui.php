@@ -49,4 +49,8 @@ return [
     'loading_activity' => 'Loading activity…',
     'activity_error'   => "Couldn't load the activity feed.",
     'no_activity'      => 'No activity yet',
+
+    // Latest news widget
+    'latest_news' => 'Latest news',
+    'no_news'     => 'No news yet',
 ];

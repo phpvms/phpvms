@@ -62,10 +62,20 @@
         --vms-ink: #14213a;
         --vms-ink-2: #5b6476;
         --vms-ink-3: #8a92a2;
+        --vms-line: #ebe5dd;
         --vms-brand: var(--color-primary-600);
+        --vms-brand-soft: #e3eff8;
         --vms-hero-ink: #14213a;
         --vms-hero-ink-2: #5d7ea3;
         --vms-hero-ink-3: #3e5470;
+        --vms-sky-top: #9ccaf3;
+        --vms-sky-mid: #cde4fa;
+        --vms-sky-bottom: #eef5fd;
+        --vms-sky-cloud-light: #ffffff;
+        --vms-sky-cloud-opacity: 1;
+        --vms-sky-wisp-opacity: 0.5;
+        --vms-sky-glow: #ffffff;
+        --vms-sky-glow-opacity: 0.6;
         --vms-radius-xl: 28px;
         --vms-radius-lg: 22px;
         --vms-radius-md: 12px;
@@ -78,7 +88,20 @@
         --vms-ink: var(--color-dark-50);
         --vms-ink-2: var(--color-dark-300);
         --vms-ink-3: var(--color-dark-400);
+        --vms-line: var(--color-dark-700);
         --vms-brand: var(--color-primary-400);
+        --vms-brand-soft: var(--color-primary-950);
+        --vms-hero-ink: #eef4fc;
+        --vms-hero-ink-2: #9db8dc;
+        --vms-hero-ink-3: #b6c6dd;
+        --vms-sky-top: #08122b;
+        --vms-sky-mid: #12234a;
+        --vms-sky-bottom: #1c3361;
+        --vms-sky-cloud-light: #8fa6cc;
+        --vms-sky-cloud-opacity: 0.3;
+        --vms-sky-wisp-opacity: 0.12;
+        --vms-sky-glow: #4c6fb0;
+        --vms-sky-glow-opacity: 0.22;
     }
 }
 
@@ -89,6 +112,45 @@
         min-height: 100dvh;
         background: var(--vms-canvas);
         color: var(--vms-ink);
+    }
+
+    /* The signed-in shell: canvas behind, white surfaces on it. */
+    .vms-shell {
+        background: var(--vms-canvas);
+        color: var(--vms-ink);
+    }
+
+    /* Top bar layout: menu links and the dropdown trigger share one pill look. */
+    .vms-shell-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        font-size: 14.5px;
+        font-weight: 500;
+        color: var(--vms-ink-2);
+        cursor: pointer;
+    }
+
+    .vms-shell-link:hover {
+        color: var(--vms-ink);
+        background: color-mix(in oklab, var(--vms-surface) 60%, transparent);
+    }
+
+    .vms-shell-link[aria-current="page"] {
+        background: var(--vms-surface);
+        color: var(--vms-ink);
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(20, 33, 58, 0.06);
+    }
+
+    /* The serif second line of a greeting, same treatment as the landing title. */
+    .vms-pilot-greeting span {
+        color: var(--vms-hero-ink-2);
+        font-family: var(--font-serif);
+        font-weight: 200;
+        letter-spacing: -0.03em;
     }
 
     .vms-landing > main {

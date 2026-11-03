@@ -9,14 +9,14 @@
     $flyingNow = $feed?->flyingNow ?? 0;
 @endphp
 <div class="flex flex-col gap-3.5">
-    <header class="flex items-center gap-2">
+    <header class="vms-flying flex items-center gap-2">
         {{-- Live indicator (Tailwind's ping pattern), not a loading state. --}}
         <span class="relative flex size-2" aria-hidden="true">
             <span class="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75"></span>
             <span class="relative inline-flex size-2 rounded-full bg-green-500"></span>
         </span>
-        <span class="text-lg font-bold tracking-tight tabular-nums">{{ $flyingNow }}</span>
-        <span class="text-xs text-dark-500 dark:text-dark-400">{{ trans_choice('ui.flying_now', $flyingNow) }}</span>
+        <span class="text-[26px] leading-none font-extrabold tracking-tight tabular-nums">{{ $flyingNow }}</span>
+        <span class="text-[13px] text-(--vms-ink-3)">{{ trans_choice('ui.flying_now', $flyingNow) }}</span>
     </header>
 
     @if ($state === 'loading')

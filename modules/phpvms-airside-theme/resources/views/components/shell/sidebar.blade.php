@@ -15,14 +15,11 @@
 
 <x-ts-side-bar navigate-hover collapsible>
     <x-slot:brand>
-        <a href="{{ url('/') }}" class="flex items-center gap-3 px-4 py-5" wire:navigate>
-            <img src="{{ $branding->logo(52) }}" alt="" aria-hidden="true" class="size-8 object-contain" />
-            <span class="truncate text-sm font-semibold">{{ $shell->appName() }}</span>
-        </a>
+        <x-vms::shell.brand :shell="$shell" class="mt-(--vms-gutter) h-14 px-5" />
     </x-slot:brand>
 
     <x-slot:brand-collapsed>
-        <a href="{{ url('/') }}" class="flex w-full justify-center py-5" wire:navigate aria-label="{{ $shell->appName() }}">
+        <a href="{{ url('/') }}" class="mt-(--vms-gutter) flex h-14 w-full items-center justify-center" wire:navigate aria-label="{{ $shell->appName() }}">
             <img src="{{ $branding->logo(52) }}" alt="" aria-hidden="true" class="size-8 object-contain" />
         </a>
     </x-slot:brand-collapsed>

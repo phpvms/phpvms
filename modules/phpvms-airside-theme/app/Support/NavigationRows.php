@@ -39,6 +39,52 @@ final class NavigationRows
     }
 
     /**
+     * What every layout needs to draw one menu entry: its icon, children, whether
+     * it is a group, current, opened (a descendant is current) and an in-app link.
+     *
+     * @param  array<string, mixed>                                                                                                   $item
+     * @param  list<string>                                                                                                           $activeKeys
+     * @return array{icon: string|null, children: list<array<string, mixed>>, isGroup: bool, active: bool, opened: bool, inApp: bool}
+     */
+    public static function entry(array $item, string $key, array $activeKeys, string $origin): array
+    {
+        return [
+            'icon'     => NavigationIcon::tallstack($item['icon'] ?? null),
+            'children' => array_values((array) ($item['children'] ?? [])),
+            'isGroup'  => ($item['url'] ?? '') === '',
+            'active'   => in_array($key, $activeKeys, true),
+            'opened'   => collect($activeKeys)->contains(fn (string $activeKey): bool => str_starts_with($activeKey, $key.'.')),
+            'inApp'    => self::menuPath((string) ($item['url'] ?? ''), $origin) !== null,
+        ];
+    }
+
+    /**
+     * The links under a group, nested groups flattened, each with its menu key.
+     * A dropdown cannot nest, so the top bar lists these.
+     *
+     * @param  array<int, array<string, mixed>>                     $children
+     * @return list<array{key: string, item: array<string, mixed>}>
+     */
+    public static function leaves(array $children, string $prefix): array
+    {
+        $leaves = [];
+
+        foreach (array_values($children) as $index => $child) {
+            $key = $prefix.'.'.$index;
+
+            if (($child['url'] ?? '') === '') {
+                array_push($leaves, ...self::leaves((array) ($child['children'] ?? []), $key));
+
+                continue;
+            }
+
+            $leaves[] = ['key' => $key, 'item' => $child];
+        }
+
+        return $leaves;
+    }
+
+    /**
      * The path part of a menu URL when it points at this site, else null.
      */
     public static function menuPath(string $url, string $origin): ?string

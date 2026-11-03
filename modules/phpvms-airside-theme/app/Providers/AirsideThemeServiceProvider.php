@@ -7,6 +7,7 @@ namespace Modules\PhpvmsAirsideTheme\Providers;
 use App\Contracts\Modules\ServiceProvider;
 use App\Features\Themes\ThemeFields;
 use App\Features\Themes\ThemeOptions;
+use App\Filament\Support\ExpandableEditor;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Forms\Components\Select;
@@ -145,6 +146,62 @@ class AirsideThemeServiceProvider extends ServiceProvider
     }
 
     /**
+     * The signed-in shell on the landing look: content and the dispatch strip on
+     * rounded surfaces over the canvas, the sidebar with no panel or border and
+     * a white pill for the current item. Colours come from the `--vms-*` tokens
+     * in `resources/css/airside.css`, so dark mode follows them.
+     */
+    private function customizeShell(): void
+    {
+        TallStackUi::customize()
+            ->layout()
+            ->block('main', 'vms-shell-main mx-auto w-full max-w-full p-(--vms-gutter)');
+
+        // The strip: the airline, then the dispatch status, the clocks pushed right.
+        TallStackUi::customize()
+            ->layout('header')
+            ->block('wrapper.base', 'vms-shell-header mx-(--vms-gutter) mt-(--vms-gutter) flex shrink-0 items-center gap-x-4 rounded-full bg-(--vms-surface) px-4 text-(--vms-ink) sm:px-5')
+            ->block('slots.wrapper-multi-slot', 'gap-x-5')
+            ->block('slots.right', 'ml-auto flex items-center')
+            ->block('button.icon.size', 'size-6 text-(--vms-ink-2)')
+            ->block('collapse.icon.size', 'size-5 text-(--vms-ink-2)');
+
+        TallStackUi::customize()
+            ->sideBar()
+            ->block('desktop.wrapper.second', 'flex grow flex-col pb-4 transition-[width] duration-300')
+            ->block('desktop.footer', 'shrink-0 overflow-hidden px-2 pt-3')
+            ->block('mobile.wrapper.fourth', 'flex grow flex-col bg-(--vms-canvas) pb-4')
+            ->block('mobile.footer', 'shrink-0 px-2 py-4')
+            ->block('desktop.wrapper.fifth', 'flex flex-1 flex-col gap-y-1 px-2')
+            ->block('mobile.wrapper.sixth', 'flex flex-1 flex-col gap-y-1 px-2');
+
+        TallStackUi::customize()
+            ->sideBar('item')
+            ->block('group.button', 'flex w-full cursor-pointer items-center rounded-full px-3.5 py-2.5 text-left text-sm font-medium text-(--vms-ink-2) transition-all hover:bg-(--vms-surface)/60 hover:text-(--vms-ink)')
+            ->block('group.button.collapsed', 'relative justify-center')
+            ->block('group.icon.base', 'size-5 shrink-0 text-(--vms-ink-2)')
+            ->block('group.icon.collapse.base', 'ml-auto size-4 shrink-0 text-(--vms-ink-3) transition-all')
+            ->block('group.icon.collapse.rotate', 'rotate-180')
+            ->block('group.group', 'pl-0')
+            ->block('item.wrapper.base', 'py-px')
+            ->block('item.wrapper.border', 'pl-8')
+            ->block('item.state.base', 'group flex items-center rounded-full px-3.5 py-2.5 text-sm font-medium transition-all')
+            ->block('item.state.current', 'bg-(--vms-surface) font-semibold text-(--vms-ink) shadow-xs')
+            ->block('item.state.normal', 'text-(--vms-ink-2) hover:bg-(--vms-surface)/60 hover:text-(--vms-ink)')
+            ->block('item.icon', 'size-5 shrink-0 text-(--vms-ink-2) transition-all');
+
+        // The dashboard widget card: a surface with no shadow, header and body padding as in the mockup.
+        TallStackUi::customize()
+            ->card(scope: 'airside.widget')
+            ->block('wrapper.second', 'flex w-full flex-col overflow-hidden bg-(--vms-surface) text-(--vms-ink)')
+            ->block('border.radius.lg', 'rounded-(--vms-radius-lg)')
+            ->block('header.wrapper.base', 'flex items-center justify-between px-5.5 pt-5 pb-3.5')
+            ->block('header.wrapper.border', 'border-0')
+            ->block('header.text.color', 'text-(--vms-ink)')
+            ->block('body', 'grow px-5.5 pb-5.5 text-(--vms-ink)');
+    }
+
+    /**
      * Draw TallStackUI's icons from the Phosphor pack the admin panel uses
      * (BasePanelProvider, light style). `type` names the BladeUI package, which
      * switches the icon component to custom mode; `custom.guide` maps every
@@ -175,6 +232,7 @@ class AirsideThemeServiceProvider extends ServiceProvider
         Blade::anonymousComponentNamespace('components', 'vms');
 
         $this->customizeSidebarWidth();
+        $this->customizeShell();
         $this->customizeAvatar();
 
         $this->registerViteDirective();
@@ -189,28 +247,27 @@ class AirsideThemeServiceProvider extends ServiceProvider
     {
         app(ThemeOptions::class)->register('airside', fn (string $theme): array => [
             Tab::make(__('airside::customize.tab_css'))->schema([
-                ThemeOptions::preview(),
                 ThemeOptions::colorSchemeSelect('style_css')
                     ->label(__('airside::customize.color_scheme')),
-                CodeEditor::make('style_css')
+                ExpandableEditor::make(CodeEditor::make('style_css')
                     ->label(__('airside::customize.style_css'))
                     ->language(Language::Css)
                     ->default(fn (): string => app(ThemeFields::class)->defaultFor($theme, 'styles.css'))
-                    ->meta('emit', 'css'),
-                CodeEditor::make('custom_css')
+                    ->meta('emit', 'css')),
+                ExpandableEditor::make(CodeEditor::make('custom_css')
                     ->label(__('airside::customize.custom_css'))
                     ->language(Language::Css)
-                    ->meta('emit', 'css'),
+                    ->meta('emit', 'css')),
             ]),
             Tab::make(__('airside::customize.tab_inserts'))->schema([
-                CodeEditor::make('header')
+                ExpandableEditor::make(CodeEditor::make('header')
                     ->label(__('airside::customize.header'))
                     ->language(Language::Html)
-                    ->meta('emit', 'head'),
-                CodeEditor::make('footer')
+                    ->meta('emit', 'head')),
+                ExpandableEditor::make(CodeEditor::make('footer')
                     ->label(__('airside::customize.footer'))
                     ->language(Language::Html)
-                    ->meta('emit', 'footer'),
+                    ->meta('emit', 'footer')),
             ]),
             Tab::make(__('airside::customize.tab_layout'))->schema([
                 Select::make('layout')

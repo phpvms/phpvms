@@ -5,12 +5,21 @@
             <x-ts-spinner text="Loading dashboard…" />
         </div>
     @else
-        <div class="flex items-center justify-between">
-            <h2 class="m-0 text-base font-semibold">{{ __('common.dashboard') }}</h2>
+        @php
+            // TallStackUI buttons with the dark and light pill look of the landing (`vms-pill--dark`, `vms-pill--light`).
+            $pillDark = 'vms-pill--dark border-transparent! bg-(--vms-ink)! text-(--vms-canvas)! hover:opacity-90';
+            $pillLight = 'vms-pill--light border-transparent! bg-(--vms-surface)! text-(--vms-ink)! hover:opacity-90';
+        @endphp
+
+        <div class="vms-board-toolbar flex items-center justify-between gap-3 px-1.5 pt-4.5 pb-0.5">
+            <h2 class="vms-board-title m-0 text-[22px] font-extrabold tracking-tight">Your board</h2>
 
             <div class="flex items-center gap-2">
                 @if ($editing)
-                    <x-ts-dropdown :text="__('ui.add_widget')" position="bottom-end" sm>
+                    <x-ts-dropdown position="bottom-end">
+                        <x-slot:action>
+                            <x-ts-button round sm icon="phosphor.plus.light" :text="__('ui.add_widget')" :class="$pillLight" x-on:click="show = !show" />
+                        </x-slot:action>
                         @forelse ($this->availableWidgets as $widget)
                             <x-ts-dropdown.items
                                 wire:key="add-{{ $widget['id'] }}"
@@ -23,10 +32,10 @@
                         @endforelse
                     </x-ts-dropdown>
 
-                    <x-ts-button sm flat type="button" wire:click="resetLayout">{{ __('ui.reset') }}</x-ts-button>
+                    <x-ts-button sm round flat type="button" wire:click="resetLayout">{{ __('ui.reset') }}</x-ts-button>
                 @endif
 
-                <x-ts-button sm :outline="! $editing" type="button" wire:click="toggleEditing">
+                <x-ts-button sm round type="button" :class="$pillDark" wire:click="toggleEditing">
                     {{ $editing ? __('ui.done') : __('ui.customize') }}
                 </x-ts-button>
             </div>
@@ -34,12 +43,12 @@
 
         @php($zones = ['grid' => $grid, 'sidebar' => $sidebar])
 
-        <div class="grid grid-cols-1 gap-4 min-[1100px]:grid-cols-[1fr_320px] min-[1100px]:items-start">
+        <div class="vms-board grid grid-cols-1 gap-3.5 min-[68.75rem]:grid-cols-[minmax(0,1fr)_360px] min-[68.75rem]:items-start">
             @foreach ($zones as $zone => $ids)
                 <div
                     wire:key="zone-{{ $zone }}"
                     data-zone="{{ $zone }}"
-                    @class(['grid min-h-[60px] content-start gap-3', 'grid-cols-2' => $zone === 'grid', 'grid-cols-1' => $zone === 'sidebar'])
+                    @class(['grid min-h-[60px] content-start gap-3.5', 'grid-cols-2' => $zone === 'grid', 'grid-cols-1' => $zone === 'sidebar'])
                 >
                     @foreach ($ids as $id)
                         @continue(! isset($catalog[$id]))
@@ -47,11 +56,11 @@
                         <div
                             wire:key="widget-{{ $id }}"
                             data-widget="{{ $id }}"
-                            class="min-w-0"
+                            @class(['vms-widget min-w-0 rounded-(--vms-radius-lg)', 'outline-2 -outline-offset-2 outline-dashed outline-[#c9d6e4]' => $editing])
                             @if ($zone === 'grid') style="grid-column: span {{ $catalog[$id]['span'] }} / span {{ $catalog[$id]['span'] }}" @endif
                         >
                             @php($widgetIcon = \Modules\PhpvmsAirsideTheme\Support\NavigationIcon::tallstack($catalog[$id]['icon'] ?? null))
-                            <x-ts-card class="flex min-w-0 flex-col">
+                            <x-ts-card class="flex min-w-0 flex-col" scope="airside.widget">
                                 <x-slot:header>
                                     <div class="flex w-full items-center gap-2">
                                         @if ($editing)
@@ -60,9 +69,11 @@
                                             </span>
                                         @endif
                                         @if ($widgetIcon)
-                                            <x-ts-icon :name="$widgetIcon" sm gray />
+                                            <span class="vms-widget-icon grid size-[30px] place-items-center rounded-full bg-(--vms-brand-soft) text-(--vms-brand)">
+                                                <x-ts-icon :name="$widgetIcon" class="size-4" />
+                                            </span>
                                         @endif
-                                        <h3 class="m-0 text-sm font-semibold">{{ $catalog[$id]['title'] }}</h3>
+                                        <h3 class="m-0 text-[15px] font-bold">{{ $catalog[$id]['title'] }}</h3>
                                         <div class="flex-1"></div>
                                         @if ($editing)
                                             <x-ts-button xs flat color="red" icon="phosphor.x.light" aria-label="Remove widget" wire:click="removeWidget('{{ $id }}')" />
@@ -74,6 +85,8 @@
                                     @include('livewire.dashboard.route-widget', ['route' => $route])
                                 @elseif ($id === 'activity')
                                     <livewire:dashboard::activity-feed :key="'activity-feed'" />
+                                @elseif ($id === 'news')
+                                    <livewire:dashboard::latest-news :key="'latest-news'" />
                                 @endif
                             </x-ts-card>
                         </div>

@@ -1,6 +1,10 @@
-@props(['shell'])
+@props(['shell', 'topbar' => false])
 
-{{-- The dispatch header: airline identity, the active sector, duty, METAR and clocks. --}}
+{{--
+  The dispatch header, drawn as a rounded strip (see customizeShell() in the theme provider):
+  airline identity, the active sector, duty, METAR and clocks. In the top bar layout
+  (`topbar`) there is no sidebar, so the mobile menu button is left out.
+--}}
 @php
     $user = $shell->user();
     $chrome = $shell->pilotChrome();
@@ -8,7 +12,7 @@
     $station = $chrome?->station;
 @endphp
 
-<x-ts-layout.header sm>
+<x-ts-layout.header sm :without-mobile-button="$topbar">
     <x-slot:left>
         <div class="flex shrink-0 items-center gap-3 whitespace-nowrap" aria-label="Airline identity">
             <x-ts-avatar :image="$airline['logo'] ?? null" :text="mb_strtoupper(mb_substr((string) ($airline['icao'] ?? $shell->appName()), 0, 2))" xs />
@@ -24,6 +28,7 @@
     @if ($user)
         <x-slot:middle>
             <div class="hidden min-w-0 items-center gap-5 lg:flex" aria-label="Dispatch status">
+                <span class="vms-dispatch-sep h-6 w-px shrink-0 bg-(--vms-line)" aria-hidden="true"></span>
                 <x-vms::shell.sector :sector="$chrome->activeSector" />
                 <x-vms::shell.duty :duty="$chrome->duty" />
                 <livewire:shell::header-metar :icao="$station?->icao" lazy />

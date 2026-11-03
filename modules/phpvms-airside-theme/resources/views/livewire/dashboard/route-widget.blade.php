@@ -15,12 +15,12 @@
 @endphp
 @if ($from)
     <div class="flex flex-col">
-        <div wire:ignore data-airside-island="route-map" class="h-[300px] overflow-hidden rounded-md bg-gray-100 dark:bg-dark-700">
+        <div wire:ignore data-airside-island="route-map" class="vms-route-map h-[300px] overflow-hidden rounded-(--vms-radius-md) bg-[#eef3f8] dark:bg-dark-700">
             <script type="application/json">{!! json_encode(['from' => $point($from), 'to' => $point($to), 'cruiseLevel' => null, 'height' => 300], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) !!}</script>
         </div>
-        <div class="mt-2 flex items-center justify-between gap-2 font-mono text-xs text-dark-500 dark:text-dark-400">
-            <span class="font-medium text-primary-600 dark:text-primary-400">{{ $from['icao'].($to ? ' → '.$to['icao'] : '') }}</span>
-            <span class="tabular-nums"><span class="text-dark-400">TRK</span> {{ $readout ? $readout['trk'].'°' : '—' }} · <span class="text-dark-400">DIST</span> {{ $readout ? $readout['dist'].' nm' : '—' }}</span>
+        <div class="vms-route-readout mt-3 flex items-center justify-between gap-2 font-mono text-[12.5px] text-(--vms-ink-2)">
+            <span class="font-semibold text-(--vms-brand)">{{ $from['icao'].($to ? ' → '.$to['icao'] : '') }}</span>
+            <span class="tabular-nums"><span class="text-(--vms-ink-3)">TRK</span> {{ $readout ? $readout['trk'].'°' : '—' }} · <span class="text-(--vms-ink-3)">DIST</span> {{ $readout ? $readout['dist'].' nm' : '—' }}</span>
         </div>
     </div>
 @else

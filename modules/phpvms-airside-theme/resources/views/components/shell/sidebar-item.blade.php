@@ -7,12 +7,7 @@
   `href`, which the item renders without wire:navigate.
 --}}
 @php
-    $icon = \Modules\PhpvmsAirsideTheme\Support\NavigationIcon::tallstack($item['icon'] ?? null);
-    $children = array_values($item['children'] ?? []);
-    $isGroup = ($item['url'] ?? '') === '';
-    $active = in_array($key, $activeKeys, true);
-    $opened = collect($activeKeys)->contains(fn (string $activeKey): bool => str_starts_with($activeKey, $key.'.'));
-    $inApp = \Modules\PhpvmsAirsideTheme\Support\NavigationRows::menuPath((string) ($item['url'] ?? ''), request()->getSchemeAndHttpHost()) !== null;
+    ['icon' => $icon, 'children' => $children, 'isGroup' => $isGroup, 'active' => $active, 'opened' => $opened, 'inApp' => $inApp] = \Modules\PhpvmsAirsideTheme\Support\NavigationRows::entry($item, $key, $activeKeys, request()->getSchemeAndHttpHost());
 @endphp
 
 @if ($isGroup)
