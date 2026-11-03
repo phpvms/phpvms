@@ -20,7 +20,7 @@ use Route;
  * The dashboard weather (METAR) widget used to be bundled first-party into the
  * skylight SPA (WxWidget.vue, registered in the front-end catalog). It now ships
  * from HERE as a pre-built ESM widget, proving that even core-authored widgets
- * ride the SAME addon path as third-party ones (compare modules/phpvms-sample-vue-widget).
+ * ride the SAME addon path as third-party ones.
  *
  * The widget is built into an ESM module (see skylight/vite.config.ts) with
  * `vue` externalized, so it shares the host's single Vue instance via the SPA

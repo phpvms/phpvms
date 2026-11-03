@@ -142,8 +142,7 @@ Extensions::slots()->register([
 ```
 
 It sits full-width below the two-column detail grid, and renders nothing at all when no addon
-targets it. See `modules/phpvms-sample-vue-slot/` for a complete working addon (registration,
-the Vue component, and the ESM build step).
+targets it.
 
 ## Tiles
 

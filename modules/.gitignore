@@ -11,8 +11,5 @@
 !/ModulesManager
 !/Sample
 !/phpvms-widgets
-!/phpvms-sample-blade-widget
-!/phpvms-sample-vue-widget
-!/phpvms-sample-vue-slot
 !/phpvms-addon-manager
 !/phpvms-airside-theme
