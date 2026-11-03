@@ -1810,8 +1810,12 @@
 }
 
 .fi-rail-clock-zone {
-  @apply mt-1.5 text-[9px] font-semibold uppercase tracking-[0.14em];
+  @apply mt-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] cursor-pointer bg-transparent border-0 p-0;
   color: var(--chrome-faint);
+}
+
+.fi-rail-clock-zone:hover {
+  color: var(--chrome-ink);
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock {
