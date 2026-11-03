@@ -90,6 +90,7 @@ return [
     'scheduling'                       => 'Scheduling',
     'flight_enabled_hint'              => 'Disabled flights stay bookable by admins and by the API.',
     'page_sections'                    => 'Page sections',
+    'details_tab'                      => 'Details',
     'record_switch'                    => 'Switch record',
     'flight_days_hint'                 => 'Nothing selected means the flight operates every day.',
     'flight_block_time_hint'           => "Calculated from the scheduled times and the two airports' timezones.",

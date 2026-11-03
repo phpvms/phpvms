@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Airports\Tables;
 
+use App\Filament\Resources\Airports\Actions\PeekAction;
 use App\Models\Airport;
 use App\Models\File;
 use App\Services\FileService;
@@ -72,6 +73,11 @@ class AirportsTable
                     ->label(__('airports.fuel_mogas_cost'))
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            // Row click opens the read-only slide-over. Filament prefers a
+            // recordUrl over a recordAction, and ListRecords falls back to the
+            // edit page now that one exists, so null is set explicitly.
+            ->recordUrl(null)
+            ->recordAction(PeekAction::NAME)
             ->filters([
                 Filter::make('only_hubs')
                     ->label(__('airports.only_hubs'))
@@ -87,6 +93,7 @@ class AirportsTable
             ])
             ->recordActions([
                 ActionGroup::make([
+                    PeekAction::make(),
                     EditAction::make()
                         // The form has no id field (it keys on the ICAO), and the
                         // id need not match the ICAO, so show which row this is.

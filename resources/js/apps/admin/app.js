@@ -14,25 +14,18 @@
  * Admin pages without a map pay no cost beyond this thin entry.
  */
 
-// The console rail is fixed collapsed on desktop; the collapse controls are
-// removed. Pin Filament's persisted sidebar state before Alpine reads it.
-// Filament's sidebar store (vendor/filament/filament/resources/js/stores/
-// sidebar.js) persists via
-// `window.Alpine.$persist(true).as('filament:sidebar:desktop_open')` (5.10
-// renamed it from `isOpenDesktop`) — Alpine's persist plugin uses the `.as()`
-// alias as the raw localStorage key with no `_x_` prefix (that prefix only
-// applies when `.as()` is NOT called).
-localStorage.setItem("filament:sidebar:desktop_open", JSON.stringify(false));
-
 import axios from "axios";
 
 import config from "./config";
 import request from "./request";
 import Storage from "./storage";
 import "./rail-nav";
+import "./sidebar-shell";
 import { currentMode } from "./theme-picker";
 import "./utc-clock";
 import "./autosave-indicator";
+import "./pirep-panel";
+import "./pirep-record-back";
 
 window.axios = axios;
 
