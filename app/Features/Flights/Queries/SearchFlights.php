@@ -115,7 +115,7 @@ final readonly class SearchFlights
             'airlines'    => Airline::selectList(addBlank: true),
             'flightTypes' => $flightTypes,
             'subfleets'   => Subfleet::with('airline')->get()
-                ->mapWithKeys(fn (Subfleet $subfleet): array => [$subfleet->id => $subfleet->name.' | '.($subfleet->airline?->icao ?? '—')])
+                ->mapWithKeys(fn (Subfleet $subfleet): array => [$subfleet->id => $subfleet->name.' | '.($subfleet->airline->icao ?? '—')])
                 ->all(),
             'typeRatings' => Typerating::query()->where('active', true)->select('id', 'name', 'type')->orderBy('type')->get()
                 ->map(fn (Typerating $rating): array => ['id' => $rating->id, 'name' => $rating->name, 'type' => $rating->type])

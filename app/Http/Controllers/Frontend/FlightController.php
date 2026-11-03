@@ -455,7 +455,7 @@ class FlightController extends Controller
         foreach ($items as $i) {
             // airline_id is nullable on Subfleet, so guard against an
             // orphan/soft-deleted airline before reading icao.
-            $icao = $i->airline?->icao ?? '—';
+            $icao = $i->airline->icao ?? '—';
             $retval[$i->id] = $i->name.' | '.$icao;
         }
 
