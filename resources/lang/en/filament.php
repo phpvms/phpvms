@@ -684,6 +684,10 @@ return [
         'unpublished_changes' => 'Unpublished changes',
         'preview'             => 'Preview',
     ],
+    'editor' => [
+        'expand'   => 'Expand',
+        'collapse' => 'Collapse',
+    ],
     'global_slots' => [
         'name'            => 'Name',
         'slot'            => 'Slot',

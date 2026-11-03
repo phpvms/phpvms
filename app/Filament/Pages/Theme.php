@@ -18,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Utilities\Get;
@@ -83,7 +84,8 @@ class Theme extends Page
     }
 
     /**
-     * The theme select, then the selected theme's registered option tabs. The
+     * Two columns on large screens: the theme select and the selected theme's
+     * registered option tabs on the left, the live preview on the right. The
      * tabs are built lazily from the form's own `theme` state, so a theme
      * change rebuilds them.
      */
@@ -91,30 +93,45 @@ class Theme extends Page
     {
         return $schema
             ->disabled(fn (): bool => !static::canEdit())
+            ->columns(['default' => 1, 'lg' => 3])
             ->components([
-                Section::make(__('filament.theme'))
-                    ->id('theme')
-                    ->icon(Phosphor::PaintBrushLight)
-                    ->schema([
-                        Select::make('theme')
-                            ->label(__('filament.theme_current'))
-                            ->helperText(__('filament.theme_current_hint'))
-                            ->options(fn (): array => $this->themeOptions())
-                            ->in(fn (): array => array_keys($this->themeOptions()))
-                            ->required()
-                            ->native(false)
-                            ->live()
-                            ->afterStateUpdated(function (?string $state): void {
-                                if ($state && array_key_exists($state, $this->themeOptions())) {
-                                    $this->fillOptions($state);
-                                }
-                            }),
-                    ]),
+                Grid::make(1)
+                    ->columnSpan(['lg' => 1])
+                    ->schema([$this->themeSection()]),
+
+                ThemeOptions::preview(),
+            ])
+            ->statePath('data');
+    }
+
+    private function themeSection(): Section
+    {
+        return Section::make(__('filament.theme'))
+            ->id('theme')
+            ->icon(Phosphor::PaintBrushLight)
+            ->collapsible()
+            ->persistCollapsed()
+            ->schema([
+                Select::make('theme')
+                    ->label(__('filament.theme_current'))
+                    ->helperText(__('filament.theme_current_hint'))
+                    ->options(fn (): array => $this->themeOptions())
+                    ->in(fn (): array => array_keys($this->themeOptions()))
+                    ->required()
+                    ->native(false)
+                    ->live()
+                    ->afterStateUpdated(function (?string $state): void {
+                        if ($state && array_key_exists($state, $this->themeOptions())) {
+                            $this->fillOptions($state);
+                        }
+                    }),
 
                 Section::make(__('filament.theme_customize'))
                     ->id('customize')
                     ->key('customize')
                     ->icon(Phosphor::SlidersLight)
+                    ->collapsible()
+                    ->persistCollapsed()
                     ->schema([
                         Tabs::make('options')
                             ->tabs(fn (Get $get): array => app(ThemeOptions::class)->tabsFor((string) $get('theme'))),
@@ -145,29 +162,23 @@ class Theme extends Page
                                     ->title(__('filament.theme_field_reset_done'))
                                     ->send();
                             }),
-                    ]),
-            ])
-            ->statePath('data');
+                    ])
+                    ->columnSpanFull(),
+            ]);
     }
 
     /**
-     * The submit row belongs in the Customize card, which is where the
-     * registered options are. A theme with no options hides that card, so the
-     * row falls back to the theme card.
+     * The submit row belongs in the theme card, which sits inside the
+     * left-column Grid where {@see ReversePrimaryButtons::lastFormSection()}
+     * (top-level only) would not see it.
      */
     protected function lastFormSection(): ?Section
     {
-        foreach (['customize', 'theme'] as $id) {
-            $section = $this->getSchema('form')?->getComponent(
-                fn (Component $component): bool => $component instanceof Section && $component->getId() === $id,
-            );
+        $section = $this->getSchema('form')?->getComponent(
+            fn (Component $component): bool => $component instanceof Section && $component->getId() === 'theme',
+        );
 
-            if ($section instanceof Section) {
-                return $section;
-            }
-        }
-
-        return null;
+        return $section instanceof Section ? $section : null;
     }
 
     /**

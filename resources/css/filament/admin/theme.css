@@ -612,9 +612,16 @@
  * the global table skin already covers.
  * ------------------------------------------------------------------------- */
 .fi-tabs {
-  @apply gap-1 rounded-none border-b border-b-(--line) p-0 shadow-none;
+  @apply gap-1 rounded-none border-b-0 p-0 shadow-none;
   background: transparent;
   --tw-ring-shadow: 0 0 #0000;
+  /* The items' -1px margin pokes 1px past the strip, which made the
+   * overflow-x:auto strip grow a vertical scrollbar. The hairline is an inset
+   * shadow in a 1px bottom padding instead of a border, so the items sit
+   * inside the scrollable box and the underline still overlays the rule. */
+  padding-bottom: 1px;
+  box-shadow: inset 0 -1px 0 var(--line);
+  overflow-y: hidden;
 }
 
 .fi-tabs .fi-tabs-item {
@@ -5951,4 +5958,64 @@ html[data-density="comfortable"] .save-bar-ctn {
 .fi-page:has(.fi-section.fi-aside) .fi-resource-relation-manager .fi-ta-header-description {
   @apply mt-1 text-[13px] text-(--ink-3);
   line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Expandable code editor (App\Filament\Support\ExpandableEditor): its hint
+ * action toggles .fi-editor-expanded on the field wrapper, which then covers
+ * the content area (below the topbar, right of the rail). Same DOM node, so
+ * the editor keeps its value. The label/hint row stays on top for the
+ * Collapse button. z-index sits under Filament modals/notifications (z-40+).
+ * ------------------------------------------------------------------------- */
+html.fi-editor-expanded-lock {
+  overflow: hidden;
+}
+
+.fi-fo-field.fi-editor-expanded {
+  position: fixed;
+  z-index: 20;
+  top: calc(var(--topbar-height) + 0.5rem);
+  inset-inline-end: 0.5rem;
+  bottom: 0.5rem;
+  inset-inline-start: calc(var(--rail-w, 0px) + 0.5rem);
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+}
+
+/* height: auto undoes the vendor's full-height label column. */
+.fi-fo-field.fi-editor-expanded > .fi-fo-field-label-col {
+  flex: none;
+  height: auto;
+}
+
+.fi-fo-field.fi-editor-expanded > .fi-fo-field-content-col,
+.fi-fo-field.fi-editor-expanded .fi-fo-field-content-ctn,
+.fi-fo-field.fi-editor-expanded .fi-fo-field-content,
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor,
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor > .fi-input-wrp-content-ctn {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor > .fi-input-wrp-content-ctn > div,
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor > .fi-input-wrp-content-ctn > div > div {
+  height: 100%;
+  min-height: 0;
+}
+
+.fi-fo-field.fi-editor-expanded .cm-scroller {
+  overflow: auto;
+}
+
+/* Beats the Theme page's #customize .cm-editor { max-height: 60vh }. */
+.fi-fo-field.fi-editor-expanded .cm-editor,
+#customize .fi-fo-field.fi-editor-expanded .cm-editor {
+  height: 100%;
+  max-height: none;
 }

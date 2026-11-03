@@ -110,8 +110,9 @@ final class ThemeOptions
     }
 
     /**
-     * The live page preview. The frame follows the form's `data.theme` and
-     * `data.css` state.
+     * The live page preview. The Theme page places it in the right-hand
+     * column of its form; the frame follows the form's `data.theme` state and
+     * the registered `css` fields.
      */
     public static function preview(): View
     {
@@ -228,6 +229,6 @@ final class ThemeOptions
             }
         }
 
-        return app(VersionService::class)->getCurrentVersion(false);
+        return app(VersionService::class)->getCurrentVersion();
     }
 }

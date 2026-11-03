@@ -22,29 +22,26 @@
     it falls back to toggling the class. Re-applied on frame load and after the
     frame's `livewire:navigated`.
 
-    Height: the frame runs from its top edge to the bottom of the viewport,
-    recomputed on resize. The page grid stretches its other column to match,
-    and the rules below let the Customize card grow to fill that column with
-    its footer pinned to the bottom.
+    Height: CSS only (`.fi-theme-preview`). From lg the frame is sticky below
+    the admin topbar and fills the rest of the viewport, so it stays in view
+    while the fields column scrolls and never grows the page. Below lg it
+    stacks under the fields at a fixed clamped height.
 --}}
 <style>
-    .fi-theme-left,
-    .fi-theme-left > .fi-grid { height: 100%; }
-    .fi-theme-left > .fi-grid { grid-template-rows: auto 1fr; }
-    .fi-theme-left > .fi-grid > :last-child,
-    .fi-theme-left > .fi-grid > :last-child > *,
-    #customize,
-    #customize > .fi-section,
-    #customize .fi-section-content-ctn { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
-    #customize .fi-section-content { flex: 1 1 auto; grid-template-rows: minmax(0, 1fr); }
-    #customize .fi-section-footer { margin-top: auto; }
-    #customize .fi-section-content > .fi-grid-col,
-    #customize .fi-section-content > .fi-grid-col > .fi-sc-component { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+    .fi-theme-preview { height: clamp(480px, 70vh, 820px); }
+    @media (min-width: 64rem) {
+        .fi-theme-preview {
+            position: sticky;
+            top: calc(var(--topbar-height) + 1rem);
+            height: calc(100vh - var(--topbar-height) - 2rem);
+            min-height: 420px;
+        }
+    }
     #customize .cm-editor { max-height: 60vh; }
     #customize .cm-scroller { overflow: auto; }
 </style>
 
-{{-- wire:ignore: Livewire morphs would drop the inline height set by fit() and collapse the iframe. --}}
+{{-- wire:ignore: keeps Livewire morphs from reloading the iframe. --}}
 <div
     wire:ignore
     x-data="{
@@ -148,16 +145,10 @@
                 // cross-origin or not-yet-loaded document
             }
         },
-        fit() {
-            const top = this.$el.getBoundingClientRect().top;
-            this.$el.style.height = `${Math.max(480, window.innerHeight - top - 24)}px`;
-        },
     }"
-    x-init="fit(); $nextTick(() => fit()); $watch('css', Alpine.debounce(() => applyCss(), 150))"
-    x-on:resize.window="fit()"
-    x-on:scroll.window.passive="fit()"
+    x-init="$watch('css', Alpine.debounce(() => applyCss(), 150))"
     class="fi-theme-preview"
-    style="display: flex; flex-direction: column; gap: 0.5rem;"
+    style="display: flex; flex-direction: column; gap: 0.5rem"
 >
     <div class="flex justify-end">
         <div class="inline-flex rounded-lg border border-gray-200 p-0.5 text-sm dark:border-white/10" role="group" aria-label="{{ __('filament.theme_preview') }}">
