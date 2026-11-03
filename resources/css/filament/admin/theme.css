@@ -660,13 +660,21 @@
  * sheet. Contained tabs (inside a card) keep the underline skin above.
  * ------------------------------------------------------------------------- */
 .fi-page-header-main-ctn:has(
-    .fi-page-content > .fi-sc:first-child > .fi-grid-col:first-child > .fi-sc-component:first-child > .fi-sc-tabs:not(.fi-contained)
-  ) {
+  .fi-page-content
+    > .fi-sc:first-child
+    > .fi-grid-col:first-child
+    > .fi-sc-component:first-child
+    > .fi-sc-tabs:not(.fi-contained)
+) {
   gap: 0;
 }
 
 .fi-page-header-main-ctn:has(
-    .fi-page-content > .fi-sc:first-child > .fi-grid-col:first-child > .fi-sc-component:first-child > .fi-sc-tabs:not(.fi-contained)
+    .fi-page-content
+      > .fi-sc:first-child
+      > .fi-grid-col:first-child
+      > .fi-sc-component:first-child
+      > .fi-sc-tabs:not(.fi-contained)
   )
   > .fi-header {
   /* 18px under the title row, then the 34px tab strip. */
@@ -712,7 +720,11 @@
 
 /* Vendor colours the label and icon span themselves (gray-500, primary-700 when
  * active), which would override the tab's own colour; take it from the tab. */
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item .fi-tabs-item-label,
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item
+  .fi-tabs-item-label,
 .fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item > .fi-icon {
   color: inherit;
 }
@@ -735,7 +747,10 @@
   color: var(--ink);
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::before,
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item.fi-active::before,
 .fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::after,
 .banner-tab[aria-selected="true"]::before,
 .banner-tab[aria-selected="true"]::after {
@@ -747,7 +762,10 @@
   pointer-events: none;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::before,
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item.fi-active::before,
 .banner-tab[aria-selected="true"]::before {
   left: -8px;
   background: radial-gradient(circle at 0 0, transparent 7.5px, var(--surface) 8px);
@@ -771,11 +789,19 @@
   @apply font-mono text-[12px] not-italic;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item .fi-badge::before {
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item
+  .fi-badge::before {
   display: none;
 }
 
-.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active .fi-badge,
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item.fi-active
+  .fi-badge,
 .banner-tab[aria-selected="true"] em {
   color: var(--primary-600);
 }
@@ -956,7 +982,11 @@
 .fi-page:not(.fi-pirep-record)
   .fi-page-header-main-ctn:not(
     :has(
-      .fi-page-content > .fi-sc:first-child > .fi-grid-col:first-child > .fi-sc-component:first-child > .fi-sc-tabs:not(.fi-contained)
+      .fi-page-content
+        > .fi-sc:first-child
+        > .fi-grid-col:first-child
+        > .fi-sc-component:first-child
+        > .fi-sc-tabs:not(.fi-contained)
     )
   )
   > .fi-header {
@@ -2022,7 +2052,10 @@
   background: var(--chrome-hi);
 }
 
-.fi-sidebar.fi-sidebar-open .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label {
+.fi-sidebar.fi-sidebar-open
+  .fi-sidebar-item.fi-active
+  > .fi-sidebar-item-btn
+  .fi-sidebar-item-label {
   @apply bg-transparent text-white;
   font-weight: 600;
 }
@@ -4635,7 +4668,9 @@ html[data-density="comfortable"] .tbl tbody td {
   min-height: 190px;
   /* Filament adds a 1px ring and shadow-sm to records; the 1px border is the edge. */
   box-shadow: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .addon-cards .fi-ta-record:hover {
