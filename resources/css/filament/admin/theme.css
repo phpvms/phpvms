@@ -4510,6 +4510,8 @@ html[data-density="comfortable"] .tbl tbody td {
   @apply grid items-center gap-3 rounded-xl border px-3 py-2.5;
   @apply border-(--warn-line) bg-(--warn-soft) text-(--warn);
   grid-template-columns: auto minmax(0, 1fr) auto;
+  /* Sits under the filter bar, lined up with the card grid's 14px padding. */
+  margin: 14px 14px 0;
 }
 
 .notice svg {
@@ -4602,6 +4604,274 @@ html[data-density="comfortable"] .tbl tbody td {
 
 .addon-tile--lg {
   @apply size-10.5 rounded-xl text-[16px];
+}
+
+/* Add-on card (table card grid) and slide-over. Modules are not a Tailwind
+ * @source root, so the card views lean on these hooks instead of utilities. */
+/* Card grid (C1): each record is its own bordered, rounded surface with a 14px gap. Scoped to `.addon-cards` (the table's extra attribute)
+ * and written to out-rank the page-level `.fi-grid { gap-0 }` rule above rather
+ * than change it. */
+.fi-page-content .addon-cards .fi-ta-content-grid.fi-grid:not(.fi-section *, .fi-modal *) {
+  gap: 14px;
+  padding: 18px 14px 40px;
+}
+
+.addon-cards .fi-ta-record {
+  @apply relative overflow-hidden rounded-[9px] border border-(--line) bg-(--surface);
+  min-height: 190px;
+  /* Filament adds a 1px ring and shadow-sm to records; the 1px border is the edge. */
+  box-shadow: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.addon-cards .fi-ta-record:hover {
+  @apply border-(--line-strong);
+  box-shadow: 0 6px 20px rgb(20 30 45 / 0.08);
+}
+
+.addon-cards .fi-ta-record-content-ctn {
+  @apply flex flex-1 flex-col p-0;
+}
+
+.addon-cards .fi-ta-record-content-ctn > div:not(.fi-ta-actions) {
+  @apply flex flex-1 flex-col;
+}
+
+/* The body button and the layout wrappers inside it stretch, so every card in a
+ * row is the same height and the footer pins to the bottom. */
+.addon-cards .fi-ta-record-content {
+  @apply flex flex-1 flex-col justify-start p-0 text-start;
+}
+
+.addon-cards .fi-ta-record-content :is(.fi-grid-col, .fi-ta-stack, .fi-ta-col) {
+  @apply flex flex-1 flex-col;
+}
+
+/* Record actions render in their own container; lay them over the card instead
+ * of as a footer band: the "more" menu top-right of the head, the primary
+ * action at the right of the footer line. */
+.addon-cards .fi-ta-record .fi-ta-actions {
+  display: contents;
+}
+
+.addon-cards .fi-ta-actions > .fi-dropdown {
+  @apply absolute top-3 right-2.5 z-[1];
+}
+
+.addon-cards .fi-ta-actions > :is(button, a) {
+  @apply absolute right-3.5 bottom-3 z-[1];
+}
+
+/* Filter bar (C1 .ao-filters--bar): one sticky 46px row above the cards, padded
+ * to line up with the card grid. It drives the table's own search/filter state. */
+.fi-grid-col:has(> .fi-sc-component > .addon-bar),
+.fi-sc-component:has(> .addon-bar) {
+  /* Sticky is bounded by the parent; lift the bar out of its own one-row cell
+   * so it travels the whole page grid. */
+  display: contents;
+}
+
+.addon-bar {
+  @apply sticky top-[42px] z-[6] flex h-[46px] items-center gap-2 border-b border-(--line) bg-(--surface) px-[14px];
+}
+
+.addon-bar__search {
+  @apply w-56 flex-none;
+}
+
+.addon-bar__search .fi-input {
+  @apply py-1 text-[13px];
+}
+
+.addon-bar__pill {
+  @apply inline-flex h-[26px] items-center gap-1.5 rounded-full border border-(--line) px-2.5 text-[13px] whitespace-nowrap text-(--ink-2);
+}
+
+.addon-bar__pill:hover {
+  @apply border-(--ink-4);
+}
+
+.addon-bar__pill[aria-pressed="true"] {
+  @apply border-primary-500 bg-primary-500/10 text-primary-600;
+}
+
+.addon-bar__pill .fi-icon {
+  @apply size-3.5;
+}
+
+.addon-bar__sort {
+  @apply ms-auto inline-flex items-center gap-1 text-[12px] text-(--ink-3);
+}
+
+.addon-bar__sort .fi-icon {
+  @apply size-3.5;
+}
+
+.addon-card {
+  @apply flex flex-1 flex-col gap-2.5 px-3.5 pt-3.5 pb-3;
+}
+
+.addon-card__head {
+  @apply flex items-start gap-[11px] pe-7;
+}
+
+.addon-card__title {
+  @apply flex min-w-0 flex-col;
+}
+
+.addon-card__name {
+  @apply flex items-center gap-1 text-[14px] text-(--ink);
+  font-weight: 600;
+}
+
+.addon-card__name-text,
+.addon-card__meta {
+  @apply truncate;
+}
+
+.addon-card__official {
+  @apply size-3.5 flex-none text-primary-600;
+}
+
+.addon-card__meta {
+  @apply text-[12px] text-(--ink-3);
+}
+
+.addon-card__desc {
+  @apply line-clamp-3 text-[13px] text-(--ink-2);
+}
+
+.addon-card__badges {
+  @apply mt-auto flex flex-wrap gap-1;
+}
+
+/* Footer line inside the card padding: version, installs, then the primary
+ * action (positioned over the right end by the rules above). */
+.addon-card__facts {
+  @apply flex min-h-[40px] items-center gap-2 border-t border-(--line-soft) pt-2.5 text-[12px] text-(--ink-3);
+}
+
+.addon-card__badges + .addon-card__facts,
+.addon-card__desc + .addon-card__facts,
+.addon-card__head + .addon-card__facts {
+  @apply mt-auto;
+}
+
+.addon-card__version {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.addon-card__version b {
+  @apply text-(--warn);
+  font-weight: 600;
+}
+
+.addon-card__progress {
+  @apply flex flex-col gap-1 text-[12px] text-(--ink-2);
+}
+
+/* Monogram plate: solid gradient, white letters (C1 .ao-mono--lg + .ao-t-*).
+ * Scoped to add-ons so the shared .overview__icon--* tints stay as they are. */
+.addon-plate {
+  @apply grid size-10 flex-none place-items-center rounded-lg text-[14px] text-white uppercase;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.addon-plate img {
+  @apply size-full rounded-lg object-cover;
+}
+
+.addon-plate--blue {
+  background: linear-gradient(140deg, #2f8fd6, #1660a8);
+}
+
+.addon-plate--teal {
+  background: linear-gradient(140deg, #23a58f, #0f7366);
+}
+
+.addon-plate--violet {
+  background: linear-gradient(140deg, #8a6be0, #5a3fb3);
+}
+
+.addon-plate--rose {
+  background: linear-gradient(140deg, #e0627d, #a83552);
+}
+
+.addon-plate--amber {
+  background: linear-gradient(140deg, #e4a43a, #b8701a);
+}
+
+/* Disabled add-ons stay listed, dimmed. */
+.addon-card--dim .addon-plate,
+.addon-card--dim .addon-card__name {
+  @apply opacity-60;
+}
+
+/* Add-on peek: the demo's .c1-panel width, scoped so the PIREP and airport
+ * panels keep theirs. Doubled class to out-rank .fi-modal-window.pirep-panel. */
+.fi-modal-window.pirep-panel.addon-panel {
+  width: min(46vw, 640px);
+}
+
+.addon-peek {
+  @apply flex flex-col;
+  min-height: 100dvh;
+}
+
+.addon-peek .pp-body {
+  @apply flex flex-1 flex-col gap-4;
+}
+
+/* The shared panel hides the eyebrow below 860px; the add-on panel is always
+ * narrower than that and the eyebrow is its publisher line. */
+.addon-peek .pp-eyebrow {
+  @apply block;
+}
+
+/* The shared .pp-* sections each carry a top rule and margin for stacking;
+ * the body here is a gap column, so only keep the rule between sections. */
+.addon-peek .pp-stats,
+.addon-peek .pp-props,
+.addon-peek .pp-section {
+  @apply mt-0;
+}
+
+.addon-peek .pp-stats {
+  @apply border-t-0 pt-0;
+}
+
+.addon-peek__text {
+  @apply truncate text-[14px];
+  font-family: inherit;
+}
+
+.addon-peek__lede {
+  @apply text-[13px] text-(--ink-2);
+}
+
+.addon-peek__callout {
+  @apply flex items-start gap-2 rounded-lg border px-3 py-2 text-[13px];
+}
+
+.addon-peek__callout .fi-icon {
+  @apply mt-0.5 size-4 flex-none;
+}
+
+.addon-peek__callout--ok {
+  @apply border-(--ok-line) bg-(--ok-soft) text-(--ok);
+}
+
+.addon-peek__callout--warn {
+  @apply border-(--warn-line) bg-(--warn-soft) text-(--warn);
+}
+
+.addon-peek__verify {
+  @apply text-[12px] text-(--ink-3);
+}
+
+.addon-peek__foot {
+  @apply sticky bottom-0 mt-auto flex flex-wrap items-center gap-2 border-t border-(--line) bg-(--surface) px-5 py-3;
 }
 
 .addon-row__body {

@@ -4,14 +4,36 @@ declare(strict_types=1);
 
 return [
     // Tabs and list controls
-    'browse_registry' => 'Browse registry',
-    'updates'         => 'Updates',
-    'installed_tab'   => 'Installed',
-    'registry_tab'    => 'Registry',
-    'all_categories'  => 'All categories',
-    'search_addons'   => 'Search :count add-ons by name or publisher…',
-    'no_addons_found' => 'No addons found.',
-    'select_an_addon' => 'Select an addon to see its details.',
+    'browse_registry'   => 'Browse registry',
+    'updates'           => 'Updates',
+    'installed_tab'     => 'Installed',
+    'all_tab'           => 'All',
+    'not_installed_tab' => 'Not installed',
+    'registry_tab'      => 'Registry',
+    'view'              => 'View',
+    'all_categories'    => 'All categories',
+    'search_addons'     => 'Search :count add-ons by name or publisher…',
+    'no_addons_found'   => 'No addons found.',
+    'select_an_addon'   => 'Select an addon to see its details.',
+
+    // Card grid, filters and peek
+    'search_placeholder'     => 'Search by name, publisher or id…',
+    'category'               => 'Category',
+    'official_only'          => 'Official only',
+    'hide_untested'          => 'Hide untested',
+    'badge_update'           => 'Update',
+    'untested'               => 'Untested',
+    'no_installable_version' => 'The registry lists no installable version.',
+    'search_addons_short'    => 'Search add-ons',
+    'any'                    => 'Any',
+    'sort_name'              => 'Name A–Z',
+    'details'                => 'Details',
+    'repository_link'        => 'Repository',
+    'compatibility'          => 'Compatibility',
+    'compat_ok'              => 'Its requirements are met on this install.',
+    'publisher'              => 'Publisher',
+    'license'                => 'License',
+    'source'                 => 'Source',
 
     // Enable-state tabs within the active tab
     'state_all'      => 'All',
@@ -61,7 +83,7 @@ return [
     // Row and detail facts
     'by'               => 'by',
     'by_publisher'     => 'by :publisher',
-    'installs'         => 'installs',
+    'installs'         => 'Installs',
     'update_available' => 'update available',
     'installed'        => 'installed',
     'disabled'         => 'disabled',
