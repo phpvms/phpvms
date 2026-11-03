@@ -159,3 +159,53 @@ it('updates the oldest of the values older data already holds under one slug', f
     expect($oldest->fresh()->value)->toBe('G3')
         ->and($pirep->fresh()->fields->firstWhere('slug', 'departure-gate')->value)->toBe('G3');
 });
+
+it('keeps the fields of a filed pirep that a prefile reuses', function (): void {
+    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    $pirep = Pirep::factory()->create([
+        'user_id'       => $this->pilot->id,
+        'state'         => PirepState::PENDING,
+        'flight_number' => '100',
+        'route_code'    => null,
+        'route_leg'     => null,
+    ]);
+    setFieldAsServer($pirep, 'Network Check', 'failed');
+
+    $prefiled = app(PirepService::class)->prefile($this->pilot, [
+        'airline_id'     => $pirep->airline_id,
+        'aircraft_id'    => $pirep->aircraft_id,
+        'flight_number'  => '100',
+        'dpt_airport_id' => $pirep->dpt_airport_id,
+        'arr_airport_id' => $pirep->arr_airport_id,
+    ], [
+        new PirepFieldValue(['name' => 'Network Check', 'value' => 'passed', 'source' => PirepFieldSource::ACARS]),
+    ]);
+
+    expect($prefiled->id)->toBe($pirep->id)
+        ->and(fieldValue($pirep, 'network-check'))->toBe('failed');
+});
+
+it('keeps values from acars when the pilot edits the pirep on the web', function (): void {
+    PirepField::create(['name' => 'Network Check', 'pirep_source' => PirepFieldSource::BOTH]);
+    PirepField::create(['name' => 'Remarks', 'pirep_source' => PirepFieldSource::MANUAL]);
+    $pirep = pilotPirep($this->pilot, PirepState::PENDING);
+    setFieldAsServer($pirep, 'Network Check', 'failed');
+
+    $this->actingAs($this->pilot)->put(route('frontend.pireps.update', $pirep->id), [
+        'airline_id'     => $pirep->airline_id,
+        'flight_number'  => 100,
+        'dpt_airport_id' => $pirep->dpt_airport_id,
+        'arr_airport_id' => $pirep->arr_airport_id,
+        'hours'          => 1,
+        'minutes'        => 0,
+        'block_fuel'     => 100,
+        'fuel_used'      => 50,
+        'submit'         => 'save',
+        'network-check'  => 'passed',
+        'remarks'        => 'Diverted for weather',
+    ])->assertRedirect();
+
+    expect(fieldValue($pirep, 'network-check'))->toBe('failed')
+        ->and(fieldValue($pirep, 'remarks'))->toBe('Diverted for weather');
+});

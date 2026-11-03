@@ -221,7 +221,12 @@ class PirepService extends Service
             }
         }
 
-        $this->updateCustomFields($pirep->id, $fields);
+        // A duplicate that has already been filed keeps the fields it was
+        // filed with.
+        if ($pirep->fields_writable) {
+            $this->updateCustomFields($pirep->id, $fields);
+        }
+
         $this->fareSvc->saveToPirep($pirep, $fares);
 
         $this->openPositionRow($pirep);

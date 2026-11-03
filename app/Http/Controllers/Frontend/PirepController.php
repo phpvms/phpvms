@@ -19,6 +19,7 @@ use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\PirepField;
+use App\Models\PirepFieldValue;
 use App\Models\SimBrief;
 use App\Models\Subfleet;
 use App\Models\User;
@@ -110,6 +111,24 @@ class PirepController extends Controller
         }
 
         return $aircraft;
+    }
+
+    /**
+     * Drop submitted values for the fields that ACARS or server code filled
+     * in. The form shows those values read-only, so a value for them can only
+     * come from a crafted request.
+     */
+    protected function withoutAcarsValues(Pirep $pirep, array $fields): array
+    {
+        $acars_slugs = PirepFieldValue::where('pirep_id', $pirep->id)
+            ->where('source', PirepFieldSource::ACARS)
+            ->pluck('slug')
+            ->all();
+
+        return array_values(array_filter(
+            $fields,
+            fn (array $field): bool => !in_array(Str::slug((string) $field['name']), $acars_slugs, true)
+        ));
     }
 
     /**
@@ -592,7 +611,7 @@ class PirepController extends Controller
             $this->pirepSvc->saveRoute($pirep);
         }
 
-        $fields = $this->saveCustomFields($request);
+        $fields = $this->withoutAcarsValues($pirep, $this->saveCustomFields($request));
         $this->pirepSvc->updateCustomFields($pirep->id, $fields);
         $this->saveFares($pirep, $request);
 
