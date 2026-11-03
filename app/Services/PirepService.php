@@ -52,6 +52,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class PirepService extends Service
 {
@@ -717,7 +718,9 @@ class PirepService extends Service
     }
 
     /**
-     * Update any custom PIREP fields
+     * Update any custom PIREP fields. Values are matched on their slug, so a
+     * field sent under another casing or as its slug updates the same value
+     * instead of adding a second one.
      *
      * @param PirepFieldValue[] $field_values
      */
@@ -728,9 +731,11 @@ class PirepService extends Service
         }
 
         foreach ($field_values as $fv) {
+            $name = (string) $fv['name'];
+
             PirepFieldValue::updateOrCreate(
-                ['pirep_id' => $pirep_id, 'name' => $fv['name']],
-                ['value' => $fv['value'], 'source' => $fv['source']]
+                ['pirep_id' => $pirep_id, 'slug' => Str::slug($name)],
+                ['name' => $name, 'value' => $fv['value'], 'source' => $fv['source']]
             );
         }
     }

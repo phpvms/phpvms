@@ -100,3 +100,15 @@ it('still lets server code change fields after the pirep is filed', function ():
 
     expect(fieldValue($pirep, 'network-check'))->toBe('passed');
 });
+
+it('updates one value whatever casing or slug the field is sent under', function (): void {
+    $pirep = pilotPirep($this->pilot, PirepState::IN_PROGRESS);
+    apiAs($this->pilot);
+
+    foreach (['Departure Gate' => 'G26', 'departure-gate' => 'G27', 'DEPARTURE GATE' => 'G28'] as $name => $value) {
+        $this->postJson('/api/pireps/'.$pirep->id.'/fields', ['fields' => [$name => $value]])->assertOk();
+    }
+
+    expect(PirepFieldValue::where('pirep_id', $pirep->id)->where('slug', 'departure-gate')->pluck('value')->all())
+        ->toBe(['G28']);
+});
