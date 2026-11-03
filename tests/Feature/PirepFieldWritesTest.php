@@ -1,0 +1,102 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Enums\PirepFieldSource;
+use App\Enums\PirepState;
+use App\Models\Pirep;
+use App\Models\PirepFieldValue;
+use App\Models\User;
+use App\Services\PirepService;
+
+/**
+ * The ACARS API can change a PIREP's custom fields until the PIREP is filed,
+ * and not after: values set at filing stay as they are during review.
+ */
+beforeEach(function (): void {
+    $this->pilot = User::factory()->create();
+});
+
+function pilotPirep(User $pilot, PirepState $state): Pirep
+{
+    return Pirep::factory()->create(['user_id' => $pilot->id, 'state' => $state]);
+}
+
+function setFieldAsServer(Pirep $pirep, string $name, string $value): void
+{
+    app(PirepService::class)->updateCustomFields($pirep->id, [
+        new PirepFieldValue(['name' => $name, 'value' => $value, 'source' => PirepFieldSource::ACARS]),
+    ]);
+}
+
+function fieldValue(Pirep $pirep, string $slug): ?string
+{
+    return PirepFieldValue::where('pirep_id', $pirep->id)->where('slug', $slug)->value('value');
+}
+
+it('lets the api change fields until the pirep is filed', function (PirepState $state): void {
+    $pirep = pilotPirep($this->pilot, $state);
+    apiAs($this->pilot);
+
+    $this->postJson('/api/pireps/'.$pirep->id.'/fields', [
+        'fields' => ['Departure Gate' => 'G26'],
+    ])->assertOk();
+
+    expect(fieldValue($pirep, 'departure-gate'))->toBe('G26');
+})->with([
+    'in progress' => PirepState::IN_PROGRESS,
+    'paused'      => PirepState::PAUSED,
+    'draft'       => PirepState::DRAFT,
+]);
+
+it('refuses to change fields through the fields endpoint once the pirep is filed', function (PirepState $state): void {
+    $pirep = pilotPirep($this->pilot, $state);
+    setFieldAsServer($pirep, 'Network Check', 'failed');
+    apiAs($this->pilot);
+
+    $this->postJson('/api/pireps/'.$pirep->id.'/fields', [
+        'fields' => ['Network Check' => 'passed'],
+    ])->assertStatus(400);
+
+    expect(fieldValue($pirep, 'network-check'))->toBe('failed');
+})->with([
+    'pending'  => PirepState::PENDING,
+    'accepted' => PirepState::ACCEPTED,
+    'rejected' => PirepState::REJECTED,
+]);
+
+it('ignores fields sent with an update once the pirep is filed, but applies the rest', function (): void {
+    $pirep = pilotPirep($this->pilot, PirepState::PENDING);
+    setFieldAsServer($pirep, 'Network Check', 'failed');
+    apiAs($this->pilot);
+
+    $this->postJson('/api/pireps/'.$pirep->id.'/update', [
+        'notes'  => 'Smooth flight',
+        'fields' => ['Network Check' => 'passed'],
+    ])->assertOk();
+
+    expect(fieldValue($pirep, 'network-check'))->toBe('failed')
+        ->and($pirep->fresh()->notes)->toBe('Smooth flight');
+});
+
+it('saves the fields sent with the file request itself', function (): void {
+    $pirep = pilotPirep($this->pilot, PirepState::IN_PROGRESS);
+    apiAs($this->pilot);
+
+    $this->postJson('/api/pireps/'.$pirep->id.'/file', [
+        'distance'    => 100,
+        'flight_time' => 60,
+        'fields'      => ['Landing Rate' => '-120'],
+    ])->assertOk();
+
+    expect(fieldValue($pirep, 'landing-rate'))->toBe('-120');
+});
+
+it('still lets server code change fields after the pirep is filed', function (): void {
+    $pirep = pilotPirep($this->pilot, PirepState::PENDING);
+
+    setFieldAsServer($pirep, 'Network Check', 'failed');
+    setFieldAsServer($pirep, 'Network Check', 'passed');
+
+    expect(fieldValue($pirep, 'network-check'))->toBe('passed');
+});
