@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\PirepFieldSource;
 use App\Enums\PirepState;
 use App\Models\Pirep;
+use App\Models\PirepField;
 use App\Models\PirepFieldValue;
 use App\Models\User;
 use App\Services\PirepService;
@@ -111,4 +112,24 @@ it('updates one value whatever casing or slug the field is sent under', function
 
     expect(PirepFieldValue::where('pirep_id', $pirep->id)->where('slug', 'departure-gate')->pluck('value')->all())
         ->toBe(['G28']);
+});
+
+it('saves a manual field the pilot fills in on the web form', function (): void {
+    PirepField::create(['name' => 'Remarks', 'pirep_source' => PirepFieldSource::MANUAL]);
+    $pirep = pilotPirep($this->pilot, PirepState::DRAFT);
+
+    $this->actingAs($this->pilot)->put(route('frontend.pireps.update', $pirep->id), [
+        'airline_id'     => $pirep->airline_id,
+        'flight_number'  => 100,
+        'dpt_airport_id' => $pirep->dpt_airport_id,
+        'arr_airport_id' => $pirep->arr_airport_id,
+        'hours'          => 1,
+        'minutes'        => 0,
+        'block_fuel'     => 100,
+        'fuel_used'      => 50,
+        'submit'         => 'save',
+        'remarks'        => 'Diverted for weather',
+    ])->assertRedirect();
+
+    expect(fieldValue($pirep, 'remarks'))->toBe('Diverted for weather');
 });

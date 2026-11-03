@@ -128,7 +128,7 @@ class PirepController extends Controller
                 'name'   => $field->name,
                 'slug'   => $field->slug,
                 'value'  => $request->input($field->slug),
-                'source' => PirepSource::MANUAL,
+                'source' => PirepFieldSource::MANUAL,
             ];
         }
 
