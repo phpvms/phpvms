@@ -37,6 +37,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -46,6 +47,19 @@ use Laracasts\Flash\Flash;
 
 class PirepController extends Controller
 {
+    /**
+     * Columns a pilot may never set from the form. The state moves only through
+     * submit/accept/reject; the key and owner come from the server; and the
+     * source, timestamps and flight-quality values decide auto-approval and
+     * awards, so they are never taken from a manual report.
+     *
+     * @var list<string>
+     */
+    private const array PROTECTED_ATTRIBUTES = [
+        'id', 'state', 'user_id', 'source', 'source_name', 'status', 'score', 'landing_rate',
+        'submitted_at', 'block_off_time', 'block_on_time', 'created_at', 'updated_at',
+    ];
+
     public function __construct(
         private readonly FareService $fareSvc,
         private readonly GeoService $geoSvc,
@@ -286,7 +300,7 @@ class PirepController extends Controller
         $aircraft = null;
         if ($request->has('sb_id')) {
             $simbrief_id = $request->input('sb_id');
-            $simbrief = SimBrief::with('aircraft.subfleet.fares')->find($simbrief_id);
+            $simbrief = SimBrief::with('aircraft.subfleet.fares')->where('user_id', Auth::id())->findOrFail($simbrief_id);
             $pirep = Pirep::fromSimBrief($simbrief);
 
             $aircraft = $simbrief->aircraft;
@@ -345,7 +359,7 @@ class PirepController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $pirep = new Pirep(PirepLevelNormalizer::normalize($request->post()));
+        $pirep = new Pirep(PirepLevelNormalizer::normalize(Arr::except($request->post(), self::PROTECTED_ATTRIBUTES)));
         $pirep->user_id = $user->id;
 
         $attrs = $request->all();
@@ -438,7 +452,7 @@ class PirepController extends Controller
         $this->pirepSvc->saveRoute($pirep);
 
         if ($request->has('sb_id')) {
-            $brief = SimBrief::find($request->input('sb_id'));
+            $brief = SimBrief::where('user_id', Auth::id())->find($request->input('sb_id'));
             if ($brief !== null) {
                 /** @var SimBriefService $sbSvc */
                 $sbSvc = app(SimBriefService::class);
@@ -504,9 +518,7 @@ class PirepController extends Controller
 
         // set the custom fields
         foreach ($pirep->fields as $field) {
-            if ($field->slug === null) {
-                $field->slug = Str::slug($field->name);
-            }
+            $field->slug ??= Str::slug($field->name);
 
             $field_name = 'field_'.$field->slug;
             $pirep->{$field_name} = $field->value;
@@ -562,7 +574,7 @@ class PirepController extends Controller
         }
 
         $orig_route = $pirep->route;
-        $attrs = $request->all();
+        $attrs = Arr::except($request->all(), self::PROTECTED_ATTRIBUTES);
         $attrs['submit'] = strtolower((string) $attrs['submit']);
 
         // Fix the time

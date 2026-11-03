@@ -20,13 +20,14 @@ const revealed = ref(false);
 const drawer = useTemplateRef<InstanceType<typeof ApiConnectionsDrawer>>("drawer");
 
 /**
- * A GET route that rotates the key and redirects back to the profile, so an
- * Inertia visit picks up the new page props. Confirmed first because the old
- * key stops working immediately.
+ * A POST route (never GET, so a forged link can't trigger it) that rotates
+ * the key and redirects back to the profile, so an Inertia visit picks up the
+ * new page props. Confirmed first because the old key stops working
+ * immediately.
  */
 function regenerate() {
   if (!globalThis.confirm("Are you sure? This will reset your API key.")) return;
-  router.get("/profile/regen_apikey");
+  router.post("/profile/regen_apikey");
 }
 </script>
 

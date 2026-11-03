@@ -21,7 +21,10 @@ class SimBriefResource extends Resource
         $data = [
             'id'          => $this->id,
             'aircraft_id' => $this->aircraft_id,
-            'url'         => url(route('api.flights.briefing', ['id' => $this->flight_id])),
+            // The briefing route is keyed by flight; an OFP attached to a filed PIREP has none
+            'url' => $this->flight_id
+                ? url(route('api.flights.briefing', ['id' => $this->flight_id]))
+                : null,
         ];
 
         $fares = collect();

@@ -29,6 +29,18 @@ return [
         // reinstall blocked by the existing-row check.
         'installed' => storage_path('addons'),
 
+        // Installed addons of type "theme". Same volume and same lifecycle as
+        // `installed`, kept apart so themes and modules are not mixed on disk.
+        // The same nesting rule applies: not inside `base`. Not storage/themes:
+        // `theme:package` and `theme:install` keep their packages and a tmp/
+        // directory there.
+        'themes' => storage_path('addon-themes'),
+
+        // Where each theme addon's public/ is linked, as themes/<name>. Inside
+        // storage/app/public so `storage:link` (public/storage) already serves
+        // it, and inside the persistent volume so the link survives a redeploy.
+        'theme_assets' => storage_path('app/public/themes'),
+
         'assets'     => public_path('ext'),
         'staging'    => storage_path('app/addon-staging'),
         'boot_cache' => base_path('bootstrap/cache/addons.php'),

@@ -200,7 +200,7 @@ class FlightController extends Controller
     public function briefing(string $id): ResponseFactory|Response
     {
         /** @var ?SimBrief $simbrief */
-        $simbrief = SimBrief::where('flight_id', $id)->first();
+        $simbrief = SimBrief::where(['flight_id' => $id, 'user_id' => Auth::id()])->first();
 
         if ($simbrief === null) {
             throw new AssetNotFound(new Exception('Flight briefing not found'));

@@ -11,6 +11,8 @@ use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
+use App\Addons\Support\ThemeAddonRegistrar;
+use App\Addons\Support\ThemeAssetLinker;
 use App\Services\AddonSettingSyncService;
 use App\Support\RegistersApiScopes;
 use Illuminate\Support\Facades\Log;
@@ -61,6 +63,8 @@ class AddonServiceProvider extends ServiceProvider
         // ── Phase 2 singletons ──────────────────────────────────────────────
         $this->app->singleton(AddonAutoLoader::class);
         $this->app->singleton(AddonAssetLinker::class, fn (): AddonAssetLinker => AddonAssetLinker::fromConfig());
+        $this->app->singleton(ThemeAssetLinker::class, fn (): ThemeAssetLinker => ThemeAssetLinker::fromConfig());
+        $this->app->singleton(ThemeAddonRegistrar::class);
         $this->app->singleton(AddonRegistry::class);
 
         // ── Non-console: autoload guard ─────────────────────────────────────
@@ -79,6 +83,9 @@ class AddonServiceProvider extends ServiceProvider
         // The loader contains its own guard call (re-checks the resolved ClassLoader);
         // both guards are intentional — see provider-level comment above (LOAD-08).
         $this->app->make(AddonAutoLoader::class)->register($this->app);
+
+        // Before igaster's boot() scans themes, so theme addons are included.
+        $this->app->make(ThemeAddonRegistrar::class)->register();
     }
 
     /**

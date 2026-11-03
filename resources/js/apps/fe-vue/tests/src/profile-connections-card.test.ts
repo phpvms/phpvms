@@ -5,13 +5,13 @@ import ProfileConnectionsCard from "@/components/profile/ProfileConnectionsCard.
 
 // vi.hoisted: vi.mock is lifted above the file, so a plain top-level const is
 // still in its temporal dead zone when the factory runs.
-const { routerDelete, routerGet } = vi.hoisted(() => ({
+const { routerDelete, routerPost } = vi.hoisted(() => ({
   routerDelete: vi.fn(),
-  routerGet: vi.fn(),
+  routerPost: vi.fn(),
 }));
 
 vi.mock("@inertiajs/vue3", () => ({
-  router: { delete: routerDelete, get: routerGet },
+  router: { delete: routerDelete, post: routerPost },
 }));
 
 function connection(
@@ -29,7 +29,7 @@ function connection(
 
 beforeEach(() => {
   routerDelete.mockClear();
-  routerGet.mockClear();
+  routerPost.mockClear();
   vi.unstubAllGlobals();
 });
 
@@ -99,10 +99,10 @@ describe("ProfileApiAccessCard", () => {
 
     const regen = wrapper.findAll("ubutton").find((b) => b.text().includes("Regenerate"));
     await regen?.trigger("click");
-    expect(routerGet).not.toHaveBeenCalled();
+    expect(routerPost).not.toHaveBeenCalled();
 
     vi.stubGlobal("confirm", vi.fn().mockReturnValue(true));
     await regen?.trigger("click");
-    expect(routerGet).toHaveBeenCalledWith("/profile/regen_apikey");
+    expect(routerPost).toHaveBeenCalledWith("/profile/regen_apikey");
   });
 });

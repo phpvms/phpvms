@@ -155,14 +155,16 @@ test('unit fields', function (): void {
     $response = $this->get($uri);
     $body = $response->json('data');
 
+    // The API rounds units to two decimals, so compare to that precision: rounding
+    // both sides to whole numbers fails when the raw value sits just under .5.
     expect($body['block_fuel'])->toHaveKeys(['lbs', 'kg'])
-        ->and(round($body['block_fuel']['lbs']))->toEqual(round($pirep->block_fuel->toUnit('lbs')))
+        ->and($body['block_fuel']['lbs'])->toEqualWithDelta($pirep->block_fuel->toUnit('lbs'), 0.01)
         ->and($body['fuel_used'])->toHaveKeys(['lbs', 'kg'])
-        ->and(round($body['fuel_used']['lbs']))->toEqual(round($pirep->fuel_used->toUnit('lbs')))
+        ->and($body['fuel_used']['lbs'])->toEqualWithDelta($pirep->fuel_used->toUnit('lbs'), 0.01)
         ->and($body['distance'])->toHaveKeys(['km', 'nmi', 'mi'])
-        ->and(round($body['distance']['nmi']))->toEqual(round($pirep->distance->toUnit('nmi')))
+        ->and($body['distance']['nmi'])->toEqualWithDelta($pirep->distance->toUnit('nmi'), 0.01)
         ->and($body['planned_distance'])->toHaveKeys(['km', 'nmi', 'mi'])
-        ->and(round($body['planned_distance']['nmi']))->toEqual(round($pirep->planned_distance->toUnit('nmi')));
+        ->and($body['planned_distance']['nmi'])->toEqualWithDelta($pirep->planned_distance->toUnit('nmi'), 0.01);
 
     // Check conversion on save
     $val = random_int(1000, 9999999);

@@ -109,12 +109,15 @@ class AppServiceProvider extends ServiceProvider
         DateTimePicker::configureUsing(static fn (DateTimePicker $picker): DateTimePicker => $picker
             ->suffixIcon(static fn (DateTimePicker $component): ?Phosphor => $component->hasDate() ? Phosphor::CalendarLight : null));
 
-        // The SettingService memo is request-scoped via config/octane.php 'flush',
+        // The SettingService and AddonSettingService memos are request-scoped via config/octane.php 'flush',
         // but a long-running queue worker is not flushed per job. Reset the memo
         // before each job so a worker observes settings changed by other
         // processes — otherwise a stale memoized value could be written back into
         // the shared cache on the next Cache::remember() miss.
-        Queue::before(static fn () => app(SettingService::class)->clearMemo());
+        Queue::before(static function (): void {
+            app(SettingService::class)->clearMemo();
+            app(AddonSettingService::class)->clearMemo();
+        });
 
         // The cron_daily channel (storage/logs/cron.log) is reserved for the
         // scheduler and the queue worker. Switch the default log channel only

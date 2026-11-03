@@ -59,4 +59,20 @@ final class SimBriefOfp extends Dto
         public string $map_data,
         public SimBriefOfpApiParams $api_params
     ) {}
+
+    /**
+     * SimBrief sends a lone alternate as the airport itself, not as a list of
+     * one: wrap it so it parses like several.
+     */
+    public static function prepareForPipeline(array $properties): array
+    {
+        foreach (['alternate', 'takeoff_altn', 'enroute_altn'] as $key) {
+            $value = $properties[$key] ?? null;
+            if (is_array($value) && $value !== [] && !array_is_list($value)) {
+                $properties[$key] = [$value];
+            }
+        }
+
+        return $properties;
+    }
 }

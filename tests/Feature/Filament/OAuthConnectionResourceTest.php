@@ -206,6 +206,27 @@ it('limits addon-managed connections to availability controls', function (): voi
         ->assertTableActionDisabled('delete', $connection);
 });
 
+it('hides enable and disable from users without the update permission', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    Permission::firstOrCreate(['name' => 'view:o-auth-connection', 'guard_name' => 'web']);
+    $viewer = User::factory()->create();
+    $viewer->givePermissionTo('view:o-auth-connection');
+    $this->actingAs($viewer->fresh());
+
+    $connection = app(OAuthConnectionService::class)->createManaged(
+        socialLoginConnectionData(['enabled' => true]),
+        'vacentral-addon',
+    );
+
+    Livewire::test(ManageOAuthConnections::class)
+        ->assertTableActionHidden('disable', $connection);
+
+    $connection->update(['enabled' => false]);
+
+    Livewire::test(ManageOAuthConnections::class)
+        ->assertTableActionHidden('enable', $connection->fresh());
+});
+
 it('offers a button css class field on every provider and saves it', function (): void {
     $registry = app(SocialiteProviderRegistry::class);
 

@@ -24,12 +24,13 @@ class UsersTable
     public static function configure(Table $table): Table
     {
         return $table
+            // ident is built from the airline's code
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('airline'))
             ->columns([
                 TextColumn::make('ident')
                     ->label('ID')
                     ->searchable(['pilot_id'])
-                    ->sortable(),
+                    ->sortable(['pilot_id']),
 
                 TextColumn::make('callsign')
                     ->toggleable()

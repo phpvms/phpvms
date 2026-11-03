@@ -82,7 +82,7 @@ Route::group([
     ]);
 
     Route::get('profile/acars', [ProfileController::class, 'acars'])->name('profile.acars');
-    Route::get('profile/regen_apikey', [ProfileController::class, 'regen_apikey'])->name('profile.regen_apikey');
+    Route::post('profile/regen_apikey', [ProfileController::class, 'regen_apikey'])->name('profile.regen_apikey');
 
     // API Connections: authorized OAuth apps + personal access tokens
     Route::get('profile/connections', [ProfileController::class, 'connections'])->name('profile.connections');

@@ -21,12 +21,21 @@ use Illuminate\Support\Facades\Cache;
  * and cached per resolved registry_id + key, so the helper observes the same
  * value regardless of which handle was used.
  *
- * Stateless and Octane-safe: no mutable instance state; all caching lives in
- * the application cache.
+ * Resolved registry_ids and values are also memoized for the current request,
+ * as SettingService does for core settings: a page reading an addon setting in
+ * a loop looks each one up once. The service is a singleton registered in
+ * config/octane.php 'flush', so Octane discards the memo before every request,
+ * and the queue worker clears it before every job.
  */
 class AddonSettingService extends Service
 {
     use CastsSettingValue;
+
+    /** @var array<string, string|null> Per-request memo of resolved registry_ids, keyed by handle. */
+    private array $registryIds = [];
+
+    /** @var array<string, mixed> Per-request memo of values, keyed by "{registry_id}.{formatted key}". */
+    private array $memo = [];
 
     public function __construct(private readonly BootCache $bootCache) {}
 
@@ -44,18 +53,39 @@ class AddonSettingService extends Service
         }
 
         $formattedKey = AddonSetting::formatKey($key);
+        $memoKey = $registryId.'.'.$formattedKey;
 
-        if (app()->environment('production')) {
-            $cache = config('cache.keys.ADDON_SETTINGS');
-
-            return Cache::remember(
-                $cache['key'].$registryId.'.'.$formattedKey,
-                $cache['time'],
-                fn (): mixed => $this->read($registryId, $formattedKey),
-            );
+        if (!array_key_exists($memoKey, $this->memo)) {
+            $this->memo[$memoKey] = app()->environment('production')
+                ? Cache::remember(
+                    config('cache.keys.ADDON_SETTINGS.key').$memoKey,
+                    config('cache.keys.ADDON_SETTINGS.time'),
+                    fn (): mixed => $this->read($registryId, $formattedKey),
+                )
+                : $this->read($registryId, $formattedKey);
         }
 
-        return $this->read($registryId, $formattedKey);
+        return $this->copy($this->memo[$memoKey]);
+    }
+
+    /**
+     * A date setting is a mutable Carbon: each read gets its own, so a caller
+     * doing addon_setting(...)->addDay() doesn't change what the next read sees.
+     */
+    private function copy(mixed $value): mixed
+    {
+        return is_object($value) ? clone $value : $value;
+    }
+
+    /**
+     * Forget the memoized registry_ids and values. Called before each queued
+     * job, which Octane's flush does not cover, so a long-running worker
+     * observes settings changed by other processes.
+     */
+    public function clearMemo(): void
+    {
+        $this->registryIds = [];
+        $this->memo = [];
     }
 
     /**
@@ -100,6 +130,7 @@ class AddonSettingService extends Service
             $setting->save();
 
             $this->forgetCache($registryId, $formattedKey);
+            unset($this->memo[$registryId.'.'.$formattedKey]);
         }
 
         return $value;
@@ -152,6 +183,15 @@ class AddonSettingService extends Service
             return null;
         }
 
+        if (array_key_exists($handle, $this->registryIds)) {
+            return $this->registryIds[$handle];
+        }
+
+        return $this->registryIds[$handle] = $this->findRegistryId($handle);
+    }
+
+    private function findRegistryId(string $handle): ?string
+    {
         $registryId = Addon::query()->where('registry_id', $handle)->value('registry_id')
             ?? Addon::query()->where('name', $handle)->value('registry_id');
 

@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
+use App\Models\Aircraft;
 use App\Models\Airline;
+use App\Models\Airport;
 use App\Models\File;
+use App\Models\Subfleet;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +23,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class DownloadController extends Controller
 {
+    /**
+     * Models that can own files (the ones using FilesTrait). `ref_model_type`
+     * is a stored class name, so never instantiate anything outside this list.
+     *
+     * @var list<class-string<Model>>
+     */
+    private const array FILE_OWNERS = [Aircraft::class, Airline::class, Airport::class, Subfleet::class];
+
     /**
      * Show all of the available files
      */
@@ -41,8 +53,11 @@ class DownloadController extends Controller
         $regrouped_files = [];
         foreach ($grouped_files as $group => $files) {
             [$class, $id] = explode('_', $group);
-            $klass = new $class();
-            $obj = $klass->find($id);
+            if (!\in_array($class, self::FILE_OWNERS, true)) {
+                continue;
+            }
+
+            $obj = $class::find($id);
 
             // Check if the object is there first
             if (isset($obj)) {

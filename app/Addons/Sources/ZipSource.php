@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons\Sources;
 
+use App\Addons\Support\ManifestParser;
 use App\Exceptions\AddonInstallException;
 use App\Support\Filesystem;
 use Illuminate\Support\Facades\File;
@@ -80,11 +81,11 @@ class ZipSource implements AddonSource
 
     /**
      * If the archive wrapped everything in a single top-level directory and
-     * there's no module.json at the root, descend into it.
+     * there's no addon.json or module.json at the root, descend into it.
      */
     private function resolveRoot(string $dest): string
     {
-        if (File::exists($dest.'/module.json')) {
+        if (ManifestParser::manifestPath($dest) !== null) {
             return $dest;
         }
 

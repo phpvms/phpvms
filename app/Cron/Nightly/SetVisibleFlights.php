@@ -17,16 +17,19 @@ use Illuminate\Support\Facades\Log;
  *
  * For every bundle (chunked in batches of 500), in a single iteration:
  *   1. Compute and persist `flight_bundles.visible`.
- *   2. Issue a single bulk UPDATE to set `flights.visible` for every flight in
- *      that bundle, derived from the bundle's enabled/dates state plus the
- *      flight's own enabled/dates state.
+ *   2. Issue bulk UPDATEs that set `flights.visible` for the flights in that
+ *      bundle whose visibility changes, derived from the bundle's
+ *      enabled/dates state plus the flight's own enabled/dates state.
  *
- * Bulk UPDATE shapes (one per bundle):
- *   - Bundle soft-deleted or disabled → `UPDATE flights SET visible=0 WHERE bundle_id=?`
- *   - Bundle active with dates: window membership of the bundle dictates;
- *     `UPDATE flights SET visible = CASE WHEN bundle_in_window THEN enabled ELSE 0 END WHERE bundle_id=?`
- *     (collapsed to: if bundle out of window, all 0; if in window, `visible = enabled`)
- *   - Bundle active with no dates: per-flight window applies (via SQL CASE).
+ * Bulk UPDATE shapes (per bundle). Each only matches rows not already at their
+ * new value, so unchanged flights keep their `updated_at`:
+ *   - Bundle soft-deleted or disabled → `UPDATE flights SET visible=0 WHERE bundle_id=? AND visible=1`
+ *   - Bundle active with dates: window membership of the bundle dictates.
+ *     Out of window: `UPDATE flights SET visible=0 WHERE bundle_id=? AND visible=1`;
+ *     in window: `UPDATE flights SET visible=enabled WHERE bundle_id=? AND visible<>enabled`
+ *   - Bundle active with no dates: `visible=enabled` for flights without dates,
+ *     and the per-flight window (via SQL CASE) for the rest, each guarded by
+ *     `visible <> <new value>`.
  */
 class SetVisibleFlights extends Listener
 {
@@ -77,8 +80,12 @@ class SetVisibleFlights extends Listener
     }
 
     /**
-     * Issue bulk UPDATE statements that set `flights.visible` for every flight
-     * in the given bundle.
+     * Issue bulk UPDATE statements that set `flights.visible` for the flights
+     * in the given bundle whose visibility changes.
+     *
+     * Each statement only matches rows not already at their new value: a bundle
+     * holds tens of thousands of flights, and rewriting them all every night
+     * took seconds and bumped every flight's updated_at for nothing.
      */
     private static function applyFlightVisibilityForBundle(FlightBundle $bundle, Carbon $now): void
     {
@@ -88,6 +95,7 @@ class SetVisibleFlights extends Listener
         if ($bundle->deleted_at !== null || !$bundle->enabled) {
             Flight::query()
                 ->where('bundle_id', $bundleId)
+                ->where('visible', true)
                 ->update(['visible' => false]);
 
             return;
@@ -100,6 +108,7 @@ class SetVisibleFlights extends Listener
             if (!$bundleInWindow) {
                 Flight::query()
                     ->where('bundle_id', $bundleId)
+                    ->where('visible', true)
                     ->update(['visible' => false]);
 
                 return;
@@ -108,6 +117,7 @@ class SetVisibleFlights extends Listener
             // Bundle window is open: visible = enabled.
             Flight::query()
                 ->where('bundle_id', $bundleId)
+                ->whereColumn('visible', '!=', 'enabled')
                 ->update(['visible' => DB::raw('enabled')]);
 
             return;
@@ -119,6 +129,7 @@ class SetVisibleFlights extends Listener
             ->where('bundle_id', $bundleId)
             ->whereNull('start_date')
             ->whereNull('end_date')
+            ->whereColumn('visible', '!=', 'enabled')
             ->update(['visible' => DB::raw('enabled')]);
 
         // C2: flights with a window → SQL CASE evaluates window membership.
@@ -126,24 +137,25 @@ class SetVisibleFlights extends Listener
         $trueLit = self::sqlBool(true);
         $falseLit = self::sqlBool(false);
 
+        $visibleNow = sprintf(
+            'CASE WHEN enabled = %s '
+            .'AND (start_date IS NULL OR start_date <= %s) '
+            .'AND (end_date IS NULL OR end_date >= %s) '
+            .'THEN %s ELSE %s END',
+            $trueLit,
+            $nowExpr,
+            $nowExpr,
+            $trueLit,
+            $falseLit,
+        );
+
         Flight::query()
             ->where('bundle_id', $bundleId)
             ->where(function ($q): void {
                 $q->whereNotNull('start_date')->orWhereNotNull('end_date');
             })
-            ->update([
-                'visible' => DB::raw(sprintf(
-                    'CASE WHEN enabled = %s '
-                    .'AND (start_date IS NULL OR start_date <= %s) '
-                    .'AND (end_date IS NULL OR end_date >= %s) '
-                    .'THEN %s ELSE %s END',
-                    $trueLit,
-                    $nowExpr,
-                    $nowExpr,
-                    $trueLit,
-                    $falseLit,
-                )),
-            ]);
+            ->whereRaw('visible <> ('.$visibleNow.')')
+            ->update(['visible' => DB::raw($visibleNow)]);
     }
 
     private static function computeBundleVisible(FlightBundle $bundle, Carbon $now): bool

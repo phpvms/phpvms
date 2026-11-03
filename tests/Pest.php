@@ -61,10 +61,18 @@ pest()
         // this at its own fixture; everything else just needs it off the repo.
         $installedAddons = sys_get_temp_dir().'/phpvms-addons-installed-'.uniqid('', true);
 
+        // And for addons of type "theme", which install into their own root
+        // (storage/addon-themes) and link their public/ into the public disk
+        // (storage/app/public/themes). Both are written for real by install().
+        $installedThemes = sys_get_temp_dir().'/phpvms-addon-themes-'.uniqid('', true);
+        $themeAssets = sys_get_temp_dir().'/phpvms-theme-assets-'.uniqid('', true);
+
         config([
-            'addons.paths.boot_cache' => $bootCache,
-            'addons.paths.installed'  => $installedAddons,
-            'phpvms.kvp_storage_path' => $kvpStore,
+            'addons.paths.boot_cache'   => $bootCache,
+            'addons.paths.installed'    => $installedAddons,
+            'addons.paths.themes'       => $installedThemes,
+            'addons.paths.theme_assets' => $themeAssets,
+            'phpvms.kvp_storage_path'   => $kvpStore,
         ]);
 
         // Pin the registry cache to the (array) test store at runtime so a stale
@@ -80,7 +88,7 @@ pest()
         // the Application object still exists but its bindings are flushed, so
         // app('config') resolves to the Facade class and config() dies with
         // "Call to undefined method Illuminate\Support\Facades\Config::get()".
-        phpvmsTempPaths([$bootCache, $kvpStore, $installedAddons]);
+        phpvmsTempPaths([$bootCache, $kvpStore, $installedAddons, $installedThemes, $themeAssets]);
     })
     ->afterEach(function (): void {
         // Pure filesystem work -- no container access, so this is safe whatever

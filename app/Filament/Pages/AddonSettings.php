@@ -10,6 +10,7 @@ use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
 use App\Models\AddonSetting;
 use App\Services\AddonSettingService;
+use App\Support\SettingsTabs;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
@@ -183,7 +184,7 @@ class AddonSettings extends Page
     {
         $tabs = [];
 
-        foreach ($this->settings()->groupBy('group') as $group => $settings) {
+        foreach (SettingsTabs::group($this->settings()) as $group => $settings) {
             $tabs[] = Tab::make(Str::ucfirst((string) $group))
                 ->schema(
                     $settings->map(fn (AddonSetting $setting): DatePicker|Toggle|TextInput|Select => $this->fieldFor($setting))->toArray()

@@ -193,7 +193,7 @@ class AddonDiscoveryService
             }
 
             foreach (File::directories($base) as $dir) {
-                foreach (['module.json', 'composer.json'] as $file) {
+                foreach ([...ManifestParser::MANIFEST_FILES, 'composer.json'] as $file) {
                     $path = $dir.'/'.$file;
 
                     if (!File::exists($path)) {
@@ -409,8 +409,10 @@ class AddonDiscoveryService
      * Of two copies of the same addon, the one that should load.
      *
      * Both from the same root cannot happen — scanLocation() returns one
-     * manifest per directory and registry_id is the identity — so exactly one
-     * of these is the image copy.
+     * manifest per directory and registry_id is the identity. Usually one is
+     * the image copy. Both can come from writable roots (the installed root
+     * and the themes root) only when an addon changed type between versions;
+     * then the higher version wins and a tie keeps the copy found first.
      *
      * @param  array{manifest: AddonManifest, fromImage: bool, root: string} $a
      * @param  array{manifest: AddonManifest, fromImage: bool, root: string} $b
@@ -418,6 +420,10 @@ class AddonDiscoveryService
      */
     private function preferredCopy(array $a, array $b): array
     {
+        if (!$a['fromImage'] && !$b['fromImage']) {
+            return AddonVersions::isNewer($b['manifest']->version, $a['manifest']->version) ? $b : $a;
+        }
+
         [$imageCopy, $installedCopy] = $a['fromImage'] ? [$a, $b] : [$b, $a];
 
         return AddonVersions::installedSupersedesImage(
@@ -481,7 +487,7 @@ class AddonDiscoveryService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof AddonManifest) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json (or module.json) is missing or invalid", $resolved));
 
                 continue;
             }

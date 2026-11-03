@@ -156,6 +156,72 @@ test('parses a landing runway with no performance figures', function (): void {
         ->and($runway->gradient)->toBe(-0.84);
 });
 
+test('parses a takeoff runway with no other speed', function (): void {
+    // Verbatim from a real OFP (EHAM, Phenom 300): SimBrief sends an empty node
+    // as [] in its JSON, and the airframe has no speed beyond V1/VR/V2, so
+    // speeds_other used to abort hydration of the entire OFP with a TypeError.
+    $tlr = SimBriefOfpTlr::from([
+        'takeoff' => [
+            'conditions' => [
+                'airport_icao'      => 'EHAM',
+                'planned_runway'    => '24',
+                'planned_weight'    => '7950',
+                'wind_direction'    => '200',
+                'wind_speed'        => '15',
+                'temperature'       => '11',
+                'altimeter'         => '1009',
+                'surface_condition' => 'dry',
+            ],
+            'runway' => [
+                [
+                    'identifier'          => '04',
+                    'length'              => '6627',
+                    'length_tora'         => '6263',
+                    'length_toda'         => '6460',
+                    'length_asda'         => '6263',
+                    'length_lda'          => '6627',
+                    'elevation'           => '-13',
+                    'gradient'            => '-0.02',
+                    'true_course'         => '41',
+                    'magnetic_course'     => '39',
+                    'headwind_component'  => '-13',
+                    'crosswind_component' => '5',
+                    'ils_frequency'       => '',
+                    'flap_setting'        => '1',
+                    'thrust_setting'      => 'TOGA',
+                    'bleed_setting'       => 'N/A',
+                    'anti_ice_setting'    => 'OFF',
+                    'flex_temperature'    => '',
+                    'max_temperature'     => '50',
+                    'max_weight'          => '8150',
+                    'limit_code'          => 'A',
+                    'limit_obstacle'      => [],
+                    'speeds_v1'           => '104',
+                    'speeds_vr'           => '104',
+                    'speeds_v2'           => '116',
+                    'speeds_v2_id'        => '2',
+                    'speeds_other'        => [],
+                    'speeds_other_id'     => [],
+                    'thrust_value'        => [],
+                    'thrust_value_id'     => [],
+                    'distance_decide'     => '2069',
+                    'distance_reject'     => '3786',
+                    'distance_margin'     => '2477',
+                    'distance_continue'   => '3669',
+                ],
+            ],
+        ],
+        'landing' => [],
+    ]);
+
+    $runway = $tlr->takeoff->runway[0];
+
+    expect($runway->speeds_other)->toBe('')
+        ->and($runway->speeds_other_id)->toBe('')
+        ->and($runway->distance_decide)->toBe(2069)
+        ->and($runway->limit_obstacle)->toBe([]);
+});
+
 test('read simbrief', function (): void {
     $userinfo = createUserData();
     $user = $userinfo['user'];
@@ -368,6 +434,27 @@ test('attach to pirep', function (): void {
         ->and($briefing->pirep_id)->toEqual($pirep->id);
 });
 
+test('pirep api serializes a simbrief detached from its flight', function (): void {
+    $userinfo = createUserData();
+    $user = $userinfo['user'];
+
+    apiAs($user);
+
+    /** @var Pirep $pirep */
+    $pirep = Pirep::factory()->create(['user_id' => $user->id]);
+
+    $briefing = loadSimBrief($user, $userinfo['aircraft']->first());
+
+    // Filing a PIREP attaches the OFP and drops its flight_id, then answers with the PIREP
+    app(SimBriefService::class)->attachSimbriefToPirep($pirep, $briefing);
+
+    $response = $this->get('/api/pireps/'.$pirep->id);
+    $response->assertOk();
+
+    expect($response->json('data.simbrief.id'))->toEqual($briefing->id)
+        ->and($response->json('data.simbrief.url'))->toBeNull();
+});
+
 test('simbrief create form preloads selected airports', function (): void {
     Airport::factory()->create(['id' => 'OMAA', 'icao' => 'OMAA', 'name' => 'Abu Dhabi International']);
     Airport::factory()->create(['id' => 'OMDB', 'icao' => 'OMDB', 'name' => 'Dubai International']);
@@ -409,4 +496,16 @@ test('clear expired briefs', function (): void {
     $all_briefs = SimBrief::all();
     expect($all_briefs->count())->toEqual(1)
         ->and($all_briefs[0]->id)->toEqual($sb_ignored->id);
+});
+
+test('check_ofp refuses a request without the static id instead of failing', function (): void {
+    // A browser still caching the pre-JSON simbrief.apiv1.js polls without static_id.
+    $this->actingAs(User::factory()->create())
+        ->getJson('/simbrief/check_ofp?'.http_build_query([
+            'ofp_id'      => '1793190494_DEEF323BEE',
+            'flight_id'   => 'flight',
+            'aircraft_id' => '1',
+        ]))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('static_id');
 });

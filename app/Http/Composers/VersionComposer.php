@@ -16,7 +16,6 @@ class VersionComposer extends Composer
 
     public function compose(View $view): void
     {
-        $view->with('version', $this->versionSvc->getCurrentVersion(false));
-        $view->with('version_full', $this->versionSvc->getCurrentVersion(true));
+        $view->with('version', $this->versionSvc->getCurrentVersion());
     }
 }

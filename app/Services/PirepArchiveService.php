@@ -133,7 +133,7 @@ class PirepArchiveService extends Service
     {
         return (int) Pirep::where('aircraft_id', $aircraft->id)
             ->where('state', PirepState::ACCEPTED)
-            ->where('submitted_at', '<', $pirep->submitted_at)
+            ->where('submitted_at', '<', $pirep->submitted_at ?? $pirep->block_on_time ?? $pirep->created_at ?? now())
             ->sum('flight_time');
     }
 

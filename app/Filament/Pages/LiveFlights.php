@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Enums\PirepPhase;
 use App\Enums\PirepState;
@@ -51,6 +52,16 @@ class LiveFlights extends Page implements HasTable
 {
     use AuthorizesAccess;
     use InteractsWithTable;
+
+    /**
+     * View opens the page; the mutating actions on it need edit.
+     *
+     * @return array<int, Ability>
+     */
+    public static function getPermissionAbilities(): array
+    {
+        return [Ability::View, Ability::Edit];
+    }
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
 
@@ -224,6 +235,7 @@ class LiveFlights extends Page implements HasTable
             ->recordUrl(fn (Pirep $record): string => PirepResource::getUrl('view', ['record' => $record->id]))
             ->recordActions([
                 Action::make('purge')
+                    ->authorize(fn (): bool => static::canEdit())
                     ->label(__('filament.live_flights.purge.label'))
                     ->tooltip(__('filament.live_flights.purge.tooltip'))
                     ->icon(Phosphor::TrashSimpleLight)

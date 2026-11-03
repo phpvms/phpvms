@@ -204,16 +204,18 @@ class PirepFinanceService extends Service
         }
 
         if (setting('pireps.advanced_fuel', false)) {
-            // Reading second row by skip(1) to reach the previous accepted pirep. Current pirep is at the first row
-            // To get proper fuel values, we need to fetch current pirep and older ones only. Scenario: ReCalculating finances
+            // Find the previous accepted pirep on this aircraft, only looking at older ones so that
+            // recalculating finances gives the same result. A pirep that was never submitted (e.g.
+            // created from the admin) has no submitted_at, so fall back to when it was flown/created
+            $reference_time = $pirep->submitted_at ?? $pirep->block_on_time ?? $pirep->created_at ?? now();
             $prev_flight = Pirep::where([
                 'aircraft_id' => $pirep->aircraft->id,
                 'state'       => PirepState::ACCEPTED,
                 'status'      => PirepPhase::ARRIVED,
             ])
-                ->where('submitted_at', '<=', $pirep->submitted_at)
+                ->where('id', '!=', $pirep->id)
+                ->where('submitted_at', '<=', $reference_time)
                 ->orderby('submitted_at', 'desc')
-                ->skip(1)
                 ->first();
 
             if ($prev_flight) {

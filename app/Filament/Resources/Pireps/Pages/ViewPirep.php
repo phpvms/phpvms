@@ -200,6 +200,8 @@ class ViewPirep extends ViewRecord
      */
     public function recalculateFinances(): void
     {
+        abort_unless(auth()->user()?->can('update', $this->record) ?? false, 403);
+
         app(PirepFinanceService::class)->processFinancesForPirep($this->record);
 
         Notification::make()

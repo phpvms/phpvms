@@ -26,6 +26,7 @@ it('keeps the streamed update log in component state after the run', function ()
     $this->mock(InstallerService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('isUpgradePending')->andReturnTrue();
         $mock->shouldReceive('ensurePassportKeys');
+        $mock->shouldReceive('linkStorage')->andReturnTrue();
     });
 
     $this->mock(MigrationService::class, function (MockInterface $mock): void {
@@ -67,6 +68,8 @@ it('stops the update when a streamed command fails', function (string $failedCom
         } else {
             $mock->shouldReceive('ensurePassportKeys')->once();
         }
+
+        $mock->shouldReceive('linkStorage')->andReturnTrue();
     });
 
     $this->partialMock(MigrationService::class, function (MockInterface $mock): void {

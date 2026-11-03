@@ -15,6 +15,7 @@ use App\Models\SimBriefAirframe;
 use App\Models\SimBriefLayout;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -72,7 +73,13 @@ class SimBriefService extends Service
             return null;
         }
 
-        Storage::put('simbrief/'.$ofp_id.'.json', $response->body());
+        // The OFP id comes from the client; it must not re-own (or overwrite the
+        // stored file of) a briefing that belongs to another pilot.
+        if (SimBrief::whereKey($ofp_id)->where('user_id', '!=', $user->id)->exists()) {
+            Log::warning('Simbrief | OFP '.$ofp_id.' belongs to another user, refused for user '.$user->id);
+
+            return null;
+        }
 
         $attrs = [
             'user_id'       => $user->id,
@@ -86,11 +93,23 @@ class SimBriefService extends Service
             $attrs['fare_data'] = json_encode($fares);
         }
 
-        // Save this into the Simbrief table, if it doesn't already exist
-        return SimBrief::updateOrCreate(
-            ['id' => $ofp_id],
-            $attrs
-        );
+        // Claim the row before writing the file. Keying on the owner as well
+        // means a row another pilot created in the meantime is never matched:
+        // the insert hits the primary key instead of re-owning it.
+        try {
+            $simbrief = SimBrief::updateOrCreate(
+                ['id' => $ofp_id, 'user_id' => $user->id],
+                $attrs
+            );
+        } catch (UniqueConstraintViolationException) {
+            Log::warning('Simbrief | OFP '.$ofp_id.' was claimed by another user, refused for user '.$user->id);
+
+            return null;
+        }
+
+        Storage::put('simbrief/'.$ofp_id.'.json', $response->body());
+
+        return $simbrief;
     }
 
     /**

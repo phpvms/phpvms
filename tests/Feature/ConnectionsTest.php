@@ -98,7 +98,7 @@ it('still lets a user regenerate the legacy api key', function (): void {
     $old = $user->api_key;
 
     $this->actingAs($user)
-        ->get(route('frontend.profile.regen_apikey'))
+        ->post(route('frontend.profile.regen_apikey'))
         ->assertRedirect();
 
     expect($user->fresh()->api_key)->not->toBe($old);
