@@ -4611,6 +4611,16 @@ html[data-density="comfortable"] .tbl tbody td {
 /* Card grid (C1): each record is its own bordered, rounded surface with a 14px gap. Scoped to `.addon-cards` (the table's extra attribute)
  * and written to out-rank the page-level `.fi-grid { gap-0 }` rule above rather
  * than change it. */
+.addon-cards .fi-ta-ctn {
+  /* The cards are the surfaces; no outer box around the grid and pager. */
+  @apply rounded-none border-0 bg-transparent;
+  box-shadow: none;
+}
+
+.addon-cards .fi-pagination {
+  @apply border-t border-(--line-soft) px-3.5;
+}
+
 .fi-page-content .addon-cards .fi-ta-content-grid.fi-grid:not(.fi-section *, .fi-modal *) {
   gap: 14px;
   padding: 18px 14px 40px;
