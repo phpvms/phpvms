@@ -36,7 +36,6 @@ use App\Models\PirepArchive;
 use App\Models\PirepComment;
 use App\Models\PirepEvent;
 use App\Models\PirepFare;
-use App\Models\PirepField;
 use App\Models\PirepFieldValue;
 use App\Models\PirepPosition;
 use App\Models\SimBrief;
@@ -53,7 +52,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Str;
 
 class PirepService extends Service
 {
@@ -719,41 +717,7 @@ class PirepService extends Service
     }
 
     /**
-     * Remove the values of system-only fields from pilot input. Those fields
-     * are set by server code alone, through updateCustomFields(), so a pilot
-     * or an ACARS client can't overwrite them. Fields are matched on their
-     * slug, so a value sent under the field's name or under its slug is
-     * removed either way.
-     *
-     * @param  array<PirepFieldValue|array{name: string}> $field_values
-     * @return array<PirepFieldValue|array{name: string}>
-     */
-    public function withoutSystemOnlyFields(array $field_values): array
-    {
-        if ($field_values === []) {
-            return [];
-        }
-
-        $system_only = PirepField::whereSystemOnly(true)->pluck('slug')->all();
-        if ($system_only === []) {
-            return $field_values;
-        }
-
-        return array_values(array_filter($field_values, function (PirepFieldValue|array $fv) use ($system_only): bool {
-            if (!in_array(Str::slug((string) $fv['name']), $system_only, true)) {
-                return true;
-            }
-
-            Log::warning('Ignored a value sent for the system-only PIREP field "'.$fv['name'].'"');
-
-            return false;
-        }));
-    }
-
-    /**
-     * Update any custom PIREP fields. Values are written as given, including
-     * system-only fields: run pilot input through withoutSystemOnlyFields()
-     * first.
+     * Update any custom PIREP fields
      *
      * @param PirepFieldValue[] $field_values
      */

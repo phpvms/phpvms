@@ -118,7 +118,7 @@ class PirepController extends Controller
     protected function saveCustomFields(Request $request): array
     {
         $fields = [];
-        $pirep_fields = PirepField::editableByPilots()->whereIn('pirep_source', [PirepFieldSource::MANUAL, PirepFieldSource::BOTH])->get();
+        $pirep_fields = PirepField::whereIn('pirep_source', [PirepFieldSource::MANUAL, PirepFieldSource::BOTH])->get();
         foreach ($pirep_fields as $field) {
             if (!$request->filled($field->slug)) {
                 continue;
@@ -343,7 +343,7 @@ class PirepController extends Controller
             'airline_list'  => Airline::selectList(addBlank: true),
             'aircraft_list' => $aircraft_list,
             'airport_list'  => $airports,
-            'pirep_fields'  => PirepField::editableByPilots()->whereIn('pirep_source', [$pirep_source, PirepFieldSource::BOTH])->get(),
+            'pirep_fields'  => PirepField::whereIn('pirep_source', [$pirep_source, PirepFieldSource::BOTH])->get(),
             'field_values'  => [],
             'fare_values'   => $fare_values,
             'simbrief_id'   => $simbrief_id,
@@ -546,7 +546,7 @@ class PirepController extends Controller
             'aircraft_list' => $this->aircraftList(true),
             'airline_list'  => Airline::selectList(),
             'airport_list'  => $airports,
-            'pirep_fields'  => PirepField::editableByPilots()->whereIn('pirep_source', [$pirep->source, PirepFieldSource::BOTH])->get(),
+            'pirep_fields'  => PirepField::whereIn('pirep_source', [$pirep->source, PirepFieldSource::BOTH])->get(),
             'simbrief_id'   => $simbrief_id,
         ]);
     }

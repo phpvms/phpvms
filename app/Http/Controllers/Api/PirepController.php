@@ -105,9 +105,6 @@ class PirepController extends Controller
     }
 
     /**
-     * The custom fields sent with the request. Values for system-only fields
-     * are dropped: only server code may set those.
-     *
      * @return ?PirepFieldValue[]
      */
     protected function getFields(Request $request): ?array
@@ -125,7 +122,7 @@ class PirepController extends Controller
             ]);
         }
 
-        return $this->pirepSvc->withoutSystemOnlyFields($pirep_fields);
+        return $pirep_fields;
     }
 
     /**

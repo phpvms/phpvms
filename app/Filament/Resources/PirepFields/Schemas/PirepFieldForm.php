@@ -38,11 +38,6 @@ class PirepFieldForm
                     ->offColor('danger')
                     ->onIcon(Phosphor::CheckLight)
                     ->onColor('success'),
-
-                Toggle::make('system_only')
-                    ->label(__('pireps.system_only'))
-                    ->helperText(__('pireps.system_only_help'))
-                    ->inline(false),
             ]);
     }
 }
