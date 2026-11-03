@@ -2392,6 +2392,12 @@
   color: #e8edf3;
 }
 
+/* Filament's own search field is replaced by the command palette trigger
+ * (.cmdk-trigger, see the command palette block at the end of this file). */
+.fi-topbar .fi-global-search-ctn {
+  display: none;
+}
+
 /* Global search: slim dark box, matching the icon buttons either side. */
 .fi-topbar .fi-global-search-field {
   @apply w-52.5;
@@ -2428,7 +2434,7 @@
  * theme picker ahead of search, so `order` corrects it. The refresh button's
  * livewire root div carries no class of its own — `:has()` reaches it via
  * the icon-button's fi-clear-caches-btn class instead. */
-.fi-topbar-end > .fi-global-search-ctn {
+.fi-topbar-end > .cmdk-trigger {
   order: 1;
 }
 
@@ -4564,85 +4570,6 @@ html[data-density="comfortable"] .tbl tbody td {
   @apply block text-[12.5px] opacity-85;
 }
 
-/* List left, detail right. 430px and "whatever is left" is not a ratio the
- * 12-column grid can express, so the Grid is declared with one column and the
- * real template lands here. Declared after the vendor grid utilities, so it
- * wins on order at equal specificity. */
-/* extraAttributes() lands on the Grid component's WRAPPER, not on the grid
- * element itself, so the template has to reach one level in. */
-.catalog > .fi-grid {
-  align-items: start;
-  grid-template-columns: minmax(0, 430px) minmax(0, 1fr);
-}
-
-/* The detail is the shorter half, so it stays put while a long list runs past. */
-.catalog__detail {
-  @apply sticky top-[58px];
-}
-
-/* Full-bleed through the section's own padding, same trick as .route-bar--bleed
- * above: derived from --section-pad so it stays exact when the density picker
- * moves it, never a hardcoded 12px. */
-.addon-list {
-  @apply flex flex-col;
-  margin-inline: calc(var(--section-pad) * -1);
-}
-
-/* The pagination bar closes the list card, so it takes the bottom bleed the
- * list would otherwise need. */
-.addon-list + .panel__foot {
-  margin: 0 calc(var(--section-pad) * -1) calc(var(--section-pad) * -1);
-}
-
-.addon-row {
-  @apply grid w-full items-start gap-2.5 px-3 py-2.5 text-left;
-  @apply border-b border-b-(--line-soft) transition-colors duration-100;
-  grid-template-columns: auto minmax(0, 1fr);
-}
-
-.addon-row:last-child {
-  @apply border-b-0;
-}
-
-.addon-row:hover {
-  @apply bg-(--surface-2);
-}
-
-.addon-row[aria-current="true"] {
-  background-color: color-mix(in oklab, var(--primary-600) 9%, var(--surface));
-  box-shadow: inset 2px 0 0 var(--primary-600);
-}
-
-/* Disabled add-ons stay listed and stay actionable — dimmed, not hidden, so
- * "why is that not running" has an answer on this screen. */
-.addon-row--dim .addon-tile,
-.addon-row--dim .addon-row__name {
-  @apply opacity-60;
-}
-
-/* Monogram plate. Its tint comes from the shared .overview__icon--* classes and
- * marks the add-on's CATEGORY — which holds still — never its state. An add-on
- * with no category keeps the neutral plate. */
-.addon-tile {
-  @apply grid size-7.5 flex-none place-items-center rounded-lg border;
-  @apply font-mono text-[13px] tracking-tight uppercase;
-  font-weight: 550;
-}
-
-/* Zero specificity, so a tint class alongside wins regardless of which of the
- * two this stylesheet happens to declare last. */
-:where(.addon-tile) {
-  @apply border-(--line-soft) bg-(--sunken) text-(--ink-2);
-}
-
-.addon-tile img {
-  @apply size-full rounded-[3px] object-cover;
-}
-
-.addon-tile--lg {
-  @apply size-10.5 rounded-xl text-[16px];
-}
-
 /* Add-on card (table card grid) and slide-over. Modules are not a Tailwind
  * @source root, so the card views lean on these hooks instead of utilities. */
 /* Card grid (C1): each record is its own bordered, rounded surface with a 14px gap. Scoped to `.addon-cards` (the table's extra attribute)
@@ -5549,4 +5476,117 @@ html[data-density="comfortable"] .tbl tbody td {
   .pp-eyebrow {
     display: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Command palette (cmd/ctrl+K).
+ *
+ * .cmdk-trigger is the topbar stand-in for Filament's search field;
+ * .cmdk is the overlay (App\Livewire\Filament\CommandPalette). Colours come
+ * from the console tokens, so light and dark follow the theme picker.
+ * ------------------------------------------------------------------------- */
+.cmdk-trigger {
+  @apply flex h-7 w-52.5 items-center gap-2 rounded-lg px-2 text-[12px] leading-none;
+  background-color: color-mix(in oklab, #1b1f24 75%, black);
+  border: 1px solid #333b45;
+  color: color-mix(in oklab, #8f9daf 88%, white);
+}
+
+.cmdk-trigger:hover {
+  border-color: #46505c;
+}
+
+.cmdk-trigger-icon {
+  @apply h-3.5 w-3.5 shrink-0;
+  color: #8f9daf;
+}
+
+.cmdk-trigger-text {
+  @apply flex-1 text-left;
+}
+
+.cmdk-kbd {
+  @apply shrink-0 rounded px-1 py-0.5 font-mono text-[10px] leading-none;
+  border: 1px solid #333b45;
+  color: #8f9daf;
+}
+
+.cmdk {
+  @apply fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh];
+}
+
+.cmdk-backdrop {
+  @apply absolute inset-0;
+  background-color: color-mix(in oklab, black 55%, transparent);
+}
+
+.cmdk-panel {
+  @apply relative flex max-h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-xl;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 60px -12px color-mix(in oklab, black 45%, transparent);
+  color: var(--ink);
+}
+
+.cmdk-field {
+  @apply flex items-center gap-2.5 px-3.5 py-3;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.cmdk-field-icon {
+  @apply h-4 w-4 shrink-0;
+  color: var(--ink-3);
+}
+
+.cmdk-input {
+  @apply min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] outline-none;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.cmdk-input:focus {
+  @apply outline-none;
+  box-shadow: none;
+}
+
+.cmdk-input::placeholder {
+  color: var(--ink-4);
+}
+
+.cmdk-panel .cmdk-kbd {
+  border-color: var(--line);
+  color: var(--ink-3);
+}
+
+.cmdk-results {
+  @apply overflow-y-auto p-1.5;
+}
+
+.cmdk-group-label {
+  @apply px-2.5 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider;
+  color: var(--ink-3);
+}
+
+.cmdk-item {
+  @apply flex items-baseline justify-between gap-3 rounded-md px-2.5 py-1.5 text-[13px];
+  color: var(--ink-2);
+}
+
+.cmdk-item.is-active {
+  background-color: var(--sunken);
+  color: var(--ink);
+}
+
+.cmdk-item-title {
+  @apply min-w-0 truncate;
+}
+
+.cmdk-item-details {
+  @apply shrink-0 truncate text-[12px];
+  color: var(--ink-4);
+}
+
+.cmdk-empty {
+  @apply px-2.5 py-6 text-center text-[13px];
+  color: var(--ink-3);
 }
