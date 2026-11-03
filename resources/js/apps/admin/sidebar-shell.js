@@ -1,11 +1,10 @@
 /**
  * Sidebar shell behaviour for the admin console (mockups/admin-hybrid E).
  *
- *   1. Only the navigation group holding the active page starts open. Filament's
- *      own collapsible groups and its `filament:sidebar:collapsed_groups` store
- *      do the work; this just rewrites that list on load and on every
- *      `livewire:navigated`. Manual toggles still open any other group until
- *      the next navigation.
+ *   1. On a first visit only the navigation group holding the active page
+ *      starts open. Filament's collapsible groups persist every later toggle in
+ *      `filament:sidebar:collapsed_groups`, so once that list exists it is left
+ *      alone and the user's open/closed headings survive reloads.
  *   2. The `[` key toggles the icon rail through the same store the foot button
  *      uses, so Filament persists it as `filament:sidebar:desktop_open`.
  */
@@ -27,6 +26,18 @@ export function collapseInactiveGroups() {
     .map((group) => group.dataset.groupLabel);
 
   store.collapsedGroups = labels;
+}
+
+/**
+ * Filament's store starts `collapsedGroups` as null until something is saved,
+ * so null is the only state that gets the default.
+ */
+export function seedCollapsedGroups() {
+  if (window.Alpine?.store("sidebar")?.collapsedGroups !== null) {
+    return;
+  }
+
+  collapseInactiveGroups();
 }
 
 export function toggleSidebar() {
@@ -61,10 +72,7 @@ function onKeydown(event) {
   toggleSidebar();
 }
 
-// Filament marks the active group (`fi-active`) server-side, so a plain rAF
-// after Alpine settles is enough; `alpine:initialized` covers the first load.
-document.addEventListener("alpine:initialized", collapseInactiveGroups);
-document.addEventListener("livewire:navigated", () =>
-  requestAnimationFrame(collapseInactiveGroups),
-);
+// Filament marks the active group (`fi-active`) server-side, so running once
+// Alpine settles is enough.
+document.addEventListener("alpine:initialized", seedCollapsedGroups);
 document.addEventListener("keydown", onKeydown);

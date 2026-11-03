@@ -9,7 +9,7 @@ const store = { isMobile: false, isOpen: true, collapsedGroups: [], open: vi.fn(
 
 window.Alpine = { store: (name) => (name === "sidebar" ? store : undefined) };
 
-const { collapseInactiveGroups } = await import("./sidebar-shell");
+const { collapseInactiveGroups, seedCollapsedGroups } = await import("./sidebar-shell");
 
 const press = (target, init = {}) => {
   const event = new KeyboardEvent("keydown", {
@@ -69,6 +69,20 @@ describe("sidebar shell", () => {
     press(document.getElementById("plain"));
 
     expect(store.close).not.toHaveBeenCalled();
+  });
+
+  it("leaves a saved open/closed state alone", () => {
+    store.collapsedGroups = ["Operations"];
+    seedCollapsedGroups();
+
+    expect(store.collapsedGroups).toEqual(["Operations"]);
+  });
+
+  it("seeds the default only when nothing is saved", () => {
+    store.collapsedGroups = null;
+    seedCollapsedGroups();
+
+    expect(store.collapsedGroups).toEqual(["Fleet"]);
   });
 
   it("collapses every named group except the active one", () => {

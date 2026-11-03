@@ -680,14 +680,13 @@
   > .fi-sc-tabs:not(.fi-contained) {
   position: relative;
   z-index: 3;
-  height: 34px;
   margin: -34px calc(-1 * var(--page-pad)) 0;
 }
 
-/* The 10px strip inset sits on the strip itself, not on .fi-sc-tabs, so the
- * panels below it run flush. */
+/* The 34px height and the 10px strip inset sit on the strip itself, not on
+ * .fi-sc-tabs: that box also holds the tab panels, which must grow the sheet. */
 .fi-sc-tabs:not(.fi-contained) > .fi-tabs {
-  @apply mx-0 h-full w-full items-end gap-1 border-b-0 p-0;
+  @apply mx-0 h-8.5 flex-none w-full items-end gap-1 border-b-0 p-0;
   padding-inline: 10px;
   overflow: visible;
 }
@@ -949,6 +948,24 @@
 
 .fi-header-subheading {
   grid-column: 2;
+}
+
+/* Banners with no folder-tab strip under them: the subheading drops to its
+ * own row under the title, and the band gets more bottom padding so the
+ * title does not sit on the sheet's edge. */
+.fi-page:not(.fi-pirep-record)
+  .fi-page-header-main-ctn:not(
+    :has(
+      .fi-page-content > .fi-sc:first-child > .fi-grid-col:first-child > .fi-sc-component:first-child > .fi-sc-tabs:not(.fi-contained)
+    )
+  )
+  > .fi-header {
+  padding-bottom: 22px;
+
+  & .fi-header-subheading {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+  }
 }
 
 /* Vendor caps the subline at a 672px prose measure, which keeps the figures
@@ -1772,10 +1789,14 @@
  * on the same 44px band as the topbar.
  * ------------------------------------------------------------------------- */
 .fi-rail-clock {
-  @apply flex flex-col items-start justify-center shrink-0 px-4 pt-3 pb-3.25;
+  @apply relative flex flex-col items-start justify-center shrink-0 px-4 pt-3 pb-3.25;
   background: var(--chrome-well);
   border-bottom: 1px solid var(--chrome-line);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
+}
+
+.fi-rail-clock-face {
+  @apply flex flex-col items-start;
 }
 
 .fi-rail-clock time {
@@ -1794,8 +1815,12 @@
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock {
-  @apply items-center h-11 p-0;
+  @apply items-stretch p-0;
   box-shadow: none;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock-face {
+  @apply items-center justify-center h-11;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock time {
@@ -1891,8 +1916,8 @@
  * Expanded sidebar (mockups/admin-hybrid e.css:37-79): 30px icon + label
  * rows, uppercase section headers with a rotating chevron, the active row on
  * the hi chrome tone with an accent icon and a 2px accent bar on the edge.
- * Only the group holding the active page starts open
- * (resources/js/apps/admin/sidebar-shell.js).
+ * Only the group holding the active page starts open on a first visit; after
+ * that the saved open/closed state wins (resources/js/apps/admin/sidebar-shell.js).
  * ------------------------------------------------------------------------- */
 .fi-sidebar.fi-sidebar-open .fi-sidebar-nav {
   @apply gap-y-0 px-2 pt-2.5 pb-1.5;
@@ -1930,9 +1955,10 @@
   @apply hidden;
 }
 
+/* #aab6c4 on the graphite rail is ~7.8:1; --chrome-faint was ~3.7:1. */
 .fi-sidebar.fi-sidebar-open .fi-sidebar-group-label {
   @apply text-[11.5px] font-semibold uppercase tracking-[0.1em];
-  color: var(--chrome-faint);
+  color: #aab6c4;
 }
 
 .fi-sidebar.fi-sidebar-open .fi-sidebar-group-btn:hover .fi-sidebar-group-label {
@@ -1951,7 +1977,7 @@
 
 .fi-sidebar.fi-sidebar-open .fi-sidebar-group-collapse-btn .fi-icon {
   @apply w-3 h-3;
-  color: var(--chrome-faint);
+  color: #aab6c4;
 }
 
 .fi-sidebar.fi-sidebar-open .fi-sidebar-group-items {
@@ -2650,17 +2676,14 @@
   @apply w-6.5 h-6.5 rounded-lg;
 }
 
-/* Expanded foot (e.css:62-71): avatar + name on the left, the collapse toggle
- * pinned to the right of the same 34px row. The toggle is
- * SidebarCollapseTogglePlugin's SIDEBAR_FOOTER view, a sibling of the footer,
- * so it is positioned against the fixed sidebar. */
+/* Expanded foot (e.css:62-71): avatar + name in a 34px row. The collapse
+ * toggle lives in the clock well (rail-clock.blade.php), not here. */
 .fi-sidebar.fi-sidebar-open .fi-sidebar-footer {
   @apply px-2 pt-1.5 pb-2;
 }
 
 .fi-sidebar.fi-sidebar-open .fi-user-menu-trigger {
   @apply w-full h-8.5 gap-2 px-1.5 rounded-[5px] justify-start;
-  padding-inline-end: 2.25rem;
 }
 
 .fi-sidebar.fi-sidebar-open .fi-user-menu-trigger:hover {
@@ -2701,19 +2724,16 @@
   color: var(--chrome-ink);
 }
 
+/* Open: top-right corner of the clock well, level with the time. */
 .fi-sidebar.fi-sidebar-open .fi-sidebar-collapse-toggle {
-  @apply absolute bottom-2.75;
-  inset-inline-end: 0.5rem;
+  @apply absolute top-1/2 -translate-y-1/2;
+  inset-inline-end: 0.75rem;
 }
 
-/* Rail: the toggle becomes its own 40px row directly above the account foot. */
+/* Rail: its own row under the clock, directly above the first nav item. */
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-collapse-toggle {
-  @apply order-1 h-10 w-full;
+  @apply h-10 w-full;
   border-top: 1px solid var(--chrome-line);
-}
-
-.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-footer {
-  @apply order-2;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-user-menu-trigger-text,
@@ -3413,8 +3433,10 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   background-color: var(--surface);
 }
 
+/* Breathing room under the last row, so form actions never sit on the
+ * window's bottom edge. */
 .fi-page-main > .fi-page-content {
-  @apply flex-1 content-start;
+  @apply flex-1 content-start pb-6;
 }
 
 .fi-page,
