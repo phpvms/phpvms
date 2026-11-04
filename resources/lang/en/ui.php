@@ -53,4 +53,13 @@ return [
     // Latest news widget
     'latest_news' => 'Latest news',
     'no_news'     => 'No news yet',
+
+    // Next flight widget
+    'next_flight'           => 'Next flight',
+    'ready_to_fly'          => 'Ready to fly',
+    'last_flight'           => 'Last: :route',
+    'find_a_flight'         => 'Find a flight',
+    'start_flight_planning' => 'Start flight planning',
+    'ofp_ready'             => 'OFP ready',
+    'ofp_not_planned'       => 'Not planned',
 ];

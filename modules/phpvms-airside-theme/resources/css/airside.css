@@ -111,6 +111,19 @@
         @apply border border-gray-200 bg-white text-dark-900 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-50;
     }
 
+    /* Dashboard drag and drop (wire:sort / SortableJS): the drop preview and the lifted item. */
+    .vms-widget.sortable-ghost {
+        @apply bg-primary-600/5 outline-2 -outline-offset-2 outline-dashed outline-primary-600 dark:bg-primary-400/5 dark:outline-primary-400;
+    }
+
+    .vms-widget.sortable-ghost > * {
+        @apply opacity-40;
+    }
+
+    .vms-widget.sortable-chosen {
+        @apply cursor-grabbing shadow-xl;
+    }
+
     .vms-widget-card-title {
         @apply text-dark-900 dark:text-dark-50;
     }
@@ -289,7 +302,12 @@
         @apply bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300;
     }
 
-    .vms-flight-reason {
+    /* Next flight widget: the arrow between the airports is muted. */
+    .vms-next-flight-arrow {
+        @apply text-dark-400 dark:text-dark-500;
+    }
+
+        .vms-flight-reason {
         border-radius: var(--vms-radius-md);
         @apply bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300;
     }

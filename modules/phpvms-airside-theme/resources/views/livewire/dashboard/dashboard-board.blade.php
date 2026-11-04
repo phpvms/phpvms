@@ -39,8 +39,10 @@
 
         <div class="vms-board grid grid-cols-1 gap-3.5 min-[68.75rem]:grid-cols-[minmax(0,1fr)_360px] min-[68.75rem]:items-start">
             @foreach ($zones as $zone => $ids)
+                {{-- Sorting binds when the element initialises, so the key changes with edit mode to remount the zone. --}}
                 <div
-                    wire:key="zone-{{ $zone }}"
+                    @if ($editing) wire:sort.ghost="sortWidget" wire:sort:group="widgets" wire:sort:group-id="{{ $zone }}" @endif
+                    wire:key="zone-{{ $zone }}-{{ $editing ? 'edit' : 'view' }}"
                     data-zone="{{ $zone }}"
                     @class(['grid min-h-[60px] content-start gap-3.5', 'grid-cols-2' => $zone === 'grid', 'grid-cols-1' => $zone === 'sidebar'])
                 >
@@ -49,6 +51,7 @@
 
                         <div
                             wire:key="widget-{{ $id }}"
+                            @if ($editing) wire:sort:item="{{ $id }}" @endif
                             data-widget="{{ $id }}"
                             @class(['vms-widget min-w-0 rounded-(--vms-radius-lg)', 'outline-2 -outline-offset-2 outline-dashed outline-dark-300' => $editing])
                             @if ($zone === 'grid') style="grid-column: span {{ $catalog[$id]['span'] }} / span {{ $catalog[$id]['span'] }}" @endif
@@ -58,7 +61,7 @@
                                 <x-slot:header>
                                     <div class="flex w-full items-center gap-2">
                                         @if ($editing)
-                                            <span data-handle draggable="true" class="inline-flex cursor-grab text-dark-400 active:cursor-grabbing" aria-label="Drag to reorder" title="Drag">
+                                            <span wire:sort:handle class="inline-flex cursor-grab text-dark-400 active:cursor-grabbing" aria-label="Drag to reorder" title="Drag">
                                                 <x-ts-icon name="phosphor.dots-six-vertical.light" sm />
                                             </span>
                                         @endif
@@ -70,7 +73,9 @@
                                         <h3 class="m-0 text-[15px] font-bold">{{ $catalog[$id]['title'] }}</h3>
                                         <div class="flex-1"></div>
                                         @if ($editing)
-                                            <x-ts-button xs flat color="red" icon="phosphor.x.light" aria-label="Remove widget" wire:click="removeWidget('{{ $id }}')" />
+                                            <div wire:sort:ignore>
+                                                <x-ts-button xs flat color="red" icon="phosphor.x.light" aria-label="Remove widget" wire:click="removeWidget('{{ $id }}')" />
+                                            </div>
                                         @endif
                                     </div>
                                 </x-slot:header>
@@ -81,6 +86,8 @@
                                     <livewire:dashboard::activity-feed :key="'activity-feed'" />
                                 @elseif ($id === 'news')
                                     <livewire:dashboard::latest-news :key="'latest-news'" />
+                                @elseif ($id === 'next-flight')
+                                    <livewire:dashboard::next-flight :key="'next-flight'" />
                                 @endif
                             </x-ts-card>
                         </div>
@@ -95,7 +102,6 @@
 <script>
     const STORAGE_KEY = 'airside.dashboard.layout.v1'
     const root = $wire.$el
-    let dragged = null
 
     const read = () => {
         try {
@@ -117,77 +123,6 @@
 
     $wire.$on('dashboard-layout-changed', ({ grid, sidebar }) => write({ grid, sidebar }))
     setTimeout(() => $wire.loadLayout(read()), 0)
-
-    const zoneAt = (target) => (target instanceof Element ? target.closest('[data-zone]') : null)
-
-    // Where a dragged widget lands in a zone, counted without the dragged widget itself.
-    const indexIn = (zone, x, y) => {
-        const cells = [...zone.querySelectorAll(':scope > [data-widget]')].filter((cell) => cell.dataset.widget !== dragged)
-        const zoneWidth = zone.getBoundingClientRect().width
-
-        for (let index = 0; index < cells.length; index++) {
-            const rect = cells[index].getBoundingClientRect()
-            const fullRow = rect.width > zoneWidth * 0.9
-
-            if (y < rect.top) {
-                return index
-            }
-
-            if (y <= rect.bottom && (fullRow ? y < rect.top + rect.height / 2 : x < rect.left + rect.width / 2)) {
-                return index
-            }
-        }
-
-        return cells.length
-    }
-
-    const finish = () => {
-        dragged = null
-        root.querySelectorAll('.is-dragging').forEach((el) => el.classList.remove('is-dragging'))
-        root.querySelectorAll('[data-over]').forEach((el) => el.removeAttribute('data-over'))
-    }
-
-    root.addEventListener('dragstart', (event) => {
-        const handle = event.target instanceof Element ? event.target.closest('[data-handle]') : null
-        const frame = handle?.closest('[data-widget]')
-
-        if (!frame) {
-            return
-        }
-
-        dragged = frame.dataset.widget
-        event.dataTransfer.effectAllowed = 'move'
-        event.dataTransfer.setData('text/plain', dragged)
-        event.dataTransfer.setDragImage(frame, 16, 16)
-        requestAnimationFrame(() => frame.classList.add('is-dragging'))
-    })
-
-    root.addEventListener('dragover', (event) => {
-        const zone = dragged ? zoneAt(event.target) : null
-
-        if (!zone) {
-            return
-        }
-
-        event.preventDefault()
-        event.dataTransfer.dropEffect = 'move'
-        root.querySelectorAll('[data-over]').forEach((el) => el !== zone && el.removeAttribute('data-over'))
-        zone.setAttribute('data-over', '')
-    })
-
-    root.addEventListener('drop', (event) => {
-        const zone = dragged ? zoneAt(event.target) : null
-
-        if (!zone) {
-            return
-        }
-
-        event.preventDefault()
-        $wire.moveWidget(dragged, zone.dataset.zone, indexIn(zone, event.clientX, event.clientY))
-        finish()
-    })
-
-    root.addEventListener('dragend', finish)
 
     // Widgets are rendered after the layout arrives, so an island that appears later
     // (the route map) is mounted by the same event the islands use on navigation.

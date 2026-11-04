@@ -569,12 +569,12 @@ The grid of widget zones: the main zone and a 360px side zone from 1100px.
 
 ### `vms-widget`
 
-One widget frame. In edit mode it has a dashed outline. The card inside uses the TallStackUI scope `airside.widget` (see `customizeShell()`).
+One widget frame. In edit mode it has a dashed outline and can be dragged by its handle (Livewire `wire:sort`). The card inside uses the TallStackUI scope `airside.widget` (see `customizeShell()`).
 
 - **View:** `resources/views/livewire/dashboard/dashboard-board.blade.php`
 - **Element:** the `<div data-widget>`.
 - **Parts:** `vms-widget-icon`.
-- **State:** none.
+- **State:** `.sortable-ghost` (the drop preview while dragging: dashed brand outline, faint brand background, faded content); `.sortable-chosen` (the lifted item: shadow, grabbing cursor).
 - **Variables:** `--vms-radius-lg` (length).
 - **Stability:** draft.
 
@@ -628,6 +628,105 @@ The list of items in the Latest news widget.
 
 - **View:** `resources/views/livewire/dashboard/latest-news.blade.php`
 - **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight`
+
+The Next flight widget when a bid exists.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the root `<div>`.
+- **Parts:** `vms-next-flight-route`, `vms-next-flight-pills`, `vms-next-flight-metar`, `vms-next-flight-stats`, `vms-next-flight-actions`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-route`
+
+The "DEP → ARR" headline of the Next flight widget.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the `<h4>`.
+- **Parts:** `vms-next-flight-arrow`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-arrow`
+
+The arrow in the Next flight headline, muted.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-pills`
+
+The callsign, flight type and route code pills of the Next flight widget. Each pill also carries `vms-flight-pill`.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the pills `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-metar`
+
+The departure weather card in the Next flight widget (the `airport-weather` component, loaded lazily).
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the wrapping `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-stats`
+
+The stat strip of the Next flight widget: block time, distance and briefing.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the `<dl>`.
+- **Parts:** `vms-next-flight-stat`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-stat`
+
+One stat in the Next flight strip: icon, label and value.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** each stat `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-actions`
+
+The buttons of the Next flight widget: Start flight planning and Details.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-empty`
+
+The Next flight widget when the pilot has no bid: "Ready to fly", the last flight and Find a flight.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the root `<div>`.
 - **Parts:** none.
 - **State:** none.
 - **Variables:** none.

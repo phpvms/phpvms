@@ -92,6 +92,14 @@ class DashboardBoard extends Component
     }
 
     /**
+     * The `wire:sort` handler: a widget was dropped at a position in a zone.
+     */
+    public function sortWidget(string $id, int $position, string $zone): void
+    {
+        $this->moveWidget($id, $zone, $position);
+    }
+
+    /**
      * Put a widget at a position in a zone (drag and drop).
      */
     public function moveWidget(string $id, string $zone, int $index): void

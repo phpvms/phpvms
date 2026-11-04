@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Features\Dashboard;
 
 /**
- * The dashboard widgets airside can place: the bundled `route`, `activity`
- * and `news` widgets. Addon widgets are not shown yet, so an id that is not listed here is
+ * The dashboard widgets airside can place: the bundled `route`, `activity`,
+ * `news` and `next-flight` widgets. Addon widgets are not shown yet, so an id that is not listed here is
  * dropped from a saved layout.
  *
  * A layout is two ordered id lists, one per zone: `grid` and `sidebar`.
@@ -46,6 +46,14 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_SIDEBAR,
                 'span'    => 1,
                 'default' => true,
+            ],
+            'next-flight' => [
+                'id'      => 'next-flight',
+                'title'   => (string) __('ui.next_flight'),
+                'icon'    => 'airplane-takeoff',
+                'zone'    => self::ZONE_GRID,
+                'span'    => 2,
+                'default' => false,
             ],
         ];
     }

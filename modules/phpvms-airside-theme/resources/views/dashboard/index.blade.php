@@ -109,5 +109,8 @@
         </dl>
 
         <livewire:dashboard::dashboard-board :route="$route" />
+
+        {{-- The bid drawer: the Next flight widget opens it with assignment-drawer.open. --}}
+        <livewire:bids::assignment-drawer />
     </div>
 </x-vms::layouts.app>
