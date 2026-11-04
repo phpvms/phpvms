@@ -1,20 +1,11 @@
 /*
- * airside: TallStackUI's stylesheet (which brings Tailwind v4) and the theme's
- * own sources. Components render with TallStackUI's defaults; the landing
- * tokens live in @layer base.
+ * airside's own styles and tokens. The stylesheet entry is styles.css, which
+ * imports this file after the fonts and TallStackUI.
  */
-@import "@fontsource-variable/noto-sans";
-@import "@fontsource-variable/noto-serif";
-@import "../../../../vendor/tallstackui/tallstackui/css/v4.css";
-
-@source "../views";
-@source "../../app/Providers/*.php";
-@source "../../../../vendor/tallstackui/tallstackui";
-@source "../../../../resources/views/components/slot-outlet.blade.php";
 
 /*
- * airside's shipped colours: the phpvms scheme. Keep in sync with
- * resources/customize/styles.css, the same values as runtime defaults.
+ * airside's build-time colours: the phpvms scheme, used until a saved colour
+ * scheme replaces them at runtime (config/presets.php lists the schemes).
  */
 @theme {
     --font-sans: "Noto Sans Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -55,27 +46,10 @@
 }
 
 @layer base {
-    /* Landing tokens. Custom CSS overrides these. */
+    /* Tokens. Custom CSS overrides these. */
     :root {
-        --vms-canvas: #f3efea;
-        --vms-surface: #ffffff;
-        --vms-ink: #14213a;
-        --vms-ink-2: #5b6476;
-        --vms-ink-3: #8a92a2;
-        --vms-line: #ebe5dd;
         --vms-brand: var(--color-primary-600);
-        --vms-brand-soft: #e3eff8;
-        --vms-hero-ink: #14213a;
-        --vms-hero-ink-2: #5d7ea3;
-        --vms-hero-ink-3: #3e5470;
-        --vms-sky-top: #9ccaf3;
-        --vms-sky-mid: #cde4fa;
-        --vms-sky-bottom: #eef5fd;
-        --vms-sky-cloud-light: #ffffff;
-        --vms-sky-cloud-opacity: 1;
-        --vms-sky-wisp-opacity: 0.5;
-        --vms-sky-glow: #ffffff;
-        --vms-sky-glow-opacity: 0.6;
+        --vms-brand-soft: color-mix(in oklab, var(--color-primary-600) 12%, white);
         --vms-radius-xl: 28px;
         --vms-radius-lg: 22px;
         --vms-radius-md: 12px;
@@ -83,25 +57,8 @@
     }
 
     .dark {
-        --vms-canvas: var(--color-dark-950);
-        --vms-surface: var(--color-dark-800);
-        --vms-ink: var(--color-dark-50);
-        --vms-ink-2: var(--color-dark-300);
-        --vms-ink-3: var(--color-dark-400);
-        --vms-line: var(--color-dark-700);
         --vms-brand: var(--color-primary-400);
         --vms-brand-soft: var(--color-primary-950);
-        --vms-hero-ink: #eef4fc;
-        --vms-hero-ink-2: #9db8dc;
-        --vms-hero-ink-3: #b6c6dd;
-        --vms-sky-top: #08122b;
-        --vms-sky-mid: #12234a;
-        --vms-sky-bottom: #1c3361;
-        --vms-sky-cloud-light: #8fa6cc;
-        --vms-sky-cloud-opacity: 0.3;
-        --vms-sky-wisp-opacity: 0.12;
-        --vms-sky-glow: #4c6fb0;
-        --vms-sky-glow-opacity: 0.22;
     }
 }
 
@@ -110,14 +67,56 @@
         display: flex;
         flex-direction: column;
         min-height: 100dvh;
-        background: var(--vms-canvas);
-        color: var(--vms-ink);
+        @apply bg-white text-dark-900 dark:bg-dark-950 dark:text-dark-50;
     }
 
-    /* The signed-in shell: canvas behind, white surfaces on it. */
+    /* The signed-in shell: a white page, bordered surfaces on it, a grey sidebar panel. */
     .vms-shell {
-        background: var(--vms-canvas);
-        color: var(--vms-ink);
+        @apply bg-white text-dark-900 dark:bg-dark-950 dark:text-dark-50;
+    }
+
+    .vms-shell-sidebar {
+        @apply bg-gray-100 dark:bg-dark-900;
+    }
+
+    /* The dispatch strip. */
+    .vms-shell-header {
+        @apply border border-gray-200 bg-white text-dark-900 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-50;
+    }
+
+    .vms-shell-brand {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    .vms-shell-icon {
+        @apply text-dark-600 dark:text-dark-300;
+    }
+
+    .vms-shell-icon-muted {
+        @apply text-dark-400;
+    }
+
+    /* Sidebar group buttons and items; the current item is a white pill. */
+    .vms-shell-item {
+        @apply text-dark-600 hover:bg-white/60 hover:text-dark-900 dark:text-dark-300 dark:hover:bg-dark-800/60 dark:hover:text-dark-50;
+    }
+
+    .vms-shell-item-current {
+        @apply bg-white text-dark-900 dark:bg-dark-800 dark:text-dark-50;
+    }
+
+    /* Card-like surfaces: dashboard widgets (card scope airside.widget) and metric tiles. */
+    .vms-widget-card,
+    .vms-metric {
+        @apply border border-gray-200 bg-white text-dark-900 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-50;
+    }
+
+    .vms-widget-card-title {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    .vms-dispatch-sep {
+        @apply bg-gray-200 dark:bg-dark-700;
     }
 
     /* Top bar layout: menu links and the dropdown trigger share one pill look. */
@@ -129,25 +128,46 @@
         border-radius: 999px;
         font-size: 14.5px;
         font-weight: 500;
-        color: var(--vms-ink-2);
         cursor: pointer;
-    }
-
-    .vms-shell-link:hover {
-        color: var(--vms-ink);
-        background: color-mix(in oklab, var(--vms-surface) 60%, transparent);
+        @apply text-dark-600 hover:bg-gray-100/60 hover:text-dark-900 dark:text-dark-300 dark:hover:bg-dark-900/60 dark:hover:text-dark-50;
     }
 
     .vms-shell-link[aria-current="page"] {
-        background: var(--vms-surface);
-        color: var(--vms-ink);
         font-weight: 600;
-        box-shadow: 0 1px 2px rgba(20, 33, 58, 0.06);
+        @apply bg-gray-100 text-dark-900 dark:bg-dark-900 dark:text-dark-50;
+    }
+
+    /* Text on the sky: the dashboard hero. Literal colours, dark ink by day, light ink by night. */
+    .vms-pilot-eyebrow,
+    .vms-pilot-chips {
+        color: #3e5470;
+    }
+
+    .vms-pilot-greeting,
+    .vms-pilot-chips .vms-pilot-chip,
+    .vms-rank {
+        color: #14213a;
+    }
+
+    .vms-rank-label {
+        color: #3e5470;
+    }
+
+    .dark .vms-pilot-eyebrow,
+    .dark .vms-pilot-chips,
+    .dark .vms-rank-label {
+        color: #b6c6dd;
+    }
+
+    .dark .vms-pilot-greeting,
+    .dark .vms-pilot-chips .vms-pilot-chip,
+    .dark .vms-rank {
+        color: #eef4fc;
     }
 
     /* The serif second line of a greeting, same treatment as the landing title. */
     .vms-pilot-greeting span {
-        color: var(--vms-hero-ink-2);
+        color: #5d7ea3;
         font-family: var(--font-serif);
         font-weight: 200;
         letter-spacing: -0.03em;
@@ -177,12 +197,12 @@
     .vms-landing-links {
         font-size: 15px;
         font-weight: 500;
-        color: var(--vms-ink-2);
+        @apply text-dark-600 dark:text-dark-300;
     }
 
     .vms-landing-links a:hover,
     .vms-landing-links a[aria-current="page"] {
-        color: var(--vms-ink);
+        @apply text-dark-900 dark:text-dark-50;
     }
 
     .vms-landing-account {
@@ -206,13 +226,16 @@
     }
 
     .vms-pill--dark {
-        background: var(--vms-ink);
-        color: var(--vms-canvas);
+        background: var(--color-primary-600);
+        color: var(--color-white);
+    }
+
+    .vms-pill--dark:hover {
+        background: var(--color-primary-700);
     }
 
     .vms-pill--light {
-        background: color-mix(in oklab, var(--vms-surface) 85%, transparent);
-        color: var(--vms-ink);
+        @apply bg-white/85 text-dark-900 dark:bg-dark-800/85 dark:text-dark-50;
     }
 
     .vms-pill--lg {
@@ -247,7 +270,7 @@
         font-weight: 700;
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: var(--vms-hero-ink-3);
+        color: #3e5470;
     }
 
     .vms-landing-title {
@@ -256,11 +279,11 @@
         line-height: 0.94;
         font-weight: 800;
         letter-spacing: -0.05em;
-        color: var(--vms-hero-ink);
+        color: #14213a;
     }
 
     .vms-landing-title span {
-        color: var(--vms-hero-ink-2);
+        color: #5d7ea3;
         font-family: var(--font-serif);
         font-weight: 200;
         letter-spacing: -0.03em;
@@ -271,7 +294,21 @@
         margin-top: 26px;
         font-size: 20px;
         line-height: 1.55;
-        color: var(--vms-hero-ink-3);
+        color: #3e5470;
+    }
+
+    .dark .vms-landing-eyebrow,
+    .dark .vms-landing-lead {
+        color: #b6c6dd;
+    }
+
+    .dark .vms-landing-title {
+        color: #eef4fc;
+    }
+
+    .dark .vms-landing-title span,
+    .dark .vms-pilot-greeting span {
+        color: #9db8dc;
     }
 
     .vms-landing-actions {
@@ -291,7 +328,7 @@
     .vms-story {
         padding: 30px 28px 32px;
         border-radius: var(--vms-radius-lg);
-        background: var(--vms-surface);
+        @apply bg-white dark:bg-dark-800;
     }
 
     .vms-story-label {
@@ -312,7 +349,7 @@
     .vms-story p:not(.vms-story-label) {
         font-size: 16px;
         line-height: 1.6;
-        color: var(--vms-ink-2);
+        @apply text-dark-600 dark:text-dark-300;
     }
 
     .vms-landing-news {
@@ -351,12 +388,12 @@
     .vms-news {
         padding: 26px 28px;
         border-radius: var(--vms-radius-lg);
-        background: var(--vms-surface);
+        @apply bg-white dark:bg-dark-800;
     }
 
     .vms-news time {
         font-size: 13px;
-        color: var(--vms-ink-3);
+        @apply text-dark-400;
     }
 
     .vms-news h4 {
@@ -369,19 +406,88 @@
     .vms-news p {
         font-size: 15px;
         line-height: 1.6;
-        color: var(--vms-ink-2);
+        @apply text-dark-600 dark:text-dark-300;
     }
 
     .vms-landing-footer {
         margin: 110px var(--vms-gutter) var(--vms-gutter);
         border-radius: var(--vms-radius-lg);
-        background: var(--vms-surface);
         font-size: 14px;
-        color: var(--vms-ink-2);
+        @apply bg-white text-dark-600 dark:bg-dark-800 dark:text-dark-300;
     }
 
     .vms-landing-footer a:hover {
-        color: var(--vms-ink);
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    /*
+     * The generated sky (x-vms::sky): gradient, glow, cloud lighting and the
+     * opacity of the cloud and wisp layers. Day by default, night under .dark.
+     */
+    .clouds-bg .clouds-bg-top {
+        stop-color: #9ccaf3;
+    }
+
+    .clouds-bg .clouds-bg-mid {
+        stop-color: #cde4fa;
+    }
+
+    .clouds-bg .clouds-bg-bottom {
+        stop-color: #eef5fd;
+    }
+
+    .clouds-bg .clouds-bg-light {
+        lighting-color: #ffffff;
+    }
+
+    .clouds-bg .clouds-bg-glow {
+        stop-color: #ffffff;
+        stop-opacity: 0.6;
+    }
+
+    .clouds-bg .clouds-bg-glow-end {
+        stop-opacity: 0;
+    }
+
+    .clouds-bg .clouds-bg-wisps {
+        opacity: 0.5;
+    }
+
+    .clouds-bg .clouds-bg-clouds {
+        opacity: 1;
+    }
+
+    .dark .clouds-bg .clouds-bg-top {
+        stop-color: #08122b;
+    }
+
+    .dark .clouds-bg .clouds-bg-mid {
+        stop-color: #12234a;
+    }
+
+    .dark .clouds-bg .clouds-bg-bottom {
+        stop-color: #1c3361;
+    }
+
+    .dark .clouds-bg .clouds-bg-light {
+        lighting-color: #8fa6cc;
+    }
+
+    .dark .clouds-bg .clouds-bg-glow {
+        stop-color: #4c6fb0;
+        stop-opacity: 0.22;
+    }
+
+    .dark .clouds-bg .clouds-bg-glow-end {
+        stop-opacity: 0;
+    }
+
+    .dark .clouds-bg .clouds-bg-wisps {
+        opacity: 0.12;
+    }
+
+    .dark .clouds-bg .clouds-bg-clouds {
+        opacity: 0.3;
     }
 
     @media (max-width: 960px) {

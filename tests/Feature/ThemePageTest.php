@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Features\Themes\ThemeFields;
 use App\Filament\Pages\Theme;
 use App\Models\Permission;
 use App\Models\Setting;
-use App\Models\ThemeSetting;
 use App\Models\User;
 use Database\Seeders\SettingsSeeder;
 use Filament\Actions\Testing\TestAction;
@@ -79,26 +77,6 @@ it('seeds general.theme as a hidden row and hides an existing one by data migrat
     app(SettingsSeeder::class)->run();
 
     expect(DB::table('settings')->where('id', $id)->value('type'))->toBe('hidden');
-});
-
-it('shows the shipped styles css when the theme has no override', function (): void {
-    updateSetting('general.theme', 'airside');
-    $this->actingAs(themeAdmin('view:theme'));
-
-    livewire(Theme::class)
-        ->assertFormSet(['style_css' => app(ThemeFields::class)->defaultFor('airside', 'styles.css')]);
-});
-
-it('stores no row when the shipped css is saved back', function (): void {
-    updateSetting('general.theme', 'airside');
-    $this->actingAs(themeAdmin('view:theme', 'edit:theme'));
-
-    livewire(Theme::class)
-        ->fillForm(['theme' => 'airside', 'css' => app(ThemeFields::class)->defaultFor('airside', 'css')])
-        ->call('save')
-        ->assertHasNoFormErrors();
-
-    expect(ThemeSetting::query()->count())->toBe(0);
 });
 
 it('hides the reset action when no override exists', function (): void {

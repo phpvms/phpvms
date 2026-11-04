@@ -31,8 +31,8 @@ it('places the default widgets when the browser has no layout', function (): voi
     dashboardBoard()
         ->call('loadLayout', null)
         ->assertSet('ready', true)
-        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity'])
-        ->assertSet('sidebar', []);
+        ->assertSet('grid', fn (array $ids): bool => $ids === WidgetCatalog::defaultLayout()['grid'])
+        ->assertSet('sidebar', WidgetCatalog::defaultLayout()['sidebar']);
 });
 
 it('renders only the widgets in the layout from the browser and drops unknown ids', function (): void {
@@ -52,7 +52,7 @@ it('keeps an empty saved layout empty', function (): void {
 it('falls back to the default for a broken layout', function (): void {
     dashboardBoard()
         ->call('loadLayout', ['grid' => 'nope'])
-        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity']);
+        ->assertSet('grid', fn (array $ids): bool => $ids === WidgetCatalog::defaultLayout()['grid']);
 });
 
 it('toggles editing mode', function (): void {
@@ -70,9 +70,9 @@ it('removes a widget and adds it back', function (): void {
         ->call('toggleEditing')
         ->call('removeWidget', 'activity')
         ->assertSet('grid', ['route'])
-        ->assertDispatched('dashboard-layout-changed', grid: ['route'], sidebar: [])
+        ->assertDispatched('dashboard-layout-changed', grid: ['route'], sidebar: WidgetCatalog::defaultLayout()['sidebar'])
         ->call('addWidget', 'activity')
-        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity']);
+        ->assertSet('grid', fn (array $ids): bool => $ids === WidgetCatalog::defaultLayout()['grid']);
 });
 
 it('adds a widget once and ignores an unknown id', function (): void {
@@ -80,7 +80,7 @@ it('adds a widget once and ignores an unknown id', function (): void {
         ->call('loadLayout', null)
         ->call('addWidget', 'route')
         ->call('addWidget', 'addon-weather')
-        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity'])
+        ->assertSet('grid', fn (array $ids): bool => $ids === WidgetCatalog::defaultLayout()['grid'])
         ->assertNotDispatched('dashboard-layout-changed');
 });
 
@@ -88,22 +88,24 @@ it('resets to the default layout', function (): void {
     dashboardBoard()
         ->call('loadLayout', ['grid' => [], 'sidebar' => ['activity']])
         ->call('resetLayout')
-        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity'])
-        ->assertSet('sidebar', [])
-        ->assertDispatched('dashboard-layout-changed', grid: ['route', 'activity'], sidebar: []);
+        ->assertSet('grid', fn (array $ids): bool => $ids === WidgetCatalog::defaultLayout()['grid'])
+        ->assertSet('sidebar', WidgetCatalog::defaultLayout()['sidebar'])
+        ->assertDispatched('dashboard-layout-changed', grid: WidgetCatalog::defaultLayout()['grid'], sidebar: WidgetCatalog::defaultLayout()['sidebar']);
 });
 
 it('moves a widget within a zone and between zones', function (): void {
+    $sidebar = ['route', ...WidgetCatalog::defaultLayout()['sidebar'], 'activity'];
+
     dashboardBoard()
         ->call('loadLayout', null)
         ->call('moveWidget', 'activity', 'grid', 0)
         ->assertSet('grid', fn (array $ids): bool => $ids === ['activity', 'route'])
         ->call('moveWidget', 'route', 'sidebar', 0)
         ->assertSet('grid', ['activity'])
-        ->assertSet('sidebar', ['route'])
+        ->assertSet('sidebar', fn (array $ids): bool => $ids === ['route', ...WidgetCatalog::defaultLayout()['sidebar']])
         ->call('moveWidget', 'activity', 'sidebar', 99)
-        ->assertSet('sidebar', fn (array $ids): bool => $ids === ['route', 'activity'])
-        ->assertDispatched('dashboard-layout-changed', grid: [], sidebar: ['route', 'activity']);
+        ->assertSet('sidebar', fn (array $ids): bool => $ids === $sidebar)
+        ->assertDispatched('dashboard-layout-changed', grid: [], sidebar: $sidebar);
 });
 
 it('ignores a move to an unknown zone or of an unknown widget', function (): void {
@@ -111,7 +113,7 @@ it('ignores a move to an unknown zone or of an unknown widget', function (): voi
         ->call('loadLayout', null)
         ->call('moveWidget', 'activity', 'footer', 0)
         ->call('moveWidget', 'addon-weather', 'grid', 0)
-        ->assertSet('grid', fn (array $ids): bool => $ids === ['route', 'activity']);
+        ->assertSet('grid', fn (array $ids): bool => $ids === WidgetCatalog::defaultLayout()['grid']);
 });
 
 it('cannot have its route changed from the browser', function (): void {
@@ -121,10 +123,6 @@ it('cannot have its route changed from the browser', function (): void {
 it('computes the readout like skylight (JFK to LHR is about 2999 nm, bearing 51)', function (): void {
     expect(RouteReadout::distanceNm(40.6398, -73.7789, 51.47, -0.4543))->toBeBetween(2990, 3010)
         ->and(RouteReadout::bearing(40.6398, -73.7789, 51.47, -0.4543))->toBe(51);
-});
-
-it('sanitises layouts', function (): void {
-    expect(WidgetCatalog::sanitize(null))->toBe(['grid' => ['route', 'activity'], 'sidebar' => []]);
 });
 
 it('formats relative times compactly', function (): void {

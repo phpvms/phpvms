@@ -5,12 +5,6 @@
             <x-ts-spinner text="Loading dashboard…" />
         </div>
     @else
-        @php
-            // TallStackUI buttons with the dark and light pill look of the landing (`vms-pill--dark`, `vms-pill--light`).
-            $pillDark = 'vms-pill--dark border-transparent! bg-(--vms-ink)! text-(--vms-canvas)! hover:opacity-90';
-            $pillLight = 'vms-pill--light border-transparent! bg-(--vms-surface)! text-(--vms-ink)! hover:opacity-90';
-        @endphp
-
         <div class="vms-board-toolbar flex items-center justify-between gap-3 px-1.5 pt-4.5 pb-0.5">
             <h2 class="vms-board-title m-0 text-[22px] font-extrabold tracking-tight">Your board</h2>
 
@@ -18,7 +12,7 @@
                 @if ($editing)
                     <x-ts-dropdown position="bottom-end">
                         <x-slot:action>
-                            <x-ts-button round sm icon="phosphor.plus.light" :text="__('ui.add_widget')" :class="$pillLight" x-on:click="show = !show" />
+                            <x-ts-button round sm icon="phosphor.plus.light" :text="__('ui.add_widget')" light x-on:click="show = !show" />
                         </x-slot:action>
                         @forelse ($this->availableWidgets as $widget)
                             <x-ts-dropdown.items
@@ -35,7 +29,7 @@
                     <x-ts-button sm round flat type="button" wire:click="resetLayout">{{ __('ui.reset') }}</x-ts-button>
                 @endif
 
-                <x-ts-button sm round type="button" :class="$pillDark" wire:click="toggleEditing">
+                <x-ts-button sm round type="button" wire:click="toggleEditing">
                     {{ $editing ? __('ui.done') : __('ui.customize') }}
                 </x-ts-button>
             </div>
@@ -56,7 +50,7 @@
                         <div
                             wire:key="widget-{{ $id }}"
                             data-widget="{{ $id }}"
-                            @class(['vms-widget min-w-0 rounded-(--vms-radius-lg)', 'outline-2 -outline-offset-2 outline-dashed outline-[#c9d6e4]' => $editing])
+                            @class(['vms-widget min-w-0 rounded-(--vms-radius-lg)', 'outline-2 -outline-offset-2 outline-dashed outline-dark-300' => $editing])
                             @if ($zone === 'grid') style="grid-column: span {{ $catalog[$id]['span'] }} / span {{ $catalog[$id]['span'] }}" @endif
                         >
                             @php($widgetIcon = \Modules\PhpvmsAirsideTheme\Support\NavigationIcon::tallstack($catalog[$id]['icon'] ?? null))

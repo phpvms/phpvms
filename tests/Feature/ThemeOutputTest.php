@@ -12,6 +12,7 @@ use App\Models\User;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CodeEditor;
+use Filament\Support\Colors\Color;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Validation\ValidationException;
@@ -26,6 +27,17 @@ beforeEach(function (): void {
     ]);
     Theme::set('airside');
 });
+
+/**
+ * @return array<string, array<string, mixed>>
+ */
+function outputSchemes(): array
+{
+    return [
+        'one' => ['name' => 'One', 'category' => 'Alpha', 'primary' => 'green', 'secondary' => 'lime', 'surface' => 'slate'],
+        'two' => ['name' => 'Two', 'category' => 'Alpha', 'primary' => 'red', 'secondary' => 'lime', 'surface' => 'slate'],
+    ];
+}
 
 function renderHead(): string
 {
@@ -170,4 +182,36 @@ it('reorders and creates rows on an editable list', function (): void {
         ->assertHasNoErrors();
 
     expect($b->fresh()->order)->toBeLessThan($a->fresh()->order);
+});
+
+it('emits the saved colour scheme before the theme css fields', function (): void {
+    config(['presets.color_schemes' => outputSchemes()]);
+    app(ThemeOptions::class)->register('airside', fn (): array => [
+        ThemeOptions::colorSchemeSelect('one'),
+        CodeEditor::make('custom_css')->default('')->meta('emit', 'css'),
+    ]);
+    $fields = app(ThemeFields::class);
+    $fields->set('airside', 'custom_css', '.custom{}');
+    $fields->set('airside', 'color_scheme', 'two');
+
+    $head = renderHead();
+
+    expect($head)->toContain('--color-primary-500: '.Color::all()['red'][500].';')
+        ->and($head)->not->toContain(Color::all()['green'][500])
+        ->and(strpos($head, '--color-primary-500'))->toBeLessThan(strpos($head, '.custom{}'));
+});
+
+it('emits the default colour scheme until another is saved', function (): void {
+    config(['presets.color_schemes' => outputSchemes()]);
+    app(ThemeOptions::class)->register('airside', fn (): array => [ThemeOptions::colorSchemeSelect('one')]);
+
+    expect(renderHead())->toContain('--color-primary-500: '.Color::all()['green'][500].';');
+});
+
+it('emits nothing for an unknown colour scheme', function (): void {
+    config(['presets.color_schemes' => outputSchemes()]);
+    app(ThemeOptions::class)->register('airside', fn (): array => [ThemeOptions::colorSchemeSelect('one')]);
+    ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'color_scheme', 'content' => 'gone']);
+
+    expect(renderHead())->not->toContain('--color-primary');
 });

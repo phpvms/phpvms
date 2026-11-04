@@ -8,13 +8,12 @@ use Filament\Support\Colors\Color;
 use InvalidArgumentException;
 
 /**
- * Regenerates a theme's runtime-variables CSS from a named colour scheme.
+ * Renders a named colour scheme as CSS custom properties.
  *
- * Only `--color-*` declaration values are replaced; every other character is
- * left as is. The `:root { }` block gets the light primary and secondary ramps
- * (moved by `shift`) and the `surface` ramp as `--color-dark-*`. The
- * `:root.dark { }` block, when present, gets `dark_primary` and `dark_secondary`
- * (each falling back to the light ramp), moved by `dark_shift`.
+ * The `:root { }` block gets the light primary and secondary ramps (moved by
+ * `shift`) as `--color-primary-*` / `--color-secondary-*` and the `surface`
+ * ramp as `--color-dark-*`. The `:root.dark { }` block gets `dark_primary` and
+ * `dark_secondary` (each falling back to the light ramp), moved by `dark_shift`.
  * Schemes are read from `config('presets.color_schemes')`.
  */
 final class ColorSchemeCss
@@ -24,7 +23,7 @@ final class ColorSchemeCss
     /**
      * @param array{primary: string|array<int, string>, secondary: string|array<int, string>, surface: string|array<int, string>, dark_primary?: string|array<int, string>, dark_secondary?: string|array<int, string>, shift?: array{primary?: int, secondary?: int}, dark_shift?: array{primary?: int, secondary?: int}} $scheme
      */
-    public function render(string $baseCss, array $scheme): string
+    public function render(array $scheme): string
     {
         $light = [
             'primary'   => $this->shifted($this->ramp($scheme['primary'], 'primary'), $scheme['shift']['primary'] ?? 0),
@@ -43,17 +42,7 @@ final class ColorSchemeCss
             ),
         ];
 
-        $baseCss = (string) preg_replace_callback(
-            '/(:root\s*\{)(.*?)(\})/s',
-            fn (array $m): string => $m[1].$this->replaceRamps($m[2], $light).$m[3],
-            $baseCss,
-        );
-
-        return (string) preg_replace_callback(
-            '/(:root\.dark\s*\{)(.*?)(\})/s',
-            fn (array $m): string => $m[1].$this->replaceRamps($m[2], $dark).$m[3],
-            $baseCss,
-        );
+        return $this->block(':root', $light)."\n".$this->block(':root.dark', $dark);
     }
 
     /**
@@ -89,24 +78,19 @@ final class ColorSchemeCss
     /**
      * @param array<string, array<int|string, string>> $ramps role => shade => value
      */
-    private function replaceRamps(string $block, array $ramps): string
+    private function block(string $selector, array $ramps): string
     {
+        $lines = [];
+
         foreach ($ramps as $role => $ramp) {
             foreach (self::SHADES as $shade) {
-                if (!isset($ramp[$shade])) {
-                    continue;
+                if (isset($ramp[$shade])) {
+                    $lines[] = "  --color-{$role}-{$shade}: {$ramp[$shade]};";
                 }
-
-                $value = (string) $ramp[$shade];
-                $block = (string) preg_replace_callback(
-                    '/(--color-'.$role.'-'.$shade.'\s*:\s*)[^;]*(;)/',
-                    static fn (array $m): string => $m[1].$value.$m[2],
-                    $block,
-                );
             }
         }
 
-        return $block;
+        return $selector." {\n".implode("\n", $lines)."\n}";
     }
 
     /**

@@ -16,7 +16,7 @@
             <span class="relative inline-flex size-2 rounded-full bg-green-500"></span>
         </span>
         <span class="text-[26px] leading-none font-extrabold tracking-tight tabular-nums">{{ $flyingNow }}</span>
-        <span class="text-[13px] text-(--vms-ink-3)">{{ trans_choice('ui.flying_now', $flyingNow) }}</span>
+        <span class="text-[13px] text-dark-400">{{ trans_choice('ui.flying_now', $flyingNow) }}</span>
     </header>
 
     @if ($state === 'loading')

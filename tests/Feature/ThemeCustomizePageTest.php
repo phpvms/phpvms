@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Features\Themes\ColorSchemeCss;
 use App\Features\Themes\ThemeOptions;
 use App\Filament\Pages\Theme;
 use App\Models\Permission;
@@ -21,9 +22,14 @@ beforeEach(function (): void {
     Filament::setCurrentPanel('admin');
     updateSetting('general.theme', 'airside');
 
+    config(['presets.color_schemes' => [
+        'one' => ['name' => 'One', 'category' => 'Alpha', 'primary' => 'green', 'secondary' => 'lime', 'surface' => 'slate'],
+        'two' => ['name' => 'Two', 'category' => 'Alpha', 'primary' => 'red', 'secondary' => 'lime', 'surface' => 'slate'],
+    ]]);
+
     app(ThemeOptions::class)->register('airside', fn (string $theme): array => [
         Tab::make('CSS')->schema([
-            ThemeOptions::colorSchemeSelect('style_css'),
+            ThemeOptions::colorSchemeSelect('one'),
             CodeEditor::make('style_css')
                 ->language(Language::Css)
                 ->default(':root{--color-primary-600:#000000;}')
@@ -60,28 +66,49 @@ it('fills the registered fields from defaults and stored overrides', function ()
     ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'layout', 'content' => 'topbar']);
     $this->actingAs(customizeAdmin('view:theme', 'edit:theme'));
 
-    livewire(Theme::class)->assertFormSet(['style_css' => ':root{--color-primary-600:#000000;}', 'layout' => 'topbar']);
+    livewire(Theme::class)->assertFormSet(['style_css' => ':root{--color-primary-600:#000000;}', 'color_scheme' => 'one', 'layout' => 'topbar']);
 });
 
-it('picks a colour scheme, edits the css and stores the result without the select', function (): void {
+it('stores a picked colour scheme and removes it again at the default', function (): void {
     $this->actingAs(customizeAdmin('view:theme', 'edit:theme'));
-    $scheme = array_key_first(config('presets.color_schemes'));
 
     $component = livewire(Theme::class)
-        ->fillForm(['color_scheme' => $scheme])
-        ->assertHasNoFormErrors();
-
-    $applied = $component->get('data.style_css');
-    expect($applied)->not->toBe(':root{--color-primary-600:#000000;}')
-        ->and(ThemeSetting::query()->count())->toBe(0);
-
-    $component
-        ->fillForm(['style_css' => $applied."\n.added{color:red}"])
+        ->fillForm(['color_scheme' => 'two'])
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect(storedTheme('style_css'))->toBe($applied."\n.added{color:red}")
-        ->and(ThemeSetting::query()->where('name', 'color_scheme')->exists())->toBeFalse();
+    expect(storedTheme('color_scheme'))->toBe('two');
+
+    $component
+        ->fillForm(['color_scheme' => 'one'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(storedTheme('color_scheme'))->toBeNull();
+});
+
+it('rejects an unknown colour scheme', function (): void {
+    $this->actingAs(customizeAdmin('view:theme', 'edit:theme'));
+
+    livewire(Theme::class)
+        ->fillForm(['color_scheme' => 'bogus'])
+        ->call('save')
+        ->assertHasFormErrors(['color_scheme']);
+
+    expect(storedTheme('color_scheme'))->toBeNull();
+});
+
+it('keeps the preview scheme css in step with the picked scheme', function (): void {
+    $this->actingAs(customizeAdmin('view:theme', 'edit:theme'));
+    $one = app(ColorSchemeCss::class)->render(config('presets.color_schemes.one'));
+    $two = app(ColorSchemeCss::class)->render(config('presets.color_schemes.two'));
+
+    livewire(Theme::class)
+        ->assertSet('schemeCss', $one)
+        ->set('data.color_scheme', 'two')
+        ->assertSet('schemeCss', $two)
+        ->set('data.color_scheme', 'bogus')
+        ->assertSet('schemeCss', '');
 });
 
 it('stores a changed layout and keeps unchanged fields out of the table', function (): void {
@@ -140,6 +167,21 @@ it('rejects a select value outside its options and stores nothing', function ():
         ->assertHasFormErrors(['layout']);
 
     expect(ThemeSetting::query()->count())->toBe(0);
+});
+
+it('refreshes the preview scheme css when the colour scheme is reset', function (): void {
+    ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'color_scheme', 'content' => 'two']);
+    $this->actingAs(customizeAdmin('view:theme', 'edit:theme'));
+    $one = app(ColorSchemeCss::class)->render(config('presets.color_schemes.one'));
+    $two = app(ColorSchemeCss::class)->render(config('presets.color_schemes.two'));
+
+    livewire(Theme::class)
+        ->assertSet('schemeCss', $two)
+        ->callAction(TestAction::make('resetField')->schemaComponent('customize'), ['field' => 'color_scheme'])
+        ->assertFormSet(['color_scheme' => 'one'])
+        ->assertSet('schemeCss', $one);
+
+    expect(storedTheme('color_scheme'))->toBeNull();
 });
 
 it('refuses to save or reset for a view-only admin', function (): void {

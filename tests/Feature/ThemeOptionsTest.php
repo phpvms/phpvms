@@ -99,7 +99,7 @@ it('reads defaults and emit tags off-request from a form with nested tabs and hi
 
 it('leaves a non-dehydrated field out of the defaults', function (): void {
     app(ThemeOptions::class)->register('airside', fn (): array => [
-        ThemeOptions::colorSchemeSelect('custom_css'),
+        Select::make('helper')->options(['a' => 'A'])->dehydrated(false),
         CodeEditor::make('custom_css')->default('a{}')->meta('emit', 'css'),
     ]);
 
@@ -169,13 +169,4 @@ it('removes the row when an enum select is saved at its default case', function 
     $fields->set('airside', 'layout', 'sidebar');
 
     expect(ThemeSetting::query()->count())->toBe(0);
-});
-
-it('resolves a default file from the parent theme when the child ships none', function (): void {
-    new ThemeDefinition('airside-child', null, 'seven', Theme::find('airside'));
-
-    $fields = app(ThemeFields::class);
-
-    expect($fields->defaultFor('airside-child', 'styles.css'))->not->toBe('')
-        ->and($fields->defaultFor('airside-child', 'styles.css'))->toBe($fields->defaultFor('airside', 'styles.css'));
 });

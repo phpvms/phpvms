@@ -10,8 +10,6 @@ use BackedEnum;
 use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Component;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Igaster\LaravelTheme\Exceptions\themeNotFound;
@@ -64,9 +62,9 @@ final class ThemeOptions
     /**
      * Every field's default and emit tag, read off-request: `[name => [default, emit]]`.
      * Hidden fields are included, non-dehydrated ones are not, state casts are applied and a backed enum is
-     * its value. `emit` is `css`, `head`, `footer` or null.
+     * its value. `emit` is `css`, `head`, `footer`, `scheme` or null.
      *
-     * @return array<string, array{default: mixed, emit: 'css'|'head'|'footer'|null}>
+     * @return array<string, array{default: mixed, emit: 'css'|'head'|'footer'|'scheme'|null}>
      */
     public function defaults(string $theme): array
     {
@@ -81,32 +79,21 @@ final class ThemeOptions
     }
 
     /**
-     * A select of the colour schemes. Choosing one sets the `$target` field's
-     * state to the scheme applied over that field's default. The select is not
-     * dehydrated, so it is never in {@see self::defaults()}, saved or emitted.
+     * A select of the colour schemes, saved as `color_scheme` and emitted by
+     * {@see ThemeOutput} as the scheme's palettes (emit tag `scheme`).
      */
-    public static function colorSchemeSelect(string $target = 'style_css'): Select
+    public static function colorSchemeSelect(string $default): Select
     {
         return Select::make('color_scheme')
             ->label(__('filament.theme_color_scheme'))
-            ->placeholder(__('filament.theme_color_scheme_placeholder'))
             ->helperText(__('filament.theme_color_scheme_hint'))
             ->options(fn (): array => app(ColorSchemeCss::class)->options())
+            ->default($default)
+            ->in(array_keys(config('presets.color_schemes', [])))
             ->searchable()
             ->native(false)
-            ->dehydrated(false)
             ->live()
-            ->afterStateUpdated(function (?string $state, Get $get, Set $set) use ($target): void {
-                $scheme = config('presets.color_schemes.'.($state ?? ''));
-
-                if (!$scheme) {
-                    return;
-                }
-
-                $default = app(self::class)->defaults((string) $get('theme'))[$target]['default'] ?? '';
-
-                $set($target, app(ColorSchemeCss::class)->render((string) $default, $scheme));
-            });
+            ->meta('emit', 'scheme');
     }
 
     /**
@@ -130,7 +117,7 @@ final class ThemeOptions
     }
 
     /**
-     * @return array<string, array{default: mixed, emit: 'css'|'head'|'footer'|null}>
+     * @return array<string, array{default: mixed, emit: 'css'|'head'|'footer'|'scheme'|null}>
      */
     private function buildDefaults(string $theme): array
     {
@@ -158,7 +145,7 @@ final class ThemeOptions
 
             $defaults[(string) $key] = [
                 'default' => $this->normalise($state),
-                'emit'    => in_array($emit, ['css', 'head', 'footer'], true) ? $emit : null,
+                'emit'    => in_array($emit, ['css', 'head', 'footer', 'scheme'], true) ? $emit : null,
             ];
         }
 

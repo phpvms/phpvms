@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Features\Themes;
 
 use App\Models\ThemeSetting;
-use Igaster\LaravelTheme\Exceptions\themeNotFound;
-use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -20,15 +18,10 @@ use Illuminate\Support\Facades\Schema;
  * that differs from it is stored.
  *
  * Octane: registered as a scoped binding, so an instance lives for one request
- * and holds only a per-request memo of the shipped default files.
+ * and holds only a per-request table-exists flag.
  */
 final class ThemeFields
 {
-    /**
-     * @var array<string, string>
-     */
-    private array $defaults = [];
-
     private ?bool $tableExists = null;
 
     private bool $warned = false;
@@ -105,30 +98,11 @@ final class ThemeFields
     }
 
     /**
-     * The shipped default file `resources/customize/{file}` beside the theme's
-     * views, searching the theme first, then each parent theme (`css` is an
-     * alias of `styles.css`). Empty when the theme or the file is missing.
-     */
-    public function defaultFor(string $theme, string $file): string
-    {
-        $key = $theme."\0".$file;
-
-        return $this->defaults[$key] ??= $this->readDefault($theme, $file);
-    }
-
-    /**
-     * The default of a field: the registered field's default, else the shipped
-     * file of that name.
+     * The default of a field: the registered field's default, else null.
      */
     private function defaultValue(string $theme, string $name): mixed
     {
-        $registered = $this->options->defaults($theme);
-
-        if (array_key_exists($name, $registered)) {
-            return $registered[$name]['default'];
-        }
-
-        return $this->defaultFor($theme, $name);
+        return $this->options->defaults($theme)[$name]['default'] ?? null;
     }
 
     private function equalsDefault(mixed $value, mixed $default): bool
@@ -153,26 +127,5 @@ final class ThemeFields
         }
 
         return $this->tableExists;
-    }
-
-    private function readDefault(string $theme, string $file): string
-    {
-        try {
-            $found = Theme::find($theme);
-        } catch (themeNotFound) {
-            return '';
-        }
-
-        $file = $file === 'css' ? 'styles.css' : $file;
-
-        foreach ($found->getViewPaths() as $viewsPath) {
-            $path = dirname((string) $viewsPath).'/customize/'.$file;
-
-            if (is_file($path)) {
-                return (string) file_get_contents($path);
-            }
-        }
-
-        return '';
     }
 }

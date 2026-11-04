@@ -14,7 +14,7 @@
 
 @if ($isGroup && $mobile)
     <li>
-        <p class="vms-shell-group px-3.5 pt-3 pb-1 text-xs font-bold tracking-widest text-(--vms-ink-3) uppercase">{{ $item['label'] }}</p>
+        <p class="vms-shell-group px-3.5 pt-3 pb-1 text-xs font-bold tracking-widest text-dark-400 uppercase">{{ $item['label'] }}</p>
         <ul class="grid gap-0.5">
             @foreach ($children as $index => $child)
                 <x-vms::shell.topbar-item :item="$child" :key="$key.'.'.$index" :active-keys="$activeKeys" mobile />
@@ -27,7 +27,7 @@
             <x-slot:action>
                 <button type="button" x-on:click="show = !show" class="vms-shell-link" @if ($opened) aria-current="page" @endif aria-haspopup="menu">
                     {{ $item['label'] }}
-                    <x-ts-icon name="phosphor.caret-down.light" class="size-3.5 text-(--vms-ink-3)" />
+                    <x-ts-icon name="phosphor.caret-down.light" class="size-3.5 text-dark-400" />
                 </button>
             </x-slot:action>
 

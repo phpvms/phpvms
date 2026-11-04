@@ -32,7 +32,7 @@ it('shows the tabs airside registers on the Theme page', function (): void {
         ->call('save')
         ->assertHasFormErrors(['layout']);
 
-    expect(array_keys($page->get('data')))->toContain('style_css', 'custom_css', 'header', 'footer', 'layout');
+    expect(array_keys($page->get('data')))->toContain('color_scheme', 'custom_css', 'header', 'footer', 'layout');
 });
 
 it('emits a global head row inside head for airside and for a child theme', function (): void {

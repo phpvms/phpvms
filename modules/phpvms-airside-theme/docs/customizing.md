@@ -3,14 +3,13 @@
 airside is styled so a site can change how it looks without touching code or
 copying the theme. There are three layers, each one overriding the one before:
 
-1. **Shipped look.** `resources/css/airside.css`, built with Tailwind. Changing it
+1. **Shipped look.** `resources/css/airside.css` (imported by the build entry `resources/css/styles.css`), built with Tailwind. Changing it
    needs a rebuild, so only theme authors edit it.
 2. **Theme options.** Settings an admin picks, such as full-width pages. Each
    option sets an attribute on `<html>` that `airside.css` already styles.
    (Planned; see the `theme-customization` openspec change.)
 3. **Custom CSS.** Plain CSS an admin writes on the Content > Theme page. It is
    saved to the database and applies on the next page load, with no rebuild.
-   Its starting text is `resources/customize/styles.css`.
 
 Every element worth styling carries a **hook**: a stable class name, an ARIA or
 data attribute for its state, and CSS variables for values that come from data.
@@ -143,14 +142,21 @@ palette (`gray-*` for light, `dark-*` for dark, `primary-*` for the brand).
 }
 ```
 
-TallStackUI components render with TallStackUI's own classes. Whether any of
-them need hooks is decided after seeing the vanilla baseline (see Decisions).
+TallStackUI components render with TallStackUI's own classes. The provider's
+`TallStackUi::customize()` blocks add `vms-*` hook classes to them (layout
+utilities only), and `airside.css` colours those hooks with `@apply` in
+`@layer components`. Custom CSS overrides them.
 
-## Custom CSS: `styles.css`
+## Custom CSS
 
-Custom CSS is plain CSS. Tailwind is not available at runtime, so `@apply` and
-Tailwind class names do nothing here. Use CSS properties and the theme's
-variables (`var(--color-primary-500)`, `var(--color-dark-800)` and so on).
+Custom CSS (the Custom CSS box on the Theme page) is plain CSS. Tailwind does not
+process it, so `@apply` and Tailwind class names do nothing here. Use CSS
+properties and the theme's variables (`var(--color-primary-500)`,
+`var(--color-dark-800)` and so on). It is unlayered, so it beats the
+`@layer components` hook rules without `!important`.
+
+The build entry is `resources/css/styles.css`: it imports the fonts, TallStackUI
+and `airside.css`. Edit it to build on `airside.css`, or to replace it.
 
 ```css
 /* Square, borderless auth card with a soft shadow. */
@@ -220,7 +226,7 @@ Recorded as they are made. Newest last.
 | 2026-10-31 | Markup keeps layout utilities only; the look goes in `airside.css` under `@layer components`. | One place to change the look; inline look utilities would beat the hook rule. |
 | 2026-10-31 | State is styled from ARIA or `data-state` attributes, not state classes. | One source of truth that also serves accessibility; the Radix and Headless UI convention. |
 | 2026-10-31 | No inline styles. Data values reach CSS as variables. | Inline properties cannot be overridden by Custom CSS. |
-| 2026-10-31 | Custom CSS is plain, unlayered CSS; its starting text is `resources/customize/styles.css`. | It applies at runtime with no rebuild and beats every layered rule. |
+| 2026-10-31 | Custom CSS is plain, unlayered CSS. | It applies at runtime with no rebuild and beats every layered rule. |
 | 2026-10-31 | Theme options will set attributes on `<html>` that `airside.css` styles. | Sites change layout without code or a copied theme, as Discourse themes do. |
 | 2026-10-31 | The old kit token classes (`border-line`, `bg-panel`, `text-ink` and the rest) are removed. | Nothing defines them; their borders fell back to the text colour. |
 | 2026-10-31 | `@source` for PHP is limited to `app/Providers/*.php`. | Matches TallStackUI's soft customization docs; no surprise classes from other PHP. |

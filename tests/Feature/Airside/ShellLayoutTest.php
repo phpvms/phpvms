@@ -32,7 +32,7 @@ it('offers Go to Admin only to a user with admin access, as a full-load link', f
 });
 
 it('neutralises a closing style tag in the stored theme css', function (): void {
-    ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'style_css', 'content' => 'a{}</STYLE><script>x</script>']);
+    ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'custom_css', 'content' => 'a{}</STYLE><script>x</script>']);
 
     $html = $this->actingAs($this->pilot)->get('/airside-probe/pilot')->getContent();
 

@@ -10,7 +10,7 @@ Each entry lists:
 - **Element:** what the class sits on.
 - **Parts:** child hooks (`vms-<name>-<part>`).
 - **State:** the attributes and values to select on, e.g. `[aria-selected="true"]`.
-- **Variables:** CSS variables, with their unit and default.
+- **Variables:** none.
 - **Stability:** `stable` (a public contract: renaming it is a breaking change)
   or `draft` (may still change).
 
@@ -30,13 +30,13 @@ The card every auth page sits in.
 
 ### `vms-landing`
 
-The public landing layout's `<body>`: canvas background, full-height column so the footer sits at the bottom.
+The public landing layout's `<body>`: white page (dark: `dark-950`), full-height column so the footer sits at the bottom.
 
 - **View:** `resources/views/components/layouts/landing.blade.php`
 - **Element:** the `<body>`.
 - **Parts:** `vms-landing-nav`, `vms-landing-brand`, `vms-landing-links`, `vms-landing-account`, `vms-landing-footer`, `vms-pill`.
 - **State:** none.
-- **Variables:** `--vms-canvas` (colour), `--vms-ink` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-landing-nav`
@@ -69,7 +69,7 @@ The top-level menu links. Below 960px it moves to its own row and scrolls sidewa
 - **Element:** the `<nav aria-label="Main">`.
 - **Parts:** none (plain `<a>` children).
 - **State:** `a[aria-current="page"]` on the active link.
-- **Variables:** `--vms-ink` (colour), `--vms-ink-2` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-landing-account`
@@ -85,13 +85,13 @@ The right side of the nav: sign in and register for guests, the user link for pi
 
 ### `vms-pill`
 
-A rounded call-to-action link. `vms-pill--dark` and `vms-pill--light` also sit on the dashboard board's TallStackUI buttons. Modifiers: `vms-pill--dark` (ink fill) and `vms-pill--light` (translucent surface fill).
+A rounded call-to-action link. Modifiers: `vms-pill--dark` (the primary scale: `--color-primary-600`, hover `--color-primary-700`) and `vms-pill--light` (translucent surface fill).
 
 - **View:** `resources/views/components/layouts/landing.blade.php`
 - **Element:** the `<a>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-ink`, `--vms-canvas`, `--vms-surface` (colours).
+- **Variables:** `--color-primary-600`, `--color-primary-700`, `--color-white` (colours).
 - **Stability:** draft. `vms-pill--light` is used in the home hero; `vms-pill--lg` makes it larger.
 
 ### `vms-landing-footer`
@@ -102,7 +102,7 @@ The footer card of the landing layout: app name, copyright and the phpvms credit
 - **Element:** the `<footer>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-surface`, `--vms-ink-2` (colours), `--vms-radius-lg`, `--vms-gutter` (length).
+- **Variables:** `--vms-radius-lg`, `--vms-gutter` (length).
 - **Stability:** draft.
 
 ### `vms-landing-hero`
@@ -135,7 +135,7 @@ The small uppercase line above the hero title.
 - **Element:** the `<p>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-hero-ink-3` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-landing-title`
@@ -146,7 +146,7 @@ The hero `<h1>`. A child `<span>` is set in the serif face (`--font-serif`, weig
 - **Element:** the `<h1>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-hero-ink`, `--vms-hero-ink-2` (colours), `--font-serif` (font).
+- **Variables:** `--font-serif` (font).
 - **Stability:** draft.
 
 ### `vms-landing-lead`
@@ -157,7 +157,7 @@ The hero intro paragraph.
 - **Element:** the `<p>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-hero-ink-3` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-landing-actions`
@@ -201,7 +201,7 @@ One story card: label, heading and text.
 - **Element:** the `<article>`.
 - **Parts:** `vms-story-label`.
 - **State:** none.
-- **Variables:** `--vms-surface`, `--vms-ink-2` (colours), `--vms-radius-lg` (length).
+- **Variables:** `--vms-radius-lg` (length).
 - **Stability:** draft.
 
 ### `vms-story-label`
@@ -278,18 +278,18 @@ One news card: date, title and summary. It is not a link.
 - **Element:** the `<article>`; children are `<time>`, `<h4>` and `<p>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-surface`, `--vms-ink-2`, `--vms-ink-3` (colours), `--vms-radius-lg` (length).
+- **Variables:** `--vms-radius-lg` (length).
 - **Stability:** draft.
 
 ### `vms-shell`
 
-The signed-in layout's `<body>`: canvas background and ink colour.
+The signed-in layout's `<body>`: white page (dark: `dark-950`) and ink colour, set in `airside.css`.
 
 - **View:** `resources/views/components/layouts/app.blade.php`
 - **Element:** the `<body>`.
 - **Parts:** `vms-shell-main`, `vms-shell-header`, `vms-shell-topbar`.
 - **State:** none.
-- **Variables:** `--vms-canvas`, `--vms-ink` (colours).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-shell-main`
@@ -305,13 +305,46 @@ The page area of the signed-in layout (padding `--vms-gutter`). Set in `customiz
 
 ### `vms-shell-header`
 
-The dispatch strip: a rounded white bar with the airline, duty, METAR and clocks. Set in `customizeShell()` of the theme provider.
+The dispatch strip: a rounded bar with the airline, duty, METAR and clocks. Surface and hairline border (`gray-200`, dark: `dark-800` and `dark-700`) come from this hook. Set in `customizeShell()` of the theme provider.
 
 - **View:** `resources/views/components/shell/header.blade.php`
 - **Element:** the layout header `<div>`.
 - **Parts:** `vms-dispatch-sep`.
 - **State:** none.
-- **Variables:** `--vms-surface`, `--vms-ink` (colours), `--vms-gutter` (length).
+- **Variables:** `--vms-gutter` (length).
+- **Stability:** draft.
+
+### `vms-shell-sidebar`
+
+The sidebar panel, desktop and mobile (`desktop.wrapper.second` and `mobile.wrapper.fourth` of the TallStackUI sidebar, in `customizeShell()`). `bg-gray-100`, dark: `bg-dark-900`.
+
+- **View:** `resources/views/components/shell/sidebar.blade.php`
+- **Element:** the sidebar panel `<div>` rendered by TallStackUI.
+- **Parts:** `vms-shell-item`, `vms-shell-item-current`, `vms-shell-icon`, `vms-shell-icon-muted`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-shell-item`
+
+A sidebar group button or item: muted ink, a translucent white pill on hover. `vms-shell-item-current` is the current item: a solid white pill (dark: `dark-800`). `vms-shell-icon` is the icon colour of the header, group and item icons (`dark-600`, dark: `dark-300`); `vms-shell-icon-muted` is the group caret (`dark-400`). All are set in `customizeShell()`.
+
+- **View:** `resources/views/components/shell/sidebar.blade.php`
+- **Element:** the TallStackUI sidebar item or group button; the icon `<svg>`.
+- **Parts:** `vms-shell-item-current`, `vms-shell-icon`, `vms-shell-icon-muted`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-widget-card`
+
+The surface of a dashboard widget card (TallStackUI card scope `airside.widget`, in `customizeShell()`) and of a `vms-metric` tile: white, dark: `dark-800`, hairline border `gray-200`, dark: `dark-700`. `vms-widget-card-title` is the card header text.
+
+- **View:** `resources/views/livewire/dashboard/dashboard-board.blade.php`
+- **Element:** the card wrapper rendered by TallStackUI; the card title.
+- **Parts:** `vms-widget-card-title`.
+- **State:** none.
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-dispatch-sep`
@@ -322,7 +355,7 @@ The thin divider between the airline and the dispatch status. Hidden below 1024p
 - **Element:** the `<span>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-line` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-shell-brand`
@@ -333,7 +366,7 @@ The logo and app name link: the sidebar brand and the left end of the top bar.
 - **Element:** the `<a>`; its `<img>` is the logo (32px).
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-ink` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-shell-topbar`
@@ -366,7 +399,7 @@ A top bar menu link, or the button of a group that opens a dropdown. In the slid
 - **Element:** the `<a>` or `<button>`.
 - **Parts:** none.
 - **State:** `[aria-current="page"]` on the current page (for a group, when a child is current).
-- **Variables:** `--vms-ink`, `--vms-ink-2`, `--vms-surface` (colours).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-shell-group`
@@ -377,7 +410,7 @@ The small label of a group in the top bar's slide-over.
 - **Element:** the `<p>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-ink-3` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-shell-account`
@@ -388,7 +421,18 @@ The account menu trigger: avatar, name, and ident · callsign. In the sidebar it
 - **Element:** the `<button>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-ink`, `--vms-ink-3`, `--vms-surface` (colours).
+- **Variables:** none.
+- **Stability:** draft.
+
+### `clouds-bg`
+
+The sky colours. A class on the `vms-sky` `<svg>` (added by `x-vms::sky`); `airside.css` styles its parts by class (`clouds-bg-top`, `-mid`, `-bottom` gradient stops, `-light` cloud lighting, `-glow`, `-wisps` and `-clouds` opacity): a day sky, and a night sky under `.dark .clouds-bg`. These are plain properties, not variables.
+
+- **View:** `resources/views/components/sky.blade.php`
+- **Element:** the `<svg>`.
+- **Parts:** none.
+- **State:** `.dark` ancestor.
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-sky`
@@ -421,7 +465,7 @@ The small uppercase "Dashboard" line with the status badge, above the greeting.
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-hero-ink-3` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-pilot-badge`
@@ -443,7 +487,7 @@ The dashboard `<h1>`: "Good morning/afternoon/evening," and the pilot's name in 
 - **Element:** the `<h1>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-hero-ink`, `--vms-hero-ink-2` (colours), `--font-serif` (font).
+- **Variables:** `--font-serif` (font).
 - **Stability:** draft.
 
 ### `vms-pilot-chips`
@@ -454,7 +498,7 @@ The ident, callsign and current airport chips under the greeting.
 - **Element:** the `<p>`; each chip is a `<span>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-hero-ink`, `--vms-hero-ink-3` (colours).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-rank`
@@ -465,7 +509,7 @@ The rank progress card in the hero: hours, a native `<progress>` and the hours t
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-hero-ink`, `--vms-hero-ink-3` (colours).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-metrics`
@@ -487,12 +531,12 @@ One statistic: a label (`<dt>`) and a large number with small muted units (`<dd>
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-surface`, `--vms-ink-3` (colours), `--vms-radius-lg` (length).
+- **Variables:** `--vms-radius-lg` (length).
 - **Stability:** draft.
 
 ### `vms-board-toolbar`
 
-The row above the board: title, and the Add widget, Reset and Customize buttons. The buttons are TallStackUI buttons with `vms-pill--dark` or `vms-pill--light`.
+The row above the board: title, and the Add widget, Reset and Customize buttons. The buttons are TallStackUI buttons: Customize is the primary colour, Add widget the `light` variant.
 
 - **View:** `resources/views/livewire/dashboard/dashboard-board.blade.php`
 - **Element:** the `<div>`.
@@ -531,7 +575,7 @@ One widget frame. In edit mode it has a dashed outline. The card inside uses the
 - **Element:** the `<div data-widget>`.
 - **Parts:** `vms-widget-icon`.
 - **State:** none.
-- **Variables:** `--vms-surface`, `--vms-radius-lg`.
+- **Variables:** `--vms-radius-lg` (length).
 - **Stability:** draft.
 
 ### `vms-widget-icon`
@@ -564,7 +608,7 @@ The route and the TRK and DIST readout under the map.
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-brand`, `--vms-ink-2`, `--vms-ink-3` (colours).
+- **Variables:** `--vms-brand` (colours).
 - **Stability:** draft.
 
 ### `vms-flying`
@@ -575,7 +619,7 @@ The "pilots flying now" count at the top of the Activity widget.
 - **Element:** the `<header>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-ink-3` (colour).
+- **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-news`
@@ -586,34 +630,26 @@ The list of items in the Latest news widget.
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
-- **Variables:** `--vms-ink`, `--vms-ink-2`, `--vms-ink-3` (colours).
+- **Variables:** none.
 - **Stability:** draft.
 
 ## Variables
 
-The landing tokens are declared in `@layer base` in `resources/css/airside.css`
-(`:root` for light, `.dark` for dark, built from the `--color-dark-*` scale). The `--vms-hero-ink*` tokens are for text on the sky, so they are dark ink in light mode and light ink in dark mode. The `--vms-sky-*` tokens colour the sky SVG (`vms-sky`): a day sky in light mode, a night sky in dark mode.
-Custom CSS overrides them.
+The tokens are declared in `@layer base` in `resources/css/airside.css`
+(`:root` for light, `.dark` for dark). Colours are not tokens: parts set them
+with `vms-*` hook classes (`@apply` in `@layer components`), and the hero text
+on the sky uses literal colours in its own rules (`vms-landing-*`, `vms-pilot-*`,
+`vms-rank`). Custom CSS overrides the tokens and the hooks.
+
+Brand and neutral colours come from the saved colour scheme (the Colour scheme
+select on the Theme page, saved as `color_scheme`), which sets `--color-primary-*`,
+`--color-secondary-*` and `--color-dark-*` at runtime. The `@theme` block in
+`airside.css` is the build-time fallback (the phpvms scheme).
 
 | Variable | Unit | Light default |
 | --- | --- | --- |
-| `--vms-canvas` | colour | `#f3efea` |
-| `--vms-surface` | colour | `#ffffff` |
-| `--vms-ink` | colour | `#14213a` |
-| `--vms-ink-2` | colour | `#5b6476` |
-| `--vms-ink-3` | colour | `#8a92a2` |
-| `--vms-line` | colour | `#ebe5dd` (dark: `--color-dark-700`) |
 | `--vms-brand` | colour | `--color-primary-600` (dark: `--color-primary-400`) |
-| `--vms-brand-soft` | colour | `#e3eff8` (dark: `--color-primary-950`) |
-| `--vms-hero-ink` | colour | `#14213a` (dark: `#eef4fc`) |
-| `--vms-hero-ink-2` | colour | `#5d7ea3` (dark: `#9db8dc`) |
-| `--vms-hero-ink-3` | colour | `#3e5470` (dark: `#b6c6dd`) |
-| `--vms-sky-top`, `--vms-sky-mid`, `--vms-sky-bottom` | colour | `#9ccaf3`, `#cde4fa`, `#eef5fd` (dark: `#08122b`, `#12234a`, `#1c3361`) |
-| `--vms-sky-cloud-light` | colour | `#ffffff` (dark: `#8fa6cc`): the cloud lighting colour |
-| `--vms-sky-cloud-opacity` | number 0-1 | `1` (dark: `0.3`) |
-| `--vms-sky-wisp-opacity` | number 0-1 | `0.5` (dark: `0.12`) |
-| `--vms-sky-glow` | colour | `#ffffff` (dark: `#4c6fb0`) |
-| `--vms-sky-glow-opacity` | number 0-1 | `0.6` (dark: `0.22`) |
+| `--vms-brand-soft` | colour | `--color-primary-600` at 12% over white (dark: `--color-primary-950`) |
 | `--vms-radius-xl` | length | `28px` |
 | `--vms-radius-lg` | length | `22px` |
 | `--vms-radius-md` | length | `12px` |

@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Themes\ColorSchemeCss;
 use App\Features\Themes\ThemeFields;
 use App\Features\Themes\ThemeOptions;
 use App\Filament\Concerns\AuthorizesAccess;
@@ -61,6 +62,13 @@ class Theme extends Page
      * @var array<int, string>
      */
     public array $cssFields = [];
+
+    /**
+     * The CSS of the form's current `color_scheme` state; empty when the theme
+     * has none or the key is unknown. The live preview puts it before the css
+     * fields.
+     */
+    public string $schemeCss = '';
 
     /**
      * @return array<int, Ability>
@@ -205,6 +213,26 @@ class Theme extends Page
         }
 
         $this->form->fill([...$state, 'theme' => $theme]);
+        $this->refreshSchemeCss();
+    }
+
+    /**
+     * Livewire hook: runs after any `data.*` property changes.
+     */
+    public function updatedData(mixed $value, string $key): void
+    {
+        if ($key === 'color_scheme') {
+            $this->refreshSchemeCss();
+        }
+    }
+
+    private function refreshSchemeCss(): void
+    {
+        $scheme = config('presets.color_schemes.'.($this->data['color_scheme'] ?? ''));
+
+        $this->schemeCss = is_array($scheme) && ($this->data['color_scheme'] ?? '') !== ''
+            ? app(ColorSchemeCss::class)->render($scheme)
+            : '';
     }
 
     /**
@@ -222,6 +250,7 @@ class Theme extends Page
 
         app(ThemeFields::class)->reset($theme, $name);
         data_set($this->data, $name, $defaults[$name]['default']);
+        $this->refreshSchemeCss();
     }
 
     /**

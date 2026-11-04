@@ -28,7 +28,7 @@
     @if ($user)
         <x-slot:middle>
             <div class="hidden min-w-0 items-center gap-5 lg:flex" aria-label="Dispatch status">
-                <span class="vms-dispatch-sep h-6 w-px shrink-0 bg-(--vms-line)" aria-hidden="true"></span>
+                <span class="vms-dispatch-sep h-6 w-px shrink-0" aria-hidden="true"></span>
                 <x-vms::shell.sector :sector="$chrome->activeSector" />
                 <x-vms::shell.duty :duty="$chrome->duty" />
                 <livewire:shell::header-metar :icao="$station?->icao" lazy />

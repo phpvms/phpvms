@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Schema;
  * Compiles the head and footer output of a theme: its emit-tagged fields
  * followed by the enabled global slot rows.
  *
- * Head order: the theme's `css` fields, global `css` rows, the theme's `head`
+ * Head order: the theme's `scheme` fields (each rendered by {@see ColorSchemeCss}
+ * from `presets.color_schemes`; an unknown or blank key emits nothing), the theme's `css` fields, global `css` rows, the theme's `head`
  * fields, global `head` rows. Footer order: the theme's `footer` fields, global
  * `footer` rows. Global rows follow the theme's values in `order`. CSS (a
  * `css` field or a row of type `css`) is wrapped in `<style>` with any
@@ -84,6 +85,7 @@ final readonly class ThemeOutput
     private function compileHead(string $theme): string
     {
         return $this->join([
+            $this->schemeValues($theme),
             $this->themeValues($theme, 'css'),
             $this->globalValues(GlobalSlotPosition::CSS),
             $this->themeValues($theme, 'head'),
@@ -105,6 +107,29 @@ final readonly class ThemeOutput
     private function join(array $groups): string
     {
         return implode("\n", array_merge(...$groups));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function schemeValues(string $theme): array
+    {
+        $out = [];
+
+        foreach ($this->options->defaults($theme) as $name => $field) {
+            if ($field['emit'] !== 'scheme') {
+                continue;
+            }
+
+            $value = $this->fields->get($theme, $name);
+            $scheme = is_string($value) && $value !== '' ? config('presets.color_schemes.'.$value) : null;
+
+            if (is_array($scheme)) {
+                $out[] = $this->style(app(ColorSchemeCss::class)->render($scheme));
+            }
+        }
+
+        return $out;
     }
 
     /**

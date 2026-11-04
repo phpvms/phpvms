@@ -41,7 +41,7 @@ export default defineConfig({
     laravel({
       // Relative to this folder: the build goes to modules/phpvms-airside-theme/public/build
       // with its own hot file (public/hot), never the root public/hot.
-      input: ["resources/css/airside.css", "resources/js/airside.js", ...islands],
+      input: ["resources/css/styles.css", "resources/js/airside.js", ...islands],
       buildDirectory: "build",
       hotFile: "public/hot",
     }),

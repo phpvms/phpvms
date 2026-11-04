@@ -8,7 +8,8 @@
     frame drops the parameter, so the frame falls back to the saved theme.
 
     The frame also previews unsaved CSS live: the state of the theme's
-    css-tagged fields (`$wire.cssFields`, in schema order) is joined and written
+    css-tagged fields (`$wire.cssFields`, in schema order) is joined, after the
+    selected colour scheme's CSS (`$wire.schemeCss`), and written
     into the frame's `style[data-theme-css]` element (replacing its content, so
     a saved override never keeps stale properties). Save persists it.
 
@@ -50,7 +51,7 @@
         theme: $wire.$entangle('data.theme'),
         data: $wire.$entangle('data'),
         get css() {
-            return ($wire.cssFields ?? []).map((name) => name.split('.').reduce((value, key) => value?.[key], this.data) ?? '').join('\n');
+            return [$wire.schemeCss ?? '', ...($wire.cssFields ?? []).map((name) => name.split('.').reduce((value, key) => value?.[key], this.data) ?? '')].join('\n');
         },
         base: @js($url),
         param: @js($param),

@@ -7,7 +7,6 @@ return [
     'tab_inserts'    => 'Custom Inserts',
     'tab_layout'     => 'Layout',
     'color_scheme'   => 'Colour scheme',
-    'style_css'      => 'Styles CSS',
     'custom_css'     => 'Custom CSS',
     'header'         => 'Header',
     'footer'         => 'Footer',
