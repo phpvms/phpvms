@@ -63,13 +63,41 @@
         </div>
     </div>
 @else
-    <div class="vms-next-flight-empty flex flex-wrap items-center justify-between gap-4">
-        <div class="min-w-0">
-            <h4 class="m-0 text-3xl font-semibold tracking-tight">{{ __('ui.ready_to_fly') }}</h4>
-            @if ($this->lastRoute)
-                <p class="m-0 mt-2 text-sm text-dark-400">{{ __('ui.last_flight', ['route' => $this->lastRoute]) }}</p>
+    @php
+        $airport = $this->location;
+        $map = $this->mapOptions;
+    @endphp
+    <div class="vms-next-flight-empty">
+        <x-vms::location-card
+            :icao="$airport?->icao"
+            :country="$airport?->country"
+            :lat="$airport?->lat"
+            :lon="$airport?->lon"
+            :scope="$map['scope']"
+            :variant="$map['variant']"
+            :size="$map['size']"
+        >
+            @php($lastFlight = $this->lastFlight)
+            @if ($lastFlight)
+                <x-slot:aside>
+                    <div class="vms-last-flight p-3">
+                        <p class="m-0 text-xs text-dark-400">{{ __('ui.last_flight_title') }}</p>
+                        <p class="m-0 mt-1 text-sm font-semibold tabular-nums">
+                            {{ $lastFlight['dpt'] }}
+                            <span class="vms-last-flight-arrow" aria-hidden="true">→</span>
+                            {{ $lastFlight['arr'] }}
+                        </p>
+                        <p class="m-0 mt-1 text-xs tabular-nums text-dark-400">{{ $lastFlight['time'] }} · {{ $lastFlight['distance'] }}</p>
+                    </div>
+                </x-slot:aside>
             @endif
-        </div>
-        <x-ts-button :href="route('frontend.flights.index')" wire:navigate>{{ __('ui.find_a_flight') }}</x-ts-button>
+
+            <x-slot:details>
+                <x-slot-outlet name="dashboard.ready.details" :context="['airport' => $airport, 'user' => auth()->user(), 'pirep' => auth()->user()?->last_pirep]" />
+            </x-slot:details>
+
+            <x-ts-button :href="route('frontend.flights.index')" wire:navigate>{{ __('ui.find_a_flight') }}</x-ts-button>
+            <x-slot-outlet name="dashboard.ready.actions" :context="['airport' => $airport, 'user' => auth()->user()]" />
+        </x-vms::location-card>
     </div>
 @endif

@@ -53,11 +53,13 @@
                             wire:key="widget-{{ $id }}"
                             @if ($editing) wire:sort:item="{{ $id }}" @endif
                             data-widget="{{ $id }}"
-                            @class(['vms-widget min-w-0 rounded-(--vms-radius-lg)', 'outline-2 -outline-offset-2 outline-dashed outline-dark-300' => $editing])
+                            @class(['vms-widget min-w-0 rounded-(--vms-radius-lg)', 'vms-widget--bare' => $catalog[$id]['bare'] && ! $editing, 'outline-2 -outline-offset-2 outline-dashed outline-dark-300' => $editing])
                             @if ($zone === 'grid') style="grid-column: span {{ $catalog[$id]['span'] }} / span {{ $catalog[$id]['span'] }}" @endif
                         >
                             @php($widgetIcon = \Modules\PhpvmsAirsideTheme\Support\NavigationIcon::tallstack($catalog[$id]['icon'] ?? null))
                             <x-ts-card class="flex min-w-0 flex-col" scope="airside.widget">
+                                {{-- A bare widget (catalog `bare`) has no header; Customize mode always shows it for the handle and remove button. --}}
+                                @if ($editing || ! $catalog[$id]['bare'])
                                 <x-slot:header>
                                     <div class="flex w-full items-center gap-2">
                                         @if ($editing)
@@ -79,6 +81,7 @@
                                         @endif
                                     </div>
                                 </x-slot:header>
+                                @endif
 
                                 @if ($id === 'route')
                                     @include('livewire.dashboard.route-widget', ['route' => $route])

@@ -302,6 +302,51 @@
         @apply bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300;
     }
 
+    /*
+     * Location card: the map colours. The map component sets its fallback look
+     * with SVG presentation attributes, so these rules replace it directly. The
+     * dotted variant draws all land as grey dots, the focus country a shade
+     * darker; only the location pin is brand blue.
+     */
+    .vms-location-card--outline .land {
+        @apply fill-gray-100 stroke-gray-300 dark:fill-dark-800 dark:stroke-dark-600;
+        fill-opacity: 1;
+        stroke-opacity: 1;
+    }
+
+    .vms-location-card--outline .land--focus {
+        fill: var(--vms-brand-soft);
+        stroke-width: 1;
+        @apply stroke-primary-600 dark:stroke-primary-400;
+    }
+
+    .vms-location-card .map-dot {
+        @apply fill-gray-300 dark:fill-dark-600;
+        fill-opacity: 1;
+    }
+
+    .vms-location-card .map-dot--focus {
+        @apply fill-gray-400 dark:fill-dark-500;
+    }
+
+    .vms-location-card .map-pin {
+        fill: var(--vms-brand);
+        stroke: var(--vms-brand);
+        stroke-opacity: .25;
+        stroke-width: 14;
+        paint-order: stroke;
+    }
+
+    /* Location card: the last flight block under the airport name. */
+    .vms-last-flight {
+        @apply border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-900;
+        border-radius: var(--vms-radius-md);
+    }
+
+    .vms-last-flight-arrow {
+        @apply text-gray-400 dark:text-dark-500;
+    }
+
     /* Next flight widget: the arrow between the airports is muted. */
     .vms-next-flight-arrow {
         @apply text-dark-400 dark:text-dark-500;

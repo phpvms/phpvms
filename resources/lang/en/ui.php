@@ -57,7 +57,7 @@ return [
     // Next flight widget
     'next_flight'           => 'Next flight',
     'ready_to_fly'          => 'Ready to fly',
-    'last_flight'           => 'Last: :route',
+    'last_flight_title'     => 'Last flight',
     'find_a_flight'         => 'Find a flight',
     'start_flight_planning' => 'Start flight planning',
     'ofp_ready'             => 'OFP ready',

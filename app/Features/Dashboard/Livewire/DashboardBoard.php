@@ -121,7 +121,7 @@ class DashboardBoard extends Component
     /**
      * The widgets that are not placed (the Add widget menu).
      *
-     * @return list<array{id: string, title: string, icon: string, zone: string, span: int, default: bool}>
+     * @return list<array{id: string, title: string, icon: string, zone: string, span: int, default: bool, bare: bool}>
      */
     #[Computed]
     public function availableWidgets(): array

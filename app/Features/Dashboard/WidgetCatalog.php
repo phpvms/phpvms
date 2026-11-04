@@ -18,7 +18,10 @@ final class WidgetCatalog
     public const string ZONE_SIDEBAR = 'sidebar';
 
     /**
-     * @return array<string, array{id: string, title: string, icon: string, zone: string, span: int, default: bool}>
+     * A bare widget draws its own surface: outside Customize mode the board gives it
+     * no header, border or body padding.
+     *
+     * @return array<string, array{id: string, title: string, icon: string, zone: string, span: int, default: bool, bare: bool}>
      */
     public static function all(): array
     {
@@ -30,6 +33,8 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_GRID,
                 'span'    => 2,
                 'default' => true,
+
+                'bare' => false,
             ],
             'activity' => [
                 'id'      => 'activity',
@@ -38,6 +43,8 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_GRID,
                 'span'    => 2,
                 'default' => true,
+
+                'bare' => false,
             ],
             'news' => [
                 'id'      => 'news',
@@ -46,6 +53,8 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_SIDEBAR,
                 'span'    => 1,
                 'default' => true,
+
+                'bare' => false,
             ],
             'next-flight' => [
                 'id'      => 'next-flight',
@@ -54,12 +63,14 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_GRID,
                 'span'    => 2,
                 'default' => false,
+
+                'bare' => true,
             ],
         ];
     }
 
     /**
-     * @return array{id: string, title: string, icon: string, zone: string, span: int, default: bool}|null
+     * @return array{id: string, title: string, icon: string, zone: string, span: int, default: bool, bare: bool}|null
      */
     public static function find(string $id): ?array
     {

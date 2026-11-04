@@ -198,7 +198,7 @@ class AirsideThemeServiceProvider extends ServiceProvider
             ->block('header.wrapper.base', 'flex items-center justify-between px-5.5 pt-5 pb-3.5')
             ->block('header.wrapper.border', 'border-0')
             ->block('header.text.color', 'vms-widget-card-title')
-            ->block('body', 'grow px-5.5 pb-5.5');
+            ->block('body', 'vms-widget-card-body grow px-5.5 pb-5.5 in-[.vms-widget--bare]:p-0');
     }
 
     /**
@@ -273,6 +273,34 @@ class AirsideThemeServiceProvider extends ServiceProvider
                     ])
                     ->in(['sidebar', 'topbar'])
                     ->default('sidebar')
+                    ->required(),
+                Select::make('ready_map_scope')
+                    ->label(__('airside::customize.ready_map_scope'))
+                    ->options([
+                        'country'   => __('airside::customize.ready_map_scope_country'),
+                        'continent' => __('airside::customize.ready_map_scope_continent'),
+                        'world'     => __('airside::customize.ready_map_scope_world'),
+                    ])
+                    ->in(['country', 'continent', 'world'])
+                    ->default('country')
+                    ->required(),
+                Select::make('ready_map_style')
+                    ->label(__('airside::customize.ready_map_style'))
+                    ->options([
+                        'outline' => __('airside::customize.ready_map_style_outline'),
+                        'dotted'  => __('airside::customize.ready_map_style_dotted'),
+                    ])
+                    ->in(['outline', 'dotted'])
+                    ->default('dotted')
+                    ->required(),
+                Select::make('ready_map_size')
+                    ->label(__('airside::customize.ready_map_size'))
+                    ->options([
+                        'compact' => __('airside::customize.ready_map_size_compact'),
+                        'hero'    => __('airside::customize.ready_map_size_hero'),
+                    ])
+                    ->in(['compact', 'hero'])
+                    ->default('compact')
                     ->required(),
             ]),
         ]);

@@ -342,7 +342,8 @@ The surface of a dashboard widget card (TallStackUI card scope `airside.widget`,
 
 - **View:** `resources/views/livewire/dashboard/dashboard-board.blade.php`
 - **Element:** the card wrapper rendered by TallStackUI; the card title.
-- **Parts:** `vms-widget-card-title`.
+- **Parts:** `vms-widget-card-title`, `vms-widget-card-body` (the card body).
+- **State:** `vms-widget--bare` on the widget cell, for a catalog entry with `bare` set (Next flight) outside Customize mode: no header and no body padding (the card keeps its border and surface) (`in-[.vms-widget--bare]:p-0` on the body block).
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
@@ -1157,6 +1158,100 @@ The "{departure} to {arrival}" title of the details step. The "to" is a `<span>`
 - **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
 - **Element:** the `<h3>`.
 - **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-location-card`
+
+A place (ICAO and country) beside a map with one pin: `<x-vms::location-card>`. The Next flight widget uses it for the Ready to fly state; any page can.
+
+- **View:** `resources/views/components/location-card.blade.php`
+- **Element:** the root `<div>`.
+- **Parts:** `vms-location-card-place`, `vms-location-card-icao`, `vms-location-card-country`, `vms-location-card-map`, `vms-location-card-actions`.
+- **State:** the modifiers `vms-location-card--outline` or `vms-location-card--dotted` (the `variant` prop), and `vms-location-card--compact` or `vms-location-card--hero` (the `size` prop).
+- **Variables:** none.
+- **Stability:** draft.
+
+Props: `icao`, `country` (strings or null); `lat`, `lon` (floats or null; the pin is drawn when both are set); `scope` (`country`, `continent` or `world`, default `country`; the map falls back country, then continent, then world); `variant` (`outline` or `dotted`, default `dotted`); `size` (`compact` or `hero`, default `compact`). Without an `icao` the card shows "—" and the world map with no pin.
+
+Slots: the default slot holds action buttons laid over the map (rendered in `vms-location-card-actions`, omitted when empty); `aside` is optional and sits under the country (the Ready state puts the last flight block there); `details` is optional and sits after `aside`, for extra blocks (the Ready state holds the `dashboard.ready.details` outlet). The place column has its own `p-5.5` padding and is top-aligned; the actions row is inset `bottom-4 right-4` from the map corner.
+
+The map is the core `<x-map.svg>`: land is `.land`, the focus country `.land--focus`, the airport `.map-pin`. In the dotted variant the land is filled with a dot pattern: the circles are `.map-dot`, and `.map-dot--focus` on the focus country's pattern. Colours are set under `vms-location-card` in `airside.css`: grey dots on land, a darker grey on the focus country, and the brand pin with a halo as the only colour. For a country with regions (the United States), the map shows the region holding the point: Alaska and Hawaii get their own maps, every other point the contiguous states.
+
+### `vms-last-flight`
+
+The last flight block in the Ready to fly state: label, route (arrow muted by `vms-last-flight-arrow`), flight time and distance. Omitted when the pilot has no last PIREP.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the `<div>` in the location card `aside` slot.
+- **Parts:** `vms-last-flight-arrow`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-location-card-place`
+
+The ICAO, country and `aside` slot column of the location card.
+
+- **View:** `resources/views/components/location-card.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-location-card-icao`, `vms-location-card-country`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-location-card-icao`
+
+The large ICAO code of the location card ("—" when unknown).
+
+- **View:** `resources/views/components/location-card.blade.php`
+- **Element:** the `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-location-card-country`
+
+The country name under the ICAO, muted.
+
+- **View:** `resources/views/components/location-card.blade.php`
+- **Element:** the `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-location-card-map`
+
+The map column of the location card.
+
+- **View:** `resources/views/components/location-card.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-location-card-actions`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-location-card-actions`
+
+The default slot of the location card, centred near the bottom of the map.
+
+- **View:** `resources/views/components/location-card.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-next-flight-empty`
+
+The Next flight widget when there is no bid: a `vms-location-card` for the pilot's current airport (else home airport). Its default slot holds the Find a flight button and the `dashboard.ready.actions` slot (context: `airport`, the `Airport` or null; `user`). Its `details` slot holds the `dashboard.ready.details` slot (context: `airport`, the `Airport` or null; `user`; `pirep`, the pilot's last `Pirep` or null). The `aside` slot holds the `vms-last-flight` block when the pilot has a last PIREP. The map follows the theme options `ready_map_scope` (`country`, `continent`, `world`; default `country`), `ready_map_style` (`outline`, `dotted`; default `dotted`) and `ready_map_size` (`compact`, `hero`; default `compact`); an unknown value falls back to the default.
+
+- **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
+- **Element:** the wrapping `<div>` around the `vms-location-card`.
+- **Parts:** `vms-location-card`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
