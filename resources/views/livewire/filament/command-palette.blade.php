@@ -12,7 +12,7 @@
 
 <div
     class="cmdk"
-    x-data="phpvmsCommandPalette({ spa: @js($isSpa) })"
+    x-data="phpvmsCommandPalette({ spa: @js($isSpa), user: @js(auth()->id()) })"
     x-cloak
     x-show="open"
     x-on:cmdk-open.window="show()"
@@ -52,6 +52,7 @@
                             data-category="{{ $category }}"
                             x-bind:class="{ 'is-active': active === {{ $index }} }"
                             x-on:mousemove="active = {{ $index }}"
+                            x-on:focus="active = {{ $index }}"
                             x-on:click="choose($event, $el)"
                         >
                             <span class="cmdk-item-title">{{ $result['title'] }}</span>
@@ -81,6 +82,7 @@
                             x-bind:data-category="entry.category"
                             x-bind:class="{ 'is-active': active === i }"
                             x-on:mousemove="active = i"
+                            x-on:focus="active = i"
                             x-on:click="choose($event, $el)"
                         >
                             <span class="cmdk-item-title" x-text="entry.title"></span>

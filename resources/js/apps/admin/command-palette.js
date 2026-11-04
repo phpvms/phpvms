@@ -13,9 +13,16 @@
 export const RECENT_KEY = "phpvms.admin.palette.recent";
 export const RECENT_LIMIT = 8;
 
-export function readRecents(storage = window.localStorage) {
+/**
+ * Recents are per account: the browser's localStorage is shared by every user.
+ */
+export function recentKey(user) {
+  return `${RECENT_KEY}.${user}`;
+}
+
+export function readRecents(storage = window.localStorage, user = null) {
   try {
-    const parsed = JSON.parse(storage.getItem(RECENT_KEY) ?? "[]");
+    const parsed = JSON.parse(storage.getItem(recentKey(user)) ?? "[]");
     return Array.isArray(parsed) ? parsed.filter((entry) => entry?.url) : [];
   } catch {
     return [];
@@ -25,14 +32,14 @@ export function readRecents(storage = window.localStorage) {
 /**
  * Newest first, one entry per url, capped at RECENT_LIMIT.
  */
-export function pushRecent(entry, storage = window.localStorage) {
+export function pushRecent(entry, storage = window.localStorage, user = null) {
   const next = [
     entry,
-    ...readRecents(storage).filter((existing) => existing.url !== entry.url),
+    ...readRecents(storage, user).filter((existing) => existing.url !== entry.url),
   ].slice(0, RECENT_LIMIT);
 
   try {
-    storage.setItem(RECENT_KEY, JSON.stringify(next));
+    storage.setItem(recentKey(user), JSON.stringify(next));
   } catch {
     // Storage full or blocked: recents are a convenience, not state.
   }
@@ -57,8 +64,8 @@ if (!window.__phpvmsCommandPaletteBound) {
   });
 }
 
-document.addEventListener("alpine:init", () => {
-  window.Alpine.data("phpvmsCommandPalette", ({ spa = false } = {}) => ({
+function registerCommandPalette() {
+  window.Alpine.data("phpvmsCommandPalette", ({ spa = false, user = null } = {}) => ({
     open: false,
     active: 0,
     recents: [],
@@ -76,13 +83,14 @@ document.addEventListener("alpine:init", () => {
         return;
       }
 
-      this.recents = readRecents();
+      this.recents = readRecents(window.localStorage, user);
       this.active = 0;
 
       // Only reset a non-empty query: a needless Livewire round trip can morph
-      // the DOM and race the focus below.
+      // the DOM and race the focus below. $set commits to the server; assigning
+      // $wire.query would only change local state and leave stale results.
       if (this.$wire.query !== "") {
-        this.$wire.query = "";
+        this.$wire.$set("query", "");
         this.$refs.input.value = "";
       }
 
@@ -135,7 +143,7 @@ document.addEventListener("alpine:init", () => {
       event.preventDefault();
 
       const { title, url, category } = element.dataset;
-      pushRecent({ title, url, category });
+      pushRecent({ title, url, category }, window.localStorage, user);
       this.close();
 
       if (spa && window.Livewire?.navigate) {
@@ -145,4 +153,12 @@ document.addEventListener("alpine:init", () => {
       }
     },
   }));
-});
+}
+
+// Alpine may already have started by the time this module runs (see the note
+// in app.js), in which case alpine:init has fired and will not fire again.
+if (window.Alpine) {
+  registerCommandPalette();
+} else {
+  document.addEventListener("alpine:init", registerCommandPalette);
+}
