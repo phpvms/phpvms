@@ -9,7 +9,7 @@
     "build:theme": "vite build"
   },
   "dependencies": {
-    "@fontsource-variable/noto-sans": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource-variable/noto-serif": "^5.3.0",
     "@phpvms/map": "workspace:*",
     "@phpvms/simbrief": "workspace:*"

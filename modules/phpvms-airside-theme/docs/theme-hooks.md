@@ -633,6 +633,435 @@ The list of items in the Latest news widget.
 - **Variables:** none.
 - **Stability:** draft.
 
+### `vms-flights`
+
+The flights list page root.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the page `<div>`.
+- **Parts:** `vms-flights-header`, `vms-flights-title`, `vms-flights-count`, `vms-flight-filters`, `vms-flight-list`, `vms-flight-pager`, `vms-flights-empty`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flights-header`
+
+The flights list header: title and active-filter count.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<header>`.
+- **Parts:** `vms-flights-title`, `vms-flights-count`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flights-title`
+
+"Find a flight." The word "flight." is a `<span>` set in thin serif in the brand colour.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<h1>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flights-count`
+
+The "N active" filter count.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-filters`
+
+The filter surface: chips, the Filters toggle and the form.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<section>`.
+- **Parts:** `vms-flight-chips`, `vms-flight-filters-form`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-filters-form`
+
+The 17-field filter form.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<form>`.
+- **Parts:** `vms-field`, `vms-flight-filters-actions`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-filters-actions`
+
+The Apply and Clear buttons row.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-field`
+
+A label with a native input or select. Style the control through `.vms-field input` and `.vms-field select`.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<label>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-chips`
+
+The row of active-filter chips.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-chip`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-chip`
+
+One active-filter chip.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-list`
+
+The list of flight cards.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<ul>`.
+- **Parts:** `vms-flight-card`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-card`
+
+One flight. A click or Enter/Space opens the assignment drawer on its details step. The card whose drawer is open is marked `aria-current="true"`.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<li>`.
+- **Parts:** `vms-flight-summary`, `vms-flight-route`, `vms-flight-buttons`, `vms-flight-row-actions`, `vms-flight-reason`.
+- **State:** `[data-availability="available|unavailable"]`, `[aria-current="true"]`.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-summary`
+
+Airline logo and flight information of a card: callsign, airline name and the pills. Reusable as `<x-vms::flights.summary>`.
+
+- **View:** `resources/views/components/flights/summary.blade.php`
+- **Element:** the root `<div>`.
+- **Parts:** `vms-flight-summary-logo`, `vms-flight-summary-text`, `vms-flight-pills`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-summary-logo`
+
+The rounded square with the airline logo, or the first two letters of the airline name.
+
+- **View:** `resources/views/components/flights/summary.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-summary-text`
+
+The stack to the right of the logo: callsign, airline name, pills.
+
+- **View:** `resources/views/components/flights/summary.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-pills`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-route`
+
+Departure and arrival stops joined by the leg.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-stop`, `vms-flight-leg`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-stop`
+
+One end of the route: the ICAO on top, the scheduled time under it.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-leg`
+
+The middle of the route: the line with the plane, block time and distance as pills on it.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-line`, `vms-flight-plane`, `vms-flight-leg-pill`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-leg-pill`
+
+A small pill on the line of a card: block time or distance.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-buttons`
+
+The stacked buttons of a card: Bid on flight, View bid or the disabled reason, then Details.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-details`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-details`
+
+The Details button on a card; it links to the flight page.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<a>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-pills`
+
+The row of pills in a flight summary: flight type, route code and the status.
+
+- **View:** `resources/views/components/flights/summary.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-pill`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-reason`
+
+Why a flight is unavailable. Also used in the drawer details step.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php, resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-row-actions`
+
+Wraps the `flights.row.actions` slot on a card.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-pill`
+
+A small pill. Variants: `vms-flight-pill--bid` (On your bid) and `vms-flight-pill--off` (Unavailable). Also used for the flight type in the drawer details step.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php, resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-line`
+
+The thin line between the stops.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<i>`.
+- **Parts:** `vms-flight-plane`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-plane`
+
+The plane icon centred on the line.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<span>` around the icon.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-pager`
+
+The Previous / Page X of Y / Next bar.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the `<nav>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flights-empty`
+
+The "No flights found" empty state.
+
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **Element:** the empty-state `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-detail`
+
+The details step of the assignment drawer.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-route-tile`, `vms-detail-title`, `vms-detail-facts`, `vms-detail-actions`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-detail-facts`
+
+The six facts of the details step.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<dl>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-detail-actions`
+
+The Bid on flight and Generate OFP buttons, the reason line and the `flights.detail.actions` slot.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-tile`
+
+The dark tile at the top of the details step: label, two airports and a dashed arc.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-route-tile-label`, `vms-route-tile-arc`, `vms-route-tile-plane`, `vms-route-tile-stop`, `vms-route-tile-dot`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-tile-label`
+
+The "{callsign} · Great circle" label of the tile.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-tile-arc`
+
+The dashed arc of the tile.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-tile-plane`
+
+The plane icon on the arc.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<span>` around the icon.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-tile-stop`
+
+One airport on the tile: the dot and its ICAO. West is on the left when both coordinates are known.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-route-tile-dot`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-tile-dot`
+
+The dot of an airport on the tile.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-detail-title`
+
+The "{departure} to {arrival}" title of the details step. The "to" is a `<span>`.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<h3>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
 ## Variables
 
 The tokens are declared in `@layer base` in `resources/css/airside.css`

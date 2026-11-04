@@ -3,7 +3,7 @@
  * brings Tailwind v4), the theme's template sources, then the theme's own
  * styles. Edit this file to build on airside.css, or to replace it.
  */
-@import "@fontsource-variable/noto-sans";
+@import "@fontsource-variable/manrope";
 @import "@fontsource-variable/noto-serif";
 @import "../../../../vendor/tallstackui/tallstackui/css/v4.css";
 @import "./airside.css";

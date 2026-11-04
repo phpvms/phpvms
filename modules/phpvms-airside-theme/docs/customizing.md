@@ -24,12 +24,12 @@ Hooks start with `vms-`, a prefix that does not name the theme, so a copied or c
 would plausibly restyle, not on every element. There are two kinds:
 
 - **Scope hooks** on each page and each component root, named after it:
-  `vms-flights`, `vms-flight-manifest`, `vms-auth-card`.
+  `vms-flights`, `vms-flight-summary`, `vms-auth-card`.
 - **Pattern hooks** on repeated parts, named the same everywhere: `vms-table`,
   `vms-table-row`, `vms-card`. One rule styles every instance.
 
-Combine them to target one place: `.vms-flight-manifest .vms-table-row`. Add a
-block-specific name (`vms-flight-manifest-row`) only when one scope holds two of
+Combine them to target one place: `.vms-flights .vms-flight-card`. Add a
+block-specific name (`vms-flight-leg-pill`) only when one scope holds two of
 the same pattern that must look different, or for a part with no pattern. The
 markup keeps layout utilities only (grid, flex, gap, padding); colour, border,
 background, radius and shadow belong in CSS.

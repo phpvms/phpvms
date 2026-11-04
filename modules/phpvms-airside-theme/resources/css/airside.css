@@ -8,7 +8,7 @@
  * scheme replaces them at runtime (config/presets.php lists the schemes).
  */
 @theme {
-    --font-sans: "Noto Sans Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-sans: "Manrope Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-serif: "Noto Serif Variable", ui-serif, Georgia, serif;
     --color-primary-50: #f1f9fe;
     --color-primary-100: #c9e0f3;
@@ -171,6 +171,175 @@
         font-family: var(--font-serif);
         font-weight: 200;
         letter-spacing: -0.03em;
+    }
+
+    /* Flights list: header. The thin serif word follows the greeting treatment. */
+    .vms-flights-title span {
+        font-family: var(--font-serif);
+        font-weight: 200;
+        letter-spacing: -0.03em;
+        color: var(--vms-brand);
+    }
+
+    .vms-flights-count {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    /* Flights list: filters. */
+    .vms-flight-filters {
+        border-radius: var(--vms-radius-lg);
+        @apply border border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-800;
+    }
+
+    .vms-flight-filters-form {
+        @apply border-t border-gray-200 pt-3.5 dark:border-dark-700;
+    }
+
+    .vms-field > span {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-field input,
+    .vms-field select {
+        width: 100%;
+        height: 36px;
+        padding: 0 11px;
+        border-radius: var(--vms-radius-md);
+        font-size: 13px;
+        font-weight: 500;
+        @apply border border-gray-200 bg-gray-50 text-dark-900 dark:border-dark-700 dark:bg-dark-900 dark:text-dark-50;
+    }
+
+    .vms-field input:focus,
+    .vms-field select:focus {
+        outline: 2px solid var(--vms-brand);
+        outline-offset: -1px;
+    }
+
+    .vms-flight-chip {
+        border-radius: 999px;
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    /* Flights list: cards. */
+    .vms-flight-card {
+        border-radius: var(--vms-radius-lg);
+        transition: border-color 0.15s;
+        @apply border border-gray-200 bg-white text-dark-900 hover:border-primary-600/45 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-50 dark:hover:border-primary-400/45;
+    }
+
+    .vms-flight-card[aria-current="true"] {
+        box-shadow: 0 0 0 1px var(--vms-brand);
+        @apply border-primary-600 dark:border-primary-400;
+    }
+
+    .vms-flight-stop small,
+    .vms-flight-summary-text p {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-flight-summary-logo {
+        @apply bg-gray-100 text-dark-600 dark:bg-dark-900 dark:text-dark-300;
+    }
+
+    .vms-flight-summary a,
+    .vms-flight-summary button {
+        @apply focus-visible:outline-primary-600 dark:focus-visible:outline-primary-400;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-summary,
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-route {
+        @apply opacity-70;
+    }
+
+    .vms-flight-line {
+        @apply bg-gray-300 dark:bg-dark-600;
+    }
+
+    .vms-flight-plane {
+        @apply bg-white text-primary-600 dark:bg-dark-800 dark:text-primary-400;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-stop b {
+        @apply text-dark-400 dark:text-dark-500;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-line {
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-plane {
+        @apply text-dark-400 dark:text-dark-500;
+    }
+
+    /* Small grey data pills; the status variants follow. */
+    .vms-flight-pill,
+    .vms-flight-leg-pill {
+        border-radius: 999px;
+        @apply bg-gray-100 text-dark-600 dark:bg-dark-900 dark:text-dark-300;
+    }
+
+    .vms-flight-pill--bid {
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    .vms-flight-pill--off {
+        @apply bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300;
+    }
+
+    .vms-flight-reason {
+        border-radius: var(--vms-radius-md);
+        @apply bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300;
+    }
+
+    /* Flights list: pager and empty state. */
+    .vms-flight-pager {
+        border-radius: 999px;
+        @apply border border-gray-200 bg-white text-dark-600 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-300;
+    }
+
+    .vms-flights-empty {
+        border-radius: var(--vms-radius-xl);
+        @apply border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-800;
+    }
+
+    /* Assignment drawer, details step. */
+    .vms-route-tile {
+        @apply bg-primary-950 text-white dark:bg-dark-900;
+    }
+
+    .vms-route-tile-label {
+        @apply text-primary-200;
+    }
+
+    .vms-route-tile-arc {
+        @apply border-white/60;
+    }
+
+    .vms-route-tile-plane {
+        @apply text-white;
+    }
+
+    .vms-route-tile-dot {
+        @apply bg-white;
+    }
+
+    .vms-detail-title b {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    .vms-detail-title span {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-detail-facts dt {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-detail-facts dd {
+        @apply text-dark-900 dark:text-dark-50;
     }
 
     .vms-landing > main {

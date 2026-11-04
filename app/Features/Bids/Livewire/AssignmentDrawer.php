@@ -39,7 +39,8 @@ use Livewire\Component;
  * EligibleAircraft, PlaceBid) and reproduces every error those return, with the
  * same type names and copy.
  *
- * States: idle, selecting (subfleet, then aircraft), overview (a bid exists), error.
+ * States: idle, details (opt-in, `details: true`, no bid yet), selecting (subfleet,
+ * then aircraft), overview (a bid exists), error.
  *
  * @property-read array{flight: FlightDetailData, policy: FlightDispatchPolicyData, subfleets: Collection<int, EligibleSubfleetData>, selection: ?BidSelectionData}|null $dispatchPayload
  * @property-read list<EligibleAircraftData>|null $aircraftList
@@ -75,13 +76,38 @@ class AssignmentDrawer extends Component
     #[Locked]
     public bool $changed = false;
 
+    /**
+     * Whether the opener asked for the details step, kept so "Try again" lands on it too.
+     */
+    #[Locked]
+    public bool $withDetails = false;
+
     #[On('assignment-drawer.open')]
-    public function show(int|string $flightId): void
+    public function show(int|string $flightId, bool $details = false): void
     {
         $this->resetState();
         $this->flightId = (string) $flightId;
+        $this->withDetails = $details;
         $this->open = true;
         $this->load();
+    }
+
+    /**
+     * Move from the details step to the selection step, only when the flight can be bid.
+     */
+    public function startBid(): void
+    {
+        if ($this->state !== 'details') {
+            return;
+        }
+
+        $flight = $this->dispatchPayload['flight'] ?? null;
+
+        if ($flight === null || $flight->summary->primaryAction !== 'bid') {
+            return;
+        }
+
+        $this->state = 'selecting';
     }
 
     /**
@@ -111,7 +137,7 @@ class AssignmentDrawer extends Component
         $this->subfleetId = null;
         $this->editingSubfleet = true;
         $this->editingAircraft = true;
-        $this->state = $payload['selection'] ? 'overview' : 'selecting';
+        $this->state = $payload['selection'] ? 'overview' : ($this->withDetails ? 'details' : 'selecting');
 
         $this->dispatch('assignment-drawer.loaded');
     }
@@ -327,7 +353,7 @@ class AssignmentDrawer extends Component
 
     private function resetState(): void
     {
-        $this->reset(['flightId', 'state', 'subfleetId', 'aircraftId', 'editingSubfleet', 'editingAircraft', 'failureType', 'failureMessage', 'changed']);
+        $this->reset(['flightId', 'state', 'subfleetId', 'aircraftId', 'editingSubfleet', 'editingAircraft', 'failureType', 'failureMessage', 'changed', 'withDetails']);
         unset($this->dispatchPayload, $this->aircraftList);
     }
 

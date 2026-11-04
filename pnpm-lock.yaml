@@ -114,7 +114,7 @@ importers:
 
   modules/phpvms-airside-theme:
     dependencies:
-      '@fontsource-variable/noto-sans':
+      '@fontsource-variable/manrope':
         specifier: ^5.3.0
         version: 5.3.0
       '@fontsource-variable/noto-serif':
@@ -789,8 +789,8 @@ packages:
   '@floating-ui/vue@1.1.11':
     resolution: {integrity: sha512-HzHKCNVxnGS35r9fCHBc3+uCnjw9IWIlCPL683cGgM9Kgj2BiAl8x1mS7vtvP6F9S/e/q4O6MApwSHj8hNLGfw==}
 
-  '@fontsource-variable/noto-sans@5.3.0':
-    resolution: {integrity: sha512-e3ZuxzY9AL2psXPZlhwhnYrHUHv6PMoyK9MQ7croF0CUgURLqu9EMjW7q2FgVLwij1tjLsIHQrnwQ8aUcg4BiA==}
+  '@fontsource-variable/manrope@5.3.0':
+    resolution: {integrity: sha512-6D5dgokHsWDDMtmXHznKa0hK229NN+1a4BLPmUCLqcO1Pw5EEhWY5RFt0AcXnVRAljFFPfRtLkJePQj6LSsV6g==}
 
   '@fontsource-variable/noto-serif@5.3.0':
     resolution: {integrity: sha512-GxGAScLRifXH02gDoJGroO/NIX83It7m1TYPPp1bhNPaii6/+GBYKxl/uL5GabFe0PBfiUV92wA4MdMdEDUu6A==}
@@ -4693,7 +4693,7 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  '@fontsource-variable/noto-sans@5.3.0': {}
+  '@fontsource-variable/manrope@5.3.0': {}
 
   '@fontsource-variable/noto-serif@5.3.0': {}
 

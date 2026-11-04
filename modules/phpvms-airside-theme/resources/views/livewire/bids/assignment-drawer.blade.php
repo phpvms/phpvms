@@ -1,6 +1,6 @@
 {{-- The flight assignment (bid) drawer. State comes from App\Features\Bids\Livewire\AssignmentDrawer. --}}
 @php
-    $payload = in_array($state, ['selecting', 'overview'], true) ? $this->dispatchPayload : null;
+    $payload = in_array($state, ['details', 'selecting', 'overview'], true) ? $this->dispatchPayload : null;
     $selection = $payload['selection'] ?? null;
     $policy = $payload['policy'] ?? null;
     $flight = $payload['flight'] ?? null;
@@ -40,10 +40,12 @@
         },
     }"
 >
-    <x-vms::ui.drawer name="assignment" title="Flight bid" wire:model="open">
+    <x-vms::ui.drawer name="assignment" :title="$state === 'details' ? 'Flight details' : 'Flight bid'" wire:model="open">
         <x-slot:header>
-            <p>FLIGHT ASSIGNMENT</p>
-            @if ($flight)
+            <p>{{ $state === 'details' ? 'FLIGHT DETAILS' : 'FLIGHT ASSIGNMENT' }}</p>
+            @if ($flight && $state === 'details')
+                {{-- The route tile and title replace the ident here. --}}
+            @elseif ($flight)
                 <x-vms::flights.ident
                     size="lg"
                     :callsign="$flight->summary->callsign"
@@ -71,17 +73,73 @@
                         <p class="text-[13px]">{{ $failureMessage }}</p>
                         <div><x-ts-button type="button" sm wire:click="load">Try again</x-ts-button></div>
                     </div>
+                @elseif ($state === 'details' && $flight)
+                    @php($summary = $flight->summary)
+                    @php($depWest = $flight->departure?->lon === null || $flight->arrival?->lon === null || $flight->departure->lon <= $flight->arrival->lon)
+                    @php($leftPoint = $depWest ? $summary->dpt : $summary->arr)
+                    @php($rightPoint = $depWest ? $summary->arr : $summary->dpt)
+                    @php($canBid = $summary->primaryAction === 'bid')
+                    @php($canPlanOfp = $policy->simbriefEnabled && ! $policy->simbriefRequiresBid)
+                    <div class="vms-flight-detail grid gap-4">
+                        <div class="vms-route-tile relative h-44 overflow-hidden rounded-2xl" aria-label="{{ $summary->dpt }} to {{ $summary->arr }}">
+                            <p class="vms-route-tile-label absolute top-3 left-4 m-0 text-[10px] font-semibold tracking-wider uppercase">{{ $summary->callsign }} · Great circle</p>
+                            <div class="vms-route-tile-arc absolute top-[22%] right-[15%] bottom-[30%] left-[15%] rounded-t-[50%_100%] border-2 border-b-0 border-dashed">
+                                <span class="vms-route-tile-plane absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 {{ $depWest ? 'rotate-90' : '-rotate-90' }}"><x-ts-icon name="phosphor.airplane.light" class="block size-4" /></span>
+                            </div>
+                            <div class="vms-route-tile-stop absolute top-[70%] left-[15%] flex -translate-x-1/2 flex-col items-center">
+                                <span class="vms-route-tile-dot -mt-1.25 block size-2.5 rounded-full"></span>
+                                <span class="mt-1 text-[11px] tabular-nums font-semibold">{{ $leftPoint ?? '—' }}</span>
+                            </div>
+                            <div class="vms-route-tile-stop absolute top-[70%] right-[15%] flex translate-x-1/2 flex-col items-center">
+                                <span class="vms-route-tile-dot -mt-1.25 block size-2.5 rounded-full"></span>
+                                <span class="mt-1 text-[11px] tabular-nums font-semibold">{{ $rightPoint ?? '—' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start justify-between gap-3">
+                            <h3 class="vms-detail-title m-0 min-w-0 text-xl leading-snug break-words"><b class="font-bold">{{ $flight->departure?->name ?? $summary->dpt ?? '—' }}</b> <span class="font-light">to</span> <b class="font-bold">{{ $flight->arrival?->name ?? $summary->arr ?? '—' }}</b></h3>
+                            @if ($summary->type)
+                                <span class="vms-flight-pill shrink-0 px-2 py-0.5 text-[11px] font-medium">{{ $summary->type }}</span>
+                            @endif
+                        </div>
+
+                        <dl class="vms-detail-facts m-0 grid grid-cols-2 gap-x-4 gap-y-3.5">
+                            <div class="min-w-0"><dt class="text-xs">Departure</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $flight->scheduledDeparture ? $flight->scheduledDeparture.' UTC · ' : '' }}{{ $summary->dpt ?? '—' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-xs">Arrival</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $flight->scheduledArrival ? $flight->scheduledArrival.' UTC · ' : '' }}{{ $summary->arr ?? '—' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-xs">Block time</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $summary->blockTime ?? '—' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-xs">Distance</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $summary->distanceNm === null ? '—' : number_format($summary->distanceNm).' nm' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-xs">Cruise level</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $flight->cruiseLevel === null ? '—' : 'FL'.$flight->cruiseLevel }}</dd></div>
+                            <div class="min-w-0"><dt class="text-xs">Route code</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $summary->routeCode ?? '—' }}</dd></div>
+                        </dl>
+
+                        <div class="vms-detail-actions grid gap-2.5">
+                            @if ($canBid || $canPlanOfp)
+                                <div class="grid auto-cols-fr grid-flow-col gap-2.5">
+                                    @if ($canBid)
+                                        <x-ts-button type="button" block wire:click="startBid">Bid on flight</x-ts-button>
+                                    @endif
+                                    @if ($canPlanOfp)
+                                        <x-ts-button :href="$flight->ofpPlanningUrl" wire:navigate block light>Generate OFP</x-ts-button>
+                                    @endif
+                                </div>
+                            @endif
+                            @if ($summary->primaryAction === 'unavailable' && $summary->availabilityReason)
+                                <p class="vms-flight-reason px-3 py-2 text-[12.5px] font-medium" role="status">{{ $summary->availabilityReason }}</p>
+                            @endif
+                            <x-slot-outlet name="flights.detail.actions" :context="['flight' => $summary, 'policy' => $policy]" />
+                        </div>
+                    </div>
                 @elseif ($state === 'overview' && $selection)
                     <div class="grid gap-4" aria-live="polite">
                         <dl class="m-0 grid grid-cols-2 gap-4">
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Scheduled departure</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Scheduled arrival</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Route</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->route ?? 'Not published' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Block</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->flight->summary->blockTime ?? '—' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Reservation</dt><dd class="mt-0.5 break-words font-mono text-[11px]">{{ $selection->aircraftReserved ? 'Exclusive' : ($selection->aircraft ? 'Preference' : 'Flight only') }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Scheduled departure</dt><dd class="mt-0.5 break-words text-[11px]">{{ $selection->flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Scheduled arrival</dt><dd class="mt-0.5 break-words text-[11px]">{{ $selection->flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Route</dt><dd class="mt-0.5 break-words text-[11px]">{{ $selection->flight->route ?? 'Not published' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Block</dt><dd class="mt-0.5 break-words text-[11px]">{{ $selection->flight->summary->blockTime ?? '—' }}</dd></div>
+                            <div class="min-w-0"><dt class="text-[9px] uppercase tracking-wider">Reservation</dt><dd class="mt-0.5 break-words text-[11px]">{{ $selection->aircraftReserved ? 'Exclusive' : ($selection->aircraft ? 'Preference' : 'Flight only') }}</dd></div>
                             <div class="min-w-0">
                                 <dt class="text-[9px] uppercase tracking-wider">Expires</dt>
-                                <dd class="mt-0.5 break-words font-mono text-[11px]">
+                                <dd class="mt-0.5 break-words text-[11px]">
                                     @if ($selection->expiresAt)
                                         @php($expires = \Illuminate\Support\Carbon::parse($selection->expiresAt)->utc())
                                         <time datetime="{{ $expires->toIso8601String() }}" x-data x-text="new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date($el.dateTime))">{{ $expires->format('M j, Y, g:i A') }} UTC</time>
@@ -107,9 +165,9 @@
                     <form class="grid gap-4" wire:submit="submit">
                         <section class="rounded-md px-4 py-3" aria-label="Selected flight">
                             <dl class="m-0 grid grid-cols-3 gap-3">
-                                <div><dt class="text-[9px] uppercase tracking-wider">Departure</dt><dd class="mt-0.5 font-mono text-[11px]">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
-                                <div><dt class="text-[9px] uppercase tracking-wider">Arrival</dt><dd class="mt-0.5 font-mono text-[11px]">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
-                                <div><dt class="text-[9px] uppercase tracking-wider">Block</dt><dd class="mt-0.5 font-mono text-[11px]">{{ $flight->summary->blockTime ?? '—' }}</dd></div>
+                                <div><dt class="text-[9px] uppercase tracking-wider">Departure</dt><dd class="mt-0.5 text-[11px]">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
+                                <div><dt class="text-[9px] uppercase tracking-wider">Arrival</dt><dd class="mt-0.5 text-[11px]">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
+                                <div><dt class="text-[9px] uppercase tracking-wider">Block</dt><dd class="mt-0.5 text-[11px]">{{ $flight->summary->blockTime ?? '—' }}</dd></div>
                             </dl>
                         </section>
 
