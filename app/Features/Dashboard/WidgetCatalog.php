@@ -33,8 +33,7 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_GRID,
                 'span'    => 2,
                 'default' => true,
-
-                'bare' => false,
+                'bare'    => false,
             ],
             'activity' => [
                 'id'      => 'activity',
@@ -43,8 +42,7 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_GRID,
                 'span'    => 2,
                 'default' => true,
-
-                'bare' => false,
+                'bare'    => false,
             ],
             'news' => [
                 'id'      => 'news',
@@ -53,8 +51,7 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_SIDEBAR,
                 'span'    => 1,
                 'default' => true,
-
-                'bare' => false,
+                'bare'    => false,
             ],
             'next-flight' => [
                 'id'      => 'next-flight',
@@ -63,8 +60,7 @@ final class WidgetCatalog
                 'zone'    => self::ZONE_GRID,
                 'span'    => 2,
                 'default' => false,
-
-                'bare' => true,
+                'bare'    => true,
             ],
         ];
     }
