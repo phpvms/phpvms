@@ -15,7 +15,11 @@
 <x-ts-layout.header sm :without-mobile-button="$topbar">
     <x-slot:left>
         <div class="flex shrink-0 items-center gap-3 whitespace-nowrap" aria-label="Airline identity">
-            <x-ts-avatar :image="$airline['logo'] ?? null" :text="mb_strtoupper(mb_substr((string) ($airline['icao'] ?? $shell->appName()), 0, 2))" xs />
+            @if (! empty($airline['logo']))
+                <img src="{{ $airline['logo'] }}" alt="" aria-hidden="true" class="size-9 shrink-0 object-contain" />
+            @else
+                <x-ts-avatar :text="mb_strtoupper(mb_substr((string) ($airline['icao'] ?? $shell->appName()), 0, 2))" sm />
+            @endif
             <span class="min-w-0">
                 <span class="block truncate text-sm font-semibold">{{ $airline['name'] ?? $shell->appName() }}</span>
                 @if (! empty($airline['icao']) || ! empty($airline['iata']))
