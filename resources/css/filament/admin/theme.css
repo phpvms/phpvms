@@ -4850,43 +4850,10 @@ html[data-density="comfortable"] .tbl tbody td {
   @apply sticky bottom-0 mt-auto flex flex-wrap items-center gap-2 border-t border-(--line) bg-(--surface) px-5 py-3;
 }
 
-.addon-row__body {
-  @apply min-w-0;
-}
-
-.addon-row__top {
-  @apply flex items-center justify-between gap-2;
-}
-
-.addon-row__title {
-  @apply flex min-w-0 items-center gap-1.5;
-}
-
-.addon-row__name {
-  @apply truncate text-[13px] text-(--ink);
-  font-weight: 550;
-}
-
 /* Provenance, not state — so it stays in ink and lets the sort order carry most
  * of the signal. The chips keep colour for what is actually happening. */
 .official {
   @apply size-3 flex-none text-(--ink-3);
-}
-
-.addon-hero__name .official {
-  @apply mr-1 inline-block size-3.5 align-baseline;
-}
-
-.addon-row__desc {
-  @apply mt-px block truncate text-[11.5px] text-(--ink-3);
-}
-
-.addon-row__meta {
-  @apply mt-[3px] flex items-center gap-1 truncate text-[11px] text-(--ink-4);
-}
-
-.addon-row__progress {
-  @apply mt-1.5 grid gap-1;
 }
 
 /* Install progress. The bar replaces the row's meta line rather than opening a
@@ -4898,32 +4865,6 @@ html[data-density="comfortable"] .tbl tbody td {
 .dist__fill {
   @apply h-full rounded-[1px] transition-[width] duration-300;
   background-color: var(--primary-600);
-}
-
-/* A band flush at the top of the detail section's body — the section supplies
- * the card, so this only draws the band and its closing rule. */
-.addon-hero {
-  @apply grid items-start gap-3 px-3.5 pt-3.5 pb-3;
-  @apply border-b border-b-(--line) bg-(--surface-2);
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  margin: calc(var(--section-pad) * -1) calc(var(--section-pad) * -1) 0;
-}
-
-.addon-hero__name {
-  @apply text-[17px] leading-tight font-semibold tracking-tight text-(--ink);
-}
-
-.addon-hero__id {
-  @apply mt-1 flex flex-wrap items-center gap-1 text-[11.5px] text-(--ink-3);
-}
-
-.addon-hero__actions {
-  @apply flex flex-wrap items-center justify-end gap-1.5;
-}
-
-.addon-lede {
-  @apply border-b border-b-(--line-soft) px-3.5 py-3 text-[12.5px] text-(--ink-2);
-  max-width: 72ch;
 }
 
 .dl__link {
@@ -4971,11 +4912,6 @@ html[data-density="comfortable"] .tbl tbody td {
   box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-600) 20%, transparent);
 }
 
-/* Tab row + search row, flush at the top of the list section's body. */
-.addon-toolbar {
-  margin: calc(var(--section-pad) * -1) calc(var(--section-pad) * -1) 0;
-}
-
 /* A control parked at the far end of a tab row — a scope filter belongs with
  * the tabs, not stealing width from the search box on the row below. */
 .subtabs__aside {
@@ -5002,36 +4938,6 @@ html[data-density="comfortable"] .tbl tbody td {
 
 .empty span {
   @apply max-w-[34ch] text-xs text-(--ink-3);
-}
-
-@media (max-width: 1400px) {
-  /* The column is too narrow for tabs and a filter on one line. Wrapping drops
-   * the filter to its own row; scrolling would just half-hide it. */
-  .addon-toolbar .subtabs {
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-
-  .addon-toolbar .subtabs__aside {
-    width: 100%;
-    justify-content: flex-end;
-    padding: 6px 8px;
-    border-top: 1px solid var(--line-soft);
-  }
-}
-
-/* Below the Grid's own stacking breakpoint the detail follows the list rather
- * than sticking to a viewport it no longer shares. */
-/* One column, and the detail follows the row it belongs to rather than sticking
- * to a viewport it no longer shares. */
-@media (max-width: 1279px) {
-  .catalog > .fi-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .catalog__detail {
-    position: static;
-  }
 }
 
 @media (max-width: 640px) {
