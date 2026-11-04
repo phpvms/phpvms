@@ -52,6 +52,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class PirepService extends Service
 {
@@ -220,7 +221,12 @@ class PirepService extends Service
             }
         }
 
-        $this->updateCustomFields($pirep->id, $fields);
+        // A duplicate that has already been filed keeps the fields it was
+        // filed with.
+        if ($pirep->fields_writable) {
+            $this->updateCustomFields($pirep->id, $fields);
+        }
+
         $this->fareSvc->saveToPirep($pirep, $fares);
 
         $this->openPositionRow($pirep);
@@ -717,7 +723,11 @@ class PirepService extends Service
     }
 
     /**
-     * Update any custom PIREP fields
+     * Update any custom PIREP fields. Values are matched on their slug, so a
+     * field sent under another casing or as its slug updates the same value,
+     * and keeps the name it was first saved with, instead of adding a second
+     * one. If older data already holds several values with the same slug, the
+     * oldest is updated, which is the one Pirep::fields() shows.
      *
      * @param PirepFieldValue[] $field_values
      */
@@ -728,10 +738,15 @@ class PirepService extends Service
         }
 
         foreach ($field_values as $fv) {
-            PirepFieldValue::updateOrCreate(
-                ['pirep_id' => $pirep_id, 'name' => $fv['name']],
-                ['value' => $fv['value'], 'source' => $fv['source']]
-            );
+            $name = (string) $fv['name'];
+
+            $value = PirepFieldValue::where('pirep_id', $pirep_id)
+                ->where('slug', Str::slug($name))
+                ->orderBy('created_at')
+                ->orderBy('id')
+                ->first() ?? new PirepFieldValue(['pirep_id' => $pirep_id, 'name' => $name]);
+
+            $value->fill(['value' => $fv['value'], 'source' => $fv['source']])->save();
         }
     }
 
