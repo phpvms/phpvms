@@ -100,6 +100,59 @@ Each tab gets an id and `aria-controls`, each panel an id and `aria-labelledby`,
 tabs use a roving `tabindex`, and Left, Right, Home and End move the selection
 and focus.
 
+## Styling rules
+
+These apply to every view, component and `TallStackUi::customize()` block in airside.
+
+1. **One place for the look.** Colour, background, border, shadow, radius and
+   font family go in `resources/css/airside.css`, inside `@layer components`, on a
+   `vms-*` hook. They never go in Blade markup, in `customize()` blocks or in a
+   `style=""` attribute.
+2. **What markup may carry.** Layout utilities (grid, flex, gap, padding, margin,
+   sizing, position, responsive variants) and type utilities (size, weight,
+   tracking, leading, `tabular-nums`). `customize()` blocks add hook classes plus
+   layout utilities only.
+3. **Colour with `@apply` and the palette.** Write colours as palette utilities
+   through `@apply`, and always give the dark pair in the same rule:
+   - neutrals: `white`/`gray-*` in light, `dark-*` in dark;
+   - brand: `primary-600` in light, `primary-400` in dark;
+   - meaning: amber for unavailable or warning, red for errors, green only where
+     the state is positive and needs saying.
+   No hex, `rgb()` or `oklch()` literals in rules, and no Tailwind hues such as `sky-*` or `blue-*` for
+   the brand.
+4. **Tokens for shared values.** Use the `--vms-*` tokens when a value must follow
+   the brand, or be changed by a site in one place:
+   - `var(--vms-brand)` and `var(--vms-brand-soft)`: brand colour where no utility fits
+     (SVG `fill`/`stroke`, `color-mix()`);
+   - `var(--vms-radius-md|lg|xl)`: field, card and page-block radius;
+   - `var(--vms-gutter)`: page and shell spacing.
+   Tokens are defined only in `@layer base` (`:root` and `.dark`) in `airside.css`.
+   Add a new token only for a value a site would want to change everywhere at once.
+5. **Plain properties where `@apply` does not fit.** Use plain CSS for a token
+   (`border-radius: var(--vms-radius-lg)`), and for properties with no utility
+   (`paint-order`, custom transitions). Keep palette colours on `@apply`.
+6. **The scheme is runtime.** The `primary-*` and `dark-*` ramps come from the
+   saved colour scheme. The `@theme` block in `airside.css` is only the build
+   fallback: do not edit it to restyle a page, and do not copy its values into
+   rules.
+7. **State from attributes.** Style state from ARIA or `data-*` attributes
+   (`[aria-current="true"]`, `[data-availability="unavailable"]`), not from state
+   classes.
+8. **No `!important`.** If a rule loses, fix the source of the rule that beats it:
+   - shared components set their fallback look with SVG presentation attributes or
+     `:where()`;
+   - TallStackUI defaults change through `customize()`.
+9. **Type.** Manrope through `--font-sans` for text, with `tabular-nums` for times
+   and numbers. Mono (`font-mono`) only where fixed-width text helps reading:
+   METARs and other raw weather or route strings, and ICAO codes shown as codes
+   (in a pill, a list or a strip). It is not for headlines, idents in a title or
+   general numbers. The thin serif (`--font-serif`) is only for the brand word in
+   a page title.
+10. **Document every hook.** Each new hook, state, slot or option goes in
+    `docs/theme-hooks.md` in the same change. Remove the entry when the hook goes.
+11. **Custom CSS is different.** A site's Custom CSS box is plain, unlayered CSS
+    with no `@apply`, so it beats these rules (see below).
+
 ## Shipped look: `airside.css`
 
 Hook rules go in `@layer components`, written with `@apply` and TallStackUI's
@@ -235,3 +288,4 @@ Recorded as they are made. Newest last.
 | 2026-10-31 | Hooks and components use `vms` (`vms-*` classes, `<x-vms::…>` tags), not the theme name. | A copied or child theme keeps every template and hook unchanged. |
 | 2026-10-31 | Views use TallStackUI directly; own components only where TallStackUI has none, or to eject one. Thin wrappers removed (alert, card, field, loading, back-link, stat, state-badge, confirm). | One component per job; no second API to learn or keep in step with TallStackUI. |
 | 2026-10-31 | Confirmations use TallStackUI's dialog, opened from the button with `$tsui.interaction('dialog')`; prompt text sits in `data-*` attributes. | No Livewire changes; the text stays plain HTML. |
+| 2026-11-04 | Styling rules: the look lives in `airside.css` `@layer components` on hooks, with colour by `@apply` in light/dark pairs, `--vms-*` tokens for brand, radius and gutter, no colour literals, no `!important`, mono only for METARs and codes. | One place to restyle; dark mode and saved colour schemes keep working; Custom CSS can always override. |
