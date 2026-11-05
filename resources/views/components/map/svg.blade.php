@@ -29,7 +29,7 @@
 
 {{-- Output of resources/maps/*.svg, inline so CSS can reach .land and .land--focus. The fallback look is set with
      presentation attributes, which any stylesheet rule overrides, layered or not. --}}
-<svg {{ $attributes->class(['map-svg', 'map-svg--dots' => $dots])->merge($scale !== 1.0 ? ['style' => '--map-scale: '.round($scale, 4)] : [])->merge($dots ? ['x-data' => 'mapDots('.\Illuminate\Support\Js::from(['gap' => round($mapView->dotGap(), 4), 'grid' => $grid === 'diagonal' ? 'diagonal' : 'square']).')'] : []) }}
+<svg {{ $attributes->class(['map-svg', 'map-svg--dots' => $dots])->merge($scale !== 1.0 ? ['style' => '--map-scale: '.round($scale, 4)] : [])->merge($dots ? ['x-data' => 'mapDots('.\Illuminate\Support\Js::from(['gap' => round($mapView->dotGap(), 4), 'grid' => $grid === 'diagonal' ? 'diagonal' : 'square', 'wrap' => $mapView->wraps ? $map->width : null]).')'] : []) }}
      xmlns="http://www.w3.org/2000/svg"
      viewBox="{{ implode(' ', array_map(fn (float|int $value): float => round($value, 2), $viewBox)) }}"
      preserveAspectRatio="{{ $preserveAspectRatio }}"
@@ -37,7 +37,7 @@
      aria-label="{{ $map->name }}"
      @unless ($dots) fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-opacity=".35" stroke-width=".5" @endunless>
     @if ($dots)
-        {{-- The dots are drawn in the browser (airside's mapDots, resources/js/airside/map-dots.js) from the land paths,
+        {{-- The dots are drawn in the browser (airside's mapDots, resources/js/airside/map-dots.ts) from the land paths,
              which stay hidden. Each set is one path of zero-length segments; the round caps draw the dots, so the stroke
              width is the dot's diameter. The paths carry classes for CSS and a neutral presentation-attribute fallback. --}}
         <g data-map-land display="none">{!! $paths !!}</g>
@@ -45,6 +45,10 @@
         <path class="map-dot map-dot--focus" data-map-dots="focus" d="" fill="none" stroke="currentColor" stroke-opacity=".8" stroke-width="{{ round($mapView->dotRadius() * 2, 3) }}" stroke-linecap="round" />
     @else
         {!! str_replace('class="land land--focus"', 'class="land land--focus" fill-opacity=".5"', $paths) !!}
+        {{-- A route across the antimeridian runs past the map's edge; the land is drawn again there. --}}
+        @foreach ($mapView->landCopies() as $offset)
+            <g transform="translate({{ $offset }} 0)">{!! str_replace('class="land land--focus"', 'class="land land--focus" fill-opacity=".5"', $paths) !!}</g>
+        @endforeach
     @endif
     @foreach ($routeRuns as $run)
         <polyline class="map-route" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"

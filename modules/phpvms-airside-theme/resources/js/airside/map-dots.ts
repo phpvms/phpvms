@@ -8,8 +8,18 @@
  *
  * Rows and columns sit on multiples of the gap, so the grid does not shift
  * with the view; the diagonal grid offsets every other row by half a gap.
+ * With `wrap` (the map width), the view runs past the map's edge, for a route
+ * across the antimeridian: a dot there is tested where it falls on the map.
  */
-export function mapDots({ gap, grid = "square" }: { gap: number; grid?: "square" | "diagonal" }) {
+export function mapDots({
+  gap,
+  grid = "square",
+  wrap = null,
+}: {
+  gap: number;
+  grid?: "square" | "diagonal";
+  wrap?: number | null;
+}) {
   return {
     init(this: { $el: Element }) {
       const svg = this.$el as SVGSVGElement;
@@ -34,7 +44,8 @@ export function mapDots({ gap, grid = "square" }: { gap: number; grid?: "square"
 
         for (let column = firstColumn; column <= lastColumn; column++) {
           const x = (column + 0.5) * gap + offset;
-          const country = countries.find((c) => ctx.isPointInPath(c.shape, x, y, "evenodd"));
+          const mapX = wrap ? ((x % wrap) + wrap) % wrap : x;
+          const country = countries.find((c) => ctx.isPointInPath(c.shape, mapX, y, "evenodd"));
 
           if (country) {
             dots[country.focus ? "focus" : "land"].push(`M${x.toFixed(2)} ${y.toFixed(2)}h0`);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Features\Maps\MapCatalog;
 use App\Features\Maps\MapProjection;
 use App\Features\Maps\MapResolver;
+use App\Features\Maps\MapView;
 
 it('projects the corners of every map onto the viewBox corners', function (string $id): void {
     $map = app(MapCatalog::class)->find($id);
@@ -108,4 +109,21 @@ it('draws a great circle from one point to the other, split where it wraps the m
         ->and(min(array_column($atlantic[0], 'y')))->toBeLessThan(MapProjection::point($world, 51.47, -0.45)['y']);
 
     expect(MapProjection::greatCircle($world, 33.94, -118.41, 35.55, 139.78))->toHaveCount(2);
+});
+
+it('crops a route across the antimeridian as one line past the edge of the world map', function (): void {
+    $world = app(MapCatalog::class)->world();
+    $view = MapView::make($world, [['lat' => 35.55, 'lon' => 139.78], ['lat' => 33.94, 'lon' => -118.41]], [[[35.55, 139.78], [33.94, -118.41]]], fit: true);
+
+    [$x, , $width] = $view->viewBox;
+    $route = $view->routeRuns[0];
+
+    expect($view->routeRuns)->toHaveCount(1)
+        ->and($width)->toBeLessThan($world->width / 2)
+        ->and($x + $width)->toBeGreaterThan($world->width)
+        ->and($view->landCopies())->toBe([$world->width])
+        // Each pin sits on its end of the line, Los Angeles one map width east.
+        ->and($route[0]['x'])->toEqualWithDelta($view->points[0]['x'], 0.01)
+        ->and(end($route)['x'])->toEqualWithDelta($view->points[1]['x'], 0.01)
+        ->and($view->points[1]['x'])->toBeGreaterThan($world->width);
 });
