@@ -93,6 +93,11 @@
             @endif
 
             <x-slot:details>
+                @if ($airport?->icao)
+                    <div class="vms-next-flight-metar min-w-0">
+                        <livewire:flights::airport-weather lazy :key="'ready-weather-'.$airport->icao" label="Current weather" :icao="$airport->icao" />
+                    </div>
+                @endif
                 <x-slot-outlet name="dashboard.ready.details" :context="['airport' => $airport, 'user' => auth()->user(), 'pirep' => auth()->user()?->last_pirep]" />
             </x-slot:details>
 

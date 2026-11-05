@@ -425,6 +425,17 @@ The account menu trigger: avatar, name, and ident · callsign. In the sidebar it
 - **Variables:** none.
 - **Stability:** draft.
 
+### `vms-shell-guest`
+
+The top bar's Sign in and Register links, shown to a guest in place of the account menu (the public live map).
+
+- **View:** `resources/views/components/shell/topbar.blade.php`
+- **Element:** the `<div>` around the links.
+- **Parts:** `vms-shell-link`, `vms-pill`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
 ### `clouds-bg`
 
 The sky colours. A class on the `vms-sky` `<svg>` (added by `x-vms::sky`); `airside.css` styles its parts by class (`clouds-bg-top`, `-mid`, `-bottom` gradient stops, `-light` cloud lighting, `-glow`, `-wisps` and `-clouds` opacity): a day sky, and a night sky under `.dark .clouds-bg`. These are plain properties, not variables.
@@ -680,7 +691,7 @@ The callsign, flight type and route code pills of the Next flight widget. Each p
 
 ### `vms-next-flight-metar`
 
-The departure weather card in the Next flight widget (the `airport-weather` component, loaded lazily).
+The weather card in the Next flight widget (the `airport-weather` component, loaded lazily): the departure airport when there is a bid, the current airport in the Ready to fly state (in the location card's `details` slot, above `dashboard.ready.details`).
 
 - **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
 - **Element:** the wrapping `<div>`.
@@ -1252,6 +1263,292 @@ The Next flight widget when there is no bid: a `vms-location-card` for the pilot
 - **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
 - **Element:** the wrapping `<div>` around the `vms-location-card`.
 - **Parts:** `vms-location-card`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live`
+
+The live map block (`x-vms::livemap`): the map fills it, the list and the selected flight float on it. Rounded `--vms-radius-xl`, grey under the map while it loads. The caller sets its height.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the island root `<div>` (`data-airside-island="live-map"`).
+- **Parts:** `vms-live-map`, `vms-live-panel`, `vms-live-overlay`.
+- **State:** `[data-selected]` while a flight is selected (below `md` the list panel hides then).
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-map`
+
+The map canvas, filling the block.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `[data-live-map]` `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-panel`
+
+The floating list panel on the left: frosted white (dark: `dark-800`) at 85%, `--vms-radius-lg`. Below `md` it sits at the top, at most 45% high.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `<section>`.
+- **Parts:** `vms-live-header`, `vms-live-eyebrow`, `vms-live-pulse`, `vms-live-title`, `vms-live-stat`, `vms-live-filter`, `vms-live-row`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-header`
+
+The panel heading: eyebrow, live indicator, title and counts, over a hairline.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `<header>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-eyebrow`
+
+The small uppercase label ("Operations", "Selected flight").
+
+- **View:** `resources/views/components/livemap/index.blade.php`, `resources/views/components/livemap/templates.blade.php`
+- **Element:** a `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-pulse`
+
+The live indicator: a pulsing green dot and "Live".
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `<p>`; the dot is `::before`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-title`
+
+The panel title; the thin serif word is the `<span>` in the brand colour.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `<h1>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-stat`
+
+One count: Live, Airborne, Arriving, On ground. The island fills `[data-live-stat]`.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `<div>` around the `<dt>` and `<dd>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-filter`
+
+A stage filter button: All, Departing, En route, Arriving, On ground. The pressed one is filled with the brand colour.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `<button>`.
+- **Parts:** none.
+- **State:** `[aria-pressed="true"]` (the active filter).
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-overlay`
+
+The slot on the right that holds the selected-flight card. Below `md` it moves to the bottom.
+
+- **View:** `resources/views/components/livemap/index.blade.php`
+- **Element:** the `[data-live-overlay]` `<aside>`.
+- **Parts:** `vms-live-detail`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-row`
+
+One flight in the list: ident, route codes, pilot and aircraft, phase, altitude, progress.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the row `<button role="option">`.
+- **Parts:** `vms-live-row-route`, `vms-live-phase`, `vms-live-progress`, `vms-live-muted`.
+- **State:** `[aria-selected="true"]` (the selected flight), `[data-stage="ground|departing|enroute|arriving"]`.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-row-route`
+
+The route as ICAO codes in a row.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-phase`
+
+The phase pill: neutral on the ground, brand-tinted once airborne (from the row's `data-stage`).
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-progress`
+
+A progress bar (`<progress>`, 0 to 100): grey track, flown part in the brand colour.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<progress>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-muted`
+
+Secondary text in the panels.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** any text element.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-detail`
+
+The selected-flight card (the page's `detailed` template): frosted like the panel.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the card `<div>`.
+- **Parts:** `vms-live-close`, `vms-live-error`, `vms-live-logo`, `vms-live-route`, `vms-live-stages`, `vms-live-stage-bar`, `vms-live-facts`, `vms-live-pilot`, `vms-live-avatar`, `vms-live-open`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-close`
+
+The card's close button (Escape also closes).
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<button data-action="close">`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-error`
+
+The "Flight details could not be loaded." line.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<p role="alert">`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-logo`
+
+The airline logo, or its code when there is no logo.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the round `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-route`
+
+Departure and arrival codes and names, progress, block-off, flown distance and scheduled arrival.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-stages`
+
+The four-stage bar: On ground, Departing, En route, Arriving.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<ol>`; each `<li>` has `data-stage`.
+- **Parts:** `vms-live-stage-bar`.
+- **State:** `li[data-state="done|current|todo"]`.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-stage-bar`
+
+One stage's bar: grey, brand when done or current.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<span>` in each stage `<li>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-facts`
+
+Phase, altitude, heading, cruise level, flown time and planned time.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<dl>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-pilot`
+
+The pilot row: initials, name, ident and aircraft, and the Open PIREP link, over a hairline.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-live-avatar`, `vms-live-open`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-avatar`
+
+The pilot's initials.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the round `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-live-open`
+
+The Open PIREP link, a brand-tinted pill.
+
+- **View:** `resources/views/components/livemap/templates.blade.php`
+- **Element:** the `<a>`.
+- **Parts:** none.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
