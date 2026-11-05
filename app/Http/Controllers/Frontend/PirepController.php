@@ -539,6 +539,12 @@ class PirepController extends Controller
             return redirect(route('admin.pireps.index'));
         }
 
+        if ($pirep->read_only) {
+            Flash::error('This PIREP has already been finalized and cannot be changed!');
+
+            return redirect(route('frontend.pireps.show', [$pirep->id]));
+        }
+
         $orig_route = $pirep->route;
         $attrs = Arr::except($request->all(), self::PROTECTED_ATTRIBUTES);
         $attrs['submit'] = strtolower($attrs['submit']);
@@ -595,6 +601,12 @@ class PirepController extends Controller
             Flash::error('Cannot edit someone else\'s PIREP!');
 
             return redirect(route('admin.pireps.index'));
+        }
+
+        if ($pirep->read_only) {
+            Flash::error('This PIREP has already been finalized and cannot be submitted again!');
+
+            return redirect(route('frontend.pireps.show', [$pirep->id]));
         }
 
         $this->pirepSvc->submit($pirep);

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery\LegacyMockInterface;
 use Mockery\MockInterface;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class OAuthTest extends TestCase
@@ -243,5 +244,27 @@ final class OAuthTest extends TestCase
             ->assertStatus(404);
 
         Config::set('services.discord.enabled', $originalConfigValue);
+    }
+
+    public function test_login_with_deleted_account_is_refused(): void
+    {
+        User::factory()->create([
+            'name'  => 'OAuth user',
+            'email' => 'oauth.user@phpvms.net',
+            'state' => UserState::DELETED,
+        ]);
+
+        $driver = $this->drivers[0];
+        Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
+
+        // The base TestCase disables exception handling, so the 403 surfaces as an exception
+        try {
+            $this->get(route('oauth.callback', ['provider' => $driver]));
+            $this->fail('A deleted account must not be able to log in');
+        } catch (HttpException $e) {
+            $this->assertSame(403, $e->getStatusCode());
+        }
+
+        $this->assertGuest();
     }
 }

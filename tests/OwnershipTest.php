@@ -9,6 +9,7 @@ use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\File;
 use App\Models\Flight;
+use App\Models\JournalTransaction;
 use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;
@@ -298,5 +299,65 @@ final class OwnershipTest extends TestCase
         $this->assertEquals($this->owner->id, $pirep->user_id);
         $this->assertNotEquals(PirepSource::ACARS, $pirep->source);
         $this->assertNotEquals(PirepState::ACCEPTED, $pirep->state);
+    }
+
+    public function test_cannot_read_another_pilots_pirep_finances(): void
+    {
+        $this->get('/api/pireps/'.$this->pirep->id.'/finances', [], $this->attacker)->assertForbidden();
+        $this->get('/api/pireps/'.$this->pirep->id.'/finances', [], $this->owner)->assertOk();
+    }
+
+    public function test_recalculating_finances_requires_an_accepted_pirep(): void
+    {
+        $this->post('/api/pireps/'.$this->pirep->id.'/finances/recalculate', [], [], $this->owner)
+            ->assertStatus(400);
+
+        $this->assertSame(0, JournalTransaction::where('ref_model_id', $this->pirep->id)->count());
+    }
+
+    public function test_owner_cannot_change_or_resubmit_an_accepted_pirep(): void
+    {
+        $this->pirep->update(['state' => PirepState::ACCEPTED, 'flight_time' => 60]);
+
+        $this->actingAs($this->owner)->put(route('frontend.pireps.update', [$this->pirep->id]), [
+            'airline_id'     => $this->pirep->airline_id,
+            'flight_number'  => $this->pirep->flight_number,
+            'dpt_airport_id' => $this->pirep->dpt_airport_id,
+            'arr_airport_id' => $this->pirep->arr_airport_id,
+            'hours'          => 10,
+            'minutes'        => 0,
+            'block_fuel'     => 100,
+            'fuel_used'      => 50,
+            'submit'         => 'delete',
+        ])->assertRedirect();
+
+        $pirep = $this->pirep->fresh();
+        $this->assertNotNull($pirep);
+        $this->assertEquals(60, $pirep->flight_time);
+
+        $this->actingAs($this->owner)->post(route('frontend.pireps.submit', [$this->pirep->id]))->assertRedirect();
+        $this->assertEquals(PirepState::ACCEPTED, $this->pirep->fresh()->state);
+    }
+
+    public function test_profile_update_ignores_server_owned_columns(): void
+    {
+        $apiKey = $this->owner->api_key;
+
+        $this->actingAs($this->owner)->put('/profile/'.$this->owner->id, [
+            'name'            => 'Renamed',
+            'email'           => $this->owner->email,
+            'airline_id'      => $this->owner->airline_id,
+            'api_key'         => 'chosen-key',
+            'pilot_id'        => $this->attacker->pilot_id,
+            'curr_airport_id' => 'ZZZZ',
+            'rank_id'         => 999,
+        ])->assertRedirect();
+
+        $user = $this->owner->fresh();
+        $this->assertEquals('Renamed', $user->name);
+        $this->assertEquals($apiKey, $user->api_key);
+        $this->assertNotEquals($this->attacker->pilot_id, $user->pilot_id);
+        $this->assertNotEquals('ZZZZ', $user->curr_airport_id);
+        $this->assertNotEquals(999, $user->rank_id);
     }
 }

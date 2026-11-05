@@ -24,6 +24,7 @@ use App\Models\Aircraft;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepSource;
+use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use App\Models\PirepComment;
 use App\Models\PirepFare;
@@ -390,9 +391,9 @@ class PirepController extends Controller
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
-    public function finances_get(string $id): AnonymousResourceCollection
+    public function finances_get(string $id, OwnPirepRequest $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
         $transactions = $this->journalRepo->getAllForObject($pirep);
 
         return JournalTransactionResource::collection($transactions['transactions']);
@@ -406,7 +407,14 @@ class PirepController extends Controller
      */
     public function finances_recalculate(string $id, OwnPirepRequest $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
+
+        // Finances only exist for accepted reports; recalculating anything else
+        // would pay the pilot for a report nobody approved
+        if ($pirep->state !== PirepState::ACCEPTED) {
+            throw new PirepError($pirep, 'Finances can only be recalculated for an accepted PIREP');
+        }
+
         $this->financeSvc->processFinancesForPirep($pirep);
 
         $pirep->refresh();

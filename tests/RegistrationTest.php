@@ -206,4 +206,23 @@ final class RegistrationTest extends TestCase
         $this->post('/register', $userData)
             ->assertForbidden();
     }
+
+    public function test_registration_ignores_server_owned_columns(): void
+    {
+        $this->updateSetting('pilots.auto_accept', false);
+
+        $this->post('/register', array_merge($this->getUserData(), [
+            'rank_id'           => 999,
+            'flight_time'       => 100000,
+            'state'             => UserState::ACTIVE,
+            'email_verified_at' => now()->toDateTimeString(),
+        ]))->assertViewIs('auth.pending');
+
+        $user = User::where('email', 'test@phpvms.net')->first();
+        $this->assertNotNull($user);
+        $this->assertNotEquals(999, $user->rank_id);
+        $this->assertEquals(0, $user->flight_time);
+        $this->assertEquals(UserState::PENDING, $user->state);
+        $this->assertNull($user->email_verified_at);
+    }
 }

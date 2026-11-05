@@ -141,6 +141,9 @@ class OAuthController extends Controller
                 if ($user->state === UserState::SUSPENDED) {
                     return view('auth.suspended');
                 }
+
+                // Deleted or any other non-active state: never fall through to a login
+                abort(403, 'This account is not active');
             }
 
             $tokens = UserOAuthToken::updateOrCreate([
