@@ -4,8 +4,9 @@ import {
   createRouteWaypoints,
   frameToRoute,
   LEG_COLORS,
-} from "@phpvms/map";
-import { routeGeometry } from "./ofp/route-points.js";
+} from "@airside/lib/map";
+import type { MapConfig, RouteLayer, RouteWaypointLayer } from "@airside/lib/map";
+import { routeGeometry } from "./ofp/route-points";
 
 /**
  * The route globe on the OFP briefing page (skylight's BriefingRouteGlobe):
@@ -19,19 +20,19 @@ import { routeGeometry } from "./ofp/route-points.js";
  * which would need a direct maplibre-gl dependency in the theme).
  */
 const NAME = "briefing-globe";
-const cleanups = new Set();
+const cleanups = new Set<() => void>();
 
-async function loaded(map) {
+async function loaded(map: { loaded(): boolean; once(type: "load"): Promise<unknown> }): Promise<void> {
   if (map.loaded()) return;
   await map.once("load");
 }
 
-function mountIsland(root) {
-  const data = JSON.parse(
+function mountIsland(root: HTMLElement): () => void {
+  const data: (Parameters<typeof routeGeometry>[0] & { map: MapConfig }) | null = JSON.parse(
     root.querySelector('script[type="application/json"]')?.textContent ?? "null",
   );
-  const mapElement = root.querySelector('[data-role="map"]');
-  const empty = root.querySelector('[data-role="empty"]');
+  const mapElement = root.querySelector<HTMLElement>('[data-role="map"]');
+  const empty = root.querySelector<HTMLElement>('[data-role="empty"]');
   if (!data || !mapElement) return () => {};
 
   const geometry = routeGeometry(data);
@@ -43,8 +44,8 @@ function mountIsland(root) {
   }
 
   let disposed = false;
-  let destroy = null;
-  const layers = [];
+  let destroy: (() => void) | null = null;
+  const layers: (RouteLayer | RouteWaypointLayer)[] = [];
 
   void (async () => {
     const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
@@ -94,7 +95,7 @@ function mountIsland(root) {
 }
 
 function mountAll() {
-  for (const root of document.querySelectorAll(`[data-airside-island="${NAME}"]`)) {
+  for (const root of document.querySelectorAll<HTMLElement>(`[data-airside-island="${NAME}"]`)) {
     if (root.dataset.mounted === "true") continue;
     root.dataset.mounted = "true";
     cleanups.add(mountIsland(root));

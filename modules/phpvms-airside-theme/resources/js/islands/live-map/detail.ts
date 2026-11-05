@@ -1,13 +1,12 @@
-import { cloneTemplate, formatAltitude, setField } from "./dom.js";
+import { cloneTemplate, formatAltitude, setField } from "./dom";
+import type { FlightDetail, LiveFlight } from "./types";
 
 const STAGE_ORDER = ["ground", "departing", "enroute", "arriving"];
 
 /**
  * An ISO timestamp as HH:MMZ, or an em dash.
- *
- * @param {string | null | undefined} iso
  */
-function utcTime(iso) {
+function utcTime(iso: string | null | undefined): string {
   const date = iso ? new Date(iso) : null;
 
   if (!date || Number.isNaN(date.getTime())) {
@@ -19,10 +18,8 @@ function utcTime(iso) {
 
 /**
  * Minutes as "6h 45m", or an em dash.
- *
- * @param {number | null | undefined} minutes
  */
-function duration(minutes) {
+function duration(minutes: number | null | undefined): string {
   const value = Number(minutes);
 
   if (!Number.isFinite(value) || value <= 0) {
@@ -34,10 +31,8 @@ function duration(minutes) {
 
 /**
  * A cruise level as filed: feet (35000) or hundreds of feet (350), shown as FL350.
- *
- * @param {number | null | undefined} level
  */
-function cruiseLevel(level) {
+function cruiseLevel(level: number | null | undefined): string {
   const value = Number(level);
 
   if (!Number.isFinite(value) || value <= 0) {
@@ -47,8 +42,7 @@ function cruiseLevel(level) {
   return `FL${String(value >= 1000 ? Math.round(value / 100) : value).padStart(3, "0")}`;
 }
 
-/** @param {string} name */
-function initials(name) {
+function initials(name: string): string {
   return name
     .split(/\s+/)
     .filter(Boolean)
@@ -63,21 +57,26 @@ function initials(name) {
  * compact template shows the callsign and route as a link. Fields a template does not
  * have are skipped.
  *
- * @param {HTMLElement} root the island root
- * @param {HTMLElement} container the overlay element
- * @param {() => void} onClose
- * @param {(phase: string) => string | null} stageOfPhase
+ * `root` is the island root and `container` the overlay element.
  */
-export function createDetailOverlay(root, container, onClose, stageOfPhase) {
-  /** @type {HTMLElement | null} */
-  let card = null;
+export function createDetailOverlay(
+  root: HTMLElement,
+  container: HTMLElement,
+  onClose: () => void,
+  stageOfPhase: (phase: string) => string | null,
+) {
+  let card: HTMLElement | null = null;
 
   /**
    * `live` is the selected flight's row from the last poll (position and progress).
-   *
-   * @param {{ selected: string | null, detail: any, live: any, detailLoading: boolean, detailError: boolean }} state
    */
-  function render(state) {
+  function render(state: {
+    selected: string | null;
+    detail: FlightDetail | null;
+    live: LiveFlight | null;
+    detailLoading: boolean;
+    detailError: boolean;
+  }): void {
     if (!state.selected) {
       card?.remove();
       card = null;
@@ -131,7 +130,7 @@ export function createDetailOverlay(root, container, onClose, stageOfPhase) {
       "flown",
       detail.distance && detail.plannedDistance
         ? `${detail.distance} of ${detail.plannedDistance}`
-        : (detail.distance ?? ""),
+        : String(detail.distance ?? ""),
     );
     setField(card, "phase", detail.status ?? "—");
     setField(card, "altitude", formatAltitude(live?.position?.altitude));
@@ -139,7 +138,7 @@ export function createDetailOverlay(root, container, onClose, stageOfPhase) {
       card,
       "heading",
       Number.isFinite(Number(live?.position?.heading))
-        ? `${String(Math.round(Number(live.position.heading)) % 360).padStart(3, "0")}°`
+        ? `${String(Math.round(Number(live?.position.heading)) % 360).padStart(3, "0")}°`
         : "—",
     );
     setField(card, "cruise", cruiseLevel(detail.cruiseLevel));

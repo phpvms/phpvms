@@ -215,3 +215,15 @@ it('writes a resized avatar to public uploads with the real image manager', func
         File::delete($target);
     }
 })->skip(!extension_loaded('gd'), 'GD is not available');
+
+it('starts from the saved custom field values', function (): void {
+    // Two values: Laravel only blocks a lazy load on a model fetched together with others.
+    $type = UserField::query()->create(['name' => 'Favourite Type', 'internal' => false, 'active' => true]);
+    $hub = UserField::query()->create(['name' => 'Favourite Hub', 'internal' => false, 'active' => true]);
+    UserFieldValue::query()->create(['user_id' => $this->pilot->id, 'user_field_id' => $type->id, 'value' => 'A320']);
+    UserFieldValue::query()->create(['user_id' => $this->pilot->id, 'user_field_id' => $hub->id, 'value' => 'KJFK']);
+
+    Livewire::test(ProfileEdit::class)
+        ->assertSet('form.fields.field_'.$type->slug, 'A320')
+        ->assertSet('form.fields.field_'.$hub->slug, 'KJFK');
+});

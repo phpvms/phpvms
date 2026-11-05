@@ -4,7 +4,11 @@ import {
   createRoute,
   frameToRoute,
   onUserTakesControl,
-} from "@phpvms/map";
+} from "@airside/lib/map";
+import type { CreateMapResult, MapConfig, RouteLayer, RoutePoint } from "@airside/lib/map";
+import type { FlightDetail, LiveFlight } from "./types";
+
+type MapLibreMap = Extract<CreateMapResult, { ok: true }>["map"];
 
 const MARKER_LAYER = "live-flights";
 const SELECTED_SOURCE = "live-flights-selected";
@@ -14,10 +18,8 @@ const FEET_TO_METRES = 0.3048;
 
 /**
  * Resolves once the map's style is loaded; layers cannot be added before that.
- *
- * @param {import("maplibre-gl").Map} map
  */
-async function whenLoaded(map) {
+async function whenLoaded(map: MapLibreMap): Promise<void> {
   if (!map.loaded()) {
     await map.once("load");
   }
@@ -26,11 +28,8 @@ async function whenLoaded(map) {
 /**
  * A CSS colour token (e.g. `--vms-brand`) as rgb(), which maplibre can parse whatever
  * colour syntax the saved scheme uses. Painting one pixel normalises it.
- *
- * @param {string} token
- * @param {string} fallback
  */
-function tokenColor(token, fallback) {
+function tokenColor(token: string, fallback: string): string {
   const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
   const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
 
@@ -48,32 +47,24 @@ function tokenColor(token, fallback) {
 /**
  * The live map surface (LiveMapCanvas + useLiveFlightMarkers): base map, the
  * flight markers, the opening camera, and the selected flight's flown track.
- *
- * @param {HTMLElement} el
- * @param {{ map: any, initialCenter: { lat: number, lon: number } | null }} config
- * @param {(pirepId: string) => void} onSelect
  */
-export function createLiveMap(el, config, onSelect) {
+export function createLiveMap(
+  el: HTMLElement,
+  config: { map: MapConfig; initialCenter: { lat: number; lon: number } | null },
+  onSelect: (pirepId: string) => void,
+) {
   let disposed = false;
-  /** @type {(() => void) | undefined} */
-  let destroyMap;
-  /** @type {import("maplibre-gl").Map | undefined} */
-  let map;
-  /** @type {ReturnType<typeof createLiveFlightMarkers> | undefined} */
-  let markers;
-  /** @type {Promise<any> | undefined} */
-  let routePromise;
-  /** @type {any} */
-  let route;
-  /** @type {{ pirepId: string, lat: number, lon: number }[]} */
-  let points = [];
-  /** @type {any[]} */
-  let flown = [];
-  /** @type {string | null} */
-  let selectedId = null;
+  let destroyMap: (() => void) | undefined;
+  let map: MapLibreMap | undefined;
+  let markers: ReturnType<typeof createLiveFlightMarkers> | undefined;
+  let routePromise: Promise<RouteLayer> | undefined;
+  let route: RouteLayer | undefined;
+  let points: { pirepId: string; lat: number; lon: number }[] = [];
+  let flown: RoutePoint[] = [];
+  let selectedId: string | null = null;
 
-  const onClick = (/** @type {any} */ event) => {
-    const pirepId = event.features?.[0]?.properties?.pirepId;
+  const onClick = (event: { features?: { properties?: Record<string, unknown> | null }[] }) => {
+    const pirepId = event.features?.[0]?.properties?.pirepId as string | undefined;
 
     if (pirepId) {
       onSelect(pirepId);
@@ -87,7 +78,7 @@ export function createLiveMap(el, config, onSelect) {
   };
   const updateLod = () => route?.updateLod?.();
 
-  async function start() {
+  async function start(): Promise<void> {
     const result = await createMap(el, {
       config: config.map,
       theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
@@ -122,7 +113,7 @@ export function createLiveMap(el, config, onSelect) {
   }
 
   // The selected flight's ring: its own source and layer under the markers, in the brand colour.
-  function addSelectedRing(/** @type {import("maplibre-gl").Map} */ instance) {
+  function addSelectedRing(instance: MapLibreMap): void {
     const brand = tokenColor("--vms-brand", "#0d6da7");
 
     instance.addSource(SELECTED_SOURCE, { type: "geojson", data: selectedFeatures() });
@@ -143,14 +134,19 @@ export function createLiveMap(el, config, onSelect) {
     );
   }
 
-  /** @returns {import("geojson").FeatureCollection} */
   function selectedFeatures() {
     const point = points.find((candidate) => candidate.pirepId === selectedId);
 
     return {
-      type: "FeatureCollection",
+      type: "FeatureCollection" as const,
       features: point
-        ? [{ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [point.lon, point.lat] } }]
+        ? [
+            {
+              type: "Feature" as const,
+              properties: {},
+              geometry: { type: "Point" as const, coordinates: [point.lon, point.lat] },
+            },
+          ]
         : [],
     };
   }
@@ -159,12 +155,12 @@ export function createLiveMap(el, config, onSelect) {
     const source = map?.getSource(SELECTED_SOURCE);
 
     if (source && "setData" in source) {
-      /** @type {import("maplibre-gl").GeoJSONSource} */ (source).setData(selectedFeatures());
+      (source as { setData(data: ReturnType<typeof selectedFeatures>): void }).setData(selectedFeatures());
     }
   }
 
   // The opening camera runs once, and is skipped when the user has already taken hold of the map.
-  function frameInitially(/** @type {import("maplibre-gl").Map} */ instance) {
+  function frameInitially(instance: MapLibreMap): void {
     if (!config.initialCenter) {
       return;
     }
@@ -216,8 +212,7 @@ export function createLiveMap(el, config, onSelect) {
   start();
 
   return {
-    /** @param {any[]} flights MapLiveFlightData[] */
-    setFlights(flights) {
+    setFlights(flights: LiveFlight[]): void {
       points = flights.map((flight) => ({
         pirepId: flight.pirepId,
         lat: flight.position.lat,
@@ -230,10 +225,8 @@ export function createLiveMap(el, config, onSelect) {
     /**
      * A flight was selected (or the selection cleared, with null): ring it, clear the
      * previous track, and load the track layer.
-     *
-     * @param {string | null} pirepId
      */
-    select(pirepId) {
+    select(pirepId: string | null): void {
       selectedId = pirepId;
       updateSelectedRing();
       flown = [];
@@ -244,10 +237,9 @@ export function createLiveMap(el, config, onSelect) {
       }
     },
 
-    /** @param {any} detail MapPirepDetailData */
-    showDetail(detail) {
+    showDetail(detail: FlightDetail): void {
       // The altitude is the raw ACARS value in feet; the route layer takes metres.
-      flown = (detail.flown?.points ?? []).map((/** @type {any} */ point) => ({
+      flown = (detail.flown?.points ?? []).map((point) => ({
         lat: point.lat,
         lon: point.lon,
         altitude: (point.altitude ?? 0) * FEET_TO_METRES,
@@ -263,7 +255,7 @@ export function createLiveMap(el, config, onSelect) {
       });
     },
 
-    destroy() {
+    destroy(): void {
       disposed = true;
 
       if (map) {

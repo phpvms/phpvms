@@ -4,11 +4,10 @@ const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "
  * The estimated departure SimBrief is asked for: now + 45 minutes, rounded to
  * 5 minutes (UTC), plus the scheduled block time split into hours and minutes.
  * The same arithmetic as skylight's SimBriefPlanningOptions.
- *
- * @param {string | null | undefined} blockTime "H:MM" or empty
- * @param {Date} [now]
+
+ * `blockTime` is "H:MM" or empty.
  */
-export function departureTiming(blockTime, now = new Date()) {
+export function departureTiming(blockTime: string | null | undefined, now: Date = new Date()) {
   const departure = new Date(now.getTime());
   departure.setMinutes(departure.getMinutes() + 45);
 

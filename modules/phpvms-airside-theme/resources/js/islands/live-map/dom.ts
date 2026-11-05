@@ -6,29 +6,21 @@
 
 /**
  * Clone a template declared inside the island root.
- *
- * @param {HTMLElement} root
- * @param {string} name
- * @returns {HTMLElement}
  */
-export function cloneTemplate(root, name) {
+export function cloneTemplate(root: HTMLElement, name: string): HTMLElement {
   const template = root.querySelector(`template[data-tpl="${name}"]`);
 
   if (!(template instanceof HTMLTemplateElement) || !template.content.firstElementChild) {
     throw new Error(`live-map: missing template "${name}"`);
   }
 
-  return /** @type {HTMLElement} */ (template.content.firstElementChild.cloneNode(true));
+  return template.content.firstElementChild.cloneNode(true) as HTMLElement;
 }
 
 /**
  * Set the text of the `[data-field]` child.
- *
- * @param {HTMLElement} el
- * @param {string} field
- * @param {string} text
  */
-export function setField(el, field, text) {
+export function setField(el: HTMLElement, field: string, text: string): void {
   const target = el.querySelector(`[data-field="${field}"]`);
 
   if (target) {
@@ -39,11 +31,8 @@ export function setField(el, field, text) {
 /**
  * An ACARS altitude in feet as a flight level at 18,000 ft and above, else in feet.
  * Below 100 ft (on the ground) and when missing, an em dash.
- *
- * @param {number | null | undefined} feet
- * @returns {string}
  */
-export function formatAltitude(feet) {
+export function formatAltitude(feet: number | null | undefined): string {
   const value = Number(feet);
 
   if (!Number.isFinite(value) || value < 100) {

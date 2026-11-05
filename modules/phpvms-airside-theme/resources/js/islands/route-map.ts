@@ -5,8 +5,10 @@ import {
   createRoute,
   createRouteWaypoints,
   frameToRoute,
-} from "@phpvms/map";
-import { greatCircle, readout } from "./flights/geo.js";
+} from "@airside/lib/map";
+import type { MapConfig, RouteLayer, RouteWaypointLayer } from "@airside/lib/map";
+import { greatCircle, readout } from "./flights/geo";
+import type { LonLat } from "./flights/geo";
 
 /**
  * The nav display route map (skylight's NavDisplay): an EFIS-style header, a
@@ -23,23 +25,37 @@ import { greatCircle, readout } from "./flights/geo.js";
  * The island draws its own header, map and readout, so a page only needs the
  * wrapper and the script. Other pages may emit that markup and rely on this file.
  */
+interface Endpoint {
+  icao?: string | null;
+  lat: number;
+  lon: number;
+}
+
+interface RouteMapData {
+  from: Endpoint;
+  to?: Endpoint | null;
+  cruiseLevel?: number | null;
+  height?: number | null;
+  map?: MapConfig | null;
+}
+
 const NAME = "route-map";
 const DEFAULT_HEIGHT = 360;
-const FALLBACK_CONFIG = {
+const FALLBACK_CONFIG: MapConfig = {
   basemapLight: CARTO_VOYAGER_URL,
   basemapDark: CARTO_DARK_MATTER_URL,
   customStyleUrl: null,
   customStyleApiKey: null,
   layers: [],
 };
-const cleanups = new Map();
+const cleanups = new Map<HTMLElement, () => void>();
 
-async function loaded(map) {
+async function loaded(map: { loaded(): boolean; once(type: "load"): Promise<unknown> }): Promise<void> {
   if (map.loaded()) return;
   await map.once("load");
 }
 
-function element(tag, className, text) {
+function element(tag: string, className?: string, text?: string): HTMLElement {
   const node = document.createElement(tag);
   if (className) node.className = className;
   if (text) node.textContent = text;
@@ -47,7 +63,7 @@ function element(tag, className, text) {
   return node;
 }
 
-function readData(root) {
+function readData(root: HTMLElement): RouteMapData | null {
   try {
     return JSON.parse(root.querySelector('script[type="application/json"]')?.textContent ?? "null");
   } catch {
@@ -55,17 +71,17 @@ function readData(root) {
   }
 }
 
-function hasPoint(point) {
-  return point && typeof point.lat === "number" && typeof point.lon === "number";
+function hasPoint(point: Partial<Endpoint> | null | undefined): point is Endpoint {
+  return !!point && typeof point.lat === "number" && typeof point.lon === "number";
 }
 
-function mountIsland(root) {
+function mountIsland(root: HTMLElement): () => void {
   const data = readData(root);
   if (!data || !hasPoint(data.from)) return () => {};
 
-  const from = [data.from.lon, data.from.lat];
-  const to = hasPoint(data.to) ? [data.to.lon, data.to.lat] : null;
-  const height = Number.isFinite(data.height) ? data.height : DEFAULT_HEIGHT;
+  const from: LonLat = [data.from.lon, data.from.lat];
+  const to: LonLat | null = hasPoint(data.to) ? [data.to.lon, data.to.lat] : null;
+  const height = Number.isFinite(data.height) ? (data.height as number) : DEFAULT_HEIGHT;
 
   const header = element("div", "vms-route-map__head");
   header.append(
@@ -77,7 +93,7 @@ function mountIsland(root) {
     element(
       "span",
       "vms-route-map__route",
-      to && data.to.icao ? `${data.from.icao} ▸ ${data.to.icao}` : (data.from.icao ?? ""),
+      to && data.to?.icao ? `${data.from.icao} ▸ ${data.to.icao}` : (data.from.icao ?? ""),
     ),
   );
 
@@ -107,8 +123,8 @@ function mountIsland(root) {
   if (script) root.append(script);
 
   let disposed = false;
-  let destroy = null;
-  const layers = [];
+  let destroy: (() => void) | null = null;
+  const layers: (RouteLayer | RouteWaypointLayer)[] = [];
 
   void (async () => {
     const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
@@ -148,9 +164,9 @@ function mountIsland(root) {
     const airports = createRouteWaypoints(map, { id: "route-map-airports", pointRadius: 6 });
     airports.setData(
       [
-        { lat: from[1], lon: from[0], ident: data.from.icao ?? null, kind: "sid" },
-        to ? { lat: to[1], lon: to[0], ident: data.to.icao ?? null, kind: "star" } : null,
-      ].filter(Boolean),
+        { lat: from[1], lon: from[0], ident: data.from.icao ?? null, kind: "sid" as const },
+        to ? { lat: to[1], lon: to[0], ident: data.to?.icao ?? null, kind: "star" as const } : null,
+      ].filter((airport) => airport !== null),
     );
     layers.push(airports);
 
@@ -167,7 +183,7 @@ function mountIsland(root) {
 }
 
 function mountAll() {
-  for (const root of document.querySelectorAll(`[data-airside-island="${NAME}"]`)) {
+  for (const root of document.querySelectorAll<HTMLElement>(`[data-airside-island="${NAME}"]`)) {
     if (root.dataset.mounted === "true") continue;
     root.dataset.mounted = "true";
     cleanups.set(root, mountIsland(root));

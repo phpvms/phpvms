@@ -3,8 +3,9 @@ import {
   reserveProviderPopup,
   requestProviderSubmission,
   submitProviderGet,
-} from "@phpvms/simbrief";
-import { departureTiming } from "./ofp/departure-timing.js";
+} from "@airside/lib/simbrief";
+import type { ProviderFields, ProviderSubmission } from "@airside/lib/simbrief";
+import { departureTiming } from "./ofp/departure-timing";
 
 /**
  * The SimBrief generate flow on the OFP planning page, as skylight's
@@ -17,32 +18,42 @@ import { departureTiming } from "./ofp/departure-timing.js";
  * child `<script type="application/json">` and the options from the
  * `[data-role="options"]` form.
  */
+interface AttemptData {
+  apiCodeUrl: string;
+  pollUrl: string;
+  blockTime?: string | null;
+  providerFields: ProviderFields;
+}
+
+type AttemptState = "ready" | "requesting-code" | "waiting-for-popup" | "polling" | "complete" | "error";
+
 const NAME = "simbrief-attempt";
 const POPUP_NAME = "phpvms-simbrief";
 const POLL_INTERVAL_MS = 3_000;
 const POLL_MAX_ATTEMPTS = 60;
-const cleanups = new Set();
+const cleanups = new Set<() => void>();
 
-function csrfToken() {
-  return document.querySelector('meta[name="csrf-token"]')?.content ?? "";
+function csrfToken(): string {
+  return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? "";
 }
 
-function mountIsland(root) {
-  const data = JSON.parse(
+function mountIsland(root: HTMLElement): () => void {
+  const parsed: AttemptData | null = JSON.parse(
     root.querySelector('script[type="application/json"]')?.textContent ?? "null",
   );
-  if (!data) return () => {};
+  if (!parsed) return () => {};
+  const data: AttemptData = parsed;
 
-  const generateButton = root.querySelector('[data-role="generate"]');
-  const retryButton = root.querySelector('[data-role="retry"]');
-  const stateBadge = root.querySelector('[data-role="state-badge"]');
-  const failureText = root.querySelector('[data-role="failure"]');
-  const pollingNode = root.querySelector('[data-role="polling"]');
-  const form = root.querySelector('[data-role="options"]');
+  const generateButton = root.querySelector<HTMLButtonElement>('[data-role="generate"]');
+  const retryButton = root.querySelector<HTMLElement>('[data-role="retry"]');
+  const stateBadge = root.querySelector<HTMLElement>('[data-role="state-badge"]');
+  const failureText = root.querySelector<HTMLElement>('[data-role="failure"]');
+  const pollingNode = root.querySelector<HTMLElement>('[data-role="polling"]');
+  const form = root.querySelector<HTMLFormElement>('[data-role="options"]');
 
-  let state = "ready";
-  let popup = null;
-  let popupWatch = null;
+  let state: AttemptState = "ready";
+  let popup: Window | null = null;
+  let popupWatch: number | null = null;
   let disposed = false;
 
   const transport = () => ({
@@ -55,7 +66,7 @@ function mountIsland(root) {
     },
   });
 
-  function render(failure = null, attempts = 0) {
+  function render(failure: string | null = null, attempts = 0): void {
     root.dataset.state = state;
 
     if (stateBadge) stateBadge.textContent = state.replaceAll("-", " ");
@@ -66,7 +77,7 @@ function mountIsland(root) {
     if (retryButton) retryButton.hidden = state !== "error";
     if (failureText) failureText.textContent = failure ?? "";
 
-    for (const node of root.querySelectorAll("[data-show]")) {
+    for (const node of root.querySelectorAll<HTMLElement>("[data-show]")) {
       node.hidden = node.dataset.show !== state;
     }
 
@@ -78,15 +89,15 @@ function mountIsland(root) {
     }
   }
 
-  function setState(next, failure = null, attempts = 0) {
+  function setState(next: AttemptState, failure: string | null = null, attempts = 0): void {
     state = next;
     render(failure, attempts);
   }
 
   function showTiming() {
     const timing = departureTiming(data.blockTime);
-    const etd = root.querySelector('[data-role="etd"]');
-    const date = root.querySelector('[data-role="date"]');
+    const etd = root.querySelector<HTMLInputElement>('[data-role="etd"]');
+    const date = root.querySelector<HTMLInputElement>('[data-role="date"]');
     if (etd) etd.value = timing.etd;
     if (date) date.value = timing.date;
 
@@ -95,9 +106,9 @@ function mountIsland(root) {
 
   function overrides() {
     const timing = showTiming();
-    const values = new FormData(form);
+    const values = new FormData(form!);
     const stepclimbs = String(values.get("stepclimbs") ?? "0");
-    const result = {};
+    const result: ProviderFields = {};
 
     for (const [key, value] of values.entries()) {
       result[key] = String(value);
@@ -119,7 +130,7 @@ function mountIsland(root) {
   function watchPopup() {
     popupWatch = window.setInterval(() => {
       if (!popup?.closed) return;
-      window.clearInterval(popupWatch);
+      window.clearInterval(popupWatch!);
       popupWatch = null;
       popup = null;
     }, 500);
@@ -174,7 +185,7 @@ function mountIsland(root) {
 
     setState("requesting-code");
 
-    let submission;
+    let submission: ProviderSubmission;
     try {
       submission = await requestProviderSubmission(
         transport(),
@@ -216,7 +227,7 @@ function mountIsland(root) {
 }
 
 function mountAll() {
-  for (const root of document.querySelectorAll(`[data-airside-island="${NAME}"]`)) {
+  for (const root of document.querySelectorAll<HTMLElement>(`[data-airside-island="${NAME}"]`)) {
     if (root.dataset.mounted === "true") continue;
     root.dataset.mounted = "true";
     cleanups.add(mountIsland(root));

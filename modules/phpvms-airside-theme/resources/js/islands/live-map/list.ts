@@ -1,32 +1,33 @@
-import { cloneTemplate, formatAltitude, setField } from "./dom.js";
+import { cloneTemplate, formatAltitude, setField } from "./dom";
+import type { LiveFlight } from "./types";
 
 /**
  * The live flights list: one row per flight, plus the empty and error states
  * (LiveFlightList). Rows are kept by pirep id between polls, so a poll does not
  * rebuild the list or lose its scroll position.
  *
- * @param {HTMLElement} root the island root
- * @param {HTMLElement} container the list element
- * @param {(pirepId: string) => void} onSelect
- * @param {(flight: any) => string | null} stageOf the flight's stage, from the config's stage map
+ * `root` is the island root, `container` the list element, and `stageOf` gives a
+ * flight's stage from the config's stage map.
  */
-export function createFlightList(root, container, onSelect, stageOf) {
-  /** @type {Map<string, HTMLElement>} */
-  const rows = new Map();
-  /** @type {HTMLElement | null} */
-  let listbox = null;
-  /** @type {HTMLElement | null} */
-  let notice = null;
+export function createFlightList(
+  root: HTMLElement,
+  container: HTMLElement,
+  onSelect: (pirepId: string) => void,
+  stageOf: (flight: LiveFlight) => string | null,
+) {
+  const rows = new Map<string, HTMLElement>();
+  let listbox: HTMLElement | null = null;
+  let notice: HTMLElement | null = null;
 
   // Start from an empty container, whatever an earlier mount left in it.
   container.replaceChildren();
 
-  function clearNotice() {
+  function clearNotice(): void {
     notice?.remove();
     notice = null;
   }
 
-  function clearRows() {
+  function clearRows(): void {
     listbox?.remove();
     listbox = null;
     rows.clear();
@@ -34,10 +35,14 @@ export function createFlightList(root, container, onSelect, stageOf) {
 
   /**
    * `all` is every live flight; `flights` is what the filter and search let through.
-   *
-   * @param {{ all: any[], flights: any[], loading: boolean, loadError: boolean, selected: string | null }} state
    */
-  function render(state) {
+  function render(state: {
+    all: LiveFlight[];
+    flights: LiveFlight[];
+    loading: boolean;
+    loadError: boolean;
+    selected: string | null;
+  }): void {
     if (state.loadError) {
       clearRows();
       showNotice("list-error");
@@ -69,7 +74,8 @@ export function createFlightList(root, container, onSelect, stageOf) {
       container.append(listbox);
     }
 
-    const keep = new Set();
+    const box = listbox;
+    const keep = new Set<string>();
 
     state.flights.forEach((flight, index) => {
       keep.add(flight.pirepId);
@@ -82,7 +88,7 @@ export function createFlightList(root, container, onSelect, stageOf) {
         rows.set(flight.pirepId, row);
       }
 
-      setField(row, "ident", flight.ident);
+      setField(row, "ident", flight.ident ?? "");
       setField(
         row,
         "route",
@@ -115,8 +121,8 @@ export function createFlightList(root, container, onSelect, stageOf) {
 
       row.setAttribute("aria-selected", String(flight.pirepId === state.selected));
 
-      if (listbox.children[index] !== row) {
-        listbox.insertBefore(row, listbox.children[index] ?? null);
+      if (box.children[index] !== row) {
+        box.insertBefore(row, box.children[index] ?? null);
       }
     });
 
@@ -128,8 +134,7 @@ export function createFlightList(root, container, onSelect, stageOf) {
     }
   }
 
-  /** @param {string} name */
-  function showNotice(name) {
+  function showNotice(name: string): void {
     if (notice?.dataset.notice === name) {
       return;
     }

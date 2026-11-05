@@ -5,25 +5,37 @@
  * toasts are TallStackUI's own.
  */
 
+import { mapDots } from "./map-dots";
+
+interface AirportResult {
+  id: string;
+  description: string;
+}
+
 document.addEventListener("alpine:init", () => {
   const { Alpine } = window;
+
+  Alpine.data("mapDots", mapDots);
 
   /**
    * HTML-escape a plain string. TallStackUI's toast renders its title with
    * x-html, so text from a `toast` event goes through this first.
    */
-  Alpine.magic("escapeHtml", () => (value) =>
-    String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]),
+  Alpine.magic("escapeHtml", () => (value: unknown): string =>
+    String(value ?? "").replace(
+      /[&<>"']/g,
+      (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] as string,
+    ),
   );
 
   /**
    * The dispatch header: UTC and station-local clocks, ticking at each minute
    * boundary.
    */
-  Alpine.data("airsideClocks", (timezone = null) => ({
+  Alpine.data("airsideClocks", (timezone: string | null = null) => ({
     timezone,
     now: new Date(),
-    timer: null,
+    timer: undefined as ReturnType<typeof setTimeout> | undefined,
 
     init() {
       this.tick();
@@ -39,7 +51,7 @@ document.addEventListener("alpine:init", () => {
     },
 
     get utc() {
-      const pad = (value) => String(value).padStart(2, "0");
+      const pad = (value: number): string => String(value).padStart(2, "0");
 
       return `${pad(this.now.getUTCHours())}:${pad(this.now.getUTCMinutes())}Z`;
     },
@@ -68,7 +80,7 @@ document.addEventListener("alpine:init", () => {
    */
   Alpine.data("airsideAirportSearch", (hubsOnly = false) => ({
     query: "",
-    results: [],
+    results: [] as AirportResult[],
     selected: "",
     selectedLabel: "",
 
@@ -98,7 +110,7 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    choose(airport) {
+    choose(airport: AirportResult) {
       this.selected = airport.id;
       this.selectedLabel = airport.description;
       this.query = "";

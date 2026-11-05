@@ -1,6 +1,8 @@
-import { createDetailOverlay } from "./live-map/detail.js";
-import { createFlightList } from "./live-map/list.js";
-import { createLiveMap } from "./live-map/map.js";
+import type { MapConfig } from "@airside/lib/map";
+import { createDetailOverlay } from "./live-map/detail";
+import { createFlightList } from "./live-map/list";
+import { createLiveMap } from "./live-map/map";
+import type { FlightDetail, LiveFlight } from "./live-map/types";
 
 /**
  * The live map island: mounts on `[data-airside-island="live-map"]`, polls
@@ -16,19 +18,17 @@ const SELECTOR = '[data-airside-island="live-map"]';
 const MIN_INTERVAL_SECONDS = 5;
 const AIRBORNE = new Set(["departing", "enroute", "arriving"]);
 
-/** @type {Map<Element, () => void>} */
-const mounted = new Map();
+const mounted = new Map<Element, () => void>();
 
 /**
  * Fold the sidebar to its rail while the map is open (`data-live-rail` on the root). It sets
  * TallStackUI's sidebar store directly, which does not save to localStorage, so the pilot's
  * own setting is read back on teardown; the toggle still works and still saves. On a full
  * page load the store reads localStorage when Alpine starts, so the rail waits for that.
- *
- * @returns {() => void} puts the pilot's setting back
+ * Returns a function that puts the pilot's setting back.
  */
-function railSidebar() {
-  const store = () => window.Alpine?.store?.("tsui.side-bar");
+function railSidebar(): () => void {
+  const store = () => window.Alpine?.store?.("tsui.side-bar") as { open: boolean } | undefined;
   const fold = () => {
     const sidebar = store();
 
@@ -53,10 +53,7 @@ function railSidebar() {
   };
 }
 
-/**
- * @param {string} url
- */
-async function getJson(url) {
+async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { headers: { Accept: "application/json" } });
 
   if (!response.ok) {
@@ -68,10 +65,8 @@ async function getJson(url) {
 
 /**
  * The text the search matches against: ident, route, pilot and aircraft.
- *
- * @param {any} flight MapLiveFlightData
  */
-function searchText(flight) {
+function searchText(flight: LiveFlight): string {
   return [
     flight.ident,
     flight.dptAirport?.icao,
@@ -86,13 +81,18 @@ function searchText(flight) {
     .toLowerCase();
 }
 
-/** @param {HTMLElement} root */
-function mount(root) {
-  const config = JSON.parse(
+interface LiveMapConfig {
+  map: MapConfig;
+  initialCenter: { lat: number; lon: number } | null;
+  stages?: Record<string, string>;
+  updateIntervalSeconds?: number | string;
+}
+
+function mount(root: HTMLElement): () => void {
+  const config: LiveMapConfig = JSON.parse(
     root.querySelector(':scope > script[type="application/json"]')?.textContent ?? "{}",
   );
-  /** @type {Record<string, string>} */
-  const stages = config.stages ?? {};
+  const stages: Record<string, string> = config.stages ?? {};
   const listEl = root.querySelector("[data-live-list]");
   const mapEl = root.querySelector("[data-live-map]");
   const overlayEl = root.querySelector("[data-live-overlay]");
@@ -109,16 +109,25 @@ function mount(root) {
     return () => {};
   }
 
-  const state = {
-    /** @type {any[]} every live flight from the last poll */
+  const state: {
+    /** every live flight from the last poll */
+    all: LiveFlight[];
+    /** the flights the filter and search let through */
+    flights: LiveFlight[];
+    loading: boolean;
+    loadError: boolean;
+    selected: string | null;
+    detail: FlightDetail | null;
+    detailLoading: boolean;
+    detailError: boolean;
+    filter: string;
+    query: string;
+  } = {
     all: [],
-    /** @type {any[]} the flights the filter and search let through */
     flights: [],
     loading: true,
     loadError: false,
-    /** @type {string | null} */
     selected: null,
-    /** @type {any} */
     detail: null,
     detailLoading: false,
     detailError: false,
@@ -128,8 +137,7 @@ function mount(root) {
   let disposed = false;
   const restoreSidebar = root.hasAttribute("data-live-rail") ? railSidebar() : () => {};
 
-  /** @param {any} flight */
-  const stageOf = (flight) => (flight?.phase ? (stages[flight.phase] ?? null) : null);
+  const stageOf = (flight: LiveFlight | null | undefined): string | null => (flight?.phase ? (stages[flight.phase] ?? null) : null);
 
   const list = createFlightList(root, listEl, select, stageOf);
   const overlay = createDetailOverlay(root, overlayEl, deselect, (phase) => stages[phase] ?? null);
@@ -159,7 +167,7 @@ function mount(root) {
 
     for (const el of statEls) {
       if (el instanceof HTMLElement) {
-        el.textContent = String(counts[/** @type {keyof typeof counts} */ (el.dataset.liveStat)] ?? 0);
+        el.textContent = String(counts[el.dataset.liveStat as keyof typeof counts] ?? 0);
       }
     }
   }
@@ -188,7 +196,7 @@ function mount(root) {
 
   async function fetchFlights() {
     try {
-      const flights = await getJson("/api/map/live");
+      const flights = await getJson<LiveFlight[]>("/api/map/live");
 
       if (disposed) {
         return;
@@ -212,8 +220,7 @@ function mount(root) {
     }
   }
 
-  /** @param {string} pirepId */
-  async function select(pirepId) {
+  async function select(pirepId: string): Promise<void> {
     state.selected = pirepId;
     state.detail = null;
     state.detailError = false;
@@ -222,7 +229,7 @@ function mount(root) {
     render();
 
     try {
-      const detail = await getJson(`/api/map/pirep/${encodeURIComponent(pirepId)}`);
+      const detail = await getJson<FlightDetail>(`/api/map/pirep/${encodeURIComponent(pirepId)}`);
 
       // A later selection replaces this one.
       if (disposed || state.selected !== pirepId) {
@@ -243,7 +250,7 @@ function mount(root) {
     render();
   }
 
-  function deselect() {
+  function deselect(): void {
     state.selected = null;
     state.detail = null;
     state.detailLoading = false;
@@ -252,24 +259,21 @@ function mount(root) {
     render();
   }
 
-  /** @param {Event} event */
-  function onFilter(event) {
-    const button = /** @type {HTMLElement} */ (event.currentTarget);
+  function onFilter(event: Event): void {
+    const button = event.currentTarget as HTMLElement;
 
     state.filter = button.dataset.liveFilter ?? "all";
     applyFilters();
     render();
   }
 
-  /** @param {Event} event */
-  function onSearch(event) {
-    state.query = /** @type {HTMLInputElement} */ (event.target).value;
+  function onSearch(event: Event): void {
+    state.query = (event.target as HTMLInputElement).value;
     applyFilters();
     render();
   }
 
-  /** @param {KeyboardEvent} event */
-  function onKeydown(event) {
+  function onKeydown(event: KeyboardEvent): void {
     if (event.key === "Escape" && state.selected) {
       deselect();
     }
@@ -301,7 +305,7 @@ function mount(root) {
 
 // The mark is on the element, not only in `mounted`: after a rebuild, wire:navigate can load this
 // module a second time under a new file name, and that copy must not mount the same root again.
-function mountAll() {
+function mountAll(): void {
   document.querySelectorAll(SELECTOR).forEach((el) => {
     if (el instanceof HTMLElement && !mounted.has(el) && !el.dataset.liveMounted) {
       el.dataset.liveMounted = "true";
@@ -310,7 +314,7 @@ function mountAll() {
   });
 }
 
-function unmountAll() {
+function unmountAll(): void {
   mounted.forEach((teardown) => teardown());
   mounted.clear();
 }

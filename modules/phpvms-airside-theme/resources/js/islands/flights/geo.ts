@@ -2,12 +2,14 @@
  * Great-circle geometry (path, bearing, distance) shared by the route map and
  * the briefing globe. Coordinates are [lon, lat].
  */
+export type LonLat = [lon: number, lat: number];
+
 const R = Math.PI / 180;
 const D = 180 / Math.PI;
 const EARTH_NM = 3440.065;
 
 /** Densified great circle (slerp) so the line curves on the globe. Returns n + 1 points. */
-export function greatCircle(a, b, n = 160) {
+export function greatCircle(a: LonLat, b: LonLat, n = 160): LonLat[] {
   const la1 = a[1] * R;
   const lo1 = a[0] * R;
   const la2 = b[1] * R;
@@ -23,7 +25,7 @@ export function greatCircle(a, b, n = 160) {
 
   if (d === 0) return [a, b];
 
-  const out = [];
+  const out: LonLat[] = [];
   for (let i = 0; i <= n; i++) {
     const f = i / n;
     const A = Math.sin((1 - f) * d) / Math.sin(d);
@@ -38,7 +40,7 @@ export function greatCircle(a, b, n = 160) {
 }
 
 /** Initial great-circle bearing a to b, in degrees (0..360). */
-export function bearing(a, b) {
+export function bearing(a: LonLat, b: LonLat): number {
   const la1 = a[1] * R;
   const la2 = b[1] * R;
   const dl = (b[0] - a[0]) * R;
@@ -52,7 +54,7 @@ export function bearing(a, b) {
 }
 
 /** Great-circle distance a to b in nautical miles. */
-export function distanceNm(a, b) {
+export function distanceNm(a: LonLat, b: LonLat): number {
   const la1 = a[1] * R;
   const la2 = b[1] * R;
   const dla = (b[1] - a[1]) * R;
@@ -63,7 +65,7 @@ export function distanceNm(a, b) {
 }
 
 /** The nav display's readout: track, distance, a rough ETE at 460 kt, and the level. */
-export function readout(from, to, cruiseLevel) {
+export function readout(from: LonLat, to: LonLat | null, cruiseLevel: number | null | undefined): string[] {
   const level = cruiseLevel == null ? "FL380" : `FL${cruiseLevel}`;
 
   if (!to) {
@@ -73,7 +75,7 @@ export function readout(from, to, cruiseLevel) {
   const hours = distanceNm(from, to) / 460;
   const h = Math.floor(hours);
   const m = Math.round((hours - h) * 60);
-  const pad = (value) => String(value).padStart(2, "0");
+  const pad = (value: number): string => String(value).padStart(2, "0");
 
   return [
     `TRK ${pad(Math.round(bearing(from, to))).padStart(3, "0")}°`,
