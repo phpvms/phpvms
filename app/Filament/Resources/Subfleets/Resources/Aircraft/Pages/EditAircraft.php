@@ -86,7 +86,11 @@ class EditAircraft extends EditRecord
         $record = $this->getRecord();
         $subfleet = $record->subfleet;
 
-        $breadcrumbs = [SubfleetResource::getUrl() => SubfleetResource::getBreadcrumb()];
+        // Nested pages have no sidebar entry, so the group comes from the parent.
+        $breadcrumbs = [
+            ...$this->getNavigationBreadcrumbs(SubfleetResource::class, SubfleetResource::getNavigationUrl(...)) ?? [],
+            SubfleetResource::getUrl() => SubfleetResource::getBreadcrumb(),
+        ];
 
         if ($subfleet !== null) {
             $breadcrumbs[SubfleetResource::getUrl('edit', ['record' => $subfleet])] = EditSubfleet::subfleetCrumb($subfleet);

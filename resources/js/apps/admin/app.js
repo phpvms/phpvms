@@ -20,6 +20,7 @@ import config from "./config";
 import request from "./request";
 import Storage from "./storage";
 import "./rail-nav";
+import "./command-palette";
 import "./sidebar-shell";
 import { currentMode } from "./theme-picker";
 import "./utc-clock";

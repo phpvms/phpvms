@@ -83,6 +83,7 @@ class EditSubfleet extends EditRecord
         $record = $this->getRecord();
 
         return [
+            ...$this->getNavigationBreadcrumbs(SubfleetResource::class, SubfleetResource::getNavigationUrl(...)) ?? [],
             SubfleetResource::getUrl() => SubfleetResource::getBreadcrumb(),
             self::subfleetCrumb($record),
         ];

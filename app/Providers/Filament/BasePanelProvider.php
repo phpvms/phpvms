@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\GlobalSearch\CommandPaletteSearchProvider;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
+use App\Livewire\Filament\CommandPalette;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\PhosphorIcons;
 use Filament\Enums\UserMenuPosition;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -142,6 +145,19 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
                 fn (): string => view('filament.plugins.theme-picker')->render(),
+            )
+            // Command palette (cmd/ctrl+K). Filament's own topbar field is
+            // hidden by theme.css; the palette reads the provider below.
+            ->globalSearch(CommandPaletteSearchProvider::class)
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+                fn (): string => view('filament.shared.command-palette-trigger')->render(),
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => Filament::auth()->check()
+                    ? Blade::render('@livewire($component)', ['component' => CommandPalette::class])
+                    : '',
             )
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))

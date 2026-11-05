@@ -34,7 +34,7 @@ it('names the subfleet in its own breadcrumb chain', function (): void {
         ->instance()
         ->getBreadcrumbs());
 
-    expect($crumbs)->toBe(['Subfleets', 'B738-WL - Boeing 737-800']);
+    expect($crumbs)->toBe(['Fleet', 'Subfleets', 'B738-WL - Boeing 737-800']);
 });
 
 it('names the subfleet and the aircraft in the nested chain', function (): void {
@@ -50,7 +50,7 @@ it('names the subfleet and the aircraft in the nested chain', function (): void 
         'parentRecord' => $subfleet,
     ])->assertSuccessful()->instance()->getBreadcrumbs());
 
-    expect($crumbs)->toBe(['Subfleets', 'B738-WL - Boeing 737-800', 'N852AL - Ship 852']);
+    expect($crumbs)->toBe(['Fleet', 'Subfleets', 'B738-WL - Boeing 737-800', 'N852AL - Ship 852']);
 });
 
 it('names the bundle in its own breadcrumb chain', function (): void {
@@ -65,7 +65,7 @@ it('names the bundle in its own breadcrumb chain', function (): void {
         ->instance()
         ->getBreadcrumbs());
 
-    expect($crumbs)->toBe(['Flight Bundles', 'Summer schedule']);
+    expect($crumbs)->toBe(['Planning', 'Flight Bundles', 'Summer schedule']);
 });
 
 it('names the bundle and the flight in the nested chain', function (): void {
@@ -82,6 +82,7 @@ it('names the bundle and the flight in the nested chain', function (): void {
     ])->assertSuccessful()->instance()->getBreadcrumbs());
 
     expect($crumbs)->toBe([
+        'Planning',
         'Flight Bundles',
         'Summer schedule',
         sprintf('%s - %s → %s', $flight->ident, $flight->dpt_airport->icao, $flight->arr_airport->icao),

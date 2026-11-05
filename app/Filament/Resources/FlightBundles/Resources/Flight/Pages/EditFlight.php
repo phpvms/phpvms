@@ -138,7 +138,11 @@ class EditFlight extends EditRecord
         $record = $this->getRecord();
         $bundle = $record->bundle;
 
-        $breadcrumbs = [FlightBundleResource::getUrl() => FlightBundleResource::getBreadcrumb()];
+        // Nested pages have no sidebar entry, so the group comes from the parent.
+        $breadcrumbs = [
+            ...$this->getNavigationBreadcrumbs(FlightBundleResource::class, FlightBundleResource::getNavigationUrl(...)) ?? [],
+            FlightBundleResource::getUrl() => FlightBundleResource::getBreadcrumb(),
+        ];
 
         if ($bundle !== null) {
             $breadcrumbs[FlightBundleResource::getUrl('edit', ['record' => $bundle])] = $bundle->name;

@@ -92,6 +92,12 @@ class PirepResource extends Resource
         return ['flight_number', 'route_code'];
     }
 
+    #[Override]
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with('airline');
+    }
+
     /**
      * @param Pirep $record
      */
