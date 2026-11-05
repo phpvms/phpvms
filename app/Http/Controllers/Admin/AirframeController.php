@@ -8,13 +8,13 @@ use App\Http\Requests\UpdateAirframeRequest;
 use App\Models\Aircraft;
 use App\Models\Enums\AirframeSource;
 use App\Repositories\AirframeRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Services\SimBriefService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 use Prettus\Validator\Exceptions\ValidatorException;
 

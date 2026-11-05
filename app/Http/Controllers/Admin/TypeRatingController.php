@@ -6,6 +6,7 @@ use App\Contracts\Controller;
 use App\Http\Requests\CreateTypeRatingRequest;
 use App\Http\Requests\UpdateTypeRatingRequest;
 use App\Models\Typerating;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\SubfleetRepository;
 use App\Repositories\TypeRatingRepository;
 use App\Services\FleetService;
@@ -14,7 +15,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 use Prettus\Validator\Exceptions\ValidatorException;
 

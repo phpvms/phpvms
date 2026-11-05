@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Contracts\Controller;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\FlightFieldRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 
 class FlightFieldController extends Controller
 {

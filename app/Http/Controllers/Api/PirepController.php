@@ -20,6 +20,7 @@ use App\Http\Resources\Pirep as PirepResource;
 use App\Http\Resources\PirepComment as PirepCommentResource;
 use App\Http\Resources\PirepFieldCollection;
 use App\Models\Acars;
+use App\Models\Aircraft;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepSource;
@@ -53,12 +54,14 @@ class PirepController extends Controller
 
     /**
      * Parse any PIREP added in
+     *
+     * @param string[] $except Extra attributes the caller may not set on this call
      */
-    protected function parsePirep(Request $request): ?array
+    protected function parsePirep(Request $request, array $except = []): ?array
     {
         // The state moves only through the service (prefile, file, accept,
         // reject); the key and the owner are never client-supplied.
-        $attrs = Arr::except($request->input(), ['id', 'state', 'user_id']);
+        $attrs = Arr::except($request->input(), ['id', 'state', 'user_id', ...$except]);
 
         if (array_key_exists('created_at', $attrs)) {
             $attrs['created_at'] = Carbon::createFromTimeString($attrs['created_at']);
@@ -89,10 +92,30 @@ class PirepController extends Controller
     }
 
     /**
-     * Check if a PIREP is cancelled
+     * When the request changes the aircraft, make sure the pilot may fly the
+     * aircraft being submitted, not the one already on the PIREP
+     *
+     * @param array<string, mixed> $attrs
+     *
+     * @throws \App\Exceptions\AircraftPermissionDenied
+     */
+    protected function checkAircraftChange(User $user, array $attrs): void
+    {
+        if (empty($attrs['aircraft_id']) || !setting('pireps.restrict_aircraft_to_rank', false)) {
+            return;
+        }
+
+        $aircraft = Aircraft::findOrFail($attrs['aircraft_id']);
+        if (!$this->userSvc->aircraftAllowed($user, $aircraft->id)) {
+            throw new AircraftPermissionDenied($user, $aircraft);
+        }
+    }
+
+    /**
+     * Check if a PIREP is read-only
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
+     * @throws \App\Exceptions\PirepError
      */
     protected function checkReadOnly(Pirep $pirep): void
     {
@@ -224,18 +247,10 @@ class PirepController extends Controller
         $this->checkCancelled($pirep);
         $this->checkReadOnly($pirep);
 
-        $attrs = $this->parsePirep($request);
+        $attrs = $this->parsePirep($request, ['source']);
         $attrs['user_id'] = Auth::id();
 
-        // If aircraft is being changed, see if this user is allowed to fly this aircraft
-        if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
-        ) {
-            $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
-            if (!$can_use_ac) {
-                throw new AircraftPermissionDenied($user, $pirep->aircraft);
-            }
-        }
+        $this->checkAircraftChange($user, $attrs);
 
         $fields = $this->getFields($request);
         $fares = $this->getFares($request);
@@ -267,17 +282,9 @@ class PirepController extends Controller
         $this->checkCancelled($pirep);
         $this->checkReadOnly($pirep);
 
-        $attrs = $this->parsePirep($request);
+        $attrs = $this->parsePirep($request, ['source']);
 
-        // If aircraft is being changed, see if this user is allowed to fly this aircraft
-        if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
-        ) {
-            $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
-            if (!$can_use_ac) {
-                throw new AircraftPermissionDenied($user, $pirep->aircraft);
-            }
-        }
+        $this->checkAircraftChange($user, $attrs);
 
         try {
             $fields = $this->getFields($request);

@@ -13,6 +13,7 @@ use App\Http\Resources\User as UserResource;
 use App\Models\Bid;
 use App\Models\Enums\PirepState;
 use App\Repositories\AircraftRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\PirepRepository;
@@ -22,7 +23,6 @@ use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 
 class UserController extends Controller

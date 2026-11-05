@@ -83,6 +83,41 @@ final class OwnershipTest extends TestCase
         $this->assertEquals('cruise', $pirep->notes);
     }
 
+    public function test_update_checks_the_submitted_aircraft_against_the_rank(): void
+    {
+        $this->updateSetting('pireps.restrict_aircraft_to_rank', true);
+
+        $allowed = $this->createSubfleetWithAircraft(1);
+        $forbidden = $this->createSubfleetWithAircraft(1);
+        $rank = $this->createRank(0, [$allowed['subfleet']->id]);
+        $this->owner->update(['rank_id' => $rank->id]);
+
+        $ownAircraft = $allowed['aircraft']->first();
+        $this->pirep->update(['aircraft_id' => $ownAircraft->id]);
+
+        $this->post('/api/pireps/'.$this->pirep->id.'/update', [
+            'aircraft_id' => $forbidden['aircraft']->first()->id,
+        ], [], $this->owner)->assertStatus(400);
+
+        $this->assertEquals($ownAircraft->id, $this->pirep->fresh()->aircraft_id);
+    }
+
+    public function test_filing_cannot_switch_the_source_to_get_auto_approved(): void
+    {
+        $this->owner->rank->update(['auto_approve_acars' => false, 'auto_approve_manual' => true]);
+        $this->pirep->update(['source' => PirepSource::ACARS]);
+
+        $this->post('/api/pireps/'.$this->pirep->id.'/file', [
+            'distance'    => 100,
+            'flight_time' => 60,
+            'source'      => PirepSource::MANUAL,
+        ], [], $this->owner)->assertOk();
+
+        $pirep = $this->pirep->fresh();
+        $this->assertEquals(PirepSource::ACARS, $pirep->source);
+        $this->assertEquals(PirepState::PENDING, $pirep->state);
+    }
+
     public function test_filing_keeps_the_owner_and_ignores_another_pilots_briefing(): void
     {
         $briefing = SimBrief::factory()->create(['user_id' => $this->attacker->id]);

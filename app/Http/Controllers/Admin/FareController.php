@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateFareRequest;
 use App\Models\Enums\FareType;
 use App\Models\Enums\ImportExportType;
 use App\Models\Fare;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\FareRepository;
 use App\Services\ExportService;
 use App\Services\ImportService;
@@ -17,7 +18,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FareController extends Controller

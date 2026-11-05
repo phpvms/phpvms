@@ -14,6 +14,7 @@ use App\Models\Enums\ImportExportType;
 use App\Models\Expense;
 use App\Models\Subfleet;
 use App\Repositories\AircraftRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\FareRepository;
 use App\Repositories\RankRepository;
 use App\Repositories\SubfleetRepository;
@@ -28,7 +29,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SubfleetController extends Controller

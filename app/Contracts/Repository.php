@@ -118,8 +118,9 @@ abstract class Repository extends BaseRepository
         $this->applyCriteria();
         $this->applyScope();
 
-        $max = config('repository.pagination.limit', 50);
+        $max = (int) config('repository.pagination.limit', 50);
         $limit = (int) ($limit ?? request()->query('limit') ?? $max);
+        $limit = $limit > 0 ? min($limit, $max) : $max;
         $page = (int) request()->query('page', 1);
 
         $results = $this->model->{$method}($limit, $columns, 'page', $page);

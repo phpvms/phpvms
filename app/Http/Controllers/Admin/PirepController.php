@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Repositories\AircraftRepository;
 use App\Repositories\AirlineRepository;
 use App\Repositories\AirportRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\JournalRepository;
 use App\Repositories\PirepFieldRepository;
 use App\Repositories\PirepRepository;
@@ -26,7 +27,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 
 class PirepController extends Controller
 {

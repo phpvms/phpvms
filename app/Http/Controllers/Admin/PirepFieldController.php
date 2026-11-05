@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Contracts\Controller;
 use App\Http\Requests\CreatePirepFieldRequest;
 use App\Http\Requests\UpdatePirepFieldRequest;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\PirepFieldRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 
 class PirepFieldController extends Controller
 {

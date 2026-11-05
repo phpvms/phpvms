@@ -6,6 +6,7 @@ use App\Contracts\Controller;
 use App\Http\Requests\CreateAirlineRequest;
 use App\Http\Requests\UpdateAirlineRequest;
 use App\Repositories\AirlineRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Services\AirlineService;
 use App\Services\FileService;
 use App\Support\Countries;
@@ -14,7 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
 use League\ISO3166\ISO3166;
-use Prettus\Repository\Criteria\RequestCriteria;
 
 class AirlinesController extends Controller
 {
