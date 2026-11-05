@@ -8,6 +8,11 @@ use App\Contracts\Service;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
 use App\Features\Tour\Enums\TourStatus;
+use App\Features\Tour\Events\TourCancelled;
+use App\Features\Tour\Events\TourCompleted;
+use App\Features\Tour\Events\TourExpired;
+use App\Features\Tour\Events\TourLegCompleted;
+use App\Features\Tour\Events\TourStarted;
 use App\Features\Tour\Models\UserTour;
 use App\Models\Aircraft;
 use App\Models\Bid;
@@ -78,9 +83,9 @@ class TourService extends Service
             // on bids_user_flight_unique.
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
             $lockedFirstLeg = Flight::query()->whereKey($firstLeg->id)->lockForUpdate()->firstOrFail();
-            $lockedAircraft = !$aircraft instanceof Aircraft
-                ? null
-                : Aircraft::query()->whereKey($aircraft->id)->lockForUpdate()->firstOrFail();
+            $lockedAircraft = $aircraft instanceof Aircraft
+                ? Aircraft::query()->whereKey($aircraft->id)->lockForUpdate()->firstOrFail()
+                : null;
 
             $existing = UserTour::query()
                 ->where('user_id', $lockedUser->id)
@@ -166,6 +171,8 @@ class TourService extends Service
                 $this->bidSvc->recomputeFlightBidState($leg);
             }
 
+            TourStarted::dispatch($tour);
+
             return $this->bidFor($lockedUser, $anyLeg);
         }, 3);
     }
@@ -190,9 +197,14 @@ class TourService extends Service
 
         $legs = $tour->legs ?? [];
         $matched = false;
+        $newlyFiledLegs = [];
 
         foreach ($legs as $index => $leg) {
             if (($leg['flight_id'] ?? null) === $pirep->flight_id) {
+                if (($leg['pirep_id'] ?? null) !== $pirep->id) {
+                    $newlyFiledLegs[] = (int) ($leg['route_leg'] ?? $index + 1);
+                }
+
                 $legs[$index]['pirep_id'] = $pirep->id;
                 $legs[$index]['filed_at'] = ($pirep->submitted_at ?? Carbon::now('UTC'))->toIso8601String();
                 $matched = true;
@@ -231,6 +243,18 @@ class TourService extends Service
         }
 
         $tour->save();
+
+        if ($newlyFiledLegs !== []) {
+            $flight = $pirep->flight;
+
+            foreach ($newlyFiledLegs as $legNumber) {
+                TourLegCompleted::dispatch($tour, $pirep, $flight, $legNumber, $everyLegFiled);
+            }
+        }
+
+        if ($everyLegFiled) {
+            TourCompleted::dispatch($tour);
+        }
     }
 
     /**
@@ -336,6 +360,12 @@ class TourService extends Service
 
             $tour->status = $status;
             $tour->save();
+
+            match ($status) {
+                TourStatus::Cancelled => TourCancelled::dispatch($tour),
+                TourStatus::Expired   => TourExpired::dispatch($tour),
+                default               => null,
+            };
         });
     }
 
