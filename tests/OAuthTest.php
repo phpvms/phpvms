@@ -82,7 +82,8 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to link a non-logged-in user from the login page using its email
+     * A provider email matching an unlinked account is not proof of ownership: the user is
+     * sent to the password login and the link completes afterwards through the intended URL
      */
     public function test_link_account_from_login(): void
     {
@@ -95,20 +96,13 @@ final class OAuthTest extends TestCase
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
 
             $this->get(route('oauth.callback', ['provider' => $driver]))
-                ->assertRedirect(route('frontend.dashboard.index'));
+                ->assertRedirect(url('/login'))
+                ->assertSessionHas('url.intended', route('oauth.redirect', ['provider' => $driver]));
 
+            $this->assertGuest();
             $user->refresh();
-            $this->assertEquals(123456789, $user->{$driver.'_id'});
-            $this->assertTrue($user->lastlogin_at->diffInSeconds(now()) <= 2);
-
-            $tokens = $user->oauth_tokens()->where('provider', $driver)->first();
-
-            $this->assertNotNull($tokens);
-            $this->assertEquals('token', $tokens->token);
-            $this->assertEquals('refresh_token', $tokens->refresh_token);
-            $this->assertTrue($tokens->last_refreshed_at->diffInSeconds(now()) <= 2);
-
-            Auth::logout();
+            $this->assertEmpty($user->{$driver.'_id'});
+            $this->assertEquals(0, $user->oauth_tokens()->where('provider', $driver)->count());
         }
     }
 
@@ -167,6 +161,8 @@ final class OAuthTest extends TestCase
         ]);
 
         foreach ($this->drivers as $driver) {
+            // Only a linked account reaches the state check; an email match alone goes to the login page
+            $user->update([$driver.'_id' => 123456789]);
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
 
             $this->get(route('oauth.callback', ['provider' => $driver]))
@@ -248,13 +244,14 @@ final class OAuthTest extends TestCase
 
     public function test_login_with_deleted_account_is_refused(): void
     {
-        User::factory()->create([
+        $user = User::factory()->create([
             'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
             'state' => UserState::DELETED,
         ]);
 
         $driver = $this->drivers[0];
+        $user->update([$driver.'_id' => 123456789]);
         Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
 
         // The base TestCase disables exception handling, so the 403 surfaces as an exception

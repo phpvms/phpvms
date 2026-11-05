@@ -37,12 +37,18 @@ class UserController extends Controller
 
     protected function getUserId(Request $request): mixed
     {
-        $id = $request->get('id');
-        if ($id === null || $id === 'me') {
+        // The users/{id}/... routes carry the id as a route parameter, the user/... ones as a query
+        $id = $request->route('id') ?? $request->get('id');
+        if ($id === null || $id === 'me' || (int) $id === Auth::id()) {
             return Auth::user()->id;
         }
 
-        return $request->get('id');
+        // Reading another pilot's bids, fleet or PIREPs through the user endpoints is admin-only
+        if (!Auth::user()->ability('admin', 'users')) {
+            throw new Unauthorized(new \Exception('Only administrators can read another user\'s data'));
+        }
+
+        return $id;
     }
 
     /**

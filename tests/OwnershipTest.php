@@ -360,4 +360,56 @@ final class OwnershipTest extends TestCase
         $this->assertNotEquals('ZZZZ', $user->curr_airport_id);
         $this->assertNotEquals(999, $user->rank_id);
     }
+
+    public function test_cannot_read_another_pilots_bids_fleet_or_pireps_by_id(): void
+    {
+        foreach (['bids', 'fleet', 'pireps'] as $endpoint) {
+            $this->get('/api/user/'.$endpoint.'?id='.$this->owner->id, [], $this->attacker)->assertForbidden();
+            $this->get('/api/users/'.$this->owner->id.'/'.$endpoint, [], $this->attacker)->assertForbidden();
+        }
+
+        // Own id and "me" still work, and an admin can read anyone
+        $this->get('/api/users/'.$this->owner->id.'/bids', [], $this->owner)->assertOk();
+        $this->get('/api/user/bids?id=me', [], $this->owner)->assertOk();
+        $this->get('/api/users/'.$this->owner->id.'/bids', [], User::find(1))->assertOk();
+    }
+
+    public function test_public_pirep_endpoint_hides_comments_from_anonymous_callers(): void
+    {
+        $this->pirep->comments()->create(['user_id' => $this->owner->id, 'comment' => 'private note']);
+
+        $anonymous = $this->get('/api/pireps/'.$this->pirep->id)->assertOk()->json('data');
+        $this->assertArrayNotHasKey('comments', $anonymous);
+
+        $owner = $this->get('/api/pireps/'.$this->pirep->id, [], $this->owner)->assertOk()->json('data');
+        $this->assertCount(1, $owner['comments']);
+    }
+
+    public function test_submitting_a_saved_draft_runs_the_departure_check(): void
+    {
+        $this->updateSetting('pilots.only_flights_from_current', true);
+        $this->updateSetting('pireps.restrict_aircraft_to_rank', false);
+        $this->updateSetting('pireps.only_aircraft_at_dpt_airport', false);
+        $this->owner->update(['curr_airport_id' => $this->pirep->arr_airport_id]);
+        $this->pirep->update(['state' => PirepState::DRAFT]);
+
+        $this->actingAs($this->owner)->post(route('frontend.pireps.submit', [$this->pirep->id]))->assertRedirect();
+        $this->assertEquals(PirepState::DRAFT, $this->pirep->fresh()->state);
+
+        $this->owner->update(['curr_airport_id' => $this->pirep->dpt_airport_id]);
+        $this->actingAs($this->owner)->post(route('frontend.pireps.submit', [$this->pirep->id]))->assertRedirect();
+        $this->assertEquals(PirepState::PENDING, $this->pirep->fresh()->state);
+    }
+
+    public function test_route_post_ignores_unknown_columns(): void
+    {
+        $this->post('/api/pireps/'.$this->pirep->id.'/route', [
+            'route' => [
+                ['id' => 'client-1', 'order' => 1, 'name' => 'WPT1', 'lat' => 1.1, 'lon' => 2.2, 'bogus' => 'x'],
+                ['order' => 2, 'name' => 'WPT2', 'lat' => 1.2, 'lon' => 2.3, 'not_a_column' => 'y'],
+            ],
+        ], [], $this->owner)->assertOk();
+
+        $this->assertEquals(2, Acars::where('pirep_id', $this->pirep->id)->where('type', AcarsType::ROUTE)->count());
+    }
 }

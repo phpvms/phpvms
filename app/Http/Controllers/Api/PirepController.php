@@ -25,6 +25,7 @@ use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
+use App\Models\Enums\UserState;
 use App\Models\Pirep;
 use App\Models\PirepComment;
 use App\Models\PirepFare;
@@ -180,12 +181,16 @@ class PirepController extends Controller
             'aircraft',
             'arr_airport',
             'dpt_airport',
-            'comments',
             'flight',
             'simbrief',
             'position',
             'user',
         ];
+
+        // This route is public for the live map; comments are only for callers with a valid API key
+        if ($this->apiKeyUser(request()) !== null) {
+            $with[] = 'comments';
+        }
 
         $pirep = $this->pirepRepo
             ->with($with)
@@ -462,7 +467,11 @@ class PirepController extends Controller
             return $this->message('No points to add');
         }
 
+        $columns = (new Acars())->getFillable();
+
         foreach ($route as $position) {
+            // Unknown keys would reach the raw updateOrInsert and blow up as a database error
+            $position = Arr::only($position, $columns);
             $position['pirep_id'] = $id;
             $position['type'] = AcarsType::ROUTE;
 
@@ -482,6 +491,21 @@ class PirepController extends Controller
         }
 
         return $this->message($count.' points added', $count);
+    }
+
+    /**
+     * Resolve the user behind an API key on a route that does not run the api.auth middleware
+     */
+    private function apiKeyUser(Request $request): ?User
+    {
+        $api_key = $request->header('x-api-key') ?? $request->header('Authorization');
+        if (blank($api_key)) {
+            return null;
+        }
+
+        return User::where('api_key', $api_key)
+            ->whereIn('state', [UserState::ACTIVE, UserState::ON_LEAVE])
+            ->first();
     }
 
     /**
