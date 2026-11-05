@@ -18,9 +18,9 @@ class User extends Resource
             'name'          => $this->name_private,
             'name_private'  => $this->name_private,
             'avatar'        => $this->resolveAvatarUrl(),
-            'discord_id'    => $this->discord_id,
-            'vatsim_id'     => $this->vatsim_id,
-            'ivao_id'       => $this->ivao_id,
+            'discord_id'    => $this->when($this->isSelfOrAdmin($request), $this->discord_id),
+            'vatsim_id'     => $this->when($this->isSelfOrAdmin($request), $this->vatsim_id),
+            'ivao_id'       => $this->when($this->isSelfOrAdmin($request), $this->ivao_id),
             'rank_id'       => $this->rank_id,
             'home_airport'  => $this->home_airport_id,
             'curr_airport'  => $this->curr_airport_id,
@@ -44,5 +44,15 @@ class User extends Resource
         }
 
         return $res;
+    }
+
+    /**
+     * Linked provider ids are only shown to the user themselves or an admin
+     */
+    private function isSelfOrAdmin($request): bool
+    {
+        $viewer = $request->user();
+
+        return $viewer !== null && ($viewer->id === $this->id || $viewer->ability('admin', 'users'));
     }
 }

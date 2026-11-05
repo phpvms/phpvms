@@ -7,6 +7,7 @@ use App\Events\PirepUpdated;
 use App\Exceptions\AircraftPermissionDenied;
 use App\Exceptions\PirepCancelled;
 use App\Exceptions\PirepError;
+use App\Exceptions\Unauthorized;
 use App\Http\Requests\Acars\CommentRequest;
 use App\Http\Requests\Acars\FieldsRequest;
 use App\Http\Requests\Acars\FileRequest;
@@ -187,14 +188,15 @@ class PirepController extends Controller
             'user',
         ];
 
-        // This route is public for the live map; comments are only for callers with a valid API key
-        if ($this->apiKeyUser(request()) !== null) {
-            $with[] = 'comments';
-        }
-
         $pirep = $this->pirepRepo
             ->with($with)
             ->find($id);
+
+        // This route is public for the live map; comments are only for the owner or an admin
+        $caller = $this->apiKeyUser(request());
+        if ($pirep !== null && $caller !== null && $this->canReadComments($caller, $pirep)) {
+            $pirep->load('comments');
+        }
 
         return new PirepResource($pirep);
     }
@@ -341,7 +343,10 @@ class PirepController extends Controller
      */
     public function comments_get(string $id): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
+        if (!$this->canReadComments(Auth::user(), $pirep)) {
+            throw new Unauthorized(new \Exception('Comments can only be read by the PIREP owner'));
+        }
 
         return PirepCommentResource::collection($pirep->comments);
     }
@@ -491,6 +496,11 @@ class PirepController extends Controller
         }
 
         return $this->message($count.' points added', $count);
+    }
+
+    private function canReadComments(?User $user, Pirep $pirep): bool
+    {
+        return $user !== null && ($user->id === $pirep->user_id || $user->ability('admin', 'pireps'));
     }
 
     /**

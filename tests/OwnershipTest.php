@@ -412,4 +412,33 @@ final class OwnershipTest extends TestCase
 
         $this->assertEquals(2, Acars::where('pirep_id', $this->pirep->id)->where('type', AcarsType::ROUTE)->count());
     }
+
+    public function test_pirep_comments_are_only_readable_by_the_owner_or_an_admin(): void
+    {
+        $this->pirep->comments()->create(['user_id' => $this->owner->id, 'comment' => 'private note']);
+        $uri = '/api/pireps/'.$this->pirep->id.'/comments';
+
+        $this->get($uri, [], $this->attacker)->assertForbidden();
+        $this->assertCount(1, $this->get($uri, [], $this->owner)->assertOk()->json('data'));
+        $this->assertCount(1, $this->get($uri, [], User::find(1))->assertOk()->json('data'));
+
+        // The public pirep endpoint follows the same rule for an API-key caller
+        $this->assertArrayNotHasKey('comments', $this->get('/api/pireps/'.$this->pirep->id, [], $this->attacker)->json('data'));
+    }
+
+    public function test_linked_provider_ids_are_hidden_from_other_pilots(): void
+    {
+        $this->owner->update(['discord_id' => '123', 'vatsim_id' => 456, 'ivao_id' => 789]);
+
+        $other = $this->get('/api/users/'.$this->owner->id, [], $this->attacker)->assertOk()->json('data');
+        $this->assertArrayNotHasKey('discord_id', $other);
+        $this->assertArrayNotHasKey('vatsim_id', $other);
+        $this->assertArrayNotHasKey('ivao_id', $other);
+
+        $self = $this->get('/api/user', [], $this->owner)->assertOk()->json('data');
+        $this->assertEquals('123', $self['discord_id']);
+
+        $admin = $this->get('/api/users/'.$this->owner->id, [], User::find(1))->assertOk()->json('data');
+        $this->assertEquals('123', $admin['discord_id']);
+    }
 }
