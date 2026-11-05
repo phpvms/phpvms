@@ -10,6 +10,14 @@ The weather widget used to be bundled directly into the skylight SPA
 migration path: even a core-authored widget can live in an addon, loaded at
 runtime by URL, with **zero** access to the core front-end build required.
 
+It also registers **Livewire twins** of the same six widgets (hours, flights,
+balance, rank, last flight, weather) with the core
+`App\Features\Dashboard\DashboardWidgets` registry, for Blade themes such as
+airside. They use the same ids, zones and default-on flags as the skylight
+entries. Classes are in `Livewire/`, views in `resources/views/livewire/`
+(namespace `phpvmsdashboard::`), and the METAR summary both paths share is in
+`Support/WeatherSummary.php`.
+
 ---
 
 ## What tier is this?

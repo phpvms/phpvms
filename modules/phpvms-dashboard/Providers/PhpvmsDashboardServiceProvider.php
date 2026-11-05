@@ -2,8 +2,11 @@
 
 namespace Modules\PhpvmsDashboard\Providers;
 
+use App\Features\Dashboard\DashboardWidget;
+use App\Features\Dashboard\DashboardWidgets;
 use App\Support\Skylight\Facades\Skylight;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 use Modules\PhpvmsDashboard\Http\Controllers\WeatherController;
 use Override;
 use Route;
@@ -33,8 +36,9 @@ use Route;
  *
  * DISABLE-SAFETY
  * --------------
- * Everything this addon contributes happens inside boot() below: the data route
- * and the Skylight::widgets()->register([...]) call. A phpVMS addon's
+ * Everything this addon contributes happens inside boot() below: the data route,
+ * the Skylight::widgets()->register([...]) calls for skylight, and the
+ * DashboardWidgets registrations for Blade themes. A phpVMS addon's
  * ServiceProvider only boots when the addon is ENABLED. Disabled → this never
  * runs → the widget never enters the catalog AND the endpoint never exists.
  *
@@ -50,11 +54,13 @@ class PhpvmsDashboardServiceProvider extends ServiceProvider
      *
      *   1. Register the addon's own weather data route.
      *   2. Register the bundled dashboard widgets with the skylight hub.
+     *   3. Register their Livewire twins with the core widget registry, for Blade themes.
      */
     public function boot(): void
     {
         $this->registerRoutes();
         $this->registerSkylightWidget();
+        $this->registerDashboardWidgets();
     }
 
     /**
@@ -176,5 +182,44 @@ class PhpvmsDashboardServiceProvider extends ServiceProvider
             'defaultOn'   => true,
             'props'       => ['icao' => '@currentAirport'],
         ]);
+    }
+
+    /**
+     * Register the Livewire twins of the skylight widgets with the core
+     * {@see DashboardWidgets} registry, for Blade themes such as airside.
+     *
+     * Same ids, zones and default-on flags as the skylight entries above, so a
+     * pilot sees the same widgets whichever theme is active. Each closure runs
+     * when a theme first reads the registry, per locale, so `__()` is safe there.
+     */
+    protected function registerDashboardWidgets(): void
+    {
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'phpvmsdashboard');
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'phpvmsdashboard');
+
+        Livewire::addNamespace('phpvmsdashboard', classNamespace: 'Modules\\PhpvmsDashboard\\Livewire');
+
+        $widgets = $this->app->make(DashboardWidgets::class);
+
+        $twins = [
+            ['kpi-hours', 'total-hours', 'hours', 'clock', DashboardWidget::ZONE_GRID, 10],
+            ['kpi-flights', 'flights', 'flights', 'plane', DashboardWidget::ZONE_GRID, 20],
+            ['kpi-balance', 'balance', 'balance', 'wallet', DashboardWidget::ZONE_GRID, 30],
+            ['rank', 'rank-progress', 'rank', 'trending-up', DashboardWidget::ZONE_GRID, 40],
+            ['last-flight', 'last-flight', 'last_flight', 'plane-landing', DashboardWidget::ZONE_SIDEBAR, 10],
+            ['weather', 'weather', 'weather', 'cloud-sun', DashboardWidget::ZONE_SIDEBAR, 20],
+        ];
+
+        foreach ($twins as [$id, $component, $title, $icon, $zone, $order]) {
+            $widgets->register($id, fn (): DashboardWidget => DashboardWidget::livewire(
+                id: $id,
+                component: 'phpvmsdashboard::'.$component,
+                title: __('phpvmsdashboard::widgets.'.$title),
+                icon: $icon,
+                zone: $zone,
+                default: true,
+                order: $order,
+            ));
+        }
     }
 }
