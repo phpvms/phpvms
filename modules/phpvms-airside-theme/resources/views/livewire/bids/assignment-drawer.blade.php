@@ -42,10 +42,20 @@
 >
     <x-vms::ui.drawer name="assignment" :title="$state === 'details' ? 'Flight details' : 'Flight bid'" wire:model="open">
         <x-slot:header>
-            <p>{{ $state === 'details' ? 'FLIGHT DETAILS' : 'FLIGHT ASSIGNMENT' }}</p>
             @if ($flight && $state === 'details')
-                {{-- The route tile and title replace the ident here. --}}
+                @php
+                    $summary = $flight->summary;
+                    // Schedule times are free text: only a bare clock time (0800, 08:00) is read as UTC.
+                    $clock = fn (?string $time): ?string => $time === null ? null : (preg_match('/^\d{1,2}:?\d{2}$/', $time) ? $time.' UTC' : $time);
+                @endphp
+                <x-vms::flights.summary class="vms-detail-summary mb-5" :callsign="$summary->callsign" :airline="$summary->airline?->name" :logo="$summary->airline?->logo">
+                    <span class="basis-full text-sm font-semibold tabular-nums">{{ $summary->dpt ?? '—' }} – {{ $summary->arr ?? '—' }}</span>
+                    @if ($flight->scheduledDeparture || $flight->scheduledArrival)
+                        <span class="basis-full text-xs tabular-nums">{{ $clock($flight->scheduledDeparture) ?? '—' }} – {{ $clock($flight->scheduledArrival) ?? '—' }}</span>
+                    @endif
+                </x-vms::flights.summary>
             @elseif ($flight)
+                <p>FLIGHT ASSIGNMENT</p>
                 <x-vms::flights.ident
                     size="lg"
                     :callsign="$flight->summary->callsign"
@@ -56,6 +66,7 @@
                     :aircraft="$selection?->aircraft ? $selection->aircraft->registration.' · '.$selection->aircraft->icaoType : null"
                 />
             @else
+                <p>{{ $state === 'details' ? 'FLIGHT DETAILS' : 'FLIGHT ASSIGNMENT' }}</p>
                 <span>Loading flight</span>
             @endif
         </x-slot:header>
@@ -74,49 +85,56 @@
                         <div><x-ts-button type="button" sm wire:click="load">Try again</x-ts-button></div>
                     </div>
                 @elseif ($state === 'details' && $flight)
-                    @php($summary = $flight->summary)
-                    @php($depWest = $flight->departure?->lon === null || $flight->arrival?->lon === null || $flight->departure->lon <= $flight->arrival->lon)
-                    @php($leftPoint = $depWest ? $summary->dpt : $summary->arr)
-                    @php($rightPoint = $depWest ? $summary->arr : $summary->dpt)
-                    @php($canBid = $summary->primaryAction === 'bid')
-                    @php($canPlanOfp = $policy->simbriefEnabled && ! $policy->simbriefRequiresBid)
-                    <div class="vms-flight-detail grid gap-4">
-                        <div class="vms-route-tile relative h-44 overflow-hidden rounded-2xl" aria-label="{{ $summary->dpt }} to {{ $summary->arr }}">
-                            <p class="vms-route-tile-label absolute top-3 left-4 m-0 text-[10px] font-semibold tracking-wider uppercase">{{ $summary->callsign }} · Great circle</p>
-                            <div class="vms-route-tile-arc absolute top-[22%] right-[15%] bottom-[30%] left-[15%] rounded-t-[50%_100%] border-2 border-b-0 border-dashed">
-                                <span class="vms-route-tile-plane absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 {{ $depWest ? 'rotate-90' : '-rotate-90' }}"><x-ts-icon name="phosphor.airplane.light" class="block size-4" /></span>
+                    @php
+                        $summary = $flight->summary;
+                        $canBid = $summary->primaryAction === 'bid';
+                        $canPlanOfp = $policy->simbriefEnabled && ! $policy->simbriefRequiresBid;
+                        $routeMap = $this->routeMap;
+                        $legs = [
+                            ['key' => 'dpt', 'airport' => $flight->departure, 'icao' => $summary->dpt, 'time' => $flight->scheduledDeparture, 'weather' => $flight->departureWeather, 'label' => 'Departure weather'],
+                            ['key' => 'arr', 'airport' => $flight->arrival, 'icao' => $summary->arr, 'time' => $flight->scheduledArrival, 'weather' => $flight->arrivalWeather, 'label' => 'Arrival weather'],
+                        ];
+                        $pins = array_map(fn (array $leg): array => ['lat' => $leg['airport']?->lat, 'lon' => $leg['airport']?->lon, 'label' => $leg['icao']], $legs);
+                        $routes = [[[$flight->departure?->lat, $flight->departure?->lon], [$flight->arrival?->lat, $flight->arrival?->lon]]];
+                    @endphp
+                    <div class="vms-flight-detail grid gap-5">
+                        @if ($routeMap)
+                            <div class="vms-detail-map overflow-hidden rounded-xl p-3">
+                                <x-map.svg
+                                    :map="$routeMap"
+                                    pattern="dots"
+                                    :pin-radius="7"
+                                    :pins="$pins"
+                                    :routes="$routes"
+                                    fit
+                                    class="block aspect-[4/3] w-full"
+                                />
                             </div>
-                            <div class="vms-route-tile-stop absolute top-[70%] left-[15%] flex -translate-x-1/2 flex-col items-center">
-                                <span class="vms-route-tile-dot -mt-1.25 block size-2.5 rounded-full"></span>
-                                <span class="mt-1 text-[11px] tabular-nums font-semibold">{{ $leftPoint ?? '—' }}</span>
-                            </div>
-                            <div class="vms-route-tile-stop absolute top-[70%] right-[15%] flex translate-x-1/2 flex-col items-center">
-                                <span class="vms-route-tile-dot -mt-1.25 block size-2.5 rounded-full"></span>
-                                <span class="mt-1 text-[11px] tabular-nums font-semibold">{{ $rightPoint ?? '—' }}</span>
-                            </div>
-                        </div>
+                        @endif
 
-                        <div class="flex items-start justify-between gap-3">
-                            <h3 class="vms-detail-title m-0 min-w-0 text-xl leading-snug break-words"><b class="font-bold">{{ $flight->departure?->name ?? $summary->dpt ?? '—' }}</b> <span class="font-light">to</span> <b class="font-bold">{{ $flight->arrival?->name ?? $summary->arr ?? '—' }}</b></h3>
-                            @if ($summary->type)
-                                <span class="vms-flight-pill shrink-0 px-2 py-0.5 text-[11px] font-medium">{{ $summary->type }}</span>
+                        @foreach ($legs as $leg)
+                            @if ($leg['key'] === 'arr' && $flight->route)
+                                <div class="vms-detail-route grid gap-1">
+                                    <h4 class="m-0 text-xs font-semibold">Route</h4>
+                                    <p class="m-0 break-words font-mono text-xs leading-relaxed">{{ $flight->route }}</p>
+                                </div>
                             @endif
-                        </div>
+                            <div class="vms-detail-leg grid gap-2">
+                                <div class="min-w-0">
+                                    <h3 class="m-0 text-base leading-snug font-bold break-words">{{ $leg['airport']?->name ?? $leg['icao'] ?? '—' }}</h3>
+                                    <p class="m-0 text-sm tabular-nums">{{ $leg['time'] ? $clock($leg['time']).' · ' : '' }}{{ $leg['icao'] ?? '—' }}</p>
+                                </div>
+                                @if ($leg['weather'])
+                                    <livewire:flights::airport-weather lazy :key="'detail-weather-'.$leg['key'].'-'.$leg['weather']->icao" :label="$leg['label']" :icao="$leg['weather']->icao" />
+                                @endif
+                            </div>
+                        @endforeach
 
-                        <dl class="vms-detail-facts m-0 grid grid-cols-2 gap-x-4 gap-y-3.5">
-                            <div class="min-w-0"><dt class="text-xs">Departure</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $flight->scheduledDeparture ? $flight->scheduledDeparture.' UTC · ' : '' }}{{ $summary->dpt ?? '—' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-xs">Arrival</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $flight->scheduledArrival ? $flight->scheduledArrival.' UTC · ' : '' }}{{ $summary->arr ?? '—' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-xs">Block time</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $summary->blockTime ?? '—' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-xs">Distance</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $summary->distanceNm === null ? '—' : number_format($summary->distanceNm).' nm' }}</dd></div>
-                            <div class="min-w-0"><dt class="text-xs">Cruise level</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $flight->cruiseLevel === null ? '—' : 'FL'.$flight->cruiseLevel }}</dd></div>
-                            <div class="min-w-0"><dt class="text-xs">Route code</dt><dd class="mt-0.5 break-words text-sm font-semibold">{{ $summary->routeCode ?? '—' }}</dd></div>
-                        </dl>
-
-                        <div class="vms-detail-actions grid gap-2.5">
+                        <div class="vms-detail-actions grid gap-2.5 pt-2">
                             @if ($canBid || $canPlanOfp)
                                 <div class="grid auto-cols-fr grid-flow-col gap-2.5">
                                     @if ($canBid)
-                                        <x-ts-button type="button" block wire:click="startBid">Bid on flight</x-ts-button>
+                                        <x-ts-button type="button" block wire:click="startBid">Add to bids</x-ts-button>
                                     @endif
                                     @if ($canPlanOfp)
                                         <x-ts-button :href="$flight->ofpPlanningUrl" wire:navigate block light>Generate OFP</x-ts-button>

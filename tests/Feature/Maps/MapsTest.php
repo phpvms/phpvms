@@ -85,3 +85,27 @@ it('keeps the main United States map to the contiguous states', function (): voi
         ->and($catalog->find('country:us-ak')->parent)->toBe('us')
         ->and($catalog->find('country:us-ak')->file())->toBe('countries/us-ak.svg');
 });
+
+it('picks the narrowest map that holds every point', function (): void {
+    $resolver = app(MapResolver::class);
+    $paris = ['country' => 'France', 'lat' => 48.85, 'lon' => 2.35];
+
+    expect($resolver->forPoints([$paris, ['country' => 'France', 'lat' => 45.76, 'lon' => 4.84]])->id)->toBe('country:fr')
+        ->and($resolver->forPoints([$paris, ['country' => 'Germany', 'lat' => 52.52, 'lon' => 13.40]])->id)->toBe('continent:europe')
+        ->and($resolver->forPoints([$paris, ['country' => 'United States', 'lat' => 40.64, 'lon' => -73.78]])->id)->toBe('world')
+        ->and($resolver->forPoints([$paris, ['country' => null, 'lat' => null, 'lon' => null]])->id)->toBe('country:fr')
+        ->and($resolver->forPoints([])->id)->toBe('world');
+});
+
+it('draws a great circle from one point to the other, split where it wraps the map', function (): void {
+    $world = app(MapCatalog::class)->world();
+
+    $atlantic = MapProjection::greatCircle($world, 40.64, -73.78, 51.47, -0.45);
+    expect($atlantic)->toHaveCount(1)
+        ->and($atlantic[0][0])->toEqualWithDelta(MapProjection::point($world, 40.64, -73.78), 0.01)
+        ->and(end($atlantic[0]))->toEqualWithDelta(MapProjection::point($world, 51.47, -0.45), 0.01)
+        // The great circle bends north of the straight line between the two airports.
+        ->and(min(array_column($atlantic[0], 'y')))->toBeLessThan(MapProjection::point($world, 51.47, -0.45)['y']);
+
+    expect(MapProjection::greatCircle($world, 33.94, -118.41, 35.55, 139.78))->toHaveCount(2);
+});

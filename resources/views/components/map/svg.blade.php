@@ -1,9 +1,12 @@
 @props([
     'map',
     'pins' => [],
+    'routes' => [],
     'preserveAspectRatio' => 'xMidYMid meet',
     'pinRadius' => 6,
     'pattern' => null,
+    'fit' => false,
+    'fitAspect' => 4 / 3,
 ])
 
 @php
@@ -25,13 +28,45 @@
             'label' => $pin['label'] ?? null,
         ];
     }
+    // routes: each a great circle between two points ([[lat, lon], [lat, lon]]), as polyline runs.
+    $routeRuns = [];
+    foreach ($routes as [$from, $to]) {
+        if (in_array(null, [$from[0] ?? null, $from[1] ?? null, $to[0] ?? null, $to[1] ?? null], true)) {
+            continue;
+        }
+        array_push($routeRuns, ...\App\Features\Maps\MapProjection::greatCircle($map, (float) $from[0], (float) $from[1], (float) $to[0], (float) $to[1]));
+    }
+    // fit: crop the viewBox to the pins and routes (with room around them) at the fitAspect ratio. The dots and pins are
+    // scaled with the crop, so they keep their size on screen; --map-scale carries the factor to CSS.
+    $viewBox = [0, 0, $map->width, $map->height];
+    $scale = 1;
+    if ($fit && $points !== []) {
+        $framed = array_merge($points, ...$routeRuns);
+        $xs = array_column($framed, 'x');
+        $ys = array_column($framed, 'y');
+        $span = max($map->width, $map->height);
+        $width = max((max($xs) - min($xs)) * 1.6, $span * 0.12);
+        $height = max((max($ys) - min($ys)) * 1.6, $span * 0.12);
+        $width = max($width, $height * $fitAspect);
+        $height = $width / $fitAspect;
+        $x = (min($xs) + max($xs) - $width) / 2;
+        $y = (min($ys) + max($ys) - $height) / 2;
+        // Keep the crop on the map where it fits.
+        $x = $width >= $map->width ? ($map->width - $width) / 2 : min(max($x, 0), $map->width - $width);
+        $y = $height >= $map->height ? ($map->height - $height) / 2 : min(max($y, 0), $map->height - $height);
+        $scale = $width / $map->width;
+        $viewBox = [$x, $y, $width, $height];
+        $dotGap *= $scale;
+        $dotRadius *= $scale;
+        $pinRadius *= $scale;
+    }
 @endphp
 
 {{-- Output of resources/maps/*.svg, inline so CSS can reach .land and .land--focus. The fallback look is set with
      presentation attributes, which any stylesheet rule overrides, layered or not. --}}
-<svg {{ $attributes->class(['map-svg', 'map-svg--dots' => $dots])->merge($dots ? ['data-map-pattern' => $patternId] : []) }}
+<svg {{ $attributes->class(['map-svg', 'map-svg--dots' => $dots])->merge($dots ? ['data-map-pattern' => $patternId] : [])->merge($scale !== 1 ? ['style' => '--map-scale: '.round($scale, 4)] : []) }}
      xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 {{ $map->width }} {{ $map->height }}"
+     viewBox="{{ implode(' ', array_map(fn (float|int $value): float => round($value, 2), $viewBox)) }}"
      preserveAspectRatio="{{ $preserveAspectRatio }}"
      role="img"
      aria-label="{{ $map->name }}"
@@ -53,6 +88,10 @@
         $dots ? 'class="land land--focus" fill="url(#'.$focusPatternId.')"' : 'class="land land--focus" fill-opacity=".5"',
         $paths,
     ) !!}
+    @foreach ($routeRuns as $run)
+        <polyline class="map-route" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"
+                  points="{{ implode(' ', array_map(fn (array $p): string => round($p['x'], 1).','.round($p['y'], 1), $run)) }}" />
+    @endforeach
     @foreach ($points as $point)
         <circle class="map-pin" fill="currentColor" fill-opacity="1" stroke="none" cx="{{ round($point['x'], 1) }}" cy="{{ round($point['y'], 1) }}" r="{{ $pinRadius }}">
             @if (filled($point['label']))

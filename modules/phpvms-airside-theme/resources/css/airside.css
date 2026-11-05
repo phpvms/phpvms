@@ -320,20 +320,23 @@
         @apply stroke-primary-600 dark:stroke-primary-400;
     }
 
-    .vms-location-card .map-dot {
+    .vms-location-card .map-dot,
+    .vms-detail-map .map-dot {
         @apply fill-gray-300 dark:fill-dark-600;
         fill-opacity: 1;
     }
 
-    .vms-location-card .map-dot--focus {
+    .vms-location-card .map-dot--focus,
+    .vms-detail-map .map-dot--focus {
         @apply fill-gray-400 dark:fill-dark-500;
     }
 
-    .vms-location-card .map-pin {
+    .vms-location-card .map-pin,
+    .vms-detail-map .map-pin {
         fill: var(--vms-brand);
         stroke: var(--vms-brand);
         stroke-opacity: .25;
-        stroke-width: 14;
+        stroke-width: calc(14 * var(--map-scale, 1));
         paint-order: stroke;
     }
 
@@ -368,41 +371,19 @@
         @apply border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-800;
     }
 
-    /* Assignment drawer, details step. */
-    .vms-route-tile {
-        @apply bg-primary-950 text-white dark:bg-dark-900;
+    /* Assignment drawer, details step: the route map, drawn like the location card's dotted map. */
+    .vms-detail-map {
+        @apply border border-gray-200 dark:border-dark-700;
     }
 
-    .vms-route-tile-label {
-        @apply text-primary-200;
+    .vms-detail-map .map-route {
+        stroke: var(--vms-brand);
+        stroke-dasharray: 6 5;
     }
 
-    .vms-route-tile-arc {
-        @apply border-white/60;
-    }
-
-    .vms-route-tile-plane {
-        @apply text-white;
-    }
-
-    .vms-route-tile-dot {
-        @apply bg-white;
-    }
-
-    .vms-detail-title b {
-        @apply text-dark-900 dark:text-dark-50;
-    }
-
-    .vms-detail-title span {
+    .vms-detail-route h4,
+    .vms-detail-leg p {
         @apply text-dark-500 dark:text-dark-400;
-    }
-
-    .vms-detail-facts dt {
-        @apply text-dark-500 dark:text-dark-400;
-    }
-
-    .vms-detail-facts dd {
-        @apply text-dark-900 dark:text-dark-50;
     }
 
     .vms-landing > main {
@@ -649,6 +630,161 @@
     }
 
     .vms-landing-footer a:hover {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    /*
+     * The live map (x-vms::livemap): the map fills the block, the list and the
+     * selected flight float on it as frosted panels.
+     */
+    .vms-live {
+        border-radius: var(--vms-radius-xl);
+        @apply border border-gray-200 bg-gray-100 dark:border-dark-700 dark:bg-dark-900;
+    }
+
+    .vms-live-panel,
+    .vms-live-detail {
+        border-radius: var(--vms-radius-lg);
+        @apply border border-gray-200 bg-white/85 text-dark-900 shadow-lg backdrop-blur-md backdrop-saturate-150 dark:border-dark-700 dark:bg-dark-800/85 dark:text-dark-50;
+    }
+
+    .vms-live-header,
+    .vms-live-pilot {
+        @apply border-gray-200 dark:border-dark-700;
+    }
+
+    .vms-live-header {
+        @apply border-b;
+    }
+
+    .vms-live-pilot {
+        @apply border-t;
+    }
+
+    .vms-live-eyebrow,
+    .vms-live-facts dt,
+    .vms-live-stages li {
+        @apply text-dark-400;
+    }
+
+    .vms-live-muted,
+    .vms-live-stat dt,
+    .vms-live-pulse {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    /* The live indicator: a green dot, pulsing. */
+    .vms-live-pulse::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        @apply animate-pulse bg-green-500 dark:bg-green-400;
+    }
+
+    .vms-live-title span {
+        font-family: var(--font-serif);
+        font-weight: 200;
+        letter-spacing: -0.03em;
+        color: var(--vms-brand);
+    }
+
+    .vms-live-stat,
+    .vms-live-route {
+        border-radius: var(--vms-radius-md);
+        @apply border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-900;
+    }
+
+    .vms-live-filter {
+        @apply border border-gray-200 bg-white text-dark-600 hover:text-dark-900 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-300 dark:hover:text-dark-50;
+    }
+
+    .vms-live-filter[aria-pressed="true"] {
+        @apply border-primary-600 bg-primary-600 text-white hover:text-white dark:border-primary-400 dark:bg-primary-400 dark:text-dark-950 dark:hover:text-dark-950;
+    }
+
+    /* Flight rows; the selected row takes the brand tint. */
+    .vms-live-row {
+        border-radius: var(--vms-radius-md);
+        cursor: pointer;
+        @apply border border-transparent hover:bg-gray-50 dark:hover:bg-dark-900/60;
+    }
+
+    .vms-live-row[aria-selected="true"] {
+        background: var(--vms-brand-soft);
+        border-color: color-mix(in oklab, var(--vms-brand) 40%, transparent);
+    }
+
+    .vms-live-row-route {
+        @apply text-dark-600 dark:text-dark-300;
+    }
+
+    /* The phase pill: neutral on the ground, brand once airborne. */
+    .vms-live-phase {
+        @apply bg-gray-100 text-dark-600 dark:bg-dark-700 dark:text-dark-200;
+    }
+
+    .vms-live-row:is([data-stage="departing"], [data-stage="enroute"], [data-stage="arriving"]) .vms-live-phase {
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    /* Progress: a thin track with the flown part in the brand colour. */
+    .vms-live-progress {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        overflow: hidden;
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-live-progress::-webkit-progress-bar {
+        background: transparent;
+    }
+
+    .vms-live-progress::-webkit-progress-value {
+        border-radius: 999px;
+        background: var(--vms-brand);
+    }
+
+    .vms-live-progress::-moz-progress-bar {
+        border-radius: 999px;
+        background: var(--vms-brand);
+    }
+
+    .vms-live-close {
+        @apply text-dark-500 hover:bg-gray-100 hover:text-dark-900 dark:text-dark-400 dark:hover:bg-dark-700 dark:hover:text-dark-50;
+    }
+
+    .vms-live-error {
+        @apply text-red-600 dark:text-red-400;
+    }
+
+    .vms-live-logo {
+        @apply bg-dark-900 text-white dark:bg-dark-100 dark:text-dark-900;
+    }
+
+    .vms-live-avatar,
+    .vms-live-open {
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    /* Stage bar: done and current stages in the brand colour, the current label too. */
+    .vms-live-stage-bar {
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-live-stages li:is([data-state="done"], [data-state="current"]) .vms-live-stage-bar {
+        background: var(--vms-brand);
+    }
+
+    .vms-live-stages li[data-state="current"] {
+        font-weight: 600;
+        color: var(--vms-brand);
+    }
+
+    .vms-live-facts dd {
         @apply text-dark-900 dark:text-dark-50;
     }
 

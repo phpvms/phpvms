@@ -12,12 +12,16 @@ use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Queries\EligibleAircraft;
 use App\Features\Flights\Queries\VisibleFlights;
 use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Maps\MapData;
+use App\Features\Maps\MapResolver;
+use App\Http\Data\AirportPointData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\FlightDispatchPolicyData;
 use App\Models\Aircraft;
+use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -44,6 +48,7 @@ use Livewire\Component;
  *
  * @property-read array{flight: FlightDetailData, policy: FlightDispatchPolicyData, subfleets: Collection<int, EligibleSubfleetData>, selection: ?BidSelectionData}|null $dispatchPayload
  * @property-read list<EligibleAircraftData>|null $aircraftList
+ * @property-read MapData|null $routeMap
  */
 class AssignmentDrawer extends Component
 {
@@ -325,6 +330,28 @@ class AssignmentDrawer extends Component
         } catch (ModelNotFoundException) {
             return null;
         }
+    }
+
+    /**
+     * The narrowest map that holds the departure and arrival airports.
+     */
+    #[Computed]
+    public function routeMap(): ?MapData
+    {
+        $flight = $this->dispatchPayload['flight'] ?? null;
+
+        if ($flight === null || ($flight->departure === null && $flight->arrival === null)) {
+            return null;
+        }
+
+        $airports = array_values(array_filter([$flight->departure, $flight->arrival]));
+        $countries = Airport::query()->whereIn('id', array_map(fn (AirportPointData $airport): string => $airport->id, $airports))->pluck('country', 'id');
+
+        return app(MapResolver::class)->forPoints(array_map(fn (AirportPointData $airport): array => [
+            'country' => $countries[$airport->id] ?? null,
+            'lat'     => $airport->lat,
+            'lon'     => $airport->lon,
+        ], $airports));
     }
 
     public function render(): View

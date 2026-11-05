@@ -37,6 +37,34 @@ class MapResolver
         return $continent ?? $this->catalog->world();
     }
 
+    /**
+     * The narrowest map that holds every point: the first point's country (or
+     * region), then its continent, then the world. Points without coordinates
+     * are left out.
+     *
+     * @param list<array{country: ?string, lat: ?float, lon: ?float}> $points
+     */
+    public function forPoints(array $points): MapData
+    {
+        $points = array_values(array_filter($points, fn (array $point): bool => $point['lat'] !== null && $point['lon'] !== null));
+
+        if ($points === []) {
+            return $this->catalog->world();
+        }
+
+        $first = $points[0];
+
+        foreach ([self::SCOPE_COUNTRY, self::SCOPE_CONTINENT] as $scope) {
+            $map = $this->forPoint($first['country'], $first['lat'], $first['lon'], $scope);
+
+            if (array_all($points, fn (array $point): bool => $map->contains((float) $point['lat'], (float) $point['lon']))) {
+                return $map;
+            }
+        }
+
+        return $this->catalog->world();
+    }
+
     /** The region map of a country that holds the point, if the country has regions. */
     private function regionAt(MapData $country, ?float $lat, ?float $lon): ?MapData
     {

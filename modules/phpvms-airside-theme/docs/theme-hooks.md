@@ -1063,23 +1063,56 @@ The "No flights found" empty state.
 - **Variables:** none.
 - **Stability:** draft.
 
-### `vms-flight-detail`
+### `vms-detail-summary`
 
-The details step of the assignment drawer.
+The header of the details step: the `x-vms::flights.summary` with the airline logo, callsign and airline, then the departure – arrival ICAOs and the scheduled times.
 
 - **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<div>`.
-- **Parts:** `vms-route-tile`, `vms-detail-title`, `vms-detail-facts`, `vms-detail-actions`.
+- **Element:** the summary root `<div>`.
+- **Parts:** `vms-flight-summary`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
 
-### `vms-detail-facts`
+### `vms-flight-detail`
 
-The six facts of the details step.
+The details step of the assignment drawer: the route map, the departure, the route and the arrival, then the actions.
 
 - **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<dl>`.
+- **Element:** the `<div>`.
+- **Parts:** `vms-detail-map`, `vms-detail-leg`, `vms-detail-route`, `vms-detail-actions`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-detail-map`
+
+The route map: an `x-map.svg` in the dotted style, with a pin on each airport and the great circle between them (`.map-route`, a dashed brand line that keeps its width at any zoom). It is the narrowest map that holds both airports (the departure country, then its continent, then the world), cropped to the two airports with `fit` (a 4:3 view; dots and pins keep their size, and `--map-scale` on the `<svg>` gives the crop factor to CSS). Light-grey border; dots and pins as in `vms-location-card`.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>` around the `<svg>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-detail-leg`
+
+One airport of the flight, departure then arrival: the airport name, the scheduled time · ICAO, and the `airport-weather` card (loaded lazily) with the METAR.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-detail-route`
+
+The filed route between the departure and the arrival, in mono. Shown only when the flight has a route.
+
+- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
 - **Variables:** none.
@@ -1087,87 +1120,10 @@ The six facts of the details step.
 
 ### `vms-detail-actions`
 
-The Bid on flight and Generate OFP buttons, the reason line and the `flights.detail.actions` slot.
+The Add to bids and Generate OFP buttons, the reason line and the `flights.detail.actions` slot.
 
 - **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
 - **Element:** the `<div>`.
-- **Parts:** none.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-route-tile`
-
-The dark tile at the top of the details step: label, two airports and a dashed arc.
-
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<div>`.
-- **Parts:** `vms-route-tile-label`, `vms-route-tile-arc`, `vms-route-tile-plane`, `vms-route-tile-stop`, `vms-route-tile-dot`.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-route-tile-label`
-
-The "{callsign} · Great circle" label of the tile.
-
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<p>`.
-- **Parts:** none.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-route-tile-arc`
-
-The dashed arc of the tile.
-
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<div>`.
-- **Parts:** none.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-route-tile-plane`
-
-The plane icon on the arc.
-
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<span>` around the icon.
-- **Parts:** none.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-route-tile-stop`
-
-One airport on the tile: the dot and its ICAO. West is on the left when both coordinates are known.
-
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<div>`.
-- **Parts:** `vms-route-tile-dot`.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-route-tile-dot`
-
-The dot of an airport on the tile.
-
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<span>`.
-- **Parts:** none.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-detail-title`
-
-The "{departure} to {arrival}" title of the details step. The "to" is a `<span>`.
-
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the `<h3>`.
 - **Parts:** none.
 - **State:** none.
 - **Variables:** none.
