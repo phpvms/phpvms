@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Features\Dashboard\DashboardServiceProvider;
 use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -38,6 +39,9 @@ return [
     // Hooks the tour slice to the PIREP lifecycle; event discovery does not
     // reach app/Features, and the deletion hook is a model event.
     TourServiceProvider::class,
+
+    // Dashboard widget registry; providers declare widgets via DeclaresDashboardWidgets.
+    DashboardServiceProvider::class,
 
     AdminPanelProvider::class,
     SystemPanelProvider::class,
