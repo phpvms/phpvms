@@ -112,7 +112,9 @@ final readonly class SearchFlights
             ->all();
 
         return [
-            'airlines'    => Airline::selectList(addBlank: true),
+            'airlines' => setting('pilots.restrict_to_company')
+                ? Airline::query()->where('active', true)->whereKey($user->airline_id)->pluck('name', 'id')->all()
+                : Airline::selectList(addBlank: true),
             'flightTypes' => $flightTypes,
             'subfleets'   => Subfleet::with('airline')->get()
                 ->mapWithKeys(fn (Subfleet $subfleet): array => [$subfleet->id => $subfleet->name.' | '.($subfleet->airline->icao ?? '—')])
