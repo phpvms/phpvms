@@ -120,19 +120,23 @@ class AirsideThemeServiceProvider extends ServiceProvider
     /**
      * Sidebar width. TallStackUI ships `w-72`; the pilot menu is short, so the
      * rail takes 16rem and the layout's content padding follows it. The
-     * collapsed width is left at the package default. These classes must be
-     * in the theme build: `resources/css/styles.css` sources this directory.
+     * collapsed rail is 4rem: every icon centre sits 2rem from the left edge,
+     * so the icons stay put while the rail slides and need no re-centring.
+     * These classes must be in the theme build: `resources/css/styles.css`
+     * sources this directory.
      */
     private function customizeSidebarWidth(): void
     {
         TallStackUi::customize()
             ->sideBar()
             ->block('desktop.wrapper.first.size', 'md:w-64')
-            ->block('desktop.sizes.expanded', 'w-64');
+            ->block('desktop.sizes.expanded', 'w-64')
+            ->block('desktop.sizes.collapsed', 'w-16');
 
         TallStackUi::customize()
             ->layout()
-            ->block('wrapper.second.expanded', 'md:pl-64');
+            ->block('wrapper.second.expanded', 'md:pl-64')
+            ->block('wrapper.second.collapsed', 'md:pl-16');
 
         // The pilot menu dropdown in the sidebar footer: the package wraps
         // its trigger in an inline-block, which shrinks to the avatar on the
@@ -178,7 +182,7 @@ class AirsideThemeServiceProvider extends ServiceProvider
         TallStackUi::customize()
             ->sideBar('item')
             ->block('group.button', 'vms-shell-item flex w-full cursor-pointer items-center rounded-full px-3.5 py-2.5 text-left text-sm font-medium transition-all')
-            ->block('group.button.collapsed', 'relative justify-center')
+            ->block('group.button.collapsed', 'relative')
             ->block('group.icon.base', 'vms-shell-icon size-5 shrink-0')
             ->block('group.icon.collapse.base', 'vms-shell-icon-muted ml-auto size-4 shrink-0 transition-all')
             ->block('group.icon.collapse.rotate', 'rotate-180')
@@ -188,6 +192,7 @@ class AirsideThemeServiceProvider extends ServiceProvider
             ->block('item.state.base', 'group flex items-center rounded-full px-3.5 py-2.5 text-sm font-medium transition-all')
             ->block('item.state.current', 'vms-shell-item-current font-semibold shadow-xs')
             ->block('item.state.normal', 'vms-shell-item')
+            ->block('item.state.collapsed', 'relative')
             ->block('item.icon', 'vms-shell-icon size-5 shrink-0 transition-all');
 
         // The dashboard widget card: a surface with no shadow, header and body padding as in the mockup.
