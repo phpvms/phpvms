@@ -5,7 +5,7 @@
   The nav display route map island (FlightRouteMap). Props: flight (a FlightDetailData), height (px).
   Emits the island contract: a [data-airside-island="route-map"] wrapper with the route as JSON, plus the
   map config. Shows the empty state when the departure has no coordinates. The island script itself is loaded by
-  the page, with @airsideVite('resources/js/islands/route-map.js').
+  the page, with @airsideVite('resources/js/islands/route-map.ts').
 --}}
 @php
     $point = fn ($airport) => $airport?->lat !== null && $airport?->lon !== null

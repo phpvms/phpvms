@@ -8,8 +8,8 @@
     @endphp
 
     <x-vms::page name="profile" :label="$profile->name.', pilot profile'">
-        <x-vms::page.header headline="Pilot profile">
-            <div class="flex items-center gap-3">
+        <x-vms::page.header :title="$profile->name">
+            <div class="flex flex-wrap items-center gap-2">
                 <span x-data="{ failed: false }" class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full text-sm font-semibold">
                     @if ($profile->avatar)
                         <img src="{{ $profile->avatar }}" alt="{{ $profile->name }}" class="size-full object-cover" x-show="! failed" x-on:error="failed = true" />
@@ -18,10 +18,6 @@
                         {{ $initials }}
                     @endif
                 </span>
-                <h1 class="text-xl font-semibold">{{ $profile->name }}</h1>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
                 @if ($profile->airline)
                     <x-ts-badge color="slate" light :text="$profile->airline->icao.' · '.$profile->airline->name" />
                 @endif

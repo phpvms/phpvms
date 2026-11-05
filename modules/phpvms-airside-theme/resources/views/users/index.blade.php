@@ -18,7 +18,7 @@
     @endphp
 
     <x-vms::page name="roster" label="Pilot roster">
-        <x-vms::page.header headline="Crew" :title="trans_choice('common.pilot', 2)">
+        <x-vms::page.header :title="trans_choice('common.pilot', 2)">
             <x-slot:links>
                 <x-ts-badge color="slate" light :text="$users->total().' total'" />
             </x-slot:links>

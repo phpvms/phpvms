@@ -5,7 +5,7 @@
 
 @section('content')
     <x-vms::page name="airport" label="Airport">
-        <x-vms::page.header headline="Airport" :title="$airport->full_name">
+        <x-vms::page.header :title="$airport->full_name">
             <x-slot:links>
                 @if (filled($airport->elevation))
                     <x-ts-badge color="slate" light :text="$airport->elevation.' ft'" />
@@ -58,5 +58,5 @@
 @endsection
 
 @section('scripts')
-    @airsideVite(['resources/js/islands/route-map.js'])
+    @airsideVite(['resources/js/islands/route-map.ts'])
 @endsection

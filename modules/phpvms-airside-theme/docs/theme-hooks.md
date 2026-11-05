@@ -425,6 +425,50 @@ The account menu trigger: avatar, name, and ident · callsign. In the sidebar it
 - **Variables:** none.
 - **Stability:** draft.
 
+### `vms-page-header`
+
+The page header of every page (`x-vms::page.header`): the display title, an optional description, and controls on the right. A page adds its own hook as a class on it, e.g. `vms-flights-header`.
+
+- **View:** `resources/views/components/page/header.blade.php`
+- **Element:** the `<header>`.
+- **Parts:** `vms-page-title`, `vms-page-description`, `vms-page-links`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-page-title`
+
+The display title. A `<span>` in it (passed through the `title` slot, e.g. "Find a <span>flight.</span>") is the accent word: thin serif in the brand colour.
+
+- **View:** `resources/views/components/page/header.blade.php`
+- **Element:** the `<h1>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-page-description`
+
+The line under the title, in a muted colour.
+
+- **View:** `resources/views/components/page/header.blade.php`
+- **Element:** the `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-page-links`
+
+The right side of the header: counts, badges and buttons from the `links` slot, in a muted colour.
+
+- **View:** `resources/views/components/page/header.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
 ### `vms-shell-guest`
 
 The top bar's Sign in and Register links, shown to a guest in place of the account menu (the public live map).
@@ -750,36 +794,25 @@ The flights list page root.
 
 - **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
 - **Element:** the page `<div>`.
-- **Parts:** `vms-flights-header`, `vms-flights-title`, `vms-flights-count`, `vms-flight-filters`, `vms-flight-list`, `vms-flight-pager`, `vms-flights-empty`.
+- **Parts:** `vms-flights-header`, `vms-flights-count`, `vms-flight-filters`, `vms-flight-list`, `vms-flight-pager`, `vms-flights-empty`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-flights-header`
 
-The flights list header: title and active-filter count.
+The flights list header: an `x-vms::page.header` ("Find a flight.") with the active-filter count on the right.
 
 - **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
-- **Element:** the `<header>`.
-- **Parts:** `vms-flights-title`, `vms-flights-count`.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
-### `vms-flights-title`
-
-"Find a flight." The word "flight." is a `<span>` set in thin serif in the brand colour.
-
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
-- **Element:** the `<h1>`.
-- **Parts:** none.
+- **Element:** the `<header>` (with `vms-page-header`).
+- **Parts:** `vms-flights-count`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-flights-count`
 
-The "N active" filter count.
+The "N active" filter count, in the header's `links` slot.
 
 - **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
 - **Element:** the `<span>`.
@@ -1144,7 +1177,7 @@ Props: `icao`, `country` (strings or null); `lat`, `lon` (floats or null; the pi
 
 Slots: the default slot holds action buttons laid over the map (rendered in `vms-location-card-actions`, omitted when empty); `aside` is optional and sits under the country (the Ready state puts the last flight block there); `details` is optional and sits after `aside`, for extra blocks (the Ready state holds the `dashboard.ready.details` outlet). The place column has its own `p-5.5` padding and is top-aligned; the actions row is inset `bottom-4 right-4` from the map corner.
 
-The map is the core `<x-map.svg>`: land is `.land`, the focus country `.land--focus`, the airport `.map-pin`. In the dotted variant the land is filled with a dot pattern: the circles are `.map-dot`, and `.map-dot--focus` on the focus country's pattern. Colours are set under `vms-location-card` in `airside.css`: grey dots on land, a darker grey on the focus country, and the brand pin with a halo as the only colour. For a country with regions (the United States), the map shows the region holding the point: Alaska and Hawaii get their own maps, every other point the contiguous states.
+The map is the core `<x-map.svg>`: land is `.land`, the focus country `.land--focus`, the airport `.map-pin`. In the dotted variant the land paths are sent hidden and the browser lays whole dots on a grid over them (the `mapDots` Alpine component, `resources/js/airside/map-dots.ts`): each set of dots is one stroked `<path>`, `.map-dot` for the land and `.map-dot map-dot--focus` for the focus country, so its colour is the `stroke`. `<x-map.svg grid="diagonal">` offsets every other row. Colours are set under `vms-location-card` in `airside.css`: grey dots on land, a darker grey on the focus country, and the brand pin with a halo as the only colour. For a country with regions (the United States), the map shows the region holding the point: Alaska and Hawaii get their own maps, every other point the contiguous states.
 
 ### `vms-last-flight`
 

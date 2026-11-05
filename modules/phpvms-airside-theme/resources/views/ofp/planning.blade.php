@@ -183,6 +183,6 @@
 
 @if ($attemptData)
     @section('scripts')
-        @airsideVite('resources/js/islands/simbrief-attempt.js')
+        @airsideVite('resources/js/islands/simbrief-attempt.ts')
     @endsection
 @endif

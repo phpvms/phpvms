@@ -115,5 +115,5 @@
 @endsection
 
 @section('scripts')
-    @airsideVite('resources/js/islands/briefing-globe.js')
+    @airsideVite('resources/js/islands/briefing-globe.ts')
 @endsection

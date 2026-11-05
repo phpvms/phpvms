@@ -1,6 +1,6 @@
 {{--
   Nav display: the route-map island and the TRK/DIST readout. Data: route (from/to with icao, lat, lon).
-  The island (resources/js/islands/route-map.js) draws the map from the JSON block.
+  The island (resources/js/islands/route-map.ts) draws the map from the JSON block.
 --}}
 @php
     $from = $route['from'] ?? null;

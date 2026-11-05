@@ -6,7 +6,7 @@ require_once __DIR__.'/../Support.php';
 
 /**
  * 7.8: the live map page hands the island its config. Polling and selection run
- * in the browser (resources/js/islands/live-map.js).
+ * in the browser (resources/js/islands/live-map.ts).
  */
 beforeEach(function (): void {
     $this->pilot = useAirside();

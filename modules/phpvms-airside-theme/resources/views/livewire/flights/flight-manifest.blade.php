@@ -10,10 +10,10 @@
 @endphp
 
 <x-vms::page name="flights" label="Flights" class="min-w-0">
-    <header class="vms-flights-header flex flex-wrap items-end justify-between gap-6 px-1.5 pt-5">
-        <h1 class="vms-flights-title text-4xl leading-none font-extrabold tracking-tight sm:text-5xl">Find a <span>flight.</span></h1>
-        <span class="vms-flights-count text-[13px]">{{ count($active) }} active</span>
-    </header>
+    <x-vms::page.header class="vms-flights-header">
+        <x-slot:title>Find a <span>flight.</span></x-slot:title>
+        <x-slot:links><span class="vms-flights-count">{{ count($active) }} active</span></x-slot:links>
+    </x-vms::page.header>
 
     <section class="vms-flight-filters px-4 pt-3.5 pb-4" aria-label="Flight filters" x-data="{ open: {{ count($active) > 0 ? 'true' : 'false' }} }">
         <div class="flex flex-wrap items-center gap-2.5">

@@ -3,7 +3,7 @@
 
 @section('content')
     <x-vms::page name="pirep-form" :label="__('pireps.new_flight_report')">
-        <x-vms::page.header :headline="__('pireps.file_flight_report')" :title="__('pireps.new_flight_report')">
+        <x-vms::page.header :title="__('pireps.new_flight_report')">
             <x-slot:links>
                 <x-ts-link :href="route('frontend.pireps.index')" text="Back to logbook" icon="phosphor.arrow-left.light" sm navigate class="w-fit" />
             </x-slot:links>

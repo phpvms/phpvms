@@ -21,7 +21,7 @@
 
 @section('content')
 <x-vms::page name="tour" :label="$tour->name">
-    <x-vms::page.header headline="Flights · Tours" :title="$tour->name">
+    <x-vms::page.header :title="$tour->name">
         @if ($tour->description)
             <p class="max-w-prose text-[13px]">{{ $tour->description }}</p>
         @endif

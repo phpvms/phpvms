@@ -21,4 +21,4 @@
     </x-vms::livemap.templates>
 </div>
 
-@airsideVite(['resources/js/islands/live-map.js'])
+@airsideVite(['resources/js/islands/live-map.ts'])

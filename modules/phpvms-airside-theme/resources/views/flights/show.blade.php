@@ -70,5 +70,5 @@
 @endsection
 
 @section('scripts')
-    @airsideVite(['resources/js/islands/route-map.js'])
+    @airsideVite(['resources/js/islands/route-map.ts'])
 @endsection

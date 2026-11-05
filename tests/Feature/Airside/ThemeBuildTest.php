@@ -31,7 +31,7 @@ it('leaves the shared Vite instance on its own build directory', function (): vo
     deployedPublicPath();
     $shared = app(Vite::class);
 
-    Blade::render("@airsideVite(['resources/css/airside.css'])");
+    Blade::render("@airsideVite(['resources/css/styles.css'])");
 
     $afterDirectory = new ReflectionProperty($shared, 'buildDirectory')->getValue($shared);
     $afterHot = new ReflectionProperty($shared, 'hotFile')->getValue($shared);
@@ -46,10 +46,10 @@ it('uses the module hot file while the dev server runs', function (): void {
     file_put_contents($hot, 'http://localhost:5199');
 
     try {
-        $html = Blade::render("@airsideVite(['resources/css/airside.css', 'resources/js/airside.js'])");
+        $html = Blade::render("@airsideVite(['resources/css/styles.css', 'resources/js/airside/app.ts'])");
 
         expect($html)->toContain('http://localhost:5199/@vite/client')
-            ->and($html)->toContain('http://localhost:5199/resources/js/airside.js');
+            ->and($html)->toContain('http://localhost:5199/resources/js/airside/app.ts');
     } finally {
         unlink($hot);
     }

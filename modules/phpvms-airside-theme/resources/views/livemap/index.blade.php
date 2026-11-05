@@ -20,6 +20,6 @@
     />
 
     <x-slot:scripts>
-        @airsideVite(['resources/js/islands/live-map.js'])
+        @airsideVite(['resources/js/islands/live-map.ts'])
     </x-slot:scripts>
 </x-vms::layouts.app>

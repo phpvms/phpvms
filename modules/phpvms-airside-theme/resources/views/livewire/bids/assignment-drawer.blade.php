@@ -94,19 +94,14 @@
                             ['key' => 'dpt', 'airport' => $flight->departure, 'icao' => $summary->dpt, 'time' => $flight->scheduledDeparture, 'weather' => $flight->departureWeather, 'label' => 'Departure weather'],
                             ['key' => 'arr', 'airport' => $flight->arrival, 'icao' => $summary->arr, 'time' => $flight->scheduledArrival, 'weather' => $flight->arrivalWeather, 'label' => 'Arrival weather'],
                         ];
-                        $pins = array_map(fn (array $leg): array => ['lat' => $leg['airport']?->lat, 'lon' => $leg['airport']?->lon, 'label' => $leg['icao']], $legs);
-                        $routes = [[[$flight->departure?->lat, $flight->departure?->lon], [$flight->arrival?->lat, $flight->arrival?->lon]]];
                     @endphp
                     <div class="vms-flight-detail grid gap-5">
                         @if ($routeMap)
                             <div class="vms-detail-map overflow-hidden rounded-xl p-3">
                                 <x-map.svg
-                                    :map="$routeMap"
+                                    :map-view="$routeMap"
                                     pattern="dots"
                                     :pin-radius="7"
-                                    :pins="$pins"
-                                    :routes="$routes"
-                                    fit
                                     class="block aspect-[4/3] w-full"
                                 />
                             </div>

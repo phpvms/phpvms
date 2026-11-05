@@ -186,15 +186,16 @@
         letter-spacing: -0.03em;
     }
 
-    /* Flights list: header. The thin serif word follows the greeting treatment. */
-    .vms-flights-title span {
+    /* Page header (x-vms::page.header). A <span> in the title is the thin serif accent word, as in the greeting. */
+    .vms-page-title span {
         font-family: var(--font-serif);
         font-weight: 200;
         letter-spacing: -0.03em;
         color: var(--vms-brand);
     }
 
-    .vms-flights-count {
+    .vms-page-description,
+    .vms-page-links {
         @apply text-dark-500 dark:text-dark-400;
     }
 
@@ -306,7 +307,8 @@
      * Location card: the map colours. The map component sets its fallback look
      * with SVG presentation attributes, so these rules replace it directly. The
      * dotted variant draws all land as grey dots, the focus country a shade
-     * darker; only the location pin is brand blue.
+     * darker; only the location pin is brand blue. Each set of dots is one
+     * stroked path (round caps on zero-length segments), so its colour is the stroke.
      */
     .vms-location-card--outline .land {
         @apply fill-gray-100 stroke-gray-300 dark:fill-dark-800 dark:stroke-dark-600;
@@ -322,13 +324,13 @@
 
     .vms-location-card .map-dot,
     .vms-detail-map .map-dot {
-        @apply fill-gray-300 dark:fill-dark-600;
-        fill-opacity: 1;
+        @apply stroke-gray-300 dark:stroke-dark-600;
+        stroke-opacity: 1;
     }
 
     .vms-location-card .map-dot--focus,
     .vms-detail-map .map-dot--focus {
-        @apply fill-gray-400 dark:fill-dark-500;
+        @apply stroke-gray-400 dark:stroke-dark-500;
     }
 
     .vms-location-card .map-pin,

@@ -4,7 +4,7 @@
 
 @section('content')
     <x-vms::page name="credits" label="Credits">
-        <x-vms::page.header headline="About" title="Credits" description="phpvms and the addons installed on this site." />
+        <x-vms::page.header title="Credits" description="phpvms and the addons installed on this site." />
 
         <div class="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             <x-ts-card>

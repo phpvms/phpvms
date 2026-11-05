@@ -15,7 +15,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check . '!**/*.json'",
     "fmt:check:json": "oxfmt --list-different '**/*.json'",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p modules/phpvms-airside-theme",
     "test": "vitest run",
     "safelist:check": "node bin/measure-tailwind-safelist.mjs"
   },

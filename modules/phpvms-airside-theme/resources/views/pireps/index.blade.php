@@ -4,7 +4,7 @@
 
 @section('content')
     <x-vms::page name="logbook" label="Logbook">
-        <x-vms::page.header headline="Logbook" title="My PIREPs" description="Every flight you have filed, most recent first.">
+        <x-vms::page.header title="My PIREPs" description="Every flight you have filed, most recent first.">
             <x-slot:links>
                 <x-ts-badge color="slate" light :text="$pagination['total'].' total'" />
             </x-slot:links>

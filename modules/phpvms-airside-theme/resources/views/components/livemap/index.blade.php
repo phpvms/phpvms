@@ -2,7 +2,7 @@
 
 {{--
   The live map: a full-bleed map with floating panels, the flight list on the left and the
-  selected flight on the right. The live-map island (resources/js/islands/live-map.js) polls,
+  selected flight on the right. The live-map island (resources/js/islands/live-map.ts) polls,
   fills the counts and the list, filters by stage and search, and draws the selection.
   Props: updateIntervalSeconds, initialCenter ({lat, lon} or null), map (MapConfigData array),
   rail (collapse the sidebar to its rail while the map is open; the pilot's own setting is

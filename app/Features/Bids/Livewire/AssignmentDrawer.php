@@ -12,8 +12,8 @@ use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Queries\EligibleAircraft;
 use App\Features\Flights\Queries\VisibleFlights;
 use App\Features\Hooks\Exceptions\HookDenied;
-use App\Features\Maps\MapData;
-use App\Features\Maps\MapResolver;
+use App\Features\Maps\MapView;
+use App\Features\Maps\RouteMaps;
 use App\Http\Data\AirportPointData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
@@ -48,7 +48,7 @@ use Livewire\Component;
  *
  * @property-read array{flight: FlightDetailData, policy: FlightDispatchPolicyData, subfleets: Collection<int, EligibleSubfleetData>, selection: ?BidSelectionData}|null $dispatchPayload
  * @property-read list<EligibleAircraftData>|null $aircraftList
- * @property-read MapData|null $routeMap
+ * @property-read MapView|null $routeMap
  */
 class AssignmentDrawer extends Component
 {
@@ -333,10 +333,11 @@ class AssignmentDrawer extends Component
     }
 
     /**
-     * The narrowest map that holds the departure and arrival airports.
+     * The route map: the narrowest map that holds the departure and arrival
+     * airports, cropped to them (see RouteMaps).
      */
     #[Computed]
-    public function routeMap(): ?MapData
+    public function routeMap(): ?MapView
     {
         $flight = $this->dispatchPayload['flight'] ?? null;
 
@@ -344,14 +345,18 @@ class AssignmentDrawer extends Component
             return null;
         }
 
-        $airports = array_values(array_filter([$flight->departure, $flight->arrival]));
-        $countries = Airport::query()->whereIn('id', array_map(fn (AirportPointData $airport): string => $airport->id, $airports))->pluck('country', 'id');
+        $countries = Airport::query()
+            ->whereIn('id', array_filter([$flight->departure?->id, $flight->arrival?->id]))
+            ->pluck('country', 'id');
 
-        return app(MapResolver::class)->forPoints(array_map(fn (AirportPointData $airport): array => [
-            'country' => $countries[$airport->id] ?? null,
-            'lat'     => $airport->lat,
-            'lon'     => $airport->lon,
-        ], $airports));
+        $point = fn (?AirportPointData $airport): array => [
+            'country' => $airport instanceof AirportPointData ? $countries[$airport->id] ?? null : (null),
+            'lat'     => $airport?->lat,
+            'lon'     => $airport?->lon,
+            'label'   => $airport?->icao,
+        ];
+
+        return app(RouteMaps::class)->view($point($flight->departure), $point($flight->arrival));
     }
 
     public function render(): View

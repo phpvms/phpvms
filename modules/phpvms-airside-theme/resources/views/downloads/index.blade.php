@@ -4,7 +4,7 @@
 
 @section('content')
     <x-vms::page name="downloads" label="Downloads">
-        <x-vms::page.header headline="Resources" :title="trans_choice('common.download', 2)" />
+        <x-vms::page.header :title="trans_choice('common.download', 2)" />
 
         @if (! $grouped_files || count($grouped_files) === 0)
             <x-vms::ui.empty icon="download" :title="__('downloads.none')" />

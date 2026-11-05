@@ -36,7 +36,7 @@
 
 <link rel="shortcut icon" href="{{ $branding->favicon() }}" />
 
-@airsideVite(['resources/css/styles.css', 'resources/js/airside.js'])
+@airsideVite(['resources/css/styles.css', 'resources/js/airside/app.ts'])
 
 <x-theme-head />
 

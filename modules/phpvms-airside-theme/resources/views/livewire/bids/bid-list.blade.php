@@ -6,7 +6,7 @@
 @endphp
 
 <x-vms::page name="my-bids" label="My bids">
-    <x-vms::page.header headline="Flights" title="My bids" description="Your reserved dispatches, ready to reopen and brief.">
+    <x-vms::page.header title="My bids" description="Your reserved dispatches, ready to reopen and brief.">
         <x-slot:links>
             <x-ts-badge light>{{ count($rows) }} {{ count($rows) === 1 ? 'bid' : 'bids' }}</x-ts-badge>
         </x-slot:links>

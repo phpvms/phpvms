@@ -11,11 +11,13 @@
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource-variable/noto-serif": "^5.3.0",
-    "@phpvms/map": "workspace:*",
-    "@phpvms/simbrief": "workspace:*"
+    "maplibre-gl": "^6.15.0",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@types/geojson": "^7946.0.16",
+    "@types/three": "^0.185.4",
     "laravel-vite-plugin": "^3.2.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.4"

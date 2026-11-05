@@ -8,14 +8,14 @@ import tailwindcss from "@tailwindcss/vite";
 const root = dirname(fileURLToPath(import.meta.url));
 
 /**
- * Every `resources/js/islands/*.js` is its own entry, so adding an island
+ * Every `resources/js/islands/*.ts` is its own entry, so adding an island
  * means adding a file, not editing this config. A page loads one with
- * `@airsideVite('resources/js/islands/<name>.js')`.
+ * `@airsideVite('resources/js/islands/<name>.ts')`.
  */
 const islandsDir = resolve(root, "resources/js/islands");
 const islands = existsSync(islandsDir)
   ? readdirSync(islandsDir)
-      .filter((file) => file.endsWith(".js"))
+      .filter((file) => file.endsWith(".ts"))
       .map((file) => `resources/js/islands/${file}`)
   : [];
 
@@ -23,11 +23,13 @@ export default defineConfig({
   // The build is served through the public storage link, not from /build.
   base: "/storage/themes/airside/build/",
 
-  // maplibre constructs its worker as a module worker (see the root vite config).
+  // maplibre constructs its worker as a module worker (the core vite config does the same).
   worker: { format: "es" },
 
   resolve: {
     alias: {
+      // The theme owns its copies of the map and simbrief packages under resources/js/lib.
+      "@airside": resolve(root, "resources/js"),
       // TallStackUI's stylesheet asks for `@tailwindcss/forms`, which this
       // repo does not install. The stub keeps that stylesheet importable;
       // airside styles form controls itself (resources/css/airside.css).
@@ -41,7 +43,7 @@ export default defineConfig({
     laravel({
       // Relative to this folder: the build goes to modules/phpvms-airside-theme/public/build
       // with its own hot file (public/hot), never the root public/hot.
-      input: ["resources/css/styles.css", "resources/js/airside.js", ...islands],
+      input: ["resources/css/styles.css", "resources/js/airside/app.ts", ...islands],
       buildDirectory: "build",
       hotFile: "public/hot",
     }),

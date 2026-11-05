@@ -6,7 +6,6 @@
 @endphp
 <div class="grid gap-6" x-data="{ filter: 'all', all: {{ $allCount }}, mine: {{ $mineCount }}, get count() { return this.filter === 'mine' ? this.mine : this.all } }">
     <x-vms::page.header
-        headline="Flights"
         title="Tours"
         description="Multi-leg journeys flown in order. Bid a tour once and every leg is reserved for you."
     >
