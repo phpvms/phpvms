@@ -1,4 +1,4 @@
-import { cloneTemplate, setField } from "./dom.js";
+import { cloneTemplate, formatAltitude, setField } from "./dom.js";
 
 /**
  * The live flights list: one row per flight, plus the empty and error states
@@ -8,14 +8,18 @@ import { cloneTemplate, setField } from "./dom.js";
  * @param {HTMLElement} root the island root
  * @param {HTMLElement} container the list element
  * @param {(pirepId: string) => void} onSelect
+ * @param {(flight: any) => string | null} stageOf the flight's stage, from the config's stage map
  */
-export function createFlightList(root, container, onSelect) {
+export function createFlightList(root, container, onSelect, stageOf) {
   /** @type {Map<string, HTMLElement>} */
   const rows = new Map();
   /** @type {HTMLElement | null} */
   let listbox = null;
   /** @type {HTMLElement | null} */
   let notice = null;
+
+  // Start from an empty container, whatever an earlier mount left in it.
+  container.replaceChildren();
 
   function clearNotice() {
     notice?.remove();
@@ -29,7 +33,9 @@ export function createFlightList(root, container, onSelect) {
   }
 
   /**
-   * @param {{ flights: any[], loading: boolean, loadError: boolean, selected: string | null }} state
+   * `all` is every live flight; `flights` is what the filter and search let through.
+   *
+   * @param {{ all: any[], flights: any[], loading: boolean, loadError: boolean, selected: string | null }} state
    */
   function render(state) {
     if (state.loadError) {
@@ -39,9 +45,16 @@ export function createFlightList(root, container, onSelect) {
       return;
     }
 
-    if (!state.loading && state.flights.length === 0) {
+    if (!state.loading && state.all.length === 0) {
       clearRows();
       showNotice("empty");
+
+      return;
+    }
+
+    if (!state.loading && state.flights.length === 0) {
+      clearRows();
+      showNotice("no-match");
 
       return;
     }
@@ -75,8 +88,31 @@ export function createFlightList(root, container, onSelect) {
         "route",
         `${flight.dptAirport?.icao ?? "—"} → ${flight.arrAirport?.icao ?? "—"}`,
       );
-      setField(row, "phase", flight.phase ?? "");
-      row.querySelector('[data-field="phase"]')?.toggleAttribute("hidden", !flight.phase);
+      setField(
+        row,
+        "meta",
+        [flight.pilot?.name, flight.aircraft?.name ?? flight.aircraft?.registration]
+          .filter(Boolean)
+          .join(" · "),
+      );
+      setField(row, "phase", flight.status ?? "");
+      row.querySelector('[data-field="phase"]')?.toggleAttribute("hidden", !flight.status);
+      setField(row, "altitude", formatAltitude(flight.position?.altitude));
+
+      const progress = row.querySelector('[data-field="progress"]');
+
+      if (progress instanceof HTMLProgressElement) {
+        progress.value = Math.min(Math.max(Number(flight.progress) || 0, 0), 100);
+      }
+
+      const stage = stageOf(flight);
+
+      if (stage) {
+        row.dataset.stage = stage;
+      } else {
+        delete row.dataset.stage;
+      }
+
       row.setAttribute("aria-selected", String(flight.pirepId === state.selected));
 
       if (listbox.children[index] !== row) {

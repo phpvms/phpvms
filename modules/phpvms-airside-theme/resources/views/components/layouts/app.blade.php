@@ -1,16 +1,18 @@
-@props(['title' => null])
+@props(['title' => null, 'topbar' => null])
 
 {{--
   The app layout: the authenticated pilot shell on TallStackUI's layout.
   Slots: default (page), head (extra <head> markup), scripts (page scripts).
+  `topbar` forces the navigation (true: top bar, false: sidebar); null follows
+  the layout theme option. The live map passes true for guests.
   Pages that still `@extends('app')` reach this through app.blade.php.
   ShellData is request-scoped, so @inject hands every render the current
   request's instance (Octane-safe: nothing holds the request across requests).
 --}}
 @inject('shell', 'App\Features\Shell\ShellData')
-@php($topbar = theme_option('layout') === 'topbar')
+@php($topbar ??= theme_option('layout') === 'topbar')
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-airside-layout="{{ theme_option('layout') }}" x-data="tallstackui_darkTheme({ default: 'system' })" x-bind:class="{ 'dark': darkTheme }">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-airside-layout="{{ $topbar ? 'topbar' : 'sidebar' }}" x-data="tallstackui_darkTheme({ default: 'system' })" x-bind:class="{ 'dark': darkTheme }">
 
 <head>
     @include('partials.head', ['title' => $title])

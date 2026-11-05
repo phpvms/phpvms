@@ -131,7 +131,8 @@ Route::group([
     Route::get('users', [UserController::class, 'index'])->name('users.index');
     Route::get('pilots', [UserController::class, 'index'])->name('pilots.index');
 
-    Route::get('livemap', [LiveMapController::class, 'index'])->name('livemap.index');
+    Route::get('live', [LiveMapController::class, 'index'])->name('livemap.index');
+    Route::permanentRedirect('livemap', '/live');
 
     Route::get('lang/{lang}', [LanguageController::class, 'switchLang'])->name('lang.switch');
 

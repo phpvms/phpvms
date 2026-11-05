@@ -3,7 +3,8 @@
 {{--
   The top bar layout's nav row: brand left, the menu centred, the account menu right,
   like the landing nav. Below md the menu moves into a slide-over opened from the
-  button at the left. The menu data and the account entries are the sidebar's.
+  button at the left. The menu data and the account entries are the sidebar's;
+  a guest gets Sign in and Register links in place of the account menu.
 --}}
 @php
     $rows = \Modules\PhpvmsAirsideTheme\Support\NavigationRows::build($shell->navigation(), request());
@@ -27,7 +28,17 @@
         </ul>
     </nav>
 
-    <x-vms::shell.pilot-menu :shell="$shell" topbar />
+    @if ($shell->user())
+        <x-vms::shell.pilot-menu :shell="$shell" topbar />
+    @else
+        {{-- Guests (the public live map) get the landing nav's sign-in links instead of the account menu. --}}
+        <div class="vms-shell-guest flex items-center justify-end gap-2">
+            <a href="{{ url('/login') }}" class="vms-shell-link">{{ __('ui.sign_in') }}</a>
+            @if (! setting('general.disable_registrations', false))
+                <a href="{{ route('register') }}" class="vms-pill vms-pill--dark">{{ __('common.register') }}</a>
+            @endif
+        </div>
+    @endif
 </header>
 
 <x-ts-slide id="vms-topbar-menu" left size="sm" :title="$shell->appName()">

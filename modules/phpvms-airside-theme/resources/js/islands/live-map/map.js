@@ -7,6 +7,8 @@ import {
 } from "@phpvms/map";
 
 const MARKER_LAYER = "live-flights";
+const SELECTED_SOURCE = "live-flights-selected";
+const SELECTED_RADIUS_PX = 11;
 const GLOBE_OVERVIEW_ZOOM = 1;
 const FEET_TO_METRES = 0.3048;
 
@@ -19,6 +21,28 @@ async function whenLoaded(map) {
   if (!map.loaded()) {
     await map.once("load");
   }
+}
+
+/**
+ * A CSS colour token (e.g. `--vms-brand`) as rgb(), which maplibre can parse whatever
+ * colour syntax the saved scheme uses. Painting one pixel normalises it.
+ *
+ * @param {string} token
+ * @param {string} fallback
+ */
+function tokenColor(token, fallback) {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+
+  if (!value || !context) {
+    return fallback;
+  }
+
+  context.fillStyle = value;
+  context.fillRect(0, 0, 1, 1);
+  const [red, green, blue] = context.getImageData(0, 0, 1, 1).data;
+
+  return `rgb(${red}, ${green}, ${blue})`;
 }
 
 /**
@@ -45,6 +69,8 @@ export function createLiveMap(el, config, onSelect) {
   let points = [];
   /** @type {any[]} */
   let flown = [];
+  /** @type {string | null} */
+  let selectedId = null;
 
   const onClick = (/** @type {any} */ event) => {
     const pirepId = event.features?.[0]?.properties?.pirepId;
@@ -87,11 +113,54 @@ export function createLiveMap(el, config, onSelect) {
     map = result.map;
     markers = createLiveFlightMarkers(map, { id: MARKER_LAYER });
     markers.setData(points);
+    addSelectedRing(map);
     map.on("click", MARKER_LAYER, onClick);
     map.on("mouseenter", MARKER_LAYER, onEnter);
     map.on("mouseleave", MARKER_LAYER, onLeave);
 
     frameInitially(map);
+  }
+
+  // The selected flight's ring: its own source and layer under the markers, in the brand colour.
+  function addSelectedRing(/** @type {import("maplibre-gl").Map} */ instance) {
+    const brand = tokenColor("--vms-brand", "#0d6da7");
+
+    instance.addSource(SELECTED_SOURCE, { type: "geojson", data: selectedFeatures() });
+    instance.addLayer(
+      {
+        id: SELECTED_SOURCE,
+        type: "circle",
+        source: SELECTED_SOURCE,
+        paint: {
+          "circle-radius": SELECTED_RADIUS_PX,
+          "circle-color": brand,
+          "circle-opacity": 0.2,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": brand,
+        },
+      },
+      MARKER_LAYER,
+    );
+  }
+
+  /** @returns {import("geojson").FeatureCollection} */
+  function selectedFeatures() {
+    const point = points.find((candidate) => candidate.pirepId === selectedId);
+
+    return {
+      type: "FeatureCollection",
+      features: point
+        ? [{ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [point.lon, point.lat] } }]
+        : [],
+    };
+  }
+
+  function updateSelectedRing() {
+    const source = map?.getSource(SELECTED_SOURCE);
+
+    if (source && "setData" in source) {
+      /** @type {import("maplibre-gl").GeoJSONSource} */ (source).setData(selectedFeatures());
+    }
   }
 
   // The opening camera runs once, and is skipped when the user has already taken hold of the map.
@@ -155,13 +224,24 @@ export function createLiveMap(el, config, onSelect) {
         lon: flight.position.lon,
       }));
       markers?.setData(points);
+      updateSelectedRing();
     },
 
-    /** A flight was selected: load the track layer and clear the previous track. */
-    select() {
+    /**
+     * A flight was selected (or the selection cleared, with null): ring it, clear the
+     * previous track, and load the track layer.
+     *
+     * @param {string | null} pirepId
+     */
+    select(pirepId) {
+      selectedId = pirepId;
+      updateSelectedRing();
       flown = [];
       route?.setData(flown);
-      ensureRoute();
+
+      if (pirepId) {
+        ensureRoute();
+      }
     },
 
     /** @param {any} detail MapPirepDetailData */
@@ -195,6 +275,10 @@ export function createLiveMap(el, config, onSelect) {
       }
 
       route?.dispose();
+
+      if (map?.getLayer(SELECTED_SOURCE)) map.removeLayer(SELECTED_SOURCE);
+      if (map?.getSource(SELECTED_SOURCE)) map.removeSource(SELECTED_SOURCE);
+
       markers?.dispose();
       destroyMap?.();
     },
