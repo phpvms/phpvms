@@ -401,16 +401,40 @@ final class OwnershipTest extends TestCase
         $this->assertEquals(PirepState::PENDING, $this->pirep->fresh()->state);
     }
 
+    public function test_submitting_a_saved_draft_still_catches_a_real_duplicate(): void
+    {
+        $this->updateSetting('pilots.only_flights_from_current', false);
+        $this->updateSetting('pireps.restrict_aircraft_to_rank', false);
+        $this->updateSetting('pireps.only_aircraft_at_dpt_airport', false);
+        $this->pirep->update(['state' => PirepState::DRAFT]);
+
+        // Same user, airline, flight number and airports, filed just now: a duplicate of the draft
+        Pirep::factory()->create([
+            'user_id'        => $this->owner->id,
+            'airline_id'     => $this->pirep->airline_id,
+            'flight_number'  => $this->pirep->flight_number,
+            'route_code'     => $this->pirep->route_code,
+            'route_leg'      => $this->pirep->route_leg,
+            'dpt_airport_id' => $this->pirep->dpt_airport_id,
+            'arr_airport_id' => $this->pirep->arr_airport_id,
+            'state'          => PirepState::PENDING,
+        ]);
+
+        $this->actingAs($this->owner)->post(route('frontend.pireps.submit', [$this->pirep->id]))->assertRedirect();
+        $this->assertEquals(PirepState::DRAFT, $this->pirep->fresh()->state);
+    }
+
     public function test_route_post_ignores_unknown_columns(): void
     {
         $this->post('/api/pireps/'.$this->pirep->id.'/route', [
             'route' => [
-                ['id' => 'client-1', 'order' => 1, 'name' => 'WPT1', 'lat' => 1.1, 'lon' => 2.2, 'bogus' => 'x'],
+                ['id' => 'client-1', 'order' => 1, 'name' => 'WPT1', 'lat' => 1.1, 'lon' => 2.2, 'altitude' => 5000, 'bogus' => 'x'],
                 ['order' => 2, 'name' => 'WPT2', 'lat' => 1.2, 'lon' => 2.3, 'not_a_column' => 'y'],
             ],
         ], [], $this->owner)->assertOk();
 
         $this->assertEquals(2, Acars::where('pirep_id', $this->pirep->id)->where('type', AcarsType::ROUTE)->count());
+        $this->assertEquals(5000.0, Acars::find('client-1')->altitude_msl);
     }
 
     public function test_pirep_comments_are_only_readable_by_the_owner_or_an_admin(): void

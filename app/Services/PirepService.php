@@ -325,7 +325,7 @@ class PirepService extends Service
      *
      * @return bool|Pirep
      */
-    public function findDuplicate(Pirep $pirep)
+    public function findDuplicate(Pirep $pirep, ?string $exclude_id = null)
     {
         $minutes = setting('pireps.duplicate_check_time', 10);
         $time_limit = Carbon::now('UTC')->subMinutes($minutes)->toDateTimeString();
@@ -348,6 +348,7 @@ class PirepService extends Service
 
         try {
             $found_pireps = Pirep::where($where)
+                ->when($exclude_id !== null, fn ($query) => $query->where('id', '!=', $exclude_id))
                 ->where('state', '!=', PirepState::CANCELLED)
                 ->where('created_at', '>=', $time_limit)
                 ->get();

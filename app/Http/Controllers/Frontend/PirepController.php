@@ -358,9 +358,8 @@ class PirepController extends Controller
             return 'This aircraft is not positioned at the departure airport!';
         }
 
-        // Make sure this isn't a duplicate (a saved draft finds itself, which is not one)
-        $dupe_pirep = $this->pirepSvc->findDuplicate($pirep);
-        if ($dupe_pirep !== false && $dupe_pirep->id !== $pirep->id) {
+        // Make sure this isn't a duplicate; a saved draft must not count itself
+        if ($this->pirepSvc->findDuplicate($pirep, $pirep->id) !== false) {
             Log::info('Duplicate PIREP found');
 
             return 'This PIREP has already been filed.';

@@ -486,7 +486,8 @@ class PirepController extends Controller
             }
 
             if (isset($position['id'])) {
-                Acars::updateOrInsert(['id' => $position['id']], $position);
+                // Through the model, so virtual attributes like `altitude` are mapped to real columns
+                Acars::updateOrCreate(['id' => $position['id']], $position);
             } else {
                 $acars = Acars::create($position);
                 $acars->save();
