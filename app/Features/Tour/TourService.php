@@ -346,6 +346,14 @@ class TourService extends Service
         }
 
         DB::transaction(function () use ($tour, $status): void {
+            // Re-read under a row lock: a pilot cancelling while the hourly
+            // expiry sweeps the same run must not both get past the check above.
+            $current = UserTour::query()->whereKey($tour->id)->lockForUpdate()->first();
+
+            if ($current === null || $current->status !== TourStatus::InProgress) {
+                return;
+            }
+
             $bids = Bid::query()->where('user_tour_id', $tour->id)->with(['flight', 'user'])->get();
 
             foreach ($bids as $bid) {
