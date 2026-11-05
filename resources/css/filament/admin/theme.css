@@ -2462,9 +2462,8 @@
  * measured in the live rail, it's what makes the collapsed state read as
  * loosely stacked icons instead of one rhythm. Zeroed here so item padding
  * (below) is the only spacing. The list also reserves scrollbar-gutter space
- * on its right, which shifts every icon ~8px left of the rail's centerline;
- * collapsed content is well under the viewport height, so nothing scrolls
- * and the reservation is pure misalignment. */
+ * on its right, which shifts every icon ~8px left of the rail's centerline
+ * even when nothing scrolls — see the nav rule below. */
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
   /* Full rail width so the row hit targets span edge to edge. The vendor
    * pairs a -8px inline margin with the nav padding zeroed above — reset
@@ -2475,16 +2474,20 @@
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
   /* Vendor 24px side padding shrinks the rows to 27px — zeroed so the
    * full-row hit targets and hover paint span the rail edge to edge. */
-  /* The full-row hit target makes the group <li> position:relative, which
-   * moves the flyout panel's containing block INSIDE this scroll container —
-   * so the vendor's overflow clipped every flyout at the rail edge (they
-   * escaped before only because their containing block was the fixed
-   * .fi-sidebar, an ancestor of the clipper). Both axes must be visible:
-   * one non-visible axis forces the other to compute auto.
-   * ponytail: rail loses its own scrollbar — fine until a viewport shorter
-   * than ~8 groups; revisit with a flyout teleport if that ever matters. */
-  @apply px-0 overflow-visible;
+  @apply px-0;
+  /* The vendor's overflow-y: auto stays: the full rail (clock, ten modules,
+   * back-to-site, account) is ~820px tall, so any laptop-height viewport
+   * needs it to scroll. Flyouts are not clipped by it because their
+   * containing block is .fi-sidebar, an ancestor of this scroller — which
+   * holds only while nothing between them is positioned (see the group rules
+   * below). No reserved gutter, and the bar itself is hidden like the open
+   * sidebar's: wheel, trackpad and touch still scroll it. */
   scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar {
+  @apply hidden;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group {
@@ -2544,24 +2547,54 @@
 
 /* Full-row hit target. The trigger button (which carries rail-nav.js's
  * click-to-navigate and the hover flyout) was icon-sized (18px), so only a
- * precise click on the glyph worked. The li keeps a fixed 18px spacer (the
- * .fi-dropdown wrapper) so the flex column doesn't collapse, and the button
- * overlays the whole row absolutely — icon area AND label are clickable.
- * The button's own padding re-creates the icon's resting position. */
-.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group {
+ * precise click on the glyph worked. The row is a one-cell grid: the
+ * .fi-dropdown wrapper and the ::after label share that cell, so the
+ * stretched trigger covers icon area AND label, and the label (which takes
+ * no pointer events) is drawn over it, padded down to clear the icon.
+ * The button's own padding re-creates the icon's resting position.
+ *
+ * Deliberately not an absolute overlay: that needs a positioned <li>, which
+ * becomes the flyout panel's containing block and puts it INSIDE the nav's
+ * scroll container — every flyout then clips at the rail edge. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown) {
+  /* items-stretch undoes the flex column's items-center, which in a grid
+   * would centre the label's box in the row instead of starting it at the top. */
+  @apply grid p-0 gap-0 items-stretch;
+}
+
+/* Rows without a flyout have nothing to clip, so they stay the containing
+ * block for the active-module accent bar. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:not(:has(> .fi-dropdown)) {
   @apply relative;
 }
 
-.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown {
-  /* The spacer that reserves the glyph's row. Must track the trigger icon's
-   * size below, or the absolutely-positioned button overhangs a slot cut for
-   * a smaller icon. */
-  @apply w-5.5 h-5.5;
-  stroke-width: 1.2;
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown) > .fi-dropdown,
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown)::after {
+  grid-area: 1 / 1;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown)::after {
+  /* Where the flex column put it: pt-2.25 + the h-5.5 glyph slot + gap-1.25,
+   * in spacing units like the rules above (the theme's rem is not 16px). */
+  @apply pointer-events-none pt-9 pb-0;
+}
+
+/* The active-module accent bar, as a grid item pinned to the row's start
+ * edge instead of an absolute box: the same 8px inset top and bottom, with
+ * no positioned <li> for it to need. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group.fi-active:has(> .fi-dropdown)::before {
+  @apply static self-stretch justify-self-start;
+  grid-area: 1 / 1;
+  margin-block: 8px;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown,
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown > .fi-dropdown-trigger {
+  @apply h-full;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn {
-  @apply absolute inset-0 z-1 w-full items-start justify-center bg-transparent rounded-[0px];
+  @apply w-full h-full items-start justify-center bg-transparent rounded-[0px];
   padding: 9px 0 0;
 }
 
