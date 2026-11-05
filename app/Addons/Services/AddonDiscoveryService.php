@@ -343,7 +343,7 @@ class AddonDiscoveryService
      * Scan both addon roots and pick which copy of each addon loads.
      *
      * An addon can legitimately exist in both roots: phpVMS ships e.g.
-     * `modules/phpvms-dashboard` in the image, and the operator later updates
+     * `modules/phpvms-widgets` in the image, and the operator later updates
      * it from the registry, which places the new version in the writable root.
      * Something has to decide which one wins, and neither fixed answer works —
      * image-always makes the registry update a silent no-op, installed-always

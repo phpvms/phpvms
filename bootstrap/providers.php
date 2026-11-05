@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Features\Dashboard\DashboardServiceProvider;
+use App\Features\Tiles\TilesServiceProvider;
 use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -40,8 +40,8 @@ return [
     // reach app/Features, and the deletion hook is a model event.
     TourServiceProvider::class,
 
-    // Dashboard widget registry; providers declare widgets via DeclaresDashboardWidgets.
-    DashboardServiceProvider::class,
+    // Tile registry; providers register tiles via Tiles::register().
+    TilesServiceProvider::class,
 
     AdminPanelProvider::class,
     SystemPanelProvider::class,

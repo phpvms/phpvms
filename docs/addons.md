@@ -142,36 +142,39 @@ It sits full-width below the two-column detail grid, and renders nothing at all 
 targets it. See `modules/phpvms-sample-vue-slot/` for a complete working addon (registration,
 the Vue component, and the ESM build step).
 
-## Dashboard widgets
+## Tiles
 
-Core, a theme or an addon registers pilot-dashboard widgets from its service provider's `boot()`.
-Each registration is an id and a closure that builds the widget. The closure runs when the registry
-is first read, never at boot, and again for each locale, so `__()` in it is safe. It must not read
-other request state (user, session, request):
+A tile is a self-contained piece of pilot UI, rendered by a Livewire component or a Blade view, that
+a theme can place on any page. Core, a theme or an addon registers tiles from its service provider's
+`boot()`. Each registration is an id and a closure that builds the tile. The closure runs when the
+registry is first read, never at boot, and again for each locale, so `__()` in it is safe. It must
+not read other request state (user, session, request):
 
 ```php
-use App\Features\Dashboard\DashboardWidget;
-use App\Features\Dashboard\DashboardWidgets;
+use App\Features\Tiles\Tile;
+use App\Features\Tiles\Tiles;
 
 public function boot(): void
 {
-    $widgets = app(DashboardWidgets::class);
+    $tiles = app(Tiles::class);
 
-    $widgets->register('my-addon-stats', fn (): DashboardWidget => DashboardWidget::livewire(
+    $tiles->register('my-addon-stats', fn (): Tile => Tile::livewire(
         id: 'my-addon-stats',
         component: 'my-addon::stats',
-        title: __('my-addon::widgets.stats'),
+        title: __('my-addon::tiles.stats'),
         icon: 'chart-bar',
+        showInDashboard: true,
         default: true,
     ));
 
-    $widgets->register('my-addon-news', fn (): DashboardWidget => DashboardWidget::view(
+    $tiles->register('my-addon-news', fn (): Tile => Tile::view(
         id: 'my-addon-news',
-        view: 'my-addon::widgets.news',
+        view: 'my-addon::tiles.news',
         title: 'News',
         icon: 'newspaper',
-        zone: DashboardWidget::ZONE_SIDEBAR,
         data: ['limit' => 5],
+        showInDashboard: true,
+        zone: Tile::ZONE_SIDEBAR,
     ));
 }
 ```
@@ -181,49 +184,53 @@ public function boot(): void
 | `id`                 | Unique, lower-kebab-case.                                                                       |
 | `title`              | String, may come from `__()`.                                                                   |
 | `icon`               | Icon name.                                                                                      |
-| `zone`               | `DashboardWidget::ZONE_GRID` (default) or `ZONE_SIDEBAR`.                                       |
-| `span`               | `1` or `2`; grid only.                                                                          |
-| `default`            | In the default layout when true.                                                                |
-| `bare`               | The widget draws its own surface.                                                               |
 | `component` / `view` | Exactly one render target: a Livewire component name or a Blade view. `data` is for views only. |
-| `order`              | Default-layout ordering, default 100; ties keep registration order.                             |
+| `bare`               | The tile draws its own surface.                                                                 |
+| `showInDashboard`    | Offer the tile on the pilot dashboard. Default `false`.                                         |
+| `zone`               | Dashboard only. `Tile::ZONE_GRID` (default) or `ZONE_SIDEBAR`.                                  |
+| `span`               | Dashboard only. `1` or `2`; grid only.                                                          |
+| `default`            | Dashboard only. In the default layout when true; needs `showInDashboard`.                       |
+| `order`              | Dashboard only. Default-layout ordering, default 100; ties keep registration order.             |
 
-Invalid definitions throw `InvalidArgumentException`, as does a closure that builds a widget with
+Invalid definitions throw `InvalidArgumentException`, as does a closure that builds a tile with
 another `id`. A duplicate `id` is **replaced** by the last registration, so a theme can override a
-widget registered earlier. `remove($id)` hides a widget whether it is registered before or after the
+tile registered earlier. `remove($id)` hides a tile whether it is registered before or after the
 call, and `has($id)` checks one without building it. A disabled addon's provider never boots, so its
-widgets are absent. Core ships no widgets itself.
+tiles are absent. Core ships no tiles itself.
 
-Themes read the merged result from `App\Features\Dashboard\DashboardWidgets`: `all()`, `find($id)`,
-`defaultLayout()`, `sanitize($layoutFromBrowser)`, `resolve($ids)` (ids to widgets, in order, unknown
-skipped), `zone($layout, $zone)` (a sanitized layout's widgets for one zone) and `available($layout)`
-(registered widgets not placed in either zone, in catalog order, for an "Add widget" menu).
+Themes read the merged result from `App\Features\Tiles\Tiles`: `all()`, `find($id)` and
+`resolve($ids)` (ids to tiles, in order, unknown skipped) for any page. The dashboard methods see only
+tiles with `showInDashboard`: `dashboard()`, `defaultLayout()`, `sanitize($layoutFromBrowser)`,
+`zone($layout, $zone)` (a layout's tiles for one zone) and `available($layout)` (tiles not placed in
+either zone, in registration order, for an "Add tile" menu).
 
 ### Rendering in a theme
 
-A widget pack is a normal `module` addon: its provider (above) registers the widgets, and they
-disappear when the addon is disabled. The theme draws the frame; `<x-dashboard.widget>` renders only
-the body, with no wrapper or classes.
+A tile pack is a normal `module` addon: its provider (above) registers the tiles, and they disappear
+when the addon is disabled. The theme draws the frame; `<x-tile>` renders only the body, with no
+wrapper or classes.
 
 ```blade
-@php($widgets = app(\App\Features\Dashboard\DashboardWidgets::class))
-@php($layout = $widgets->sanitize($saved))
+@php($tiles = app(\App\Features\Tiles\Tiles::class))
+@php($layout = $tiles->sanitize($saved))
 
-@foreach ($widgets->zone($layout, 'grid') as $widget)
-    <section class="{{ $widget->span === 2 ? 'col-span-2' : '' }}">
-        @unless ($widget->bare)
-            <h3><x-dynamic-component :component="'icon-'.$widget->icon" /> {{ $widget->title }}</h3>
+@foreach ($tiles->zone($layout, 'grid') as $tile)
+    <section class="{{ $tile->span === 2 ? 'col-span-2' : '' }}">
+        @unless ($tile->bare)
+            <h3><x-dynamic-component :component="'icon-'.$tile->icon" /> {{ $tile->title }}</h3>
         @endunless
-        <x-dashboard.widget :widget="$widget" :with="['route' => $route]" />
+        <x-tile :tile="$tile" :with="['route' => $route]" />
     </section>
 @endforeach
 ```
 
-The tag takes `widget` (a `DashboardWidget`) or `id` (looked up in the registry), never both. An
-unknown `id` renders nothing, or an HTML comment naming it when `app.debug` is on.
+Outside the dashboard, render one by id: `<x-tile id="weather" />`.
 
-`:with` carries page data the widget needs. A Livewire widget receives only the keys its `mount()`
-arguments or public properties accept, plus Livewire's own control keys such as `lazy`, so one
-shared `:with` is safe; the rest are dropped instead of
-becoming HTML attributes. It is keyed `dashboard-widget-{id}`. A view widget receives its declared `data` with `:with` merged over
-it, so render-time values win (`DashboardWidget::dataWith()`).
+The tag takes `tile` (a `Tile`) or `id` (looked up in the registry), never both. An unknown `id`
+renders nothing, or an HTML comment naming it when `app.debug` is on.
+
+`:with` carries page data the tile needs. A Livewire tile receives only the keys its `mount()`
+arguments or public properties accept, plus Livewire's own control keys such as `lazy`, so one shared
+`:with` is safe; the rest are dropped instead of becoming HTML attributes. It is keyed `tile-{id}`. A
+view tile receives its declared `data` with `:with` merged over it, so render-time values win
+(`Tile::dataWith()`).

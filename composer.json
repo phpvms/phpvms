@@ -140,7 +140,7 @@
       "Database\\Seeders\\": "database/seeders/",
       "Modules\\AddonManager\\": "modules/phpvms-addon-manager/app/",
       "Modules\\SampleVueWidget\\": "modules/phpvms-sample-vue-widget/",
-      "Modules\\PhpvmsDashboard\\": "modules/phpvms-dashboard/",
+      "Modules\\PhpvmsWidgets\\": "modules/phpvms-widgets/",
       "Modules\\": "modules/"
     }
   },
