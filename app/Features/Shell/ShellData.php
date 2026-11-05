@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Features\Shell;
 
+use App\Features\Bids\Queries\PilotBids;
 use App\Http\Data\AirlineIdentityData;
 use App\Http\Data\MapConfigData;
 use App\Http\Data\PilotChromeData;
+use App\Models\Pirep;
 use App\Models\User;
 use App\Services\MapConfigService;
 use App\Services\NavigationService;
@@ -67,6 +69,56 @@ final class ShellData
     public function pilotChrome(): ?PilotChromeData
     {
         return $this->remember('pilotChrome', fn (): ?PilotChromeData => ($user = $this->pilot()) instanceof User ? PilotChromeData::fromUser($user) : null);
+    }
+
+    /**
+     * The pilot's latest flight (the `last_pirep` the dashboard uses), for the
+     * header: its ident, route and PIREP page. Null when there is none.
+     *
+     * @return array{ident: string, route: string, url: string}|null
+     */
+    public function previousFlight(): ?array
+    {
+        return $this->remember('previousFlight', function (): ?array {
+            $id = $this->pilot()?->last_pirep_id;
+            $pirep = $id === null ? null : Pirep::query()->with('airline')->find($id);
+
+            if (!$pirep instanceof Pirep || blank($pirep->dpt_airport_id) || blank($pirep->arr_airport_id)) {
+                return null;
+            }
+
+            return [
+                'ident' => $pirep->ident,
+                'route' => $pirep->dpt_airport_id.' → '.$pirep->arr_airport_id,
+                'url'   => route('frontend.pireps.show', ['id' => $pirep->id]),
+            ];
+        });
+    }
+
+    /**
+     * The pilot's next flight: the first bid, as on My bids and the Next flight
+     * widget, with its tour when the bid is a tour leg. Null when there is no bid.
+     *
+     * @return array{ident: string, route: string, url: string, tour: ?string, tourUrl: ?string}|null
+     */
+    public function nextFlight(): ?array
+    {
+        return $this->remember('nextFlight', function (): ?array {
+            $user = $this->pilot();
+            $bid = $user instanceof User ? app(PilotBids::class)->for($user)[0] ?? null : null;
+
+            if ($bid === null || $bid->flight === null) {
+                return null;
+            }
+
+            return [
+                'ident'   => $bid->flight->callsign,
+                'route'   => ($bid->flight->dpt ?? '—').' → '.($bid->flight->arr ?? '—'),
+                'url'     => route('frontend.flights.bids'),
+                'tour'    => $bid->tourName,
+                'tourUrl' => $bid->tourId === null ? null : route('frontend.tours.show', ['id' => $bid->tourId]),
+            ];
+        });
     }
 
     /**

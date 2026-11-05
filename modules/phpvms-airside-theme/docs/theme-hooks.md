@@ -305,7 +305,7 @@ The page area of the signed-in layout (padding `--vms-gutter`). Set in `customiz
 
 ### `vms-shell-header`
 
-The dispatch strip: a rounded bar with the airline, duty, METAR and clocks. Surface and hairline border (`gray-200`, dark: `dark-800` and `dark-700`) come from this hook. Set in `customizeShell()` of the theme provider.
+The dispatch strip: a rounded bar with the clocks, the previous and next flight, and the airline. Surface and hairline border (`gray-200`, dark: `dark-800` and `dark-700`) come from this hook. Set in `customizeShell()` of the theme provider.
 
 - **View:** `resources/views/components/shell/header.blade.php`
 - **Element:** the layout header `<div>`.
@@ -348,9 +348,20 @@ The surface of a dashboard widget card (TallStackUI card scope `airside.widget`,
 - **Variables:** none.
 - **Stability:** draft.
 
+### `vms-shell-flights`
+
+The header's flight status: the previous flight (a link to its PIREP, or "None yet") and, when the pilot has a bid, the next flight (a link to My bids), with the tour name when the bid is a tour leg. Hidden below 1024px with the rest of the dispatch status.
+
+- **View:** `resources/views/components/shell/flights.blade.php`
+- **Element:** the root `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
 ### `vms-dispatch-sep`
 
-The thin divider between the airline and the dispatch status. Hidden below 1024px with the status.
+The thin divider between the clocks and the dispatch status. Hidden below 1024px with the status.
 
 - **View:** `resources/views/components/shell/header.blade.php`
 - **Element:** the `<span>`.
