@@ -33,15 +33,16 @@ return [
     MetricsServiceProvider::class,
     FirstPartyMetricsServiceProvider::class,
 
+    // Same reasoning again: the tile registry must be bound before addon
+    // providers register tiles, so every provider sees the one singleton.
+    TilesServiceProvider::class,
+
     AddonServiceProvider::class,
     PassportServiceProvider::class,
 
     // Hooks the tour slice to the PIREP lifecycle; event discovery does not
     // reach app/Features, and the deletion hook is a model event.
     TourServiceProvider::class,
-
-    // Tile registry; providers register tiles via Tiles::register().
-    TilesServiceProvider::class,
 
     AdminPanelProvider::class,
     SystemPanelProvider::class,

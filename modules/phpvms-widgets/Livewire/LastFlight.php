@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\PhpvmsWidgets\Livewire;
 
 use App\Models\Pirep;
-use App\Support\Units\Time;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -29,7 +28,8 @@ class LastFlight extends Component
 
         return view('phpvmswidgets::livewire.last-flight', [
             'pirep' => $pirep,
-            'block' => $pirep?->flight_time === null ? '—' : Time::minutesToTimeString((int) $pirep->flight_time),
+            // HH:MM, the same as the skylight widget, so both themes match.
+            'block' => $pirep?->flight_time === null ? '—' : sprintf('%02d:%02d', intdiv((int) $pirep->flight_time, 60), (int) $pirep->flight_time % 60),
         ]);
     }
 }

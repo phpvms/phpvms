@@ -23,9 +23,11 @@ use InvalidArgumentException;
  * registered earlier. {@see self::remove()} hides an id whatever the boot order.
  * A disabled addon's provider never boots, so its tiles are absent.
  *
- * Octane: bound as a singleton. Registrations happen at boot. Built tiles are
- * kept per locale, so a closure may call `__()` for its title, but must not
- * read other request state (user, session, request).
+ * Octane: bound as a singleton. Registrations happen at boot. The built tiles
+ * are kept for one locale and rebuilt when the locale changes, so a closure may
+ * call `__()` for its title, but must not read other request state (user,
+ * session, request). Only one set is kept because the locale comes from a
+ * client cookie: a cache keyed by locale would grow with every value sent.
  */
 final class Tiles
 {
@@ -35,8 +37,10 @@ final class Tiles
     /** @var array<string, true> */
     private array $removed = [];
 
-    /** @var array<string, array<string, Tile>> Built tiles, keyed by locale. */
-    private array $built = [];
+    /** @var array<string, Tile>|null Built tiles for {@see self::$builtLocale}. */
+    private ?array $built = null;
+
+    private ?string $builtLocale = null;
 
     /**
      * @param Closure(): Tile $build Returns the tile; its id must equal $id.
@@ -45,7 +49,7 @@ final class Tiles
     {
         unset($this->registrations[$id]);
         $this->registrations[$id] = $build;
-        $this->built = [];
+        $this->built = null;
     }
 
     /**
@@ -54,7 +58,7 @@ final class Tiles
     public function remove(string $id): void
     {
         $this->removed[$id] = true;
-        $this->built = [];
+        $this->built = null;
     }
 
     /**
@@ -73,8 +77,8 @@ final class Tiles
     public function all(): array
     {
         $locale = app()->getLocale();
-        if (isset($this->built[$locale])) {
-            return $this->built[$locale];
+        if ($this->built !== null && $this->builtLocale === $locale) {
+            return $this->built;
         }
 
         $tiles = [];
@@ -94,7 +98,9 @@ final class Tiles
             $tiles[$id] = $tile;
         }
 
-        return $this->built[$locale] = $tiles;
+        $this->builtLocale = $locale;
+
+        return $this->built = $tiles;
     }
 
     public function find(string $id): ?Tile
@@ -154,9 +160,9 @@ final class Tiles
     /**
      * Clean a dashboard layout that came from the browser.
      *
-     * Drops unknown or non-dashboard ids, duplicates and non-strings, keeps each
-     * tile in the zone it was saved in, and returns the default layout for
-     * broken input.
+     * Drops unknown or non-dashboard ids, duplicates and non-strings, and keeps
+     * each tile in the zone it was saved in. Returns the default layout for
+     * broken input: not an array, no zone at all, or a zone that is not a list.
      *
      * @return array{grid: list<string>, sidebar: list<string>}
      */
@@ -166,15 +172,18 @@ final class Tiles
             return $this->defaultLayout();
         }
 
+        foreach (Tile::ZONES as $zone) {
+            if (isset($layout[$zone]) && !is_array($layout[$zone])) {
+                return $this->defaultLayout();
+            }
+        }
+
         $dashboard = $this->dashboard();
         $clean = ['grid' => [], 'sidebar' => []];
         $seen = [];
 
         foreach (Tile::ZONES as $zone) {
             $ids = $layout[$zone] ?? [];
-            if (!is_array($ids)) {
-                continue;
-            }
 
             foreach ($ids as $id) {
                 if (!is_string($id) || isset($seen[$id]) || !isset($dashboard[$id])) {

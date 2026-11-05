@@ -111,7 +111,7 @@ it('sanitizes a saved layout', function (): void {
     expect($registry->sanitize(['grid' => ['beta'], 'sidebar' => []]))
         ->toBe(['grid' => ['beta'], 'sidebar' => []]);
 
-    foreach (['junk', null, 5, [], ['other' => ['alpha']]] as $garbage) {
+    foreach (['junk', null, 5, [], ['other' => ['alpha']], ['grid' => 'corrupt', 'sidebar' => []]] as $garbage) {
         expect($registry->sanitize($garbage))->toBe($registry->defaultLayout());
     }
 });
