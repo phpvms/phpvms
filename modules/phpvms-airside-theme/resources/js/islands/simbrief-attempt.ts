@@ -55,6 +55,7 @@ function mountIsland(root: HTMLElement): () => void {
   let popup: Window | null = null;
   let popupWatch: number | null = null;
   let disposed = false;
+  const polling = new AbortController();
 
   const transport = () => ({
     apiCodeUrl: data.apiCodeUrl,
@@ -144,6 +145,7 @@ function mountIsland(root: HTMLElement): () => void {
       const result = await pollProviderAttempt(transport(), {
         intervalMs: POLL_INTERVAL_MS,
         maxAttempts: POLL_MAX_ATTEMPTS,
+        signal: polling.signal,
         onAttempt: (attempt) => {
           if (!disposed) render(null, attempt);
         },
@@ -220,6 +222,7 @@ function mountIsland(root: HTMLElement): () => void {
 
   return () => {
     disposed = true;
+    polling.abort();
     if (popupWatch !== null) window.clearInterval(popupWatch);
     generateButton?.removeEventListener("click", onGenerate);
     retryButton?.removeEventListener("click", onRetry);

@@ -198,7 +198,20 @@ function unmountAll() {
   cleanups.clear();
 }
 
+/** Dispose maps whose island Livewire removed, and mount any island it added. */
+function sweep() {
+  for (const [root, cleanup] of cleanups) {
+    if (root.isConnected) continue;
+    cleanup();
+    delete root.dataset.mounted;
+    cleanups.delete(root);
+  }
+  mountAll();
+}
+
 document.addEventListener("DOMContentLoaded", mountAll);
+// The root element, not the body: wire:navigate swaps the body.
+new MutationObserver(sweep).observe(document.documentElement, { childList: true, subtree: true });
 document.addEventListener("livewire:navigated", mountAll);
 document.addEventListener("livewire:navigating", unmountAll);
 

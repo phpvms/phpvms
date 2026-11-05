@@ -27,6 +27,8 @@ export interface ProviderPollOptions {
   intervalMs?: number;
   maxAttempts?: number;
   onAttempt?: (attempt: number) => void;
+  /** Aborting stops the polling: the pending request and the wait between attempts. */
+  signal?: AbortSignal;
 }
 
 interface ApiCodeResponse {
@@ -120,8 +122,19 @@ export async function requestProviderSubmission(
   );
 }
 
-function delay(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+function delay(milliseconds: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    signal?.throwIfAborted();
+    const timer = window.setTimeout(resolve, milliseconds);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        window.clearTimeout(timer);
+        reject(signal.reason);
+      },
+      { once: true },
+    );
+  });
 }
 
 export async function pollProviderAttempt(
@@ -136,6 +149,7 @@ export async function pollProviderAttempt(
     const response = await (transport.request ?? fetch)(transport.pollUrl, {
       method: "POST",
       headers: transport.headers,
+      signal: options.signal,
     });
     const result = (await response.json()) as ProviderPollResponse;
 
@@ -143,7 +157,7 @@ export async function pollProviderAttempt(
     if (response.status !== 409 || result.type !== "ofp-not-ready") {
       throw new Error(result.message ?? "The SimBrief briefing could not be checked.");
     }
-    if (attempt < maxAttempts) await delay(intervalMs);
+    if (attempt < maxAttempts) await delay(intervalMs, options.signal);
   }
 
   throw new Error(

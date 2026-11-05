@@ -113,4 +113,8 @@
         {{-- The bid drawer: the Next flight widget opens it with assignment-drawer.open. --}}
         <livewire:bids::assignment-drawer />
     </div>
+
+    <x-slot:scripts>
+        @airsideVite(['resources/js/islands/route-map.ts'])
+    </x-slot:scripts>
 </x-vms::layouts.app>
