@@ -11,8 +11,8 @@
 ])
 
 {{--
-  Flight identity (FlightIdentHeader). Props: callsign, dpt, arr (null shows "—"), airline (name; first two
-  letters become the avatar fallback, "VA" when absent), logo (url), aircraft (e.g. "N123 · B738"),
+  Flight identity (FlightIdentHeader). Props: callsign, dpt, arr (null shows "—"), airline (name, shown muted
+  under the ident; its first two letters become the avatar fallback, "VA" when absent), logo (url), aircraft (e.g. "N123 · B738"),
   href (makes the whole block a link), size (md|lg), stacked (route on its own line, long ident truncates).
 --}}
 @php
@@ -35,6 +35,9 @@
                 <span>{{ $dpt ?? '—' }}</span><span aria-hidden="true">→</span><span class="sr-only">to</span><span>{{ $arr ?? '—' }}</span>
             </span>
         </span>
+        @if ($airline)
+            <span @class(['vms-flight-info-airline mt-0.5 truncate text-dark-500 dark:text-dark-400', $lg ? 'text-sm' : 'text-xs'])>{{ $airline }}</span>
+        @endif
         @if ($aircraft)
             <span class="mt-0.5 truncate text-sm">{{ $aircraft }}</span>
         @endif

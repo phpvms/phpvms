@@ -1,5 +1,6 @@
-{{-- The dashboard toolbar and board. State and layout rules: App\Features\Dashboard\Livewire\DashboardBoard. --}}
-<div class="grid gap-3">
+{{-- The dashboard toolbar and board. State and layout rules: App\Features\Dashboard\Livewire\DashboardBoard;
+     the stored layout: airside's dashboardLayout (resources/js/airside/dashboard-layout.ts). --}}
+<div class="grid gap-3" x-data="dashboardLayout">
     @if (! $ready)
         <div class="grid place-items-center py-10">
             <x-ts-spinner text="Loading dashboard…" />
@@ -101,42 +102,3 @@
     @endif
 </div>
 
-@script
-<script>
-    const STORAGE_KEY = 'airside.dashboard.layout.v1'
-    const root = $wire.$el
-
-    const read = () => {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY)
-
-            return raw ? JSON.parse(raw) : null
-        } catch (error) {
-            return null
-        }
-    }
-
-    const write = (layout) => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(layout))
-        } catch (error) {
-            // Storage can be blocked; the layout then lasts for this page only.
-        }
-    }
-
-    $wire.$on('dashboard-layout-changed', ({ grid, sidebar }) => write({ grid, sidebar }))
-    setTimeout(() => $wire.loadLayout(read()), 0)
-
-    // Widgets are rendered after the layout arrives, so an island that appears later
-    // (the route map) is mounted by the same event the islands use on navigation.
-    const seen = new WeakSet()
-    new MutationObserver(() => {
-        const fresh = [...root.querySelectorAll('[data-airside-island]')].filter((el) => !seen.has(el))
-
-        if (fresh.length) {
-            fresh.forEach((el) => seen.add(el))
-            document.dispatchEvent(new CustomEvent('livewire:navigated'))
-        }
-    }).observe(root, { childList: true, subtree: true })
-</script>
-@endscript

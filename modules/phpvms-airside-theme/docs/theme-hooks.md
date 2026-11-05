@@ -744,6 +744,17 @@ The weather card in the Next flight widget (the `airport-weather` component, loa
 - **Variables:** none.
 - **Stability:** draft.
 
+### `vms-weather-detail-card`
+
+One airport's weather: the label and ICAO, the METAR and its observation time, or the loading, missing and error states. Reusable as `<x-vms::weather-detail-card>`; the `airport-weather` Livewire component renders it.
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<section>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
 ### `vms-next-flight-stats`
 
 The stat strip of the Next flight widget: block time, distance and briefing.
@@ -900,7 +911,7 @@ The list of flight cards.
 
 ### `vms-flight-card`
 
-One flight. A click or Enter/Space opens the assignment drawer on its details step. The card whose drawer is open is marked `aria-current="true"`.
+One flight. A click or Enter/Space opens the flight overview drawer. The card whose drawer is open is marked `aria-current="true"`.
 
 - **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
 - **Element:** the `<li>`.
@@ -938,6 +949,28 @@ The stack to the right of the logo: callsign, airline name, pills.
 - **View:** `resources/views/components/flights/summary.blade.php`
 - **Element:** the `<div>`.
 - **Parts:** `vms-flight-pills`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-info`
+
+Flight identity: airline logo, callsign and departure → arrival, with the airline name and the aircraft under it. Reusable as `<x-vms::flights.ident>`; used on the flight page, the OFP pages, bid cards, the assignment drawer and the flight overview drawer.
+
+- **View:** `resources/views/components/flights/ident.blade.php`
+- **Element:** the root `<div>`, or `<a>` with `href`.
+- **Parts:** `vms-flight-info-airline`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-flight-info-airline`
+
+The airline name under the ident, smaller and muted.
+
+- **View:** `resources/views/components/flights/ident.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
@@ -1021,9 +1054,9 @@ The row of pills in a flight summary: flight type, route code and the status.
 
 ### `vms-flight-reason`
 
-Why a flight is unavailable. Also used in the drawer details step.
+Why a flight is unavailable. Also used in the flight overview drawer.
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php, resources/views/livewire/bids/assignment-drawer.blade.php`
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php, resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<p>`.
 - **Parts:** none.
 - **State:** none.
@@ -1043,9 +1076,9 @@ Wraps the `flights.row.actions` slot on a card.
 
 ### `vms-flight-pill`
 
-A small pill. Variants: `vms-flight-pill--bid` (On your bid) and `vms-flight-pill--off` (Unavailable). Also used for the flight type in the drawer details step.
+A small pill. Variants: `vms-flight-pill--bid` (On your bid) and `vms-flight-pill--off` (Unavailable).
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php, resources/views/livewire/bids/assignment-drawer.blade.php`
+- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
 - **Element:** the `<span>`.
 - **Parts:** none.
 - **State:** none.
@@ -1098,20 +1131,20 @@ The "No flights found" empty state.
 
 ### `vms-detail-summary`
 
-The header of the details step: the `x-vms::flights.summary` with the airline logo, callsign and airline, then the departure – arrival ICAOs and the scheduled times.
+The header of the flight overview drawer: the `x-vms::flights.ident` (logo, callsign, departure → arrival, airline), then the scheduled times.
 
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
-- **Element:** the summary root `<div>`.
-- **Parts:** `vms-flight-summary`.
+- **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-info`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-flight-detail`
 
-The details step of the assignment drawer: the route map, the departure, the route and the arrival, then the actions.
+The flight overview drawer: the route map, the departure, the route and the arrival, then the actions.
 
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<div>`.
 - **Parts:** `vms-detail-map`, `vms-detail-leg`, `vms-detail-route`, `vms-detail-actions`.
 - **State:** none.
@@ -1122,7 +1155,7 @@ The details step of the assignment drawer: the route map, the departure, the rou
 
 The route map: an `x-map.svg` in the dotted style, with a pin on each airport and the great circle between them (`.map-route`, a dashed brand line that keeps its width at any zoom). It is the narrowest map that holds both airports (the departure country, then its continent, then the world), cropped to the two airports with `fit` (a 4:3 view; dots and pins keep their size, and `--map-scale` on the `<svg>` gives the crop factor to CSS). Light-grey border; dots and pins as in `vms-location-card`.
 
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<div>` around the `<svg>`.
 - **Parts:** none.
 - **State:** none.
@@ -1133,7 +1166,7 @@ The route map: an `x-map.svg` in the dotted style, with a pin on each airport an
 
 One airport of the flight, departure then arrival: the airport name, the scheduled time · ICAO, and the `airport-weather` card (loaded lazily) with the METAR.
 
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -1144,7 +1177,7 @@ One airport of the flight, departure then arrival: the airport name, the schedul
 
 The filed route between the departure and the arrival, in mono. Shown only when the flight has a route.
 
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -1153,9 +1186,9 @@ The filed route between the departure and the arrival, in mono. Shown only when 
 
 ### `vms-detail-actions`
 
-The Add to bids and Generate OFP buttons, the reason line and the `flights.detail.actions` slot.
+The Add to bids (View bid when the pilot has one) and Generate OFP buttons, the reason line and the `flights.detail.actions` slot.
 
-- **View:** `resources/views/livewire/bids/assignment-drawer.blade.php`
+- **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.

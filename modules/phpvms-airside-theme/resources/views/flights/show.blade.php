@@ -12,7 +12,6 @@
         <article class="grid min-w-0 gap-4">
             <header class="flex flex-wrap items-center justify-between gap-5 rounded-xl p-6">
                 <div>
-                    <p class="mb-3">FLIGHT DISPATCH</p>
                     <x-vms::flights.ident
                         size="lg"
                         :callsign="$summary->callsign"

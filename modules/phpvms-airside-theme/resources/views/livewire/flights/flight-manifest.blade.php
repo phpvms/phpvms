@@ -136,6 +136,8 @@
             x-data="{ selected: null }"
             x-on:assignment-drawer.open.window="selected = String($event.detail.flightId)"
             x-on:assignment-drawer.closed.window="selected = null"
+            x-on:flight-overview.open.window="selected = String($event.detail.flightId)"
+            x-on:flight-overview.closed.window="selected = null"
         >
             @foreach ($flights as $flight)
                 @php($flightId = $flight->id)
@@ -144,11 +146,11 @@
                     data-availability="{{ $flight->primaryAction === 'unavailable' ? 'unavailable' : 'available' }}"
                     x-bind:aria-current="selected === '{{ $flightId }}' ? 'true' : null"
                     class="vms-flight-card grid min-w-0 cursor-pointer items-center gap-x-5 gap-y-3 px-4.5 py-4 md:grid-cols-[auto_minmax(0,1fr)_10rem]"
-                    x-on:click="$dispatch('assignment-drawer.open', { flightId: '{{ $flightId }}', details: true })"
+                    x-on:click="$dispatch('flight-overview.open', { flightId: '{{ $flightId }}' })"
                 >
                     <x-vms::flights.summary :callsign="$flight->callsign" :airline="$flight->airline?->name" :logo="$flight->airline?->logo" class="md:w-60">
                         <x-slot:button>
-                            <button type="button" class="block cursor-pointer rounded-sm text-left font-bold focus-visible:outline-2 focus-visible:outline-offset-2" aria-label="Show {{ $flight->callsign }} details" x-on:click.stop="$dispatch('assignment-drawer.open', { flightId: '{{ $flightId }}', details: true })">{{ $flight->callsign }}</button>
+                            <button type="button" class="block cursor-pointer rounded-sm text-left font-bold focus-visible:outline-2 focus-visible:outline-offset-2" aria-label="Show {{ $flight->callsign }} details" x-on:click.stop="$dispatch('flight-overview.open', { flightId: '{{ $flightId }}' })">{{ $flight->callsign }}</button>
                         </x-slot:button>
                         @if ($flight->type)
                             <span class="vms-flight-pill px-2 py-0.5 text-[11px] font-medium">{{ $flight->type }}</span>

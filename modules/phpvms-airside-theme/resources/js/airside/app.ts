@@ -5,6 +5,8 @@
  * toasts are TallStackUI's own.
  */
 
+import { dashboardLayout } from "./dashboard-layout";
+import { livewireDrawer } from "./livewire-drawer";
 import { mapDots } from "./map-dots";
 
 interface AirportResult {
@@ -16,6 +18,8 @@ document.addEventListener("alpine:init", () => {
   const { Alpine } = window;
 
   Alpine.data("mapDots", mapDots);
+  Alpine.data("livewireDrawer", livewireDrawer);
+  Alpine.data("dashboardLayout", dashboardLayout);
 
   /**
    * HTML-escape a plain string. TallStackUI's toast renders its title with
