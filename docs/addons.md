@@ -176,17 +176,17 @@ public function boot(): void
 }
 ```
 
-| Field       | Notes                                                                                   |
-| ----------- | --------------------------------------------------------------------------------------- |
-| `id`        | Unique, lower-kebab-case.                                                               |
-| `title`     | String, may come from `__()`.                                                           |
-| `icon`      | Icon name.                                                                              |
-| `zone`      | `DashboardWidget::ZONE_GRID` (default) or `ZONE_SIDEBAR`.                               |
-| `span`      | `1` or `2`; grid only.                                                                  |
-| `default`   | In the default layout when true.                                                        |
-| `bare`      | The widget draws its own surface.                                                       |
+| Field                | Notes                                                                                           |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| `id`                 | Unique, lower-kebab-case.                                                                       |
+| `title`              | String, may come from `__()`.                                                                   |
+| `icon`               | Icon name.                                                                                      |
+| `zone`               | `DashboardWidget::ZONE_GRID` (default) or `ZONE_SIDEBAR`.                                       |
+| `span`               | `1` or `2`; grid only.                                                                          |
+| `default`            | In the default layout when true.                                                                |
+| `bare`               | The widget draws its own surface.                                                               |
 | `component` / `view` | Exactly one render target: a Livewire component name or a Blade view. `data` is for views only. |
-| `order`     | Default-layout ordering, default 100; ties keep registration order.                     |
+| `order`              | Default-layout ordering, default 100; ties keep registration order.                             |
 
 Invalid definitions throw `InvalidArgumentException`, as does a closure that builds a widget with
 another `id`. A duplicate `id` is **replaced** by the last registration, so a theme can override a
