@@ -71,10 +71,12 @@
                             ])>
                             <div @class([$customization['header.layout.base'], $customization['header.layout.with-title'] => $title !== null, $customization['header.layout.no-title'] => $title === null])>
                                 @if ($title)
-                                    <h2 id="{{ $titleId }}" @if ($title instanceof \Illuminate\View\ComponentSlot)
-                                            {{ $title->attributes->class($customization['title.text']) }}
+                                    {{-- airside eject: the title takes the focus when the slide opens (x-trap honours [autofocus]),
+                                         so the close button does not; tabindex -1 keeps it out of the Tab order. --}}
+                                    <h2 id="{{ $titleId }}" tabindex="-1" autofocus @if ($title instanceof \Illuminate\View\ComponentSlot)
+                                            {{ $title->attributes->class([$customization['title.text'], 'focus:outline-none']) }}
                                         @else
-                                            class="{{ $customization['title.text'] }}"
+                                            class="{{ $customization['title.text'] }} focus:outline-none"
                                             @endif>{{ $title }}</h2>
                                 @endif
                                 <button type="button" x-on:click="show = false" aria-label="Close" dusk="tallstackui_slide_close">

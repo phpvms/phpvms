@@ -378,6 +378,11 @@
         @apply border border-gray-200 dark:border-dark-700;
     }
 
+    /* Route card (x-vms::flights.route-card): the overlay fades in over the bottom of the map, so the dots run under it. */
+    .vms-route-card-overlay {
+        @apply bg-linear-to-t from-white/95 from-35% via-white/75 via-60% to-transparent dark:from-dark-800/95 dark:via-dark-800/75;
+    }
+
     .vms-detail-map .map-route {
         stroke: var(--vms-brand);
         stroke-dasharray: 6 5;
@@ -386,6 +391,30 @@
     .vms-detail-route h4,
     .vms-detail-leg p {
         @apply text-dark-500 dark:text-dark-400;
+    }
+
+    /* Select menu (x-vms::ui.select-menu): the trigger, the in-place panel and its options. */
+    .vms-select-menu-button,
+    .vms-select-menu-panel input {
+        @apply border border-gray-300 bg-white dark:border-dark-600 dark:bg-dark-800;
+    }
+
+    .vms-select-menu-panel {
+        @apply border border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-800;
+    }
+
+    .vms-select-menu-button > span,
+    .vms-select-menu-option span {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-select-menu-option[data-active],
+    .vms-select-menu-option:hover {
+        @apply bg-gray-100 dark:bg-dark-700;
+    }
+
+    .vms-select-menu-option > span:last-child:not(:first-child) {
+        @apply text-dark-700 dark:text-dark-200;
     }
 
     .vms-landing > main {

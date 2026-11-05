@@ -6,8 +6,6 @@
     $flight = $payload['flight'] ?? null;
     $subfleets = $payload['subfleets'] ?? collect();
     $aircraft = $state === 'selecting' && $subfleetId !== null ? $this->aircraftList : [];
-    $chosenSubfleet = $subfleetId === null ? null : $subfleets->firstWhere('id', $subfleetId);
-    $chosenAircraft = collect($aircraft ?? [])->firstWhere('id', $aircraftId);
 @endphp
 
 <x-vms::ui.drawer name="assignment" title="Flight bid" event="assignment-drawer" subject="flightId" wire:model="open">
@@ -75,7 +73,7 @@
             @elseif ($state === 'selecting' && $payload)
                 <form class="grid gap-4" wire:submit="submit">
                     <section class="rounded-md px-4 py-3" aria-label="Selected flight">
-                        <dl class="m-0 grid grid-cols-3 gap-3">
+                        <dl class="m-0 grid grid-cols-3 gap-3 text-center">
                             <div><dt class="text-[9px] uppercase tracking-wider">Departure</dt><dd class="mt-0.5 text-[11px]">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd></div>
                             <div><dt class="text-[9px] uppercase tracking-wider">Arrival</dt><dd class="mt-0.5 text-[11px]">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd></div>
                             <div><dt class="text-[9px] uppercase tracking-wider">Block</dt><dd class="mt-0.5 text-[11px]">{{ $flight->summary->blockTime ?? '—' }}</dd></div>
@@ -86,88 +84,15 @@
                         <x-ts-alert color="red" light shadowless role="alert" data-failure="{{ $failureType }}">{{ $failureMessage }}</x-ts-alert>
                     @endif
 
-                    <fieldset class="m-0 grid min-w-0 gap-3 rounded-lg p-3">
-                        <legend class="px-1 text-[13px] font-semibold">Aircraft Assignment</legend>
-
-                        @if (! $chosenSubfleet)
-                            <p class="text-xs">Select the subfleet and aircraft to fly with.</p>
-                        @endif
-
-                        @if ($editingSubfleet || ! $chosenSubfleet)
-                            @if ($chosenSubfleet)
-                                <div class="flex justify-end"><x-ts-button type="button" xs light wire:click="selectSubfleet({{ $chosenSubfleet->id }})">Cancel</x-ts-button></div>
-                            @endif
-                            <x-vms::bids.picker
-                                label="Eligible subfleet"
-                                action="selectSubfleet"
-                                search-placeholder="Search subfleets"
-                                empty-text="No configured subfleet matches this search."
-                                :items="$subfleets->map(fn ($subfleet) => [
-                                    'value' => $subfleet->id,
-                                    'title' => $subfleet->displayName,
-                                    'sub' => implode(' · ', array_filter([$subfleet->airlineIcao, $subfleet->icaoType])) ?: 'Configured subfleet',
-                                    'meta' => $subfleet->availabilityLabel ?? $subfleet->eligibleAircraftCount.' available',
-                                    'disabled' => $subfleet->disabled,
-                                ])->all()"
-                            />
-                        @else
-                            <article class="grid min-w-0 gap-0.5 rounded-md px-3 py-2.5" aria-label="Selected subfleet">
-                                <header class="flex items-center justify-between gap-2">
-                                    <span>Selected subfleet</span>
-                                    <x-ts-button type="button" xs light wire:click="editSubfleet">Edit</x-ts-button>
-                                </header>
-                                <strong class="text-[13px]">{{ $chosenSubfleet->displayName }}</strong>
-                                <span class="text-xs">{{ $chosenSubfleet->eligibleAircraftCount }} eligible aircraft currently available</span>
-                            </article>
-                        @endif
-
-                        @if ($subfleetId !== null)
-                            <div wire:loading wire:target="selectSubfleet,editAircraft,retryAircraft">
-                                <div class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Loading current eligible aircraft"><x-ts-spinner sm text="Loading current eligible aircraft" /></div>
-                            </div>
-
-                            @if ($aircraft === null)
-                                <div class="grid gap-1.5 rounded-md px-3 py-2.5 text-[13px]" role="alert">
-                                    <strong>Aircraft unavailable</strong>
-                                    <span>Eligible aircraft could not be loaded. Choose another subfleet or try again.</span>
-                                    <div><x-ts-button type="button" xs light wire:click="retryAircraft">Try again</x-ts-button></div>
-                                </div>
-                            @elseif ($aircraft === [])
-                                <div class="grid gap-1 rounded-md px-3 py-2.5 text-[13px]" role="status">
-                                    <strong>No eligible aircraft</strong>
-                                    @if ($policy->aircraftRequired)
-                                        <span>No active, parked aircraft meets the current server policy for this flight.</span>
-                                    @else
-                                        <span>You can still create a flight-only bid.</span>
-                                    @endif
-                                </div>
-                            @else
-                                @if ($editingAircraft || ! $chosenAircraft)
-                                    @if ($chosenAircraft)
-                                        <div class="flex justify-end"><x-ts-button type="button" xs light wire:click="selectAircraft({{ $chosenAircraft->id }})">Cancel</x-ts-button></div>
-                                    @endif
-                                    <x-vms::bids.picker
-                                        label="Eligible aircraft"
-                                        action="selectAircraft"
-                                        search-placeholder="Search registrations or types"
-                                        empty-text="No eligible aircraft matches this search."
-                                        :items="array_map(fn ($item) => [
-                                            'value' => $item->id,
-                                            'title' => $item->registration,
-                                            'sub' => $item->icaoType.' · '.$item->subfleetName,
-                                            'meta' => $item->airport?->icao ?? 'Airport unavailable',
-                                        ], $aircraft)"
-                                    />
-                                @else
-                                    <x-vms::bids.aircraft-card label="Selected aircraft" :aircraft="$chosenAircraft">
-                                        <x-slot:action>
-                                            <x-ts-button type="button" xs light wire:click="editAircraft">Edit</x-ts-button>
-                                        </x-slot:action>
-                                    </x-vms::bids.aircraft-card>
-                                @endif
-                            @endif
-                        @endif
-                    </fieldset>
+                    <x-vms::bids.aircraft-selection
+                        :subfleets="$subfleets"
+                        :aircraft="$aircraft"
+                        :subfleet-id="$subfleetId"
+                        :aircraft-id="$aircraftId"
+                        :editing-subfleet="$editingSubfleet"
+                        :editing-aircraft="$editingAircraft"
+                        :required="$policy->aircraftRequired"
+                    />
 
                     <p class="text-xs">
                         {{ $policy->aircraftRequired

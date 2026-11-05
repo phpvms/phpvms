@@ -3,30 +3,16 @@
     $payload = $state === 'details' ? $this->dispatchPayload : null;
     $policy = $payload['policy'] ?? null;
     $flight = $payload['flight'] ?? null;
+    // Schedule times are free text: only a bare clock time (0800, 08:00) is read as UTC.
+    $clock = fn (?string $time): ?string => $time === null ? null : (preg_match('/^\d{1,2}:?\d{2}$/', $time) ? $time.' UTC' : $time);
 @endphp
 
 <x-vms::ui.drawer name="flight-overview" title="Flight details" event="flight-overview" subject="flightId" wire:model="open">
     <x-slot:header>
-        @if ($flight)
-            @php
-                $summary = $flight->summary;
-                // Schedule times are free text: only a bare clock time (0800, 08:00) is read as UTC.
-                $clock = fn (?string $time): ?string => $time === null ? null : (preg_match('/^\d{1,2}:?\d{2}$/', $time) ? $time.' UTC' : $time);
-            @endphp
-            <div class="vms-detail-summary mb-5 grid gap-2">
-                <x-vms::flights.ident
-                    size="lg"
-                    :callsign="$summary->callsign"
-                    :dpt="$summary->dpt"
-                    :arr="$summary->arr"
-                    :airline="$summary->airline?->name"
-                    :logo="$summary->airline?->logo"
-                />
-            </div>
-        @else
+        @unless ($flight)
             <p>FLIGHT DETAILS</p>
             <span>Loading flight</span>
-        @endif
+        @endunless
     </x-slot:header>
 
     <section class="grid gap-4" aria-label="Flight details">
@@ -55,14 +41,7 @@
                 @endphp
                 <div class="vms-flight-detail grid gap-5">
                     @if ($routeMap)
-                        <div class="vms-detail-map overflow-hidden rounded-xl p-3">
-                            <x-map.svg
-                                :map-view="$routeMap"
-                                pattern="dots"
-                                :pin-radius="7"
-                                class="block aspect-[4/3] w-full"
-                            />
-                        </div>
+                        <x-vms::flights.route-card class="vms-detail-map" :map-view="$routeMap" :flight="$summary" ident />
                     @endif
 
                     @foreach ($legs as $leg)

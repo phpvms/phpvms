@@ -39,9 +39,10 @@ final readonly class MapView
 
     /**
      * @param list<array{lat?: ?float, lon?: ?float, label?: ?string}>              $pins
-     * @param list<array{array{0: ?float, 1: ?float}, array{0: ?float, 1: ?float}}> $routes each [[lat, lon], [lat, lon]]
+     * @param list<array{array{0: ?float, 1: ?float}, array{0: ?float, 1: ?float}}> $routes         each [[lat, lon], [lat, lon]]
+     * @param float                                                                 $fitInsetBottom share of the view's height (0 to <1) covered at the bottom, e.g. by an overlay; the fit frames the pins and routes in the part above it
      */
-    public static function make(MapData $map, array $pins = [], array $routes = [], bool $fit = false, float $fitAspect = 4 / 3): self
+    public static function make(MapData $map, array $pins = [], array $routes = [], bool $fit = false, float $fitAspect = 4 / 3, float $fitInsetBottom = 0.0): self
     {
         $points = [];
         foreach ($pins as $pin) {
@@ -89,12 +90,14 @@ final readonly class MapView
             $xs = array_column($framed, 'x');
             $ys = array_column($framed, 'y');
             $span = max($map->width, $map->height);
+            $visible = 1 - min(max($fitInsetBottom, 0.0), 0.9);
             $width = max((max($xs) - min($xs)) * 1.6, $span * 0.12);
-            $height = max((max($ys) - min($ys)) * 1.6, $span * 0.12);
+            $height = max((max($ys) - min($ys)) * 1.6, $span * 0.12) / $visible;
             $width = max($width, $height * $fitAspect);
             $height = $width / $fitAspect;
             $x = (min($xs) + max($xs) - $width) / 2;
-            $y = (min($ys) + max($ys) - $height) / 2;
+            // Centre the pins and routes in the visible part, above the inset.
+            $y = (min($ys) + max($ys)) / 2 - $height * $visible / 2;
             // Keep the crop on the map where it fits. A joined route may run past the left or right edge.
             if (!$joined) {
                 $x = $width >= $map->width ? ($map->width - $width) / 2 : min(max($x, 0), $map->width - $width);

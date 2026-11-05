@@ -125,7 +125,8 @@ class FlightOverviewDrawer extends Component
 
     /**
      * The route map: the narrowest map that holds the departure and arrival
-     * airports, cropped to them (see RouteMaps).
+     * airports, cropped to them (see RouteMaps), framed above the route card's
+     * ident band.
      */
     #[Computed]
     public function routeMap(): ?MapView
@@ -147,7 +148,7 @@ class FlightOverviewDrawer extends Component
             'label'   => $airport?->icao,
         ];
 
-        return app(RouteMaps::class)->view($point($flight->departure), $point($flight->arrival));
+        return app(RouteMaps::class)->view($point($flight->departure), $point($flight->arrival), RouteMaps::IDENT_INSET);
     }
 
     public function render(): View

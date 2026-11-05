@@ -744,6 +744,50 @@ The weather card in the Next flight widget (the `airport-weather` component, loa
 - **Variables:** none.
 - **Stability:** draft.
 
+### `vms-aircraft-selection`
+
+Aircraft assignment for a bid: a `vms-select-menu` for the subfleet, then one for the aircraft; each choice collapses to a card with Edit. Reusable as `<x-vms::bids.aircraft-selection>`.
+
+- **View:** `resources/views/components/bids/aircraft-selection.blade.php`
+- **Element:** the `<fieldset>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-select-menu`
+
+A searchable select that opens in place, for focus-trapped drawers where TallStackUI's styled select cannot go. Reusable as `<x-vms::ui.select-menu>`; behaviour in `resources/js/airside/select-menu.ts`.
+
+- **View:** `resources/views/components/ui/select-menu.blade.php`
+- **Element:** the root `<div>`.
+- **Parts:** `vms-select-menu-button`, `vms-select-menu-panel`, `vms-select-menu-option`.
+- **State:** `[aria-expanded]` on the button; `[data-active]` and `[aria-disabled="true"]` on an option.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-card`
+
+A flight's route on the dotted SVG map, in a card, with an optional translucent overlay at the bottom: the flight ident (`ident` flag) and the slot's content. Reusable as `<x-vms::flights.route-card>`.
+
+- **View:** `resources/views/components/flights/route-card.blade.php`
+- **Element:** the root `<div>`.
+- **Parts:** `vms-route-card-overlay`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-card-overlay`
+
+The band over the bottom of the route card's map, fading from transparent to 95% panel colour, holding the ident and the slot.
+
+- **View:** `resources/views/components/flights/route-card.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-flight-info`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
 ### `vms-weather-detail-card`
 
 One airport's weather: the label and ICAO, the METAR and its observation time, or the loading, missing and error states. Reusable as `<x-vms::weather-detail-card>`; the `airport-weather` Livewire component renders it.
@@ -836,7 +880,7 @@ The "N active" filter count, in the header's `links` slot.
 
 The filter surface: chips, the Filters toggle and the form.
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **View:** `resources/views/components/flights/filters.blade.php`
 - **Element:** the `<section>`.
 - **Parts:** `vms-flight-chips`, `vms-flight-filters-form`.
 - **State:** none.
@@ -847,7 +891,7 @@ The filter surface: chips, the Filters toggle and the form.
 
 The 17-field filter form.
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **View:** `resources/views/components/flights/filters.blade.php`
 - **Element:** the `<form>`.
 - **Parts:** `vms-field`, `vms-flight-filters-actions`.
 - **State:** none.
@@ -858,7 +902,7 @@ The 17-field filter form.
 
 The Apply and Clear buttons row.
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **View:** `resources/views/components/flights/filters.blade.php`
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -869,7 +913,7 @@ The Apply and Clear buttons row.
 
 A label with a native input or select. Style the control through `.vms-field input` and `.vms-field select`.
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **View:** `resources/views/components/flights/filters.blade.php`
 - **Element:** the `<label>`.
 - **Parts:** none.
 - **State:** none.
@@ -880,7 +924,7 @@ A label with a native input or select. Style the control through `.vms-field inp
 
 The row of active-filter chips.
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **View:** `resources/views/components/flights/filters.blade.php`
 - **Element:** the `<div>`.
 - **Parts:** `vms-flight-chip`.
 - **State:** none.
@@ -891,7 +935,7 @@ The row of active-filter chips.
 
 One active-filter chip.
 
-- **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
+- **View:** `resources/views/components/flights/filters.blade.php`
 - **Element:** the `<span>`.
 - **Parts:** none.
 - **State:** none.
@@ -1129,17 +1173,6 @@ The "No flights found" empty state.
 - **Variables:** none.
 - **Stability:** draft.
 
-### `vms-detail-summary`
-
-The header of the flight overview drawer: the `x-vms::flights.ident` (logo, callsign, departure → arrival, airline), then the scheduled times.
-
-- **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
-- **Element:** the `<div>`.
-- **Parts:** `vms-flight-info`.
-- **State:** none.
-- **Variables:** none.
-- **Stability:** draft.
-
 ### `vms-flight-detail`
 
 The flight overview drawer: the route map, the departure, the route and the arrival, then the actions.
@@ -1153,7 +1186,7 @@ The flight overview drawer: the route map, the departure, the route and the arri
 
 ### `vms-detail-map`
 
-The route map: an `x-map.svg` in the dotted style, with a pin on each airport and the great circle between them (`.map-route`, a dashed brand line that keeps its width at any zoom). It is the narrowest map that holds both airports (the departure country, then its continent, then the world), cropped to the two airports with `fit` (a 4:3 view; dots and pins keep their size, and `--map-scale` on the `<svg>` gives the crop factor to CSS). Light-grey border; dots and pins as in `vms-location-card`.
+The route map: an `x-vms::flights.route-card` (with the flight ident over its bottom) holding an `x-map.svg` in the dotted style, with a pin on each airport and the great circle between them (`.map-route`, a dashed brand line that keeps its width at any zoom). It is the narrowest map that holds both airports (the departure country, then its continent, then the world), cropped to the two airports with `fit` (a 16:9 view; dots and pins keep their size, and `--map-scale` on the `<svg>` gives the crop factor to CSS). Light-grey border; dots and pins as in `vms-location-card`.
 
 - **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<div>` around the `<svg>`.

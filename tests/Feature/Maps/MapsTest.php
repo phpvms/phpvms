@@ -127,3 +127,15 @@ it('crops a route across the antimeridian as one line past the edge of the world
         ->and(end($route)['x'])->toEqualWithDelta($view->points[1]['x'], 0.01)
         ->and($view->points[1]['x'])->toBeGreaterThan($world->width);
 });
+
+it('frames the pins above a bottom inset', function (): void {
+    $world = app(MapCatalog::class)->world();
+    $pins = [['lat' => 32.73, 'lon' => -117.19], ['lat' => 33.94, 'lon' => -118.41]];
+
+    $view = MapView::make($world, $pins, [[[32.73, -117.19], [33.94, -118.41]]], fit: true, fitAspect: 16 / 10, fitInsetBottom: 0.3);
+    [, $y, , $height] = $view->viewBox;
+
+    // The pins sit in the middle of the visible 70%, not of the whole view.
+    $middle = (array_sum(array_column($view->points, 'y')) / 2 - $y) / $height;
+    expect($middle)->toEqualWithDelta(0.35, 0.02);
+});

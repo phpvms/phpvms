@@ -8,6 +8,7 @@
 import { dashboardLayout } from "./dashboard-layout";
 import { livewireDrawer } from "./livewire-drawer";
 import { mapDots } from "./map-dots";
+import { selectMenu } from "./select-menu";
 
 interface AirportResult {
   id: string;
@@ -20,6 +21,7 @@ document.addEventListener("alpine:init", () => {
   Alpine.data("mapDots", mapDots);
   Alpine.data("livewireDrawer", livewireDrawer);
   Alpine.data("dashboardLayout", dashboardLayout);
+  Alpine.data("selectMenu", selectMenu);
 
   /**
    * HTML-escape a plain string. TallStackUI's toast renders its title with
