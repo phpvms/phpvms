@@ -55,6 +55,8 @@ class ExpenseForm
 
                     Toggle::make('multiplier')
                         ->label(__('common.multiplier'))
+                        ->columnSpanFull()
+                        ->inlineLabel()
                         ->inline()
                         ->onColor('success')
                         ->onIcon(Phosphor::CheckLight)
@@ -62,6 +64,8 @@ class ExpenseForm
                         ->offIcon(Phosphor::XLight),
 
                     Toggle::make('active')
+                        ->columnSpanFull()
+                        ->inlineLabel()
                         ->inline()
                         ->onColor('success')
                         ->onIcon(Phosphor::CheckLight)

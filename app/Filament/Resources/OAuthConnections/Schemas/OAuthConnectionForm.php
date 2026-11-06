@@ -149,7 +149,8 @@ class OAuthConnectionForm
 
             Toggle::make('enabled')
                 ->label(__('social_login.fields.enabled'))
-                ->helperText(__('social_login.fields.enabled_help'))
+                ->belowLabel(__('social_login.fields.enabled_help'))
+                ->inlineLabel()
                 ->offIcon(Phosphor::XLight)
                 ->offColor('danger')
                 ->onIcon(Phosphor::CheckLight)
@@ -160,14 +161,20 @@ class OAuthConnectionForm
 
             Toggle::make('login_enabled')
                 ->label(__('social_login.fields.login_enabled'))
+                ->columnSpanFull()
+                ->inlineLabel()
                 ->default(false),
 
             Toggle::make('registration_enabled')
                 ->label(__('social_login.fields.registration_enabled'))
+                ->columnSpanFull()
+                ->inlineLabel()
                 ->default(false),
 
             Toggle::make('linking_enabled')
                 ->label(__('social_login.fields.linking_enabled'))
+                ->columnSpanFull()
+                ->inlineLabel()
                 ->default(false),
 
             TextInput::make('sort_order')

@@ -33,6 +33,8 @@ class PirepFieldForm
 
                 Toggle::make('required')
                     ->label(__('common.required'))
+                    ->columnSpanFull()
+                    ->inlineLabel()
                     ->inline(false)
                     ->offIcon(Phosphor::XLight)
                     ->offColor('danger')

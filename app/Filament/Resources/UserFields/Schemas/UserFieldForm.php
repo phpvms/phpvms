@@ -24,6 +24,8 @@ class UserFieldForm
 
                 Toggle::make('required')
                     ->label(__('common.required'))
+                    ->columnSpanFull()
+                    ->inlineLabel()
                     ->offIcon(Phosphor::XLight)
                     ->offColor('danger')
                     ->onIcon(Phosphor::CheckLight)
@@ -31,6 +33,8 @@ class UserFieldForm
 
                 Toggle::make('show_on_registration')
                     ->label(__('filament.user_field_show_on_registration'))
+                    ->columnSpanFull()
+                    ->inlineLabel()
                     ->offIcon(Phosphor::XLight)
                     ->offColor('danger')
                     ->onIcon(Phosphor::CheckLight)
@@ -38,6 +42,8 @@ class UserFieldForm
 
                 Toggle::make('private')
                     ->label(__('filament.user_field_private'))
+                    ->columnSpanFull()
+                    ->inlineLabel()
                     ->offIcon(Phosphor::XLight)
                     ->offColor('danger')
                     ->onIcon(Phosphor::CheckLight)
@@ -45,6 +51,8 @@ class UserFieldForm
 
                 Toggle::make('active')
                     ->label(__('common.active'))
+                    ->columnSpanFull()
+                    ->inlineLabel()
                     ->offIcon(Phosphor::XLight)
                     ->offColor('danger')
                     ->onIcon(Phosphor::CheckLight)
