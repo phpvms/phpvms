@@ -6,6 +6,7 @@ use App\Models\Addon;
 use App\Services\AddonSettingService;
 use App\Services\KvpService;
 use App\Services\SettingService;
+use App\Support\RenamedSettings;
 use Carbon\Carbon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Contracts\View\Factory;
@@ -154,6 +155,7 @@ if (!function_exists('setting')) {
     {
         /** @var SettingService $settingService */
         $settingService = app(SettingService::class);
+        $key = RenamedSettings::resolve($key);
 
         try {
             if (app()->environment('production')) {

@@ -102,7 +102,7 @@ class FlightService extends Service
      * A missing or blank value is left alone rather than resolved. Both
      * callers do supply the airport keys -- `transformFlightFields` reads them
      * unconditionally -- but a blank one would otherwise be looked up, and with
-     * `general.auto_airport_lookup` off that invents an airport named ''.
+     * `airports.auto_airport_lookup` off that invents an airport named ''.
      *
      * @param  array<string, mixed> $fields
      * @return array<string, mixed>

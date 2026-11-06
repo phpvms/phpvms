@@ -94,7 +94,7 @@ class PirepService extends Service
 
         // Check if the airports listed actually exist or not. If they're not in the local DB
         // throw an error which should bubble up to say that they don't
-        if (setting('general.allow_unadded_airports', false) === true) {
+        if (setting('airports.allow_unadded_airports', false) === true) {
             // Same as flight creation: the lookup may store the airport under
             // the catalog's id, so the PIREP takes the id it resolved to
             // rather than the value it asked about.
@@ -887,7 +887,7 @@ class PirepService extends Service
         $diversion_airport = Airport::find($diversion_airport_id);
 
         // Return if diversion airport not found and airport lookup is disabled
-        if (!$diversion_airport && !setting('general.auto_airport_lookup', false)) {
+        if (!$diversion_airport && !setting('airports.auto_airport_lookup', false)) {
             return;
         }
 
