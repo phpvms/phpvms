@@ -15,13 +15,10 @@ class RequestEmailVerificationAction
             Action::make('request_email_verification')
                 ->label(__('filament.user_request_email_verification'))
                 ->icon(Phosphor::PaperPlaneTiltLight)
-                ->color('warning')
-                ->visible(fn (User $record): bool => $record->hasVerifiedEmail())
+                ->tooltip(__('filament.user_request_email_verification'))
+                ->iconButton()
+                ->visible(fn (?User $record): bool => $record instanceof User && !$record->hasVerifiedEmail())
                 ->action(function (User $record): void {
-                    $record->update([
-                        'email_verified_at' => null,
-                    ]);
-
                     $record->sendEmailVerificationNotification();
 
                     Notification::make()

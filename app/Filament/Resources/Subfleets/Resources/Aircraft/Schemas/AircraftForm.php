@@ -6,7 +6,6 @@ use App\Enums\AircraftStatus;
 use App\Filament\Forms\Components\AirportSelect;
 use App\Models\Aircraft;
 use App\Models\SimBriefAirframe;
-use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -22,10 +21,6 @@ class AircraftForm
         return $schema
             ->components([
                 Section::make(__('filament.aircraft_information'))
-                    ->id('aircraft-information')
-                    ->icon(Phosphor::AirplaneLight)
-                    ->collapsible()
-                    ->persistCollapsed()
                     ->schema([
                         // On the edit page these live in the overview's drawer
                         // instead; the create page still needs them inline,
@@ -39,61 +34,57 @@ class AircraftForm
                         AirportSelect::make('airport_id')
                             ->label(__('airports.current'))
                             ->airportRelationship('airport'),
-
-                        // Nested Sections render as sequent head bands inside
-                        // the same card, not as second and third cards.
-                        Section::make(__('filament.aircraft_identifiers'))
-                            ->id('identifiers')
-                            ->icon(Phosphor::HashLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->columns(4)
-                            ->schema([
-                                TextInput::make('selcal')
-                                    ->label('SELCAL')
-                                    ->string(),
-
-                                TextInput::make('iata')
-                                    ->label('IATA')
-                                    ->string(),
-
-                                TextInput::make('fin')
-                                    ->label('FIN')
-                                    ->string(),
-
-                                TextInput::make('hex_code')
-                                    ->label(__('aircraft.hex_code'))
-                                    ->string(),
-                            ])
-                            ->columnSpanFull(),
-
-                        Section::make(__('filament.certified_weights'))
-                            ->id('certified-weights')
-                            ->icon(Phosphor::ScalesLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->columns(4)
-                            ->schema([
-                                TextInput::make('dow')
-                                    ->label(__('aircraft.weights.dow'))
-                                    ->numeric(),
-
-                                TextInput::make('zfw')
-                                    ->label(__('aircraft.weights.mzfw'))
-                                    ->numeric(),
-
-                                TextInput::make('mtow')
-                                    ->label(__('aircraft.weights.mtow'))
-                                    ->numeric(),
-
-                                TextInput::make('mlw')
-                                    ->label(__('aircraft.weights.mlw'))
-                                    ->numeric(),
-                            ])
-                            ->columnSpanFull(),
                     ])
-                    ->columns(4)
-                    ->columnSpanFull(),
+                    ->aside()
+                    ->description(__('filament.aircraft_information_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
+
+                Section::make(__('filament.aircraft_identifiers'))
+                    ->schema([
+                        TextInput::make('selcal')
+                            ->label('SELCAL')
+                            ->string(),
+
+                        TextInput::make('iata')
+                            ->label('IATA')
+                            ->string(),
+
+                        TextInput::make('fin')
+                            ->label('FIN')
+                            ->string(),
+
+                        TextInput::make('hex_code')
+                            ->label(__('aircraft.hex_code'))
+                            ->string(),
+                    ])
+                    ->aside()
+                    ->description(__('filament.aircraft_identifiers_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
+
+                Section::make(__('filament.certified_weights'))
+                    ->schema([
+                        TextInput::make('dow')
+                            ->label(__('aircraft.weights.dow'))
+                            ->numeric(),
+
+                        TextInput::make('zfw')
+                            ->label(__('aircraft.weights.mzfw'))
+                            ->numeric(),
+
+                        TextInput::make('mtow')
+                            ->label(__('aircraft.weights.mtow'))
+                            ->numeric(),
+
+                        TextInput::make('mlw')
+                            ->label(__('aircraft.weights.mlw'))
+                            ->numeric(),
+                    ])
+                    ->aside()
+                    ->description(__('filament.aircraft_certified_weights_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
             ]);
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\OAuthClients\Pages;
 
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\OAuthClients\OAuthClientResource;
 use App\Models\OauthClient;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -17,7 +17,7 @@ use Override;
 
 class EditOAuthClient extends EditRecord
 {
-    use ReversePrimaryButtons;
+    use HasSaveBar;
 
     protected static string $resource = OAuthClientResource::class;
 
@@ -27,12 +27,16 @@ class EditOAuthClient extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
             $this->rotateSecretAction(),
-            DeleteAction::make()->icon(Phosphor::TrashLight),
         ];
     }
 

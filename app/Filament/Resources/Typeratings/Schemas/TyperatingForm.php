@@ -15,28 +15,34 @@ class TyperatingForm
 
         return $schema
             ->components([
-                Section::make(__('filament.typerating_information'))->schema([
-                    TextInput::make('name')
-                        ->label(__('common.name'))
-                        ->required(),
+                Section::make(__('filament.typerating_information'))
+                    ->id('typerating-information')
+                    ->aside()
+                    ->description(__('filament.typerating_information_description'))
+                    ->schema([
+                        TextInput::make('name')
+                            ->label(__('common.name'))
+                            ->required(),
 
-                    TextInput::make('type')
-                        ->label(__('common.type'))
-                        ->required(),
+                        TextInput::make('type')
+                            ->label(__('common.type'))
+                            ->required(),
 
-                    TextInput::make('description')
-                        ->label(__('common.description')),
+                        TextInput::make('description')
+                            ->label(__('common.description')),
 
-                    TextInput::make('image_url')
-                        ->label(__('common.image_url')),
+                        TextInput::make('image_url')
+                            ->label(__('common.image_url')),
 
-                    Toggle::make('active')
-                        ->label(__('common.active'))
-                        ->offIcon(Phosphor::XLight)
-                        ->offColor('danger')
-                        ->onIcon(Phosphor::CheckLight)
-                        ->onColor('success'),
-                ])
+                        Toggle::make('active')
+                            ->label(__('common.active'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
+                    ])
                     ->columnSpanFull()
                     ->columns(),
             ]);

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 
 use App\Filament\Actions\EditDetailsAction;
 use App\Filament\Concerns\HasRelationManagerTabs;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\Schemas\AircraftForm;
@@ -34,7 +34,7 @@ use Override;
 class EditAircraft extends EditRecord
 {
     use HasRelationManagerTabs;
-    use ReversePrimaryButtons;
+    use HasSaveBar;
 
     protected static string $resource = AircraftResource::class;
 
@@ -101,21 +101,7 @@ class EditAircraft extends EditRecord
         return $breadcrumbs;
     }
 
-    /**
-     * The expenses and files relation managers are appended by the trait.
-     *
-     * @return array<string, string>
-     */
-    protected function jumpBarFormSections(): array
-    {
-        return [
-            'aircraft-information' => __('filament.aircraft_information'),
-            'identifiers'          => __('filament.aircraft_identifiers'),
-            'certified-weights'    => __('filament.certified_weights'),
-        ];
-    }
-
-    /** The identity overview sits above the jump bar. */
+    /** The identity overview sits at the top of the Details tab. */
     protected function contentHeader(): array
     {
         return [
@@ -186,10 +172,7 @@ class EditAircraft extends EditRecord
 
         return EditDetailsAction::make($identityFields)
             ->modalHeading(__('filament.aircraft_information'))
-            ->mutateRecordDataUsing(fn (array $data): array => Arr::only($data, $keys))
-            ->extraModalFooterActions([
-                DeleteAction::make()->icon(Phosphor::TrashLight)->cancelParentActions(),
-            ]);
+            ->mutateRecordDataUsing(fn (array $data): array => Arr::only($data, $keys));
     }
 
     /** The identity fields live in the drawer, not the page form. */
@@ -205,11 +188,15 @@ class EditAircraft extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            // Delete lives in the settings drawer's footer (editAction()).
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight)->before(function (Aircraft $record): void {
                 $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);

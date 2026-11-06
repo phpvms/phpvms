@@ -22,10 +22,13 @@ use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Form;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Igaster\LaravelTheme\Facades\Theme;
@@ -113,45 +116,81 @@ class Settings extends Page
         abort_unless(static::canEdit(), 403);
 
         try {
-            $data = $this->form->getState();
-
-            $data = Arr::dot($data);
-
-            // Wrap the settings writes in a single transaction so a partial
-            // failure doesn't leave the DB with half-saved settings.
-            $currencyChanged = DB::transaction(function () use ($data): bool {
-                // Read from the table, not setting(): the application cache can
-                // hold a currency that never committed (a save that rolled back),
-                // which would make the retry look unchanged and skip the migration.
-                $storedCurrency = static fn (): ?string => Setting::query()->byKey('units.currency')->value('value');
-                $previousCurrency = $storedCurrency();
-
-                $settingService = app(SettingService::class);
-                foreach ($data as $key => $value) {
-                    $settingService->store($key, $value);
-                }
-
-                $currency = $storedCurrency();
-
-                return $currency !== null && $currency !== $previousCurrency;
-            });
-
-            // Only when the currency changed: the journals are already on it
-            // otherwise. Queued, because the migration touches every journal
-            // transaction row, and dispatched after the commit so the job reads
-            // the new currency.
-            if ($currencyChanged) {
-                ChangeJournalCurrencies::dispatch(auth()->id());
-            }
-
-            Notification::make()
-                ->success()
-                ->title('Settings saved successfully')
-                ->body($currencyChanged ? 'The journals are being moved to the new currency. You will be notified when it is done.' : null)
-                ->send();
+            $this->notifySaved('Settings saved successfully', $this->persist(Arr::dot($this->form->getState())));
         } catch (Halt) {
             return;
         }
+    }
+
+    /**
+     * Saves one category only. The whole form is still validated (Filament's
+     * getStateOnly() filters after validating everything), but only the
+     * settings whose `group` is this one are written, whatever else was edited.
+     */
+    public function saveGroup(string $group): void
+    {
+        abort_unless(static::canEdit(), 403);
+
+        try {
+            $keys = Setting::where('type', '!=', 'hidden')
+                ->where('group', $group)
+                ->pluck('key')
+                ->all();
+
+            $data = Arr::only(Arr::dot($this->form->getState()), $keys);
+
+            $this->notifySaved(Str::ucfirst($group).' settings saved', $this->persist($data));
+        } catch (Halt) {
+            return;
+        }
+    }
+
+    /**
+     * Writes dotted setting keys in one transaction, and queues the journal
+     * migration when the currency changed.
+     *
+     * @param  array<string, mixed> $data
+     * @return bool                 Whether the currency changed
+     */
+    protected function persist(array $data): bool
+    {
+        // Wrap the settings writes in a single transaction so a partial
+        // failure doesn't leave the DB with half-saved settings.
+        $currencyChanged = DB::transaction(function () use ($data): bool {
+            // Read from the table, not setting(): the application cache can
+            // hold a currency that never committed (a save that rolled back),
+            // which would make the retry look unchanged and skip the migration.
+            $storedCurrency = static fn (): ?string => Setting::query()->byKey('units.currency')->value('value');
+            $previousCurrency = $storedCurrency();
+
+            $settingService = app(SettingService::class);
+            foreach ($data as $key => $value) {
+                $settingService->store($key, $value);
+            }
+
+            $currency = $storedCurrency();
+
+            return $currency !== null && $currency !== $previousCurrency;
+        });
+
+        // Only when the currency changed: the journals are already on it
+        // otherwise. Queued, because the migration touches every journal
+        // transaction row, and dispatched after the commit so the job reads
+        // the new currency.
+        if ($currencyChanged) {
+            ChangeJournalCurrencies::dispatch(auth()->id());
+        }
+
+        return $currencyChanged;
+    }
+
+    private function notifySaved(string $title, bool $currencyChanged): void
+    {
+        Notification::make()
+            ->success()
+            ->title($title)
+            ->body($currencyChanged ? 'The journals are being moved to the new currency. You will be notified when it is done.' : null)
+            ->send();
     }
 
     public function getFormActionsComponents(): Actions
@@ -186,20 +225,34 @@ class Settings extends Page
 
     protected function getFormSchema(): array
     {
-        $tabs = [];
+        $sections = [];
+        $navLinks = [];
 
         $grouped_settings = Setting::where('type', '!=', 'hidden')
             ->orderBy('order')
             ->get();
 
-        foreach (SettingsTabs::group($grouped_settings) as $group => $settings) {
-            $tabs[] = Tab::make(Str::ucfirst($group))
+        // General leads, the rest keep SettingsTabs' alphabetical order.
+        $groups = SettingsTabs::group($grouped_settings)->toBase();
+        $general = $groups->filter(fn ($settings, string $group): bool => strcasecmp($group, 'general') === 0);
+        $groups = $general->merge($groups->diffKeys($general));
+
+        foreach ($groups as $group => $settings) {
+            $id = 'settings-'.Str::slug($group);
+            $navLinks[] = ['id' => $id, 'label' => Str::ucfirst($group)];
+
+            // Not collapsible: the heads are plain headings and the nav is how
+            // you move around, so a stray click on a title would only hide it.
+            $sections[] = Section::make(Str::ucfirst($group))
+                ->id($id)
+                ->key($id)
                 ->schema(
                     $settings->map(function (Setting $setting): DatePicker|Toggle|TextInput|Select {
                         if ($setting->type === 'date') {
                             return DatePicker::make($setting->key)
                                 ->label($setting->name)
-                                ->helperText($setting->description)
+                                ->inlineLabel()
+                                ->belowLabel($setting->description)
                                 ->format('Y-m-d')
                                 ->native(false);
                         }
@@ -207,7 +260,8 @@ class Settings extends Page
                         if ($setting->type === 'boolean' || $setting->type === 'bool') {
                             return Toggle::make($setting->key)
                                 ->label($setting->name)
-                                ->helperText($setting->description)
+                                ->inlineLabel()
+                                ->belowLabel($setting->description)
                                 ->offIcon(Phosphor::XLight)
                                 ->offColor('danger')
                                 ->onIcon(Phosphor::CheckLight)
@@ -217,14 +271,16 @@ class Settings extends Page
                         if ($setting->type === 'int') {
                             return TextInput::make($setting->key)
                                 ->label($setting->name)
-                                ->helperText($setting->description)
+                                ->inlineLabel()
+                                ->belowLabel($setting->description)
                                 ->integer();
                         }
 
                         if ($setting->type === 'number' || $setting->type === 'float') {
                             return TextInput::make($setting->key)
                                 ->label($setting->name)
-                                ->helperText($setting->description)
+                                ->inlineLabel()
+                                ->belowLabel($setting->description)
                                 ->numeric()
                                 ->step(0.01);
                         }
@@ -233,14 +289,16 @@ class Settings extends Page
                             if ($setting->id === 'general_theme') {
                                 return Select::make($setting->key)
                                     ->label($setting->name)
-                                    ->helperText($setting->description)
+                                    ->inlineLabel()
+                                    ->belowLabel($setting->description)
                                     ->options(list_to_assoc($this->getThemes()));
                             }
 
                             if ($setting->id === 'units_currency') {
                                 return Select::make($setting->key)
                                     ->label($setting->name)
-                                    ->helperText($setting->description)
+                                    ->inlineLabel()
+                                    ->belowLabel($setting->description)
                                     ->options($this->getCurrencyList())
                                     ->searchable()
                                     ->native(false);
@@ -248,21 +306,44 @@ class Settings extends Page
 
                             return Select::make($setting->key)
                                 ->label($setting->name)
-                                ->helperText($setting->description)
+                                ->inlineLabel()
+                                ->belowLabel($setting->description)
                                 ->options(list_to_assoc(explode(',', (string) $setting->options)));
                         }
 
                         return TextInput::make($setting->key)
                             ->label($setting->name)
-                            ->helperText($setting->description)
+                            ->inlineLabel()
+                            ->belowLabel($setting->description)
                             ->string();
                     })->toArray()
-                );
+                )
+                // Flex, not ->alignment() on Actions: .fi-ac.fi-align-end is
+                // row-reverse. The Flex does the pushing right.
+                ->footer([
+                    Flex::make([
+                        Actions::make([
+                            Action::make('saveSection-'.$id)
+                                ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
+                                ->icon(Phosphor::FloppyDiskLight)
+                                ->action(fn () => $this->saveGroup($group)),
+                        ])->grow(false),
+                    ])->grow()->alignment(Alignment::End),
+                ]);
         }
 
+        // The nav column and the category sections sit side by side from lg up
+        // (see .settings-page in the admin theme); one outer Section holds
+        // the categories so the page stays a single sheet region.
         return [
-            Tabs::make('settings')
-                ->tabs($tabs)
+            Grid::make(1)
+                ->extraAttributes(['class' => 'settings-page'])
+                ->schema([
+                    View::make('filament.pages.settings.nav')
+                        ->viewData(['links' => $navLinks]),
+                    Section::make()
+                        ->schema([View::make('filament.pages.settings.empty'), ...$sections]),
+                ])
                 ->columnSpanFull(),
         ];
     }

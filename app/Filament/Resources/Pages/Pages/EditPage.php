@@ -6,7 +6,8 @@ namespace App\Filament\Resources\Pages\Pages;
 
 use App\Enums\PageStatus;
 use App\Enums\PageType;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasRelationManagerTabs;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\RelationManagers\PageRevisionsRelationManager;
 use App\Filament\Resources\Pages\PageResource;
 use App\Models\Page;
@@ -24,7 +25,8 @@ use Override;
 
 class EditPage extends EditRecord
 {
-    use ReversePrimaryButtons;
+    use HasRelationManagerTabs;
+    use HasSaveBar;
 
     protected static string $resource = PageResource::class;
 
@@ -61,6 +63,11 @@ class EditPage extends EditRecord
         }
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
@@ -68,7 +75,6 @@ class EditPage extends EditRecord
             $this->previewAction(),
             $this->publishAction(),
             $this->unpublishAction(),
-            DeleteAction::make()->icon(Phosphor::TrashLight),
         ];
     }
 

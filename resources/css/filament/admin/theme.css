@@ -1217,7 +1217,7 @@
 }
 
 .fi-pirep-record .fi-page-main {
-  padding: 0;
+  padding: 0 var(--page-gutter);
   background-color: var(--surface);
 }
 
@@ -3078,6 +3078,14 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   place-items: center;
 }
 
+.overview__icon--image {
+  @apply overflow-hidden p-1 bg-(--surface);
+}
+
+.overview__icon--image img {
+  @apply w-full h-full object-contain;
+}
+
 .overview__icon svg {
   @apply w-4.25 h-4.25;
 }
@@ -3500,13 +3508,20 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   @apply flex-1;
 }
 
-/* Every page is the sheet: edge to edge under the banner, surface-filled to
- * the window bottom. Regions inside it are separated by rules (see "Sheet
- * regions" below), not by gutters. */
+/* Every page is the sheet: surface-filled to the window bottom under the
+ * banner. Regions inside it are separated by rules (see "Sheet regions"
+ * below); the sheet itself keeps a side gutter so content never touches the
+ * rail or the window edge. The gutter follows the density picker. */
 .fi-page-main {
+  --page-gutter: 24px;
+
   @apply flex flex-1 flex-col;
-  padding: 0;
+  padding: 0 var(--page-gutter);
   background-color: var(--surface);
+}
+
+html[data-density="comfortable"] .fi-page-main {
+  --page-gutter: 32px;
 }
 
 /* Breathing room under the last row, so form actions never sit on the
@@ -3638,6 +3653,12 @@ html[data-density="comfortable"] .fi-page-content {
 
 .fi-page-content .fi-in-entry-label {
   @apply text-[13px] font-normal text-(--ink-3);
+}
+
+/* The identity preview is a stacked read-out (label over value over note),
+ * not a property row: undo the key/value grid and hairline above. */
+.fi-page-content .ident-preview .fi-in-entry {
+  @apply block min-h-0 border-b-0;
 }
 
 /* The package owns GridStack. phpVMS adds only the explicit edit-state grid. */
@@ -4500,10 +4521,10 @@ html[data-density="comfortable"] .tbl tbody td {
 }
 
 /* ---------------------------------------------------------------------------
- * Flight edit — heading detail + section jump bar (mockup admin-console-v2/
+ * Flight edit — heading detail + record switcher bar (mockup admin-console-v2/
  * flight-edit.html .page-head/.secnav). The ident/route and figures ride in
- * the shared hero band (.fi-header); only the jump bar lives in the page body,
- * because the band scrolls away and the jump bar must not.
+ * the shared hero band (.fi-header); only the switcher bar lives in the page body,
+ * because the band scrolls away and the bar must not.
  *
  * top: 58px matches the PIREP view's .context rail — 44px topbar plus the
  * 14px section gap.
@@ -4513,31 +4534,187 @@ html[data-density="comfortable"] .tbl tbody td {
   color: color-mix(in oklab, white 56%, var(--primary-600));
 }
 
+.fi-header-heading-name {
+  color: color-mix(in oklab, white 88%, var(--primary-600));
+}
+
+.fi-header-heading-rank {
+  @apply mt-0.5 block font-sans text-[12.5px] font-normal;
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+  text-shadow: none;
+}
+
 .fi-header-heading-route {
   @apply text-[0.8em];
   color: color-mix(in oklab, white 88%, var(--primary-600));
 }
 
-/* z-10, not z-20: the rail and its hover flyout are z-20, and the jump bar sits
+/* z-10, not z-20: the rail and its hover flyout are z-20, and the switcher bar sits
  * later in the DOM — at equal z-index it paints over the flyout. It only has to
  * beat the page content it scrolls across, which is z-auto. */
 .secnav {
-  @apply sticky z-10 flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-2) pr-2;
+  @apply sticky z-10 flex items-center justify-end gap-2 rounded-md border border-(--line) bg-(--surface-2) pr-2;
   top: 58px;
-}
-
-.secnav__links {
-  @apply flex min-w-0 flex-1 items-stretch overflow-x-auto;
-}
-
-/* The jump bar reuses .subtab, but sits in a rounded bar rather than a card
- * edge, so the trailing divider on the last link would float. */
-.secnav__links .subtab:last-child {
-  @apply border-r-0;
 }
 
 .secnav__switch {
   @apply h-6.5 max-w-56 shrink-0 rounded border border-(--line) bg-(--surface) py-0 pl-2 pr-6 text-[12px] text-(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Settings page — one scrolling sheet: a sticky category nav beside every
+ * category stacked in order. Each setting is a row, label and description on
+ * the left, control on the right. Scoped to .settings-page so the inline
+ * labels of other forms keep Filament's three-column grid.
+ *
+ * The nav's top matches .secnav (44px topbar plus the 14px section gap). It
+ * stays sticky only while no ancestor clips overflow, so none is set here.
+ * Below lg the nav is a scrolling strip above the content instead of a column.
+ * ------------------------------------------------------------------------- */
+.fi-page-content .settings-page > .fi-sc {
+  @apply lg:grid-cols-[14rem_minmax(0,1fr)];
+  align-items: start;
+}
+
+/* A jumped-to category lands below the sticky topbar, not under it. */
+.settings-page .fi-section-content .fi-sc-section {
+  scroll-margin-top: 58px;
+}
+
+/* Sticky goes on the grid column, not the nav: the column is only as tall as
+ * the nav, so a sticky nav inside it has no room to travel. */
+.fi-page-content .settings-page > .fi-sc > .fi-grid-col:first-child {
+  @apply sticky z-10;
+  top: 58px;
+}
+
+.settings-nav {
+  @apply flex flex-col gap-1.5 border-b border-b-(--line) bg-(--surface) p-1.5 lg:border-b-0 lg:bg-transparent lg:p-0;
+}
+
+.settings-nav__list {
+  @apply flex gap-1 overflow-x-auto lg:flex-col lg:overflow-x-visible;
+}
+
+.settings-nav__search {
+  @apply relative block;
+}
+
+.settings-nav__search .fi-icon {
+  @apply pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-(--ink-3);
+}
+
+.settings-nav__search input {
+  @apply h-8 w-full rounded-md border border-(--line) bg-(--surface) py-0 pl-7 pr-2 text-[13px] text-(--ink) outline-none placeholder:text-(--ink-3);
+}
+
+.settings-nav__search input:focus {
+  @apply border-(--primary-600);
+}
+
+.settings-empty {
+  @apply px-(--section-pad) py-6 text-[13px] text-(--ink-3);
+}
+
+/* The search box and the first heading start one page gutter below the
+ * banner, level with each other. The outer section adds no top padding of its
+ * own, and the hidden "no match" message must not leave an empty grid row
+ * (and its row gap) above the first category. */
+.fi-page-content .settings-page {
+  padding-top: var(--page-gutter);
+}
+
+.settings-page .fi-section-content:has(> .fi-grid-col .settings-empty) {
+  @apply pt-0;
+}
+
+.settings-page .fi-section-content > .fi-grid-col:has(.settings-empty.is-filtered-out) {
+  display: none;
+}
+
+.settings-page
+  .fi-section-content
+  > .fi-grid-col:has(.settings-empty)
+  + .fi-grid-col
+  .fi-sc-section
+  > .fi-section
+  > .fi-section-header {
+  padding-top: 0;
+}
+
+/* Set by the settings search (nav.blade.php); the class survives where the
+ * [hidden] attribute would lose to display rules on grid columns. */
+.settings-page .is-filtered-out,
+.settings-empty.is-filtered-out {
+  display: none;
+}
+
+.settings-nav__item {
+  @apply whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] text-(--ink-3);
+  transition:
+    color 100ms,
+    background-color 100ms;
+}
+
+.settings-nav__item:hover {
+  @apply bg-(--sunken) text-(--ink);
+}
+
+.settings-nav__item[aria-current="true"] {
+  @apply bg-(--sunken) text-(--primary-600);
+  font-weight: 550;
+}
+
+/* Category heads are plain page headings, not the house head band: no fill,
+ * no caps, a rule under the title only. The top rule goes too; the gap above
+ * separates one category from the last. */
+.settings-page .fi-section-content .fi-sc-section > .fi-section > .fi-section-header {
+  @apply border-t-0 bg-transparent;
+  padding: calc(var(--section-pad) * 2) var(--section-pad) calc(var(--section-pad) * 0.75);
+}
+
+.settings-page .fi-section-content .fi-sc-section .fi-section-header-heading {
+  @apply text-lg font-semibold normal-case tracking-normal text-(--ink);
+  line-height: var(--text-lg--line-height);
+}
+
+/* The category sections are head bands in one outer section; rows inside
+ * them carry their own padding, so the grid gap goes. */
+.settings-page .fi-section-content .fi-section-content {
+  @apply gap-y-0;
+}
+
+/* Inline-label rows are shared with aside sections (e.g. toggles on the
+ * airline form); .fi-aside has the same single-class specificity. Every
+ * inline-label toggle on a page or in a modal / slide-over gets the same row
+ * (house rule: a toggle is a full-width row, never a grid cell). */
+:is(.settings-page, .fi-aside) .fi-fo-field-has-inline-label,
+:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) {
+  @apply items-center gap-x-6 gap-y-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,20rem)];
+  padding-block: calc(var(--section-pad) * 1.25);
+}
+
+/* Vendor spans the control over two of three columns; here it is the second
+ * of two, bounded and pushed right. */
+:is(.settings-page, .fi-aside) .fi-fo-field-has-inline-label .fi-fo-field-content-col,
+:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-content-col {
+  @apply w-full justify-self-end sm:col-span-1;
+}
+
+:is(.settings-page, .fi-aside) .fi-fo-field-label-content,
+:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-label-content {
+  @apply text-[13px] text-(--ink);
+  font-weight: 550;
+}
+
+:is(.settings-page, .fi-aside) .fi-fo-field-label-col .fi-sc-text,
+:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-label-col .fi-sc-text {
+  @apply text-[12px] font-normal leading-snug text-(--ink-3);
+}
+
+:is(.settings-page, .fi-aside) .fi-fo-field-content-col > .fi-toggle,
+:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-content-col > .fi-toggle {
+  @apply justify-self-end;
 }
 
 /* ---------------------------------------------------------------------------
@@ -5528,4 +5705,218 @@ html[data-density="comfortable"] .tbl tbody td {
 .cmdk-empty {
   @apply px-2.5 py-6 text-center text-[13px];
   color: var(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+ * Aside sections (long-form variant E, "relaxed aside"). A Section built with
+ * `->aside()` puts its title and one-line description in a 200px left column
+ * and the fields in a column capped at 760px, 40px apart, a hairline between
+ * consecutive sections. Flat: the content container loses Filament's card
+ * chrome, and the head loses the band the other sections get.
+ *
+ * The DOM chain is .fi-grid-col > .fi-sc-component > .fi-sc-section >
+ * section.fi-section.fi-aside. The fold is a container query on the grid
+ * column, not on .fi-page-main: container-type applies layout containment,
+ * which would make a large ancestor the containing block for fixed modals and
+ * drawers. Below 1060px of available width the head sits above its fields.
+ * ------------------------------------------------------------------------- */
+.fi-grid-col:has(> .fi-sc-component > .fi-sc-section > .fi-section.fi-aside) {
+  container-type: inline-size;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside {
+  @apply rounded-none border-0 bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+  grid-template-columns: 200px minmax(0, 760px);
+  column-gap: 40px;
+  row-gap: 16px;
+  padding-block: 32px;
+}
+
+/* A rule between consecutive aside sections: each is alone in its own grid
+ * column, so the rule goes on top of every one that follows another. */
+.fi-page-content
+  .fi-grid-col:has(.fi-section.fi-aside)
+  + .fi-grid-col:has(.fi-section.fi-aside)
+  .fi-sc-section
+  > .fi-section.fi-aside {
+  @apply border-t border-t-(--line-soft);
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-header {
+  @apply items-start rounded-none border-0 bg-transparent;
+  padding: 0;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-header .fi-section-header-heading {
+  @apply text-[15px] font-semibold normal-case tracking-normal text-(--ink);
+  line-height: 1.35;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-header .fi-section-header-description {
+  @apply mt-1 text-[13px] text-(--ink-3);
+  line-height: 1.5;
+}
+
+/* Vendor spans the card over two of three columns and pads the fields inside
+ * it; here it is the second of two, flat and unpadded. */
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-content-ctn {
+  @apply col-span-1 rounded-none bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-content-ctn > .fi-section-content {
+  padding: 0;
+}
+
+/* The footer (Cancel/Save) sits under the fields column, aligned to their
+ * left edge rather than inset by the footer padding. */
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-content-ctn > .fi-section-footer {
+  @apply mt-6 px-0;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside .fi-section-footer .fi-grid > * + * {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+@container (max-width: 1060px) {
+  .fi-page-content .fi-sc-section > .fi-section.fi-aside {
+    grid-template-columns: minmax(0, 760px);
+    row-gap: 16px;
+    column-gap: 16px;
+  }
+}
+
+/* Editing focus: while focus is inside an aside section, a wash sits behind
+ * it (mockups/admin-edit-sections/long-forms.html `.ps.editing::before`). The
+ * wash is a pseudo-element, so nothing reflows. It spans the title + fields
+ * grid (200 + 40 + 760), not the page, and breathes 14px past the content on
+ * every side; the block inset (32px padding - 14px) keeps it clear of the
+ * hairline on the section's top border. `isolation` keeps the z-index: -1
+ * wash inside the section instead of dropping behind the page background.
+ * Mixed toward transparent, not white, so it reads in light and dark. */
+.fi-page-content .fi-sc-section > .fi-section.fi-aside {
+  position: relative;
+  isolation: isolate;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside::before {
+  content: "";
+  position: absolute;
+  inset-block: 18px;
+  inset-inline-start: -14px;
+  width: calc(min(100%, 1000px) + 28px);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 140ms ease;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside:focus-within::before {
+  opacity: 1;
+  background: color-mix(in oklab, var(--primary-600) 8%, transparent);
+  border-color: color-mix(in oklab, var(--primary-600) 22%, transparent);
+}
+
+/* Each aside section is its own stacking context (isolation above), and its
+ * grid column is one too (container-type applies layout containment). A
+ * dropdown opened inside is trapped there and the next section paints over it,
+ * so the column holding the focused section is lifted above its siblings. */
+.fi-grid-col:has(> .fi-sc-component > .fi-sc-section > .fi-section.fi-aside:focus-within) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fi-page-content .fi-sc-section > .fi-section.fi-aside::before {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Save bar (HasSaveBar). Pinned to the bottom of the viewport, as the last
+ * thing on the page (after the relation managers). It spans the page edge to
+ * edge; the padding puts the content on the page gutter. State line on the
+ * left, [Delete] | [Cancel] [Save changes] on the right.
+ * ------------------------------------------------------------------------- */
+/* The bar is the page footer (HasSaveBar::getFooter): the last child of
+ * .fi-page, so its containing block is the whole page. `mt-auto` pushes it to
+ * the bottom of a page shorter than the window. */
+.save-bar-ctn {
+  /* The footer sits outside .fi-page-main, which is where the gutter is
+   * defined; same values, same density switch. */
+  --page-gutter: 24px;
+
+  @apply sticky bottom-0 z-30 mt-auto;
+}
+
+html[data-density="comfortable"] .save-bar-ctn {
+  --page-gutter: 32px;
+}
+
+.fi-sc-flex.save-bar {
+  @apply items-center border-t border-t-(--line);
+  padding: 12px var(--page-gutter);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(8px);
+}
+
+.save-bar .save-bar-state {
+  @apply flex items-center gap-2 text-[12.5px];
+  color: var(--ink-3);
+}
+
+.save-bar .save-bar-dot {
+  @apply hidden size-[7px] rounded-full;
+  background: var(--warn);
+}
+
+.save-bar .save-bar-state[data-dirty="true"] .save-bar-dot {
+  @apply block;
+}
+
+/* Delete sits left of Cancel, split from the pair by a hairline. The divider
+ * hangs off the button's right edge into the row gap (gap-3 = 12px, so -6.5px
+ * centres a 1px line). */
+.save-bar .save-bar-delete {
+  @apply relative;
+}
+
+.save-bar .save-bar-delete::after {
+  content: "";
+  @apply absolute top-1/2 -right-[6.5px] h-5 w-px -translate-y-1/2 bg-(--line-strong);
+}
+
+/* The ⌘S keycap on the submit button; the binding itself is the action's
+ * `mod+s`. */
+.save-bar button[type="submit"]::after {
+  content: "⌘S";
+  @apply ml-1.5 rounded-[3px] border border-current px-1 font-mono text-[11px] opacity-80;
+}
+
+/* ---------------------------------------------------------------------------
+ * Relation manager under aside sections. On a page built from aside sections
+ * the relation-manager table heading reads as the next section: no grey band,
+ * a --line-soft rule and 32px of space above, the title and description set
+ * like an aside section head, and the table below at full content width.
+ * Other pages keep the band header (.fi-ta-header, ~line 1470).
+ * ------------------------------------------------------------------------- */
+.fi-page:has(.fi-section.fi-aside) .fi-resource-relation-manager .fi-ta-header {
+  @apply items-start border-t border-b-0 border-t-(--line-soft) bg-transparent;
+  border-radius: 0;
+  padding: 32px 0 16px;
+}
+
+.fi-page:has(.fi-section.fi-aside) .fi-resource-relation-manager .fi-ta-header-heading {
+  @apply text-[15px] font-semibold normal-case tracking-normal text-(--ink);
+  line-height: 1.35;
+}
+
+.fi-page:has(.fi-section.fi-aside) .fi-resource-relation-manager .fi-ta-header-description {
+  @apply mt-1 text-[13px] text-(--ink-3);
+  line-height: 1.5;
 }

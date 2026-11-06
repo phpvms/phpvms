@@ -27,6 +27,8 @@ class FlightBundleForm
             ->components([
                 Section::make(__('filament.bundles.sections.details'))
                     ->schema(self::fields($forTours))
+                    ->aside()
+                    ->description(__('filament.bundles.sections.details_description'))
                     ->columnSpanFull()
                     ->columns(1),
             ]);
@@ -93,7 +95,7 @@ class FlightBundleForm
                 Asset::SLOT_BUNDLE,
                 // String, not int: assets.key is varchar and Postgres refuses
                 // an integer comparison against it.
-                fn (?FlightBundle $record): ?string => !$record instanceof FlightBundle ? null : (string) $record->id,
+                fn (?FlightBundle $record): ?string => $record instanceof FlightBundle ? (string) $record->id : null,
                 self::imageDisk(),
                 __('filament.bundles.fields.image'),
             ),
@@ -101,6 +103,8 @@ class FlightBundleForm
             Toggle::make('enabled')
                 ->default(true)
                 ->label(__('filament.bundles.fields.enabled'))
+                ->columnSpanFull()
+                ->inlineLabel()
                 ->extraFieldWrapperAttributes(['class' => 'field-rule-above']),
         ];
     }

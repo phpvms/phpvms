@@ -16,8 +16,9 @@ class VerifyEmailAction
         return Action::make('verify_email')
             ->label(__('filament.user_verify_email'))
             ->icon(Phosphor::SealCheckLight)
-            ->visible(fn (User $record): bool => !$record->hasVerifiedEmail())
-            ->color('danger')
+            ->tooltip(__('filament.user_verify_email'))
+            ->iconButton()
+            ->visible(fn (?User $record): bool => $record instanceof User && !$record->hasVerifiedEmail())
             ->action(function (User $record): void {
                 if ($record->markEmailAsVerified()) {
                     event(new Verified($record));

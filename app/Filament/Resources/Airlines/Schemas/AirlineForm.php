@@ -58,6 +58,8 @@ class AirlineForm
 
                         Toggle::make('active')
                             ->label(label: __('common.active'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
                             ->inline()
                             ->onColor('success')
                             ->onIcon(Phosphor::CheckLight)
@@ -66,13 +68,17 @@ class AirlineForm
 
                         Toggle::make('low_cost')
                             ->label(__('filament.airline_low_cost'))
-                            ->helperText(__('filament.airline_low_cost_hint'))
+                            ->belowLabel(__('filament.airline_low_cost_hint'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
                             ->inline()
                             ->onColor('success')
                             ->onIcon(Phosphor::CheckLight)
                             ->offColor('danger')
                             ->offIcon(Phosphor::XLight),
                     ])
+                    ->aside()
+                    ->description(__('filament.airline_information_description'))
                     ->columnSpanFull()
                     ->columns(3),
 
@@ -93,6 +99,8 @@ class AirlineForm
                     // Both children are edit-only, so on create the section would
                     // be an empty heading.
                     ->hiddenWhenAllChildComponentsHidden()
+                    ->aside()
+                    ->description(__('filament.airline_logo_description'))
                     ->columnSpanFull()
                     ->columns(2),
             ]);

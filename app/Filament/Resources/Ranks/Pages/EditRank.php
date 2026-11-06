@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Ranks\Pages;
 
 use App\Filament\Concerns\AutosavesFields;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasRelationManagerTabs;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Forms\Components\AssetImagePicker;
 use App\Filament\Resources\Ranks\RankResource;
 use App\Filament\Resources\Ranks\Schemas\RankForm;
 use App\Models\Asset;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -20,7 +22,8 @@ use Override;
 class EditRank extends EditRecord
 {
     use AutosavesFields;
-    use ReversePrimaryButtons;
+    use HasRelationManagerTabs;
+    use HasSaveBar;
 
     protected static string $resource = RankResource::class;
 
@@ -57,11 +60,15 @@ class EditRank extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()->icon(Phosphor::TrashLight),
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
             RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
