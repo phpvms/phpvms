@@ -8,6 +8,7 @@ use App\Contracts\Service;
 use App\Exceptions\SettingNotFound;
 use App\Models\Setting;
 use App\Services\Concerns\CastsSettingValue;
+use App\Support\Branding;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
@@ -23,7 +24,8 @@ use Illuminate\Validation\ValidationException;
  *
  * The 60-second CacheableRepository layer that the old repo inherited is
  * intentionally not preserved — the only path doing many reads is the
- * `setting()` helper, which has its own application cache.
+ * `setting()` helper, which has its own application cache (every environment
+ * except `testing`).
  *
  * Tier-1 memo: $memo caches resolved values for the duration of one request
  * (keyed by the formatted setting id). The service is bound as a singleton
@@ -67,7 +69,7 @@ class SettingService extends Service
      * rest of the request.
      *
      * The `setting()` helper resolves through the application cache in
-     * production. Without this, every call is a cache round trip even after
+     * every environment except `testing`. Without this, every call is a cache round trip even after
      * the first one: an API response that converts the units of thousands of
      * aircraft read `units.weight` from the cache thousands of times.
      */
@@ -120,6 +122,10 @@ class SettingService extends Service
 
             $this->forgetCache($key);
             unset($this->memo[$formattedKey]);
+
+            if (in_array($formattedKey, Branding::SETTING_KEYS, true)) {
+                Branding::flush();
+            }
         }
 
         return $value;

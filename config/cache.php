@@ -154,6 +154,10 @@ return [
             'key'  => 'addon_settings.', // append "{addon_id}.{key}"
             'time' => 60 * 60 * 24, // Cache for 1 day
         ],
+        'BRANDING' => [
+            'key'  => 'branding',
+            'time' => 60 * 60 * 24, // Cache for 1 day; busted by Branding::flush() on any change
+        ],
         'MODULES' => [
             'key'  => 'modules',
             'time' => 60 * 60 * 24, // Cache for 1 day

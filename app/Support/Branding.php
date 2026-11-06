@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Features\Assets\AssetService;
+use App\Http\Data\BrandingData;
 use App\Jobs\GenerateBrandingSizes;
 use App\Models\Asset;
 use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Owns airline-supplied branding — name, logo, favicon, banner and brand
@@ -25,14 +27,25 @@ use Filament\Support\Colors\Color;
  * queued work and so has to be a job — {@see GenerateBrandingSizes}, dispatched
  * by `store()` and writing back through it.
  *
- * Holds no state: every accessor reads through `setting()` or a (slot, key)
- * lookup on every call rather than memoizing. It is bound as a container singleton
- * (`AppServiceProvider`) purely for convenient reuse of one instance, not for
- * caching — if this class ever gains a memo, that memo must be added to
- * `config/octane.php`'s `flush` array, the same way `SettingService` is.
+ * Reads go through {@see getBranding()}: one cached {@see BrandingData} holding
+ * every value, assembled with a single `assets` query. It is cached in the
+ * shared cache store (`cache.keys.BRANDING`) and held for the rest of the request
+ * as a scoped container instance, not on this class — the class is a singleton
+ * that Octane keeps across requests, while scoped instances are reset per
+ * request. Anything that changes what it holds must call {@see flush()}: the
+ * `Asset` model's saved/deleted hooks do for the `branding` slot, and
+ * `SettingService` does for {@see SETTING_KEYS}.
  */
 final class Branding
 {
+    /**
+     * Formatted ids (see `Setting::formatKey()`) of the settings
+     * {@see getBranding()} reads. A write to any of them must {@see flush()}.
+     *
+     * @var list<string>
+     */
+    public const array SETTING_KEYS = ['general_site_name', 'branding_brand_color'];
+
     /** Fallback brand colour: the phpVMS blue. */
     private const string DEFAULT_BRAND_COLOR = '#067ec1';
 
@@ -69,20 +82,66 @@ final class Branding
     }
 
     /**
-     * URL of a `branding` asset, or null when the install has not uploaded one.
+     * The cached branding values.
      *
-     * One indexed lookup on (slot, key) per call, deliberately not memoized —
-     * see the class docblock. Every accessor below terminates in a bundled
-     * asset when this returns null, so an install with an empty `assets` table
-     * renders exactly as it does today.
+     * Two tiers: the shared cache, so a page does not rebuild it, and a scoped
+     * container instance, so the dozen accessor calls in one page do not each
+     * make a cache round trip. The scoped binding is registered here, on first
+     * use, so this class owns its own memo.
      */
-    private function url(string $key): ?string
+    public function getBranding(): BrandingData
     {
-        return Asset::query()
+        if (!app()->bound(BrandingData::class)) {
+            app()->scoped(BrandingData::class, function (): BrandingData {
+                $cache = config('cache.keys.BRANDING');
+
+                return Cache::remember($cache['key'], $cache['time'], fn (): BrandingData => $this->assemble());
+            });
+        }
+
+        return app(BrandingData::class);
+    }
+
+    /**
+     * Drop the cached branding, in the shared cache and for this request, so
+     * the next read reassembles it.
+     */
+    public static function flush(): void
+    {
+        Cache::forget(config('cache.keys.BRANDING.key'));
+        app()->forgetInstance(BrandingData::class);
+    }
+
+    /**
+     * One `assets` query for the whole `branding` slot, plus the two settings.
+     */
+    private function assemble(): BrandingData
+    {
+        $urls = Asset::query()
             ->slot(Asset::SLOT_BRANDING)
-            ->where('key', $key)
-            ->first()
-            ?->url();
+            ->get()
+            ->mapWithKeys(fn (Asset $asset): array => [$asset->key => $asset->url()])
+            ->filter(fn (?string $url): bool => $url !== null);
+
+        $logoSizes = [];
+        foreach (self::LOGO_SIZES as $size) {
+            if ($url = $urls->get(self::logoKey($size))) {
+                $logoSizes[$size] = $url;
+            }
+        }
+
+        return new BrandingData(
+            siteName: (string) setting('general.site_name', ''),
+            brandColor: (string) setting('branding.brand_color', ''),
+            logo: $urls->get(self::KEY_LOGO),
+            logoDark: $urls->get(self::KEY_LOGO_DARK),
+            favicon: $urls->get(self::KEY_FAVICON),
+            banner: $urls->get(self::KEY_BANNER),
+            logoSizes: $logoSizes,
+            hasLogo: $urls->has(self::KEY_LOGO),
+            hasDarkLogo: $urls->has(self::KEY_LOGO_DARK),
+            hasFavicon: $urls->has(self::KEY_FAVICON),
+        );
     }
 
     /**
@@ -105,6 +164,8 @@ final class Branding
             storage: (string) config('filesystems.public_files'),
         );
 
+        self::flush();
+
         if ($key === self::KEY_LOGO) {
             GenerateBrandingSizes::dispatch($asset->id);
         }
@@ -119,6 +180,8 @@ final class Branding
     public function forget(string $key): void
     {
         app(AssetService::class)->find(Asset::SLOT_BRANDING, $key)?->delete();
+
+        self::flush();
     }
 
     /**
@@ -127,7 +190,7 @@ final class Branding
      */
     public function name(): string
     {
-        return setting('general.site_name', '') ?: (string) config('app.name');
+        return $this->getBranding()->siteName ?: (string) config('app.name');
     }
 
     /**
@@ -140,13 +203,13 @@ final class Branding
     {
         $default = asset('assets/img/logo_blue.svg');
 
+        $branding = $this->getBranding();
+
         if ($size === null) {
-            return $this->url(self::KEY_LOGO) ?? $default;
+            return $branding->logo ?? $default;
         }
 
-        return $this->url(self::logoKey($size))
-            ?? $this->url(self::KEY_LOGO)
-            ?? $default;
+        return $branding->logoSizes[$size] ?? $branding->logo ?? $default;
     }
 
     /**
@@ -157,7 +220,7 @@ final class Branding
      */
     public function hasLogo(): bool
     {
-        return $this->url(self::KEY_LOGO) !== null;
+        return $this->getBranding()->hasLogo;
     }
 
     /**
@@ -166,7 +229,7 @@ final class Branding
      */
     public function logoDark(): string
     {
-        return $this->url(self::KEY_LOGO_DARK) ?? $this->logo();
+        return $this->getBranding()->logoDark ?? $this->logo();
     }
 
     /**
@@ -174,7 +237,7 @@ final class Branding
      */
     public function hasDarkLogo(): bool
     {
-        return $this->url(self::KEY_LOGO_DARK) !== null;
+        return $this->getBranding()->hasDarkLogo;
     }
 
     /**
@@ -188,13 +251,15 @@ final class Branding
      */
     public function favicon(): string
     {
-        if ($uploaded = $this->url(self::KEY_FAVICON)) {
-            return $uploaded;
+        $branding = $this->getBranding();
+
+        if ($branding->favicon !== null) {
+            return $branding->favicon;
         }
 
         foreach (self::LOGO_SIZES as $size) {
-            if ($derivative = $this->url(self::logoKey($size))) {
-                return $derivative;
+            if (isset($branding->logoSizes[$size])) {
+                return $branding->logoSizes[$size];
             }
         }
 
@@ -207,7 +272,7 @@ final class Branding
      */
     public function hasFavicon(): bool
     {
-        return $this->url(self::KEY_FAVICON) !== null;
+        return $this->getBranding()->hasFavicon;
     }
 
     /**
@@ -215,7 +280,7 @@ final class Branding
      */
     public function banner(): ?string
     {
-        return $this->url(self::KEY_BANNER);
+        return $this->getBranding()->banner;
     }
 
     /**
@@ -223,7 +288,7 @@ final class Branding
      */
     public function brandColor(): string
     {
-        return setting('branding.brand_color', '') ?: self::DEFAULT_BRAND_COLOR;
+        return $this->getBranding()->brandColor ?: self::DEFAULT_BRAND_COLOR;
     }
 
     /**

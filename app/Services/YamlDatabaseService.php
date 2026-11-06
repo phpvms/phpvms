@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Support\Branding;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -111,6 +112,7 @@ class YamlDatabaseService extends Service
             // per-request memo to keep same-request reads coherent.
             if ($table === 'settings') {
                 app(SettingService::class)->clearMemo();
+                Branding::flush();
             }
         }
 

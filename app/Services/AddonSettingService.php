@@ -56,7 +56,7 @@ class AddonSettingService extends Service
         $memoKey = $registryId.'.'.$formattedKey;
 
         if (!array_key_exists($memoKey, $this->memo)) {
-            $this->memo[$memoKey] = app()->environment('production')
+            $this->memo[$memoKey] = !app()->environment('testing')
                 ? Cache::remember(
                     config('cache.keys.ADDON_SETTINGS.key').$memoKey,
                     config('cache.keys.ADDON_SETTINGS.time'),

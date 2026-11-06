@@ -108,3 +108,23 @@ it('observes a write within the same request in production', function (): void {
 
     expect(setting('general.theme'))->toBe('test_dark');
 });
+
+it('serves a setting from the application cache in any environment but testing, and a save busts it', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+    $key = config('cache.keys.SETTINGS.key').'general.theme';
+
+    setting('general.theme');
+    expect(Cache::has($key))->toBeTrue();
+
+    app(SettingService::class)->clearMemo();
+    DB::enableQueryLog();
+    setting('general.theme');
+    $queries = DB::getQueryLog();
+    DB::disableQueryLog();
+
+    expect($queries)->toBeEmpty();
+
+    app(SettingService::class)->save('general.theme', 'test_dark');
+    expect(Cache::has($key))->toBeFalse()
+        ->and(setting('general.theme'))->toBe('test_dark');
+});
