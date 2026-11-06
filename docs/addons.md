@@ -141,3 +141,96 @@ Skylight::slots()->register([
 It sits full-width below the two-column detail grid, and renders nothing at all when no addon
 targets it. See `modules/phpvms-sample-vue-slot/` for a complete working addon (registration,
 the Vue component, and the ESM build step).
+
+## Tiles
+
+A tile is a self-contained piece of pilot UI, rendered by a Livewire component or a Blade view, that
+a theme can place on any page. Core, a theme or an addon registers tiles from its service provider's
+`boot()`. Each registration is an id and a closure that builds the tile. The closure runs when the
+registry is first read, never at boot, and again for each locale, so `__()` in it is safe. It must
+not read other request state (user, session, request):
+
+```php
+use App\Features\Tiles\Tile;
+use App\Features\Tiles\Tiles;
+
+public function boot(): void
+{
+    $tiles = app(Tiles::class);
+
+    $tiles->register('my-addon-stats', fn (): Tile => Tile::livewire(
+        id: 'my-addon-stats',
+        component: 'my-addon::stats',
+        title: __('my-addon::tiles.stats'),
+        icon: 'chart-bar',
+        showInDashboard: true,
+        default: true,
+    ));
+
+    $tiles->register('my-addon-news', fn (): Tile => Tile::view(
+        id: 'my-addon-news',
+        view: 'my-addon::tiles.news',
+        title: 'News',
+        icon: 'newspaper',
+        data: ['limit' => 5],
+        showInDashboard: true,
+        zone: Tile::ZONE_SIDEBAR,
+    ));
+}
+```
+
+| Field                | Notes                                                                                           |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| `id`                 | Unique, lower-kebab-case.                                                                       |
+| `title`              | String, may come from `__()`.                                                                   |
+| `icon`               | Icon name.                                                                                      |
+| `component` / `view` | Exactly one render target: a Livewire component name or a Blade view. `data` is for views only. |
+| `bare`               | The tile draws its own surface.                                                                 |
+| `showInDashboard`    | Offer the tile on the pilot dashboard. Default `false`.                                         |
+| `zone`               | Dashboard only. `Tile::ZONE_GRID` (default) or `ZONE_SIDEBAR`.                                  |
+| `span`               | Dashboard only. `1` or `2`; grid only.                                                          |
+| `default`            | Dashboard only. In the default layout when true; needs `showInDashboard`.                       |
+| `order`              | Dashboard only. Default-layout ordering, default 100; ties keep registration order.             |
+
+Invalid definitions throw `InvalidArgumentException`, as does a closure that builds a tile with
+another `id`. A duplicate `id` is **replaced** by the last registration, so a theme can override a
+tile registered earlier. `remove($id)` hides a tile whether it is registered before or after the
+call, and `has($id)` checks one without building it. A disabled addon's provider never boots, so its
+tiles are absent. Core ships no tiles itself.
+
+Themes read the merged result from `App\Features\Tiles\Tiles`: `all()`, `find($id)` and
+`resolve($ids)` (ids to tiles, in order, unknown skipped) for any page. The dashboard methods see only
+tiles with `showInDashboard`: `dashboard()`, `defaultLayout()`, `sanitize($layoutFromBrowser)`,
+`zone($layout, $zone)` (a layout's tiles for one zone) and `available($layout)` (tiles not placed in
+either zone, in registration order, for an "Add tile" menu).
+
+### Rendering in a theme
+
+A tile pack is a normal `module` addon: its provider (above) registers the tiles, and they disappear
+when the addon is disabled. The theme draws the frame; `<x-tile>` renders only the body, with no
+wrapper or classes.
+
+```blade
+@php($tiles = app(\App\Features\Tiles\Tiles::class))
+@php($layout = $tiles->sanitize($saved))
+
+@foreach ($tiles->zone($layout, 'grid') as $tile)
+    <section class="{{ $tile->span === 2 ? 'col-span-2' : '' }}">
+        @unless ($tile->bare)
+            <h3><x-dynamic-component :component="'icon-'.$tile->icon" /> {{ $tile->title }}</h3>
+        @endunless
+        <x-tile :tile="$tile" :with="['route' => $route]" />
+    </section>
+@endforeach
+```
+
+Outside the dashboard, render one by id: `<x-tile id="weather" />`.
+
+The tag takes `tile` (a `Tile`) or `id` (looked up in the registry), never both. An unknown `id`
+renders nothing, or an HTML comment naming it when `app.debug` is on.
+
+`:with` carries page data the tile needs. A Livewire tile receives only the keys its `mount()`
+arguments or public properties accept, plus Livewire's own control keys such as `lazy`, so one shared
+`:with` is safe; the rest are dropped instead of becoming HTML attributes. It is keyed `tile-{id}`. A
+view tile receives its declared `data` with `:with` merged over it, so render-time values win
+(`Tile::dataWith()`).

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Features\Tiles\TilesServiceProvider;
 use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -31,6 +32,10 @@ return [
     // and (like the addon engine) after the binding is registered.
     MetricsServiceProvider::class,
     FirstPartyMetricsServiceProvider::class,
+
+    // Same reasoning again: the tile registry must be bound before addon
+    // providers register tiles, so every provider sees the one singleton.
+    TilesServiceProvider::class,
 
     AddonServiceProvider::class,
     PassportServiceProvider::class,

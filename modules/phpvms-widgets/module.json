@@ -1,0 +1,22 @@
+{
+    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "schema_version": 1,
+    "name": "PhpvmsWidgets",
+    "alias": "phpvms-widgets",
+    "registry_id": "phpvms/widgets",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "First-party phpvms widgets: hours, flights, balance, rank, last flight and weather (METAR), as skylight Vue widgets and Livewire tiles for Blade themes.",
+    "keywords": ["skylight", "dashboard", "widget", "tile", "weather", "metar"],
+    "active": 0,
+    "order": 0,
+    "providers": [
+        "Modules\\PhpvmsWidgets\\Providers\\PhpvmsWidgetsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "database": {
+        "tables": []
+    }
+}
