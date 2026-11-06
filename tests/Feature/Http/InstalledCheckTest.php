@@ -173,10 +173,10 @@ it('refuses installer actions once a user exists, even on a page opened before',
 
     $component->call('runMigrations')->assertForbidden();
 
-    $this->get('/system/install')->assertForbidden();
+    $this->get('/system/install')->assertRedirect('/');
 });
 
-it('refuses the installer during an outage on a trusted marker', function (): void {
+it('sends the installer home during an outage on a trusted marker', function (): void {
     app(InstallMarker::class)->write();
     app()->instance('env', 'production');
 
@@ -201,5 +201,5 @@ it('refuses the installer during an outage on a trusted marker', function (): vo
         DB::purge('unreachable');
     }
 
-    expect($response->status())->toBe(403);
+    $response->assertRedirect('/');
 });

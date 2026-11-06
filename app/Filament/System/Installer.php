@@ -31,7 +31,6 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -106,22 +105,25 @@ class Installer extends Page
     }
 
     /**
+     * Filament aborts with 403 when canAccess() is false. An installed site
+     * sends the visitor to the home page instead. Livewire runs this hook
+     * after mount(), which is why mount() does not repeat the check.
+     */
+    #[Override]
+    public function mountCanAuthorizeAccess(): void
+    {
+        if (!static::canAccess()) {
+            $this->redirect('/');
+        }
+    }
+
+    /**
      * Called whenever the component is loaded
      */
     public function mount(): void
     {
-        try {
-            if (Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists()) {
-                Notification::make()
-                    ->title(__('installer.already_installed'))
-                    ->danger()
-                    ->send();
-
-                $this->redirect('/admin');
-
-                return;
-            }
-        } catch (QueryException) {
+        if (!static::canAccess()) {
+            return;
         }
 
         if ($this->requirementsMet()) {
