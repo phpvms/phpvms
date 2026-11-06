@@ -6,7 +6,9 @@ use App\Filament\Resources\Users\Pages\EditUser;
 use App\Models\Airport;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 // notes is in User::$hidden, so it never reaches the form from the record's
@@ -76,4 +78,44 @@ it('soft-deletes the user from the save bar delete action', function (): void {
         ->callAction(TestAction::make('delete')->schemaComponent(schema: 'saveBar'));
 
     expect($user->refresh()->trashed())->toBeTrue();
+});
+
+// save() does not refill the form. A password left in the state is hashed and
+// written again by the next save, over one the pilot may have changed since.
+it('blanks the password field after a save so the next save does not rewrite it', function (): void {
+    $this->actingAs(createAdminUser());
+    $user = User::factory()->create(['home_airport_id' => Airport::factory()->create()->id]);
+
+    $page = Livewire::test(EditUser::class, ['record' => $user->id])
+        ->fillForm(['password' => 'a-new-password'])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertSet('data.password', null);
+
+    $changed = Hash::make('changed-by-the-pilot');
+    User::whereKey($user->id)->update(['password' => $changed]);
+
+    $page->fillForm(['name' => 'Renamed Pilot'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($user->refresh())
+        ->name->toBe('Renamed Pilot')
+        ->password->toBe($changed);
+});
+
+it('marks a verified email unverified and sends the notification from the email field action', function (): void {
+    Notification::fake();
+    $this->actingAs(createAdminUser());
+    $user = User::factory()->create([
+        'home_airport_id'   => Airport::factory()->create()->id,
+        'email_verified_at' => now(),
+    ]);
+
+    Livewire::test(EditUser::class, ['record' => $user->id])
+        ->callAction(TestAction::make('request_email_verification')->schemaComponent('email'))
+        ->assertHasNoFormErrors();
+
+    expect($user->refresh()->email_verified_at)->toBeNull();
+    Notification::assertSentTo($user, VerifyEmail::class);
 });

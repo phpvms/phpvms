@@ -189,6 +189,11 @@ class EditUser extends EditRecord
             event(new UserStatsChanged($this->record, 'rank', $this->oldRankId));
         }
 
+        // save() does not refill the form, so a typed password would stay in
+        // the state: the save bar would count it as clean and the next save
+        // would hash and write it again. Blank it before the bar snapshots.
+        $this->data['password'] = null;
+
         $this->saveBarAfterSave();
     }
 }

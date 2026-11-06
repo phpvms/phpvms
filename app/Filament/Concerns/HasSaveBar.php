@@ -68,7 +68,7 @@ trait HasSaveBar
     private function isRelationManagerTabActive(): bool
     {
         // Stacked (non-tab) relation managers also carry an activeRelationManager key.
-        if (!method_exists($this, 'hasCombinedRelationManagerTabsWithContent') || !$this->hasCombinedRelationManagerTabsWithContent()) {
+        if (!$this->hasCombinedRelationManagerTabsWithContent()) {
             return false;
         }
 
