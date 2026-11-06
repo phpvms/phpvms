@@ -7,6 +7,8 @@ namespace App\Features\Flights\Livewire;
 use App\Features\Flights\Queries\FlightDetail;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\FlightDispatchPolicyData;
+use App\Models\Bid;
+use App\Models\Flight;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -39,7 +41,7 @@ class FlightActions extends Component
     }
 
     /**
-     * @return array{flight: FlightDetailData, policy: FlightDispatchPolicyData}
+     * @return array{flight: FlightDetailData, policy: FlightDispatchPolicyData, model: Flight, bid: ?Bid, subfleet: ?string}
      */
     #[Computed]
     public function detail(): array

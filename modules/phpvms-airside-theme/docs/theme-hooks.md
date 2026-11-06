@@ -801,11 +801,11 @@ The band over the bottom of the route card's map, fading from transparent to 95%
 
 ### `vms-weather-detail-card`
 
-One airport's weather: the label and ICAO, the METAR and its observation time, or the loading, missing and error states. Reusable as `<x-vms::weather-detail-card>`; the `airport-weather` Livewire component renders it.
+One airport's weather: a Meteocons icon, a plain sentence, the raw METAR, the flight category and the observation time, or the loading, missing and error states. Reusable as `<x-vms::weather-detail-card>`; the `airport-weather` Livewire component renders it.
 
 - **View:** `resources/views/components/weather-detail-card.blade.php`
 - **Element:** the `<section>`.
-- **Parts:** none.
+- **Parts:** `vms-weather-header`, `vms-weather-report`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
@@ -1615,6 +1615,325 @@ The Open PIREP link, a brand-tinted pill.
 - **View:** `resources/views/components/livemap/templates.blade.php`
 - **Element:** the `<a>`.
 - **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-head`
+
+The flight page head: the ident, then the fact pills and the OFP ready pill.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<header>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-map`
+
+The route map card of the flight page: just the map.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<section>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-timeline`
+
+The timeline card of the flight page: one row per station, route, fix or phase.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<section>`.
+- **Parts:** `vms-timeline-item`, `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`, `vms-briefing-facts`, `vms-briefing-route`, `vms-briefing-notice`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-timeline-item`
+
+One timeline row: a time column, the spine with its node, and the body. Compact rows (fixes, phases) also carry `vms-timeline-item--compact`.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<li>`.
+- **Parts:** `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-timeline-time`
+
+The time column of a timeline row: the scheduled time, the elapsed time (`+0:14`) or a word (block, alternate).
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-timeline-spine`
+
+The line that joins the timeline rows. It is a `::before` rule: the first row starts it at the node and the last row ends it there.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<div>` that holds the node.
+- **Parts:** `vms-timeline-node`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-timeline-node`
+
+The dot on the spine. Variants: `vms-timeline-node--fix` (small), `vms-timeline-node--phase` (a diamond, for top of climb and descent) and `vms-timeline-node--alt` (dashed, for the alternate).
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-timeline-body`
+
+The content of a timeline row; rows after the first have a top border.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-facts`
+
+The facts of the departure row: distance, block, cruise, subfleet and alternate.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<dl>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-route`
+
+The route string of the Route row, one mono pill per token.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-notice`
+
+An addon notice under a timeline row: icon, title coloured by severity, detail and time.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-rail`
+
+The sticky "Before you fly" rail: the progress meter and the steps.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<aside>`.
+- **Parts:** `vms-briefing-step`, `vms-briefing-ofp`, `vms-briefing-fly`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-step`
+
+One step of the rail (Bid, Aircraft, OFP, Fly). `vms-briefing-step--now` marks the next step to do.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<li>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-ofp`
+
+The OFP summary in the rail: block fuel, air time, ZFW, runways and aircraft.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<dl>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-briefing-fly`
+
+The Fly step body: the hint and the `flights.detail.actions` outlet.
+
+- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-meteocon`
+
+A Meteocons weather icon, rendered as an `<img>` by `<x-vms::meteocon>`.
+
+- **View:** `resources/views/components/meteocon.blade.php`
+- **Element:** the `<img>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-weather-header`
+
+The label and ICAO row of a weather card (only when the card has a label).
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<header>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-weather-report`
+
+The loaded report of a weather card: icon, sentence, METAR, category and time.
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** `vms-weather-icon`, `vms-weather-sentence`, `vms-weather-metar`, `vms-weather-category`, `vms-weather-stale`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-weather-icon`
+
+The Meteocons icon of a weather card.
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<img>` (with `vms-meteocon`).
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-weather-sentence`
+
+The plain sentence that describes the METAR.
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-weather-metar`
+
+The raw METAR in small mono; long reports are cut with an ellipsis.
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<p>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-weather-category`
+
+The flight category pill (VFR, IFR...) of a weather card.
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-weather-stale`
+
+The Stale pill of a weather card, in place of the category.
+
+- **View:** `resources/views/components/weather-detail-card.blade.php`
+- **Element:** the `<span>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-ofp-planning`
+
+The full-width SimBrief planning card: header, three settings rows and the footer.
+
+- **View:** `resources/views/ofp/planning.blade.php`
+- **Element:** the `<section>`.
+- **Parts:** `vms-ofp-planning-fieldset`, `vms-ofp-planning-footer`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-ofp-planning-fieldset`
+
+One settings row of the planning card: Flight information, Planning options or Briefing options.
+
+- **View:** `resources/views/components/ofp/planning-form.blade.php`
+- **Element:** the `<fieldset>`, the whole row.
+- **Parts:** `vms-ofp-planning-fieldset-intro`, `vms-ofp-planning-fieldset-fields`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-ofp-planning-fieldset-intro`
+
+The left column of a planning row: the group title and its one-line description.
+
+- **View:** `resources/views/components/ofp/planning-form.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-ofp-planning-fieldset-fields`
+
+The right column of a planning row: the fields in a two-column grid.
+
+- **View:** `resources/views/components/ofp/planning-form.blade.php`
+- **Element:** the `<div>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-ofp-planning-footer`
+
+The planning card footer: the hint, Cancel and Generate OFP.
+
+- **View:** `resources/views/ofp/planning.blade.php`
+- **Element:** the `<footer>`.
+- **Parts:** none.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-route-map--bare`
+
+The route map island without its header and readout (the flight briefing, `overlay: false`): the map is a rounded 16:8 box (4:3 under 640px) instead of a fixed height.
+
+- **View:** `resources/js/islands/route-map.ts`
+- **Element:** the island frame `<div>` (with `vms-route-map`).
+- **Parts:** `vms-route-map__map`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.

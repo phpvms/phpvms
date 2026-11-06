@@ -39,7 +39,7 @@ return [
         'phpvms' => [
             'name'        => 'phpvms',
             'category'    => 'Essentials',
-            'description' => 'The phpvms logo blue.',
+            'description' => 'The phpvms logo blue',
             'primary'     => [
                 50  => '#f1f9fe',
                 100 => '#c9e0f3',

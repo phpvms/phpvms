@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Features\Flights\Livewire;
 
+use App\Features\Flights\Actions\DescribeMetar;
 use App\Features\Flights\Actions\LoadStationWeather;
+use App\Http\Data\MetarDescriptionData;
+use App\Models\Airport;
+use App\Support\Metar;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
@@ -49,10 +54,11 @@ class AirportWeather extends Component
     public function placeholder(array $params = []): View
     {
         return view('livewire.flights.airport-weather', [
-            'label'      => (string) ($params['label'] ?? ''),
-            'icao'       => filled($params['icao'] ?? null) ? $params['icao'] : null,
-            'emptyLabel' => $params['emptyLabel'] ?? null,
-            'state'      => 'loading', 'metar' => null, 'observedAt' => null,
+            'label'       => (string) ($params['label'] ?? ''),
+            'icao'        => filled($params['icao'] ?? null) ? $params['icao'] : null,
+            'emptyLabel'  => $params['emptyLabel'] ?? null,
+            'state'       => 'loading', 'metar' => null, 'observedAt' => null,
+            'description' => null, 'observedClock' => null,
         ]);
     }
 
@@ -62,10 +68,40 @@ class AirportWeather extends Component
     }
 
     /**
-     * @return array{state: string, metar: ?string, observedAt: ?string}
+     * The loaded weather, plus the plain-language description of the METAR and
+     * its observation time as a UTC clock ("Today 23:35Z").
+     *
+     * @return array{state: string, metar: ?string, observedAt: ?string, description: ?MetarDescriptionData, observedClock: ?string}
      */
     private function weather(): array
     {
-        return app(LoadStationWeather::class)->handle($this->icao);
+        $weather = app(LoadStationWeather::class)->handle($this->icao);
+
+        $description = null;
+        if ($weather['metar'] !== null) {
+            $airport = Airport::query()->withTrashed()->where('icao', $this->icao)->first(['id', 'lat', 'lon']);
+            $description = app(DescribeMetar::class)->handle(
+                new Metar($weather['metar']),
+                $airport?->lat === null ? null : (float) $airport->lat,
+                $airport?->lon === null ? null : (float) $airport->lon,
+            );
+        }
+
+        return $weather + [
+            'description'   => $description,
+            'observedClock' => $this->observedClock($weather['observedAt']),
+        ];
+    }
+
+    private function observedClock(?string $observedAt): ?string
+    {
+        $timestamp = $observedAt === null ? false : strtotime($observedAt);
+        if ($timestamp === false) {
+            return null;
+        }
+
+        $time = CarbonImmutable::createFromTimestampUTC($timestamp);
+
+        return ($time->isSameDay(CarbonImmutable::now('UTC')) ? 'Today' : $time->format('j M')).' '.$time->format('H:i').'Z';
     }
 }

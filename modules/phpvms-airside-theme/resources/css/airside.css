@@ -60,6 +60,15 @@
         --vms-brand: var(--color-primary-400);
         --vms-brand-soft: var(--color-primary-950);
     }
+
+    /* Form controls: TallStackUI's field classes carry no horizontal padding
+       (its stylesheet loads @tailwindcss/forms in class strategy, which does
+       not style bare controls). Utilities such as px-* still override this. */
+    input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"])),
+    select,
+    textarea {
+        padding-inline: 0.75rem;
+    }
 }
 
 @layer components {
@@ -920,6 +929,95 @@
 
         .vms-section-title {
             font-size: 36px;
+        }
+    }
+}
+
+/* The flight briefing: the timeline spine, its nodes, and the rail's current step. */
+@layer components {
+    .vms-timeline-spine::before {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        width: 2px;
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-timeline-item:first-child .vms-timeline-spine::before {
+        top: 28px;
+    }
+
+    .vms-timeline-item:last-child .vms-timeline-spine::before {
+        bottom: auto;
+        height: 28px;
+    }
+
+    .vms-timeline-node {
+        position: relative;
+        margin-top: 20px;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 3px solid var(--vms-brand);
+        @apply bg-white dark:bg-dark-800;
+    }
+
+    .vms-timeline-node--fix {
+        margin-top: 15px;
+        width: 10px;
+        height: 10px;
+        border-width: 2px;
+    }
+
+    .vms-timeline-node--phase {
+        margin-top: 14px;
+        width: 12px;
+        height: 12px;
+        border: 0;
+        border-radius: 3px;
+        rotate: 45deg;
+        background: var(--vms-brand);
+    }
+
+    .vms-timeline-node--alt {
+        border-style: dashed;
+        @apply border-gray-300 dark:border-dark-600;
+    }
+
+    .vms-timeline-item + .vms-timeline-item .vms-timeline-body {
+        @apply border-t border-gray-200 dark:border-dark-700;
+    }
+
+    .vms-timeline-item--compact .vms-timeline-body,
+    .vms-timeline-item--compact + .vms-timeline-item .vms-timeline-body {
+        padding-block: 8px 10px;
+    }
+
+    .vms-timeline-item--compact + .vms-timeline-item--compact .vms-timeline-body {
+        border-top-style: dashed;
+    }
+
+    .vms-briefing-step--now {
+        background: var(--vms-brand-soft);
+    }
+
+    .vms-meteocon {
+        display: block;
+        object-fit: contain;
+    }
+}
+
+/* The route map island without its EFIS overlay (the flight briefing): a rounded 16:8 map. */
+@layer components {
+    .vms-route-map--bare .vms-route-map__map {
+        aspect-ratio: 16 / 8;
+        border-radius: var(--vms-radius-md);
+        overflow: hidden;
+    }
+
+    @media (max-width: 640px) {
+        .vms-route-map--bare .vms-route-map__map {
+            aspect-ratio: 4 / 3;
         }
     }
 }

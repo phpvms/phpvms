@@ -6,13 +6,15 @@
     'editingSubfleet' => true,
     'editingAircraft' => true,
     'required' => false,
+    'heading' => true,
 ])
 
 {{--
   Aircraft assignment for a bid (skylight's AircraftSelection): pick a subfleet, then an aircraft, each from a
   searchable x-vms::ui.select-menu; a choice collapses to a card with Edit. Props: subfleets (EligibleSubfleetData
   collection), aircraft (list of EligibleAircraftData for the chosen subfleet; null when they failed to load),
-  subfleetId, aircraftId, editingSubfleet, editingAircraft, required (aircraft required by policy).
+  subfleetId, aircraftId, editingSubfleet, editingAircraft, required (aircraft required by policy), heading (false
+  when the surrounding UI already titles the step: the legend stays for screen readers only).
   It calls the enclosing Livewire component's selectSubfleet, editSubfleet, selectAircraft, editAircraft and
   retryAircraft (see App\Features\Bids\Livewire\AssignmentDrawer).
 --}}
@@ -23,9 +25,9 @@
 @endphp
 
 <fieldset {{ $attributes->class('vms-aircraft-selection m-0 grid min-w-0 gap-3 p-0') }}>
-    <legend class="mb-1 p-0 text-[15px] font-semibold">Select Aircraft</legend>
+    <legend @class(['mb-1 p-0 text-[15px] font-semibold', 'sr-only' => ! $heading])>Select Aircraft</legend>
 
-    @if (! $chosenSubfleet)
+    @if ($heading && ! $chosenSubfleet)
         <p class="text-xs">Select the subfleet and aircraft to fly with.</p>
     @endif
 

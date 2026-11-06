@@ -4,27 +4,19 @@ declare(strict_types=1);
 
 namespace App\Features\Bids\Livewire;
 
-use App\Exceptions\BidExistsForAircraft;
-use App\Exceptions\BidExistsForFlight;
-use App\Exceptions\UserBidLimit;
 use App\Features\Bids\Actions\LoadDispatch;
-use App\Features\Bids\Actions\PlaceBid;
-use App\Features\Bids\Queries\EligibleAircraft;
-use App\Features\Flights\Queries\VisibleFlights;
-use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Bids\Concerns\SelectsAircraft;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\FlightDispatchPolicyData;
-use App\Models\Aircraft;
 use App\Models\Flight;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -48,28 +40,14 @@ use Livewire\Component;
  */
 class AssignmentDrawer extends Component
 {
+    use SelectsAircraft;
+
     public bool $open = false;
 
     #[Locked]
     public ?string $flightId = null;
 
     public string $state = 'idle';
-
-    public ?int $subfleetId = null;
-
-    public ?int $aircraftId = null;
-
-    public bool $editingSubfleet = true;
-
-    public bool $editingAircraft = true;
-
-    /**
-     * The last failure's type (network, validation, pilot-limit, flight-conflict,
-     * aircraft-conflict, stale-aircraft, hook-denied) and its message.
-     */
-    public ?string $failureType = null;
-
-    public ?string $failureMessage = null;
 
     /**
      * Whether a bid was placed while the drawer was open, reported when it closes.
@@ -132,52 +110,6 @@ class AssignmentDrawer extends Component
         $this->dispatch('assignment-drawer.closed', flightId: $closedFlightId, changed: $changed);
     }
 
-    public function selectSubfleet(int $subfleetId): void
-    {
-        if ($this->state !== 'selecting' || $subfleetId === $this->subfleetId) {
-            $this->editingSubfleet = false;
-
-            return;
-        }
-
-        $configured = collect($this->dispatchPayload['subfleets'] ?? [])->firstWhere('id', $subfleetId);
-
-        if ($configured === null) {
-            return;
-        }
-
-        $this->subfleetId = $subfleetId;
-        $this->aircraftId = null;
-        $this->editingSubfleet = false;
-        $this->editingAircraft = true;
-        unset($this->aircraftList);
-    }
-
-    public function editSubfleet(): void
-    {
-        $this->editingSubfleet = true;
-    }
-
-    public function selectAircraft(int $aircraftId): void
-    {
-        $this->aircraftId = $aircraftId;
-        $this->editingAircraft = false;
-    }
-
-    public function editAircraft(): void
-    {
-        $this->editingAircraft = true;
-        unset($this->aircraftList);
-    }
-
-    /**
-     * Run the aircraft list again after it failed to load.
-     */
-    public function retryAircraft(): void
-    {
-        unset($this->aircraftList);
-    }
-
     public function submit(): void
     {
         if ($this->state !== 'selecting' || $this->flightId === null) {
@@ -190,63 +122,12 @@ class AssignmentDrawer extends Component
             return;
         }
 
-        if ($payload['policy']->aircraftRequired && $this->aircraftId === null) {
-            $this->fail('validation', 'Select an aircraft before placing this bid.');
-
-            return;
-        }
-
-        $user = $this->pilot();
-        $flight = app(VisibleFlights::class)->for($user)->find($this->flightId);
-
-        if (!$flight instanceof Flight) {
-            $this->fail('network', 'The bid could not be placed. Try again.');
-
-            return;
-        }
-
-        $aircraft = $this->aircraftId === null ? null : Aircraft::query()->find($this->aircraftId);
-
-        if ($this->aircraftId !== null && !$aircraft instanceof Aircraft) {
-            $this->staleAircraft('This aircraft is no longer available. Refresh the aircraft list.');
-
-            return;
-        }
-
         $firstBid = $payload['selection'] === null;
 
-        try {
-            app(PlaceBid::class)->handle($flight, $user, $aircraft);
-        } catch (HookDenied $exception) {
-            $this->fail('hook-denied', $exception->getMessage());
-
-            return;
-        } catch (UserBidLimit $exception) {
-            $this->fail('pilot-limit', $exception->getMessage());
-
-            return;
-        } catch (BidExistsForFlight $exception) {
-            $this->fail('flight-conflict', $exception->getMessage());
-
-            return;
-        } catch (BidExistsForAircraft $exception) {
-            $this->staleAircraft($exception->getMessage(), 'aircraft-conflict');
-
-            return;
-        } catch (ValidationException $exception) {
-            $message = (string) collect($exception->errors())->flatten()->first();
-
-            if ($this->aircraftId !== null && isset($exception->errors()['aircraftId'])) {
-                $this->staleAircraft($message);
-            } else {
-                $this->fail('validation', $message);
-            }
-
+        if (!$this->placeSelectedBid($payload['policy'])) {
             return;
         }
 
-        $this->failureType = null;
-        $this->failureMessage = null;
         $this->changed = true;
         $this->state = 'overview';
         unset($this->dispatchPayload);
@@ -273,58 +154,29 @@ class AssignmentDrawer extends Component
         return app(LoadDispatch::class)->handle($this->pilot(), $this->flightId);
     }
 
-    /**
-     * Eligible aircraft for the chosen subfleet; null when they could not be loaded.
-     *
-     * @return list<EligibleAircraftData>|null
-     */
-    #[Computed]
-    public function aircraftList(): ?array
-    {
-        if ($this->flightId === null || $this->subfleetId === null) {
-            return [];
-        }
-
-        try {
-            $user = $this->pilot();
-            $flight = app(VisibleFlights::class)->for($user)->findOrFail($this->flightId);
-
-            if (!$flight->configuredSubfleets(['airline'])->contains('id', $this->subfleetId)) {
-                return null;
-            }
-
-            return app(EligibleAircraft::class)->for($flight, $user, $this->subfleetId)
-                ->get()
-                ->map(fn (Aircraft $aircraft): EligibleAircraftData => EligibleAircraftData::fromModel($aircraft))
-                ->values()
-                ->all();
-        } catch (ModelNotFoundException) {
-            return null;
-        }
-    }
-
     public function render(): View
     {
         return view('livewire.bids.assignment-drawer');
     }
 
-    /**
-     * An aircraft the server no longer accepts: refetch the lists and clear the choice.
-     */
-    private function staleAircraft(string $message, string $type = 'stale-aircraft'): void
+    protected function selectionFlightId(): ?string
     {
-        $this->fail($type, $message);
-        $this->subfleetId = null;
-        $this->aircraftId = null;
-        $this->editingSubfleet = true;
-        $this->editingAircraft = true;
-        unset($this->dispatchPayload, $this->aircraftList);
+        return $this->flightId;
     }
 
-    private function fail(string $type, string $message): void
+    protected function selectionOpen(): bool
     {
-        $this->failureType = $type;
-        $this->failureMessage = $message;
+        return $this->state === 'selecting';
+    }
+
+    protected function selectionSubfleets(): Collection
+    {
+        return $this->dispatchPayload['subfleets'] ?? collect();
+    }
+
+    protected function refreshSelection(): void
+    {
+        unset($this->dispatchPayload);
     }
 
     private function resetState(): void
@@ -333,7 +185,7 @@ class AssignmentDrawer extends Component
         unset($this->dispatchPayload, $this->aircraftList);
     }
 
-    private function pilot(): User
+    protected function pilot(): User
     {
         /** @var User $user */
         $user = Auth::user();

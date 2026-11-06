@@ -19,7 +19,15 @@ import type { LonLat } from "./flights/geo";
  * `<script type="application/json">`:
  *
  *   { "from": { "icao", "lat", "lon" }, "to": { "icao", "lat", "lon" } | null,
- *     "cruiseLevel": int | null, "height": int | null, "map": MapConfig | null }
+ *     "cruiseLevel": int | null, "height": int | null, "map": MapConfig | null,
+ *     "fixes": [{ "ident", "lat", "lon" }, ...], "overlay": bool }
+ *
+ * `overlay: false` leaves out the EFIS header and the readout and sizes the map by
+ * aspect ratio (16:8; 4:3 on a narrow screen, see `vms-route-map--bare`), not `height`.
+ *
+ * `fixes` is optional: the planned fixes of an OFP. When present the line runs
+ * from the departure through the fixes to the arrival, with a small dot at each
+ * fix, instead of the great circle.
  *
  * `map` is optional; without it the map package's default basemaps are used.
  * The island draws its own header, map and readout, so a page only needs the
@@ -31,9 +39,17 @@ interface Endpoint {
   lon: number;
 }
 
+interface Fix {
+  ident?: string | null;
+  lat: number;
+  lon: number;
+}
+
 interface RouteMapData {
   from: Endpoint;
   to?: Endpoint | null;
+  fixes?: Fix[] | null;
+  overlay?: boolean;
   cruiseLevel?: number | null;
   height?: number | null;
   map?: MapConfig | null;
@@ -83,6 +99,7 @@ function mountIsland(root: HTMLElement): () => void {
   const to: LonLat | null = hasPoint(data.to) ? [data.to.lon, data.to.lat] : null;
   const height = Number.isFinite(data.height) ? (data.height as number) : DEFAULT_HEIGHT;
 
+  const bare = data.overlay === false;
   const header = element("div", "vms-route-map__head");
   header.append(
     element(
@@ -99,7 +116,7 @@ function mountIsland(root: HTMLElement): () => void {
 
   const mapElement = element("div", "vms-route-map__map");
   mapElement.dataset.role = "map";
-  mapElement.style.height = `${height}px`;
+  if (!bare) mapElement.style.height = `${height}px`;
 
   const status = element("div", "vms-route-map__readout");
   status.dataset.role = "readout";
@@ -107,15 +124,19 @@ function mountIsland(root: HTMLElement): () => void {
     status.append(element("span", index === 0 ? "vms-route-map__track" : "", text));
   });
 
-  const frame = element("div", "vms-route-map");
+  const frame = element("div", bare ? "vms-route-map vms-route-map--bare" : "vms-route-map");
   frame.setAttribute("role", "img");
   frame.setAttribute(
     "aria-label",
     `Nav display, route ${data.from.icao ?? "unknown"} to ${data.to?.icao ?? "unknown"}`,
   );
   // Without a destination there is no track or distance to read out.
-  frame.append(header, mapElement);
-  if (to) frame.append(status);
+  if (bare) {
+    frame.append(mapElement);
+  } else {
+    frame.append(header, mapElement);
+    if (to) frame.append(status);
+  }
 
   // Keep the data script, replace everything else.
   const script = root.querySelector('script[type="application/json"]');
@@ -151,14 +172,23 @@ function mountIsland(root: HTMLElement): () => void {
     await loaded(map);
     if (disposed) return;
 
+    const fixes = (data.fixes ?? []).filter(hasPoint);
     const points = to
-      ? greatCircle(from, to).map(([lon, lat]) => ({ lat, lon, altitude: 0 }))
+      ? (fixes.length > 0 ? [from, ...fixes.map((fix): LonLat => [fix.lon, fix.lat]), to] : greatCircle(from, to)).map(
+          ([lon, lat]) => ({ lat, lon, altitude: 0 }),
+        )
       : [{ lat: from[1], lon: from[0], altitude: 0 }];
 
     if (to) {
       const line = await createRoute(map, 0, { id: "route-map-line" });
       line.setData(points);
       layers.push(line);
+    }
+
+    if (fixes.length > 0) {
+      const dots = createRouteWaypoints(map, { id: "route-map-fixes" });
+      dots.setData(fixes.map((fix) => ({ lat: fix.lat, lon: fix.lon, ident: fix.ident ?? null, kind: "enroute" as const })));
+      layers.push(dots);
     }
 
     const airports = createRouteWaypoints(map, { id: "route-map-airports", pointRadius: 6 });
