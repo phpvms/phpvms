@@ -27,13 +27,20 @@
             x-on:flight-overview.closed.window="selected = null"
         >
             @foreach ($flights as $flight)
-                @php($flightId = $flight->id)
+                @php
+                    $flightId = $flight->id;
+                    $flightUrl = route('frontend.flights.show', $flightId);
+                @endphp
                 <li
                     wire:key="row-{{ $flightId }}"
                     data-availability="{{ $flight->primaryAction === 'unavailable' ? 'unavailable' : 'available' }}"
                     x-bind:aria-current="selected === '{{ $flightId }}' ? 'true' : null"
                     class="vms-flight-card grid min-w-0 cursor-pointer items-center gap-x-5 gap-y-3 px-4.5 py-4 md:grid-cols-[auto_minmax(0,1fr)_10rem]"
-                    x-on:click="$dispatch('flight-overview.open', { flightId: '{{ $flightId }}' })"
+                    @if ($flight->primaryAction === 'overview')
+                        x-on:click="Livewire.navigate(@js($flightUrl))"
+                    @else
+                        x-on:click="$dispatch('flight-overview.open', { flightId: '{{ $flightId }}' })"
+                    @endif
                 >
                     <x-vms::flights.summary :callsign="$flight->callsign" :airline="$flight->airline?->name" :logo="$flight->airline?->logo" class="md:w-60">
                         <x-slot:button>
@@ -46,7 +53,7 @@
                             <span class="vms-flight-pill px-2 py-0.5 text-[11px] font-medium">{{ $flight->routeCode }}</span>
                         @endif
                         @if ($flight->primaryAction === 'overview')
-                            <span class="vms-flight-pill vms-flight-pill--bid px-2 py-0.5 text-[11px] font-semibold">On your bid</span>
+                            <span class="vms-flight-pill vms-flight-pill--bid px-2 py-0.5 text-[11px] font-semibold">In your schedule</span>
                         @elseif ($flight->primaryAction === 'unavailable')
                             <span class="vms-flight-pill vms-flight-pill--off px-2 py-0.5 text-[11px] font-semibold">Unavailable</span>
                         @endif
@@ -75,13 +82,16 @@
                         </div>
                     </div>
 
-                    <div class="vms-flight-buttons grid gap-2">
+                    <div class="vms-flight-buttons grid gap-2 md:self-start">
                         @if ($flight->primaryAction === 'unavailable')
                             <x-ts-button type="button" sm block color="gray" light disabled class="text-center whitespace-normal" x-on:click.stop>{{ $flight->availabilityReason ?? 'Unavailable' }}</x-ts-button>
+                            <x-ts-button :href="$flightUrl" wire:navigate sm block color="gray" light class="vms-flight-details" x-on:click.stop>Details</x-ts-button>
+                        @elseif ($flight->primaryAction === 'overview')
+                            <x-ts-button :href="$flightUrl" wire:navigate sm block class="vms-flight-details" x-on:click.stop>View flight</x-ts-button>
                         @else
-                            <x-ts-button type="button" sm block :light="$flight->primaryAction === 'overview'" x-on:click.stop="$dispatch('assignment-drawer.open', { flightId: '{{ $flightId }}' })" x-on:keydown.stop>{{ $flight->primaryAction === 'overview' ? 'View bid' : 'Bid on flight' }}</x-ts-button>
+                            <x-ts-button type="button" sm block x-on:click.stop="$dispatch('assignment-drawer.open', { flightId: '{{ $flightId }}' })" x-on:keydown.stop>Bid on flight</x-ts-button>
+                            <x-ts-button :href="$flightUrl" wire:navigate sm block color="gray" light class="vms-flight-details" x-on:click.stop>Details</x-ts-button>
                         @endif
-                        <x-ts-button :href="route('frontend.flights.show', $flightId)" wire:navigate sm block color="gray" light class="vms-flight-details" x-on:click.stop>Details</x-ts-button>
                     </div>
 
                     <div class="vms-flight-row-actions col-span-full flex items-center gap-2 not-has-[*]:hidden" x-on:click.stop x-on:keydown.stop>
