@@ -39,9 +39,9 @@ Route::get('map/live', [MapController::class, 'live']);
 // Deliberately NOT the app's `web` middleware *alias* — bootstrap/app.php's
 // appendToGroup('web', ...) also puts InstalledCheck, SetActiveTheme, and
 // SetActiveLanguage on it. The latter two skip `api/*` paths; InstalledCheck
-// doesn't, so it redirected this JSON route to /system/install whenever
-// `User::count()` was 0 — wrong for a route that must always answer with
-// 401/404 JSON, never a redirect. What's listed below is the exact
+// doesn't, so it answered this JSON route with an HTML 503 page whenever
+// `User::count()` was 0 or the database was down — wrong for a route that
+// must always answer with 401/404 JSON, never an HTML page. What's listed below is the exact
 // framework middleware the `web` alias itself is built from, nothing
 // app-specific.
 Route::middleware([
