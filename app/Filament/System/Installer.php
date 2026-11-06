@@ -12,6 +12,7 @@ use App\Services\Installer\RequirementsService;
 use App\Services\Installer\StreamedCommandsService;
 use App\Services\UserService;
 use App\Support\Countries;
+use App\Support\InstallMarker;
 use App\Support\Utils;
 use Database\Seeders\DatabaseSeeder;
 use Exception;
@@ -76,20 +77,31 @@ class Installer extends Page
      * Before that point (a fresh or partially-completed install) the page stays
      * reachable so the operator can finish setup: the `users` table may not
      * exist yet, or exists but holds no rows.
+     *
+     * A trusted install marker closes the installer without asking the
+     * database, so it stays closed during a database outage too. Where the
+     * marker is only advisory (local, demo) the database still decides, but an
+     * outage behind an existing marker is an outage, not a fresh install.
      */
     #[Override]
     public static function canAccess(): bool
     {
+        $marker = app(InstallMarker::class);
+
+        if ($marker->isTrusted()) {
+            return false;
+        }
+
         try {
             if (!Schema::hasTable('users')) {
                 return true;
             }
 
             return !User::query()->withoutGlobalScopes()->exists();
-        } catch (QueryException) {
-            // DB unreachable/not yet migrated — treat as not installed so the
-            // installer can run.
-            return true;
+        } catch (Throwable) {
+            // Unreachable or not yet migrated: only a site that never finished
+            // installing may open the installer.
+            return !$marker->exists();
         }
     }
 
@@ -405,6 +417,7 @@ class Installer extends Page
     {
         $this->validate();
         $this->airlineAndUserSetup();
+        app(InstallMarker::class)->write();
 
         flash()->success(__('installer.install_completed'));
 
