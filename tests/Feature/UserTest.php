@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 
 test('rank subfleets', function (): void {
+    updateSetting('pireps.restrict_aircraft_to_rank', true);
+
     // Add subfleets and aircraft, but also add another
     // set of subfleets
     $subfleet = Subfleet::factory()->hasAircraft(2)->count(2)->create();

@@ -41,7 +41,7 @@ final class FlightDispatchPolicyData extends Data
             restrictToCompany: (bool) setting('pilots.restrict_to_company', false),
             discoveryCurrentAirportOnly: (bool) setting('pilots.only_show_flights_from_current', false),
             requireCurrentAirport: (bool) setting('pilots.only_flights_from_current', false),
-            restrictAircraftToRank: (bool) setting('pireps.restrict_aircraft_to_rank', true),
+            restrictAircraftToRank: (bool) setting('pireps.restrict_aircraft_to_rank', false),
             restrictAircraftToTypeRating: (bool) setting('pireps.restrict_aircraft_to_typerating', false),
             aircraftAtDepartureOnly: (bool) setting('pireps.only_aircraft_at_dpt_airport', false),
             companyAircraftOnly: (bool) setting('flights.only_company_aircraft', false),
