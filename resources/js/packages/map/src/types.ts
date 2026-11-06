@@ -47,7 +47,7 @@ export type PlannedFix = {
  * types, so the core cannot depend on either adapter's type source. Field names
  * match the generated DTO on purpose — a real `MapConfigData.layers[number]`
  * satisfies this structurally with no import, and the admin adapter builds the
- * same shape by hand from `window.filamentData.maps`.
+ * same shape by hand from the config the Blade view passes in.
  */
 export type MapLayerConfig = {
   id: number;
