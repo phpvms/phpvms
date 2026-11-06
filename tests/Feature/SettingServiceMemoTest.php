@@ -65,7 +65,7 @@ it('reads a setting from the application cache once per request in production', 
     app()->detectEnvironment(fn (): string => 'production');
     $reads = 0;
     Event::listen([CacheHit::class, CacheMissed::class], function ($event) use (&$reads): void {
-        if (str_ends_with($event->key, 'units.weight')) {
+        if (str_ends_with($event->key, 'units_weight')) {
             $reads++;
         }
     });
@@ -80,17 +80,17 @@ it('reads an already cached setting from the application cache once per request 
     // With the value already cached, retrieve() never runs, so only remember()
     // can keep it for the rest of the request.
     app()->detectEnvironment(fn (): string => 'production');
-    Cache::put(config('cache.keys.SETTINGS.key').'units.weight', 'cached-unit', 60);
+    Cache::put(config('cache.keys.SETTINGS.key').'units_weight', 'cached-unit', 60);
     app(SettingService::class)->clearMemo();
     $hits = 0;
     $misses = 0;
     Event::listen(CacheHit::class, function (CacheHit $event) use (&$hits): void {
-        if (str_ends_with($event->key, 'units.weight')) {
+        if (str_ends_with($event->key, 'units_weight')) {
             $hits++;
         }
     });
     Event::listen(CacheMissed::class, function (CacheMissed $event) use (&$misses): void {
-        if (str_ends_with($event->key, 'units.weight')) {
+        if (str_ends_with($event->key, 'units_weight')) {
             $misses++;
         }
     });
