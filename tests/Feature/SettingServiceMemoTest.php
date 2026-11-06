@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Models\Setting;
 use App\Services\SettingService;
+use App\Services\YamlDatabaseService;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Support\Facades\Cache;
@@ -111,7 +113,7 @@ it('observes a write within the same request in production', function (): void {
 
 it('serves a setting from the application cache in any environment but testing, and a save busts it', function (): void {
     app()->detectEnvironment(fn (): string => 'demo');
-    $key = config('cache.keys.SETTINGS.key').'general.theme';
+    $key = config('cache.keys.SETTINGS.key').Setting::formatKey('general.theme');
 
     setting('general.theme');
     expect(Cache::has($key))->toBeTrue();
@@ -127,4 +129,18 @@ it('serves a setting from the application cache in any environment but testing, 
     app(SettingService::class)->save('general.theme', 'test_dark');
     expect(Cache::has($key))->toBeFalse()
         ->and(setting('general.theme'))->toBe('test_dark');
+});
+
+it('busts the cached value of a setting a YAML import overwrites', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+
+    expect(setting('general.theme'))->not->toBe('from_yaml');
+
+    app(YamlDatabaseService::class)->seedFromYaml([
+        'settings' => [
+            'data' => [['id' => 'general_theme', 'value' => 'from_yaml']],
+        ],
+    ]);
+
+    expect(setting('general.theme'))->toBe('from_yaml');
 });

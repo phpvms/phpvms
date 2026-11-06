@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\InstallMarker;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Livewire\livewire;
@@ -87,9 +88,20 @@ it('detects connection failures but not other query errors', function (): void {
     );
     $missingTable->errorInfo = ['42P01', 7, 'undefined table'];
 
+    $bindingLooksLikeOutage = new QueryException(
+        'pgsql',
+        'insert into notes (body) values (?)',
+        ['server has gone away'],
+        new PDOException('null value in column "title"')
+    );
+    $bindingLooksLikeOutage->errorInfo = ['23502', 7, 'not null violation'];
+
     expect(SiteUnavailable::causedBy($connection))->toBeTrue()
         ->and(SiteUnavailable::causedBy(new RuntimeException('wrapped', 0, $connection)))->toBeTrue()
-        ->and(SiteUnavailable::causedBy($missingTable))->toBeFalse();
+        ->and(SiteUnavailable::causedBy($missingTable))->toBeFalse()
+        ->and(SiteUnavailable::causedBy(new RuntimeException('No such file or directory')))->toBeFalse()
+        ->and(SiteUnavailable::causedBy($bindingLooksLikeOutage))->toBeFalse()
+        ->and(SiteUnavailable::causedBy(new SQLiteDatabaseDoesNotExistException('/x.sqlite')))->toBeTrue();
 });
 
 it('skips the database once the install marker is trusted', function (): void {

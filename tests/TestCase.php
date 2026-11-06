@@ -8,6 +8,7 @@ use App\Services\SettingService;
 use App\Support\InstallMarker;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\ParallelTesting;
 use Override;
 
 abstract class TestCase extends BaseTestCase
@@ -31,8 +32,9 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         // Keep the install marker out of storage/framework: tests must neither
-        // read a marker the host wrote nor leave one behind.
-        $marker = new InstallMarker(storage_path('framework/testing/installed'));
+        // read a marker the host wrote nor leave one behind. One file per
+        // parallel worker, or workers race on each other's marker.
+        $marker = new InstallMarker(storage_path('framework/testing/installed-'.(ParallelTesting::token() ?: '0')));
         $marker->remove();
         $this->instance(InstallMarker::class, $marker);
 

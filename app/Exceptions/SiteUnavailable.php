@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Contracts\Database\LostConnectionDetector;
+use Illuminate\Database\QueryException;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use PDOException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -32,11 +34,12 @@ final class SiteUnavailable
         $detector = app(LostConnectionDetector::class);
 
         for ($current = $e; $current instanceof Throwable; $current = $current->getPrevious()) {
-            if ($detector->causedByLostConnection($current)) {
+            if ($current instanceof SQLiteDatabaseDoesNotExistException) {
                 return true;
             }
 
-            // QueryException extends PDOException and copies its errorInfo
+            // Only database errors count. QueryException extends PDOException
+            // and copies its errorInfo.
             if (!$current instanceof PDOException) {
                 continue;
             }
@@ -52,7 +55,18 @@ final class SiteUnavailable
                 return true;
             }
 
-            if (preg_match('/\[(2002|2003|2005|2006)\]/', $current->getMessage()) === 1) {
+            // Message matching only on the raw driver exception: a
+            // QueryException's message embeds the SQL and its bindings, so
+            // user data could otherwise look like a lost connection.
+            if ($current instanceof QueryException) {
+                continue;
+            }
+
+            if ($detector->causedByLostConnection($current)) {
+                return true;
+            }
+
+            if (preg_match('/\[(2002|2003|2005|2006)\]|unable to open database file/', $current->getMessage()) === 1) {
                 return true;
             }
         }

@@ -167,7 +167,8 @@ function parentInertiaVersion(Request $request): ?string
 
 it('reads the active theme publication once per request and again on the next', function (): void {
     app(ThemePublicationService::class)->publish('skylight', app(ThemeDocumentNormalizer::class)->defaults());
-    app()->forgetInstance(ActiveThemeService::class);
+    // What Octane does between requests; a singleton would survive it.
+    app()->forgetScopedInstances();
 
     DB::flushQueryLog();
     DB::enableQueryLog();

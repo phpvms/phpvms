@@ -3,6 +3,7 @@
 use App\Addons\Support\AddonAssetLinker;
 use App\Exceptions\SettingNotFound;
 use App\Models\Addon;
+use App\Models\Setting;
 use App\Services\AddonSettingService;
 use App\Services\KvpService;
 use App\Services\SettingService;
@@ -166,7 +167,7 @@ if (!function_exists('setting')) {
                 // requests, but reading it again within one is a wasted round trip.
                 $value = $settingService->remember(
                     $key,
-                    fn () => Cache::remember($cache['key'].$key, $cache['time'], fn () => $settingService->retrieve($key)),
+                    fn () => Cache::remember($cache['key'].Setting::formatKey($key), $cache['time'], fn () => $settingService->retrieve($key)),
                 );
             } else {
                 $value = $settingService->retrieve($key);

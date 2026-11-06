@@ -120,7 +120,7 @@ class SettingService extends Service
             $setting->value = (string) $value;
             $setting->save();
 
-            $this->forgetCache($key);
+            $this->forgetCached($formattedKey);
             unset($this->memo[$formattedKey]);
 
             if (in_array($formattedKey, Branding::SETTING_KEYS, true)) {
@@ -149,11 +149,16 @@ class SettingService extends Service
         $this->memo = [];
     }
 
-    private function forgetCache(string $key): void
+    /**
+     * Drop the shared cache entry the `setting()` helper keeps for one key.
+     * Keyed by the formatted key, so raw writes (YAML import) can bust it by
+     * row id.
+     */
+    public function forgetCached(string $key): void
     {
         $cache = config('cache.keys.SETTINGS');
         if (is_array($cache) && isset($cache['key'])) {
-            Cache::forget($cache['key'].$key);
+            Cache::forget($cache['key'].Setting::formatKey($key));
         }
     }
 }
