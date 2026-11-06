@@ -129,12 +129,18 @@ it('hides the row delete action for an item with children', function (): void {
         ->assertActionVisible(TestAction::make('delete')->table($leaf));
 });
 
-it('hides the header delete action on the edit page for an item with children', function (): void {
+// A hidden action is left out of the save bar schema, so it is looked up
+// there directly; the leaf case proves the lookup can find it when it is shown.
+it('offers the save bar delete action on the edit page only for an item without children', function (): void {
     $parent = NavigationItem::factory()->create();
     NavigationItem::factory()->create(['parent_id' => $parent->id]);
+    $leaf = NavigationItem::factory()->create();
 
-    Livewire::test(EditNavigationItem::class, ['record' => $parent->id])
-        ->assertActionHidden('delete');
+    $saveBarDelete = fn (NavigationItem $item): mixed => Livewire::test(EditNavigationItem::class, ['record' => $item->id])
+        ->instance()->getSchema('saveBar')->getAction('delete');
+
+    expect($saveBarDelete($leaf))->not->toBeNull()
+        ->and($saveBarDelete($parent))->toBeNull();
 });
 
 it('bulk delete leaves a parent and its children and removes leaves', function (): void {
