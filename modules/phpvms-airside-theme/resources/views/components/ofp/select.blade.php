@@ -1,11 +1,18 @@
 @props(['name', 'label', 'options', 'value' => null])
 
 {{-- A labelled native select for the SimBrief options. Props: name, label, options (value => label), value. --}}
-<div class="grid gap-1.5">
-    <label for="ofp-{{ $name }}" class="text-[13px] font-medium">{{ $label }}</label>
-    <select id="ofp-{{ $name }}" name="{{ $name }}" {{ $attributes }}>
-        @foreach ($options as $optionValue => $optionLabel)
-            <option value="{{ $optionValue }}" @selected((string) $value === (string) $optionValue)>{{ $optionLabel }}</option>
-        @endforeach
-    </select>
-</div>
+@php
+    $selectOptions = collect($options)
+        ->map(fn (string $optionLabel, int|string $optionValue): array => ['value' => (string) $optionValue, 'label' => $optionLabel])
+        ->values()
+        ->all();
+@endphp
+<x-ts-select.native
+    :label="$label"
+    id="ofp-{{ $name }}"
+    :name="$name"
+    :value="(string) $value"
+    :options="$selectOptions"
+    select="label:label|value:value"
+    {{ $attributes }}
+/>

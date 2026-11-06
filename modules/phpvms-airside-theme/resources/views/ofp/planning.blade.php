@@ -4,28 +4,6 @@
 
 @php
     $flight = $planning?->flight ?? $aircraftSelection?->flight;
-    $fields = $planning?->providerFields ?? [];
-    $enabledOptions = ['0' => 'Disabled', '1' => 'Enabled'];
-    $contingencyOptions = [
-        '0' => 'None', 'auto' => 'AUTO', 'easa' => 'EASA',
-        '0.03/5' => '3% or 05 MIN', '0.03/10' => '3% or 10 MIN', '0.03/15' => '3% or 15 MIN',
-        '0.05/5' => '5% or 05 MIN', '0.05/10' => '5% or 10 MIN', '0.05/15' => '5% or 15 MIN',
-        '0.03' => '3%', '0.05' => '5%', '0.1' => '10%', '0.15' => '15%',
-        '3' => '03 MIN', '5' => '05 MIN', '10' => '10 MIN', '15' => '15 MIN',
-    ];
-    $reserveOptions = collect(['auto', '0', '15', '30', '45', '60', '75', '90'])
-        ->mapWithKeys(fn (string $value): array => [$value => $value === 'auto' ? 'AUTO' : $value.' MIN'])
-        ->all();
-    $layoutOptions = [
-        'lido' => 'LIDO', 'aal' => 'American Airlines', 'aca' => 'Air Canada', 'afr' => 'Air France (2012)',
-        'afr2017' => 'Air France (2017)', 'awe' => 'US Airways', 'baw' => 'British Airways', 'ber' => 'Air Berlin',
-        'dal' => 'Delta Air Lines', 'dlh' => 'Lufthansa', 'ein' => 'Aer Lingus', 'etd' => 'Etihad Airways',
-        'ezy' => 'easyJet', 'gwi' => 'Germanwings', 'jbu' => 'JetBlue Airways', 'jza' => 'Jazz Aviation',
-        'klm' => 'KLM Royal Dutch Airlines', 'qfa' => 'Qantas', 'ryr' => 'Ryanair', 'swa' => 'Southwest Airlines',
-        'thy' => 'Turkish Airlines', 'uae' => 'Emirates Airline', 'ual' => 'United Airlines (2012)',
-        'ual f:wz' => 'United Airlines (2018)',
-    ];
-    $callsignOptions = $planning ? collect($planning->callsignOptions)->mapWithKeys(fn (string $value): array => [$value => $value])->all() : [];
     $attemptData = $planning ? [
         'staticId' => $planning->attempt->staticId,
         'apiCodeUrl' => route('frontend.ofp.attempt.api-code', $planning->attempt->staticId),
@@ -33,150 +11,91 @@
         'providerFields' => $planning->providerFields,
         'callsignEditable' => $planning->callsignEditable,
         'blockTime' => $flight->summary->blockTime,
+        'returnUrl' => route('frontend.flights.show', $flight->summary->id),
     ] : null;
-    $pilot = auth()->user();
+    $cancelUrl = $flight ? route('frontend.flights.show', $flight->summary->id) : route('frontend.flights.index');
 @endphp
 
 @section('content')
 <x-vms::page name="simbrief-planning" label="SimBrief flight planning">
-    <div @if ($attemptData) data-airside-island="simbrief-attempt" data-state="ready" @endif class="grid gap-6">
+    <div @if ($attemptData) data-airside-island="simbrief-attempt" data-state="ready" @endif class="grid gap-4">
         @if ($attemptData)
             <script type="application/json">{!! json_encode($attemptData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!}</script>
         @endif
 
-        @if ($flight)
-            <header class="flex flex-wrap items-center justify-between gap-4 pb-4">
-                <x-vms::flights.ident
-                    size="lg"
-                    :callsign="$flight->summary->callsign"
-                    :dpt="$flight->summary->dpt"
-                    :arr="$flight->summary->arr"
-                    :airline="$flight->summary->airline?->name"
-                    :logo="$flight->summary->airline?->logo"
-                    :aircraft="$planning ? $planning->aircraft->registration.' · '.$planning->aircraft->icaoType : null"
-                />
-                @if ($planning)
-                    <x-ts-badge color="slate" light class="uppercase" data-role="state-badge">ready</x-ts-badge>
-                @endif
-            </header>
-        @endif
+        <x-ts-link :href="$cancelUrl" :text="$flight ? 'Back to '.$flight->summary->callsign.' briefing' : 'Back to flight manifest'" icon="phosphor.arrow-left.light" sm class="w-fit" wire:navigate />
 
-        <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.75fr)]">
-            @if ($planning)
-                <form class="grid min-w-0 gap-4" data-role="options" autocomplete="off" onsubmit="return false">
-                    <x-ts-card header="Flight Information">
-                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            @if ($pilot)
-                                <p class="text-[13px] sm:col-span-2 lg:col-span-3">
-                                    <span class="font-semibold">{{ $pilot->name }}</span>
-                                    <span class="font-mono">{{ $pilot->ident }}</span>
-                                </p>
-                            @endif
-
-                            @if ($planning->callsignEditable)
-                                <x-vms::ofp.select name="callsign" label="ATC callsign" :options="$callsignOptions" :value="$fields['callsign'] ?? null" />
+        <section class="vms-ofp-planning grid gap-6 rounded-(--vms-radius-lg) border border-gray-200 bg-white p-5 sm:p-7 dark:border-dark-700 dark:bg-dark-800" aria-label="Plan with SimBrief">
+            @if ($flight)
+                <header class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex min-w-0 items-center gap-3.5">
+                        <span class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-[14px] bg-dark-900 text-sm font-extrabold text-white dark:bg-dark-50 dark:text-dark-900">
+                            @if ($flight->summary->airline?->logo)
+                                <img src="{{ $flight->summary->airline->logo }}" alt="{{ $flight->summary->airline->name }}" class="size-full object-contain" />
                             @else
-                                <x-vms::ofp.input name="callsign" label="ATC callsign" :value="$fields['callsign'] ?? ''" readonly />
+                                {{ $flight->summary->airline ? mb_strtoupper(mb_substr(trim($flight->summary->airline->name), 0, 2)) : 'VA' }}
                             @endif
-                            <x-vms::ofp.input name="orig" label="Departure airport" :value="$fields['orig'] ?? ''" readonly />
-                            <x-vms::ofp.input name="dest" label="Arrival airport" :value="$fields['dest'] ?? ''" readonly />
-                            <x-vms::ofp.input name="altn" label="Alternate airport" :value="$fields['altn'] ?? 'AUTO'" maxlength="8" />
-                            <x-vms::ofp.input name="std" label="Scheduled departure time (UTC)" :value="$planning->flight->scheduledDeparture ?? ''" readonly />
-                            <x-vms::ofp.input name="etd" label="Estimated departure time (UTC)" value="" readonly data-role="etd" />
-                            <x-vms::ofp.input name="date" label="Date of flight (UTC)" value="" readonly data-role="date" />
-
-                            <div class="grid gap-1.5 sm:col-span-2 lg:col-span-3">
-                                <label for="ofp-route" class="text-[13px] font-medium">Preferred company route</label>
-                                <textarea id="ofp-route" name="route" rows="3">{{ $fields['route'] ?? '' }}</textarea>
-                            </div>
+                        </span>
+                        <div class="min-w-0">
+                            <h1 class="m-0 text-2xl font-extrabold tracking-tight">Plan {{ $flight->summary->callsign }} with SimBrief</h1>
+                            <p class="m-0 mt-1 text-sm text-dark-500 dark:text-dark-400">
+                                <span class="font-mono">{{ $flight->summary->dpt ?? '—' }} → {{ $flight->summary->arr ?? '—' }}</span>
+                                @if ($planning)
+                                    · <span class="font-mono">{{ $planning->aircraft->registration }}</span> {{ $planning->aircraft->icaoType }}
+                                @endif
+                            </p>
                         </div>
-                    </x-ts-card>
+                    </div>
+                    @if ($planning)
+                        <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-dark-600 uppercase dark:bg-dark-900 dark:text-dark-300" data-role="state-badge">ready</span>
+                    @endif
+                </header>
+            @endif
 
-                    <x-ts-card header="Planning Options">
-                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" x-data="{ stepclimbs: @js((string) ($fields['stepclimbs'] ?? '0')) }">
-                            <div class="grid gap-1.5">
-                                <label for="ofp-fl" class="text-[13px] font-medium">Preferred flight level</label>
-                                <input id="ofp-fl" type="text" name="fl" maxlength="5" value="{{ $fields['fl'] ?? '' }}" x-bind:disabled="stepclimbs === '1'" />
-                            </div>
-                            <x-vms::ofp.select name="contpct" label="Cont fuel" :options="$contingencyOptions" :value="$fields['contpct'] ?? '0.05/5'" />
-                            <x-vms::ofp.select name="resvrule" label="Reserve fuel" :options="$reserveOptions" :value="$fields['resvrule'] ?? '30'" />
-                            <x-vms::ofp.select name="find_sidstar" label="SID/STAR type" :options="['C' => 'Conventional', 'R' => 'RNAV']" :value="$fields['find_sidstar'] ?? 'R'" />
-                            <x-vms::ofp.select name="stepclimbs" label="Plan stepclimbs" :options="$enabledOptions" :value="$fields['stepclimbs'] ?? '0'" x-model="stepclimbs" />
-                            <x-vms::ofp.select name="etops" label="ETOPS planning" :options="$enabledOptions" :value="$fields['etops'] ?? '0'" />
-                        </div>
-                    </x-ts-card>
-
-                    <x-ts-card header="Briefing Options">
-                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <x-vms::ofp.select name="planformat" label="OFP layout" :options="$layoutOptions" :value="$fields['planformat'] ?? 'lido'" />
-                            <x-vms::ofp.select name="units" label="Units" :options="['KGS' => 'KGS', 'LBS' => 'LBS']" :value="$fields['units'] ?? 'LBS'" />
-                            <x-vms::ofp.select name="navlog" label="Detailed navlog" :options="$enabledOptions" :value="$fields['navlog'] ?? '1'" />
-                            <x-vms::ofp.select name="tlr" label="Runway analysis" :options="$enabledOptions" :value="$fields['tlr'] ?? '1'" />
-                            <x-vms::ofp.select name="notams" label="Include NOTAMs" :options="$enabledOptions" :value="$fields['notams'] ?? '1'" />
-                            <x-vms::ofp.select name="firnot" label="FIR NOTAMs" :options="$enabledOptions" :value="$fields['firnot'] ?? '0'" />
-                            <x-vms::ofp.select name="maps" label="Flight maps" :options="['detail' => 'Detailed', 'simple' => 'Simple', 'none' => 'None']" :value="$fields['maps'] ?? 'detail'" />
-                        </div>
-                    </x-ts-card>
-                </form>
+            @if ($planning)
+                <x-vms::ofp.planning-form :planning="$planning" />
             @elseif ($flight)
-                <x-ts-card header="Route and schedule">
-                    <dl class="grid gap-3 sm:grid-cols-2">
+                <div class="grid gap-3">
+                    <dl class="m-0 grid gap-3 sm:grid-cols-2">
                         <div class="rounded-md p-3">
                             <dt>Scheduled departure</dt>
-                            <dd class="mt-1 font-mono text-sm">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd>
+                            <dd class="m-0 mt-1 font-mono text-sm">{{ $flight->scheduledDeparture ?? 'Not scheduled' }}</dd>
                         </div>
                         <div class="rounded-md p-3">
                             <dt>Scheduled arrival</dt>
-                            <dd class="mt-1 font-mono text-sm">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd>
+                            <dd class="m-0 mt-1 font-mono text-sm">{{ $flight->scheduledArrival ?? 'Not scheduled' }}</dd>
                         </div>
                     </dl>
-                    <p class="mt-3 rounded-md p-3 font-mono text-sm leading-relaxed">{{ $flight->route ?: 'No route published' }}</p>
-                </x-ts-card>
+                    <p class="m-0 rounded-md p-3 font-mono text-sm leading-relaxed">{{ $flight->route ?: 'No route published' }}</p>
+                </div>
+                @if ($aircraftSelection)
+                    <livewire:ofp::aircraft-selection
+                        :flight-id="$aircraftSelection->flight->summary->id"
+                        :bid-id="$aircraftSelection->aircraftAssignmentUrl ? $aircraftSelection->flight->summary->bidId : null"
+                    />
+                @endif
             @endif
 
-            <x-ts-card aria-label="Generate OFP">
-                <x-slot:header>
-                    <div class="grid gap-0.5"><h2 class="text-sm font-semibold">{{ 'Flight Plan Generation' }}</h2><p class="text-xs font-normal text-dark-500 dark:text-dark-400">{{ 'Generate the SimBrief flight plan in a protected window. Keep this page open while the provider prepares the operational flight plan.' }}</p></div>
-                </x-slot:header>
-                <div class="grid gap-3">
-                    @if ($planning)
-                        <div data-show="waiting-for-popup" hidden>
-                            <x-ts-alert color="primary" light shadowless role="status">SimBrief is open. phpVMS is checking for the completed briefing.</x-ts-alert>
-                        </div>
-                        <div data-show="polling" hidden>
-                            <div data-role="polling" class="inline-flex min-w-0 items-center" role="status" aria-live="polite" aria-label="Checking for the completed OFP (0/60)"><x-ts-spinner sm text="Checking for the completed OFP (0/60)" /></div>
-                        </div>
-                        <div data-show="error" hidden>
-                            <x-ts-alert color="red" light shadowless role="alert"><span data-role="failure"></span></x-ts-alert>
-                        </div>
+            @if ($planning)
+                <x-vms::ofp.attempt-status />
+            @endif
 
-                        <div class="grid gap-2">
-                            <x-ts-button type="button" class="w-full" data-role="generate">Generate OFP</x-ts-button>
-                            <x-ts-button type="button" color="slate" light class="w-full" data-role="retry" hidden>Check for completed OFP</x-ts-button>
-                        </div>
+            <footer class="vms-ofp-planning-footer flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 pt-5 dark:border-dark-700">
+                <p class="m-0 flex items-center gap-2 text-[13px] text-dark-500 dark:text-dark-400">
+                    <x-ts-icon name="phosphor.info.light" class="size-4 shrink-0" />
+                    <span>When SimBrief finishes, you return to the flight with the OFP's fixes in the timeline.</span>
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <x-ts-button :href="$cancelUrl" wire:navigate color="gray" light>Cancel</x-ts-button>
+                    @if ($planning)
+                        <x-ts-button type="button" color="slate" light data-role="retry" hidden>Check for completed OFP</x-ts-button>
+                        <x-ts-button type="button" data-role="generate">Generate OFP</x-ts-button>
                     @else
-                        <div class="grid gap-2">
-                            <x-ts-button type="button" class="w-full" disabled>Generate OFP</x-ts-button>
-                        </div>
-                    @endif
-
-                    <p class="text-xs">This uses a server-owned planning attempt. Your stored SimBrief username is not required.</p>
-
-                    @if ($planning)
-                        <section class="grid gap-1 rounded-md p-3" aria-label="Selected aircraft">
-                            <span>Aircraft assignment</span>
-                            <strong class="font-mono text-sm">{{ $planning->aircraft->registration }} · {{ $planning->aircraft->icaoType }}</strong>
-                            <span class="text-[13px]">{{ $planning->aircraft->subfleetName }} · {{ $planning->aircraft->airport?->icao }}</span>
-                        </section>
-                    @elseif ($aircraftSelection)
-                        <livewire:ofp::aircraft-selection
-                            :flight-id="$aircraftSelection->flight->summary->id"
-                            :bid-id="$aircraftSelection->aircraftAssignmentUrl ? $aircraftSelection->flight->summary->bidId : null"
-                        />
+                        <x-ts-button type="button" disabled>Generate OFP</x-ts-button>
                     @endif
                 </div>
-            </x-ts-card>
-        </div>
+            </footer>
+        </section>
     </div>
 </x-vms::page>
 @endsection

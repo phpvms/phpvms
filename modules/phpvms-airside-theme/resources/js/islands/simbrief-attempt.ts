@@ -22,6 +22,8 @@ interface AttemptData {
   apiCodeUrl: string;
   pollUrl: string;
   blockTime?: string | null;
+  /** Where to go when the OFP is ready; the briefing URL from the poll when absent. */
+  returnUrl?: string | null;
   providerFields: ProviderFields;
 }
 
@@ -157,7 +159,7 @@ function mountIsland(root: HTMLElement): () => void {
         setState("complete");
         popup?.close();
         popup = null;
-        window.location.assign(result.briefingUrl);
+        window.location.assign(data.returnUrl ?? result.briefingUrl);
       }
     } catch (error) {
       if (disposed) return;

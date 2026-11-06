@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Features\Dashboard\Livewire;
 
 use App\Features\Bids\Queries\PilotBids;
+use App\Features\Flights\Queries\FlightDetail;
 use App\Http\Data\BidRowData;
+use App\Http\Data\FlightDetailData;
+use App\Http\Data\FlightDispatchPolicyData;
 use App\Models\Airport;
 use App\Models\User;
 use App\Support\Units\Distance;
 use App\Support\Units\Time;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -25,6 +29,9 @@ use Livewire\Component;
  * re-renders the widget.
  *
  * @property-read BidRowData|null $bid
+ * @property-read array{flight: FlightDetailData, policy: FlightDispatchPolicyData}|null $detail
+ * @property-read bool $canGenerateOfp
+ * @property-read string|null $ofpPlanningUrl
  */
 class NextFlight extends Component
 {
@@ -34,7 +41,7 @@ class NextFlight extends Component
     #[On('assignment-drawer.closed')]
     public function drawerClosed(): void
     {
-        unset($this->bid, $this->lastFlight);
+        unset($this->bid, $this->detail, $this->lastFlight);
     }
 
     /**
@@ -44,6 +51,58 @@ class NextFlight extends Component
     public function bid(): ?BidRowData
     {
         return app(PilotBids::class)->for($this->pilot())[0] ?? null;
+    }
+
+    /**
+     * The bid's flight as the flight page shows it (the detail DTO and the dispatch policy),
+     * for the `flights.detail.actions` outlet. Null when there is no bid or the flight is no
+     * longer visible to the pilot.
+     *
+     * @return array{flight: FlightDetailData, policy: FlightDispatchPolicyData}|null
+     */
+    #[Computed]
+    public function detail(): ?array
+    {
+        $bid = $this->bid;
+
+        if ($bid === null) {
+            return null;
+        }
+
+        try {
+            $detail = app(FlightDetail::class)->handle($this->pilot(), $bid->flight->id);
+        } catch (ModelNotFoundException) {
+            return null;
+        }
+
+        return ['flight' => $detail['flight'], 'policy' => $detail['policy']];
+    }
+
+    /**
+     * Whether the board offers Generate OFP: the bid has no OFP yet, SimBrief is enabled, and the
+     * bid satisfies the only-bids rule (the board's flight always has the pilot's bid).
+     */
+    #[Computed]
+    public function canGenerateOfp(): bool
+    {
+        $bid = $this->bid;
+        $policy = $this->detail['policy'] ?? null;
+
+        return $bid !== null
+            && $policy !== null
+            && !filled($bid->ofpUrl)
+            && $policy->simbriefEnabled;
+    }
+
+    /**
+     * The planning page for the bid, by the bid so it carries the aircraft and opens on the form.
+     */
+    #[Computed]
+    public function ofpPlanningUrl(): ?string
+    {
+        $bid = $this->bid;
+
+        return $bid === null ? null : route('frontend.ofp.planning', ['bid_id' => $bid->bid->id]);
     }
 
     /**

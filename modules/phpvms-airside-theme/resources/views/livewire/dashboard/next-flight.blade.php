@@ -1,9 +1,11 @@
-{{-- The next flight widget. Data comes from App\Features\Dashboard\Livewire\NextFlight. --}}
+{{-- The next flight widget. Data comes from App\Features\Dashboard\Livewire\NextFlight. The plain <div> is the component's one root: Livewire puts its id on the first element, so the @if below must sit inside it. --}}
 @php
     $bid = $this->bid;
     $flight = $bid?->flight;
+    $detail = $this->detail;
 @endphp
 
+<div>
 @if ($flight)
     <div class="vms-next-flight grid gap-5">
         <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] sm:items-start">
@@ -51,14 +53,26 @@
                     <x-ts-icon :name="$bid->ofpUrl ? 'phosphor.check-circle.light' : 'phosphor.minus-circle.light'" class="size-5 shrink-0" />
                     <div>
                         <dt class="text-xs text-dark-400">Briefing</dt>
-                        <dd class="m-0 text-sm font-semibold">{{ $bid->ofpUrl ? __('ui.ofp_ready') : __('ui.ofp_not_planned') }}</dd>
+                        <dd class="m-0 text-sm font-semibold">
+                            @if ($bid->ofpUrl)
+                                <a href="{{ $bid->ofpUrl }}" wire:navigate class="hover:underline">{{ __('ui.ofp_ready') }}</a>
+                            @else
+                                {{ __('ui.ofp_not_planned') }}
+                            @endif
+                        </dd>
                     </div>
                 </div>
             </dl>
 
             <div class="vms-next-flight-actions flex flex-wrap items-center gap-2">
                 <x-ts-button type="button" light x-on:click="$dispatch('assignment-drawer.open', { flightId: '{{ $flight->id }}' })">{{ __('ui.start_flight_planning') }}</x-ts-button>
+                @if ($this->canGenerateOfp)
+                    <x-ts-button :href="$this->ofpPlanningUrl" wire:navigate light>Generate OFP</x-ts-button>
+                @endif
                 <x-ts-button :href="route('frontend.flights.show', $flight->id)" wire:navigate flat>Details</x-ts-button>
+                @if ($detail)
+                    <x-slot-outlet name="flights.detail.actions" :context="['flight' => $detail['flight'], 'policy' => $detail['policy']]" />
+                @endif
             </div>
         </div>
     </div>
@@ -106,3 +120,4 @@
         </x-vms::location-card>
     </div>
 @endif
+</div>
