@@ -90,12 +90,19 @@ registers the `resources/views/vendor/ts-ui` override path only if that director
 exists at boot, so phpvms ships it empty (with a `.gitkeep`). phpvms then maps it
 to each theme's `vendor/`. Do not delete that directory.
 
-airside ejects two components. The first is
+airside ejects three components. The first is
 `vendor/ts-ui/components/slide/main.blade.php`. It is TallStackUI's slide with `role="dialog"`, `aria-modal`, an `aria-labelledby`
 title, a focus trap over the whole panel (close button, body and footer) and an
 `aria-label` on the close button. `<x-vms::ui.drawer>` wraps it.
 
-The second is `vendor/ts-ui/components/tab/main.blade.php` and `items.blade.php`.
+The second is `vendor/ts-ui/components/modal/main.blade.php`. It is TallStackUI's
+modal with the same fixes: an `aria-labelledby` title id derived from the open
+event (not the hardcoded `modal-title`), the title taking the focus on open, a
+focus trap over the panel and an `aria-label` on the close button.
+`<x-vms::ui.drawer>` renders it instead of the slide when the `drawer_style`
+theme option (Layout tab, `slide` or `modal`) is `modal`.
+
+The third is `vendor/ts-ui/components/tab/main.blade.php` and `items.blade.php`.
 Each tab gets an id and `aria-controls`, each panel an id and `aria-labelledby`,
 tabs use a roving `tabindex`, and Left, Right, Home and End move the selection
 and focus.

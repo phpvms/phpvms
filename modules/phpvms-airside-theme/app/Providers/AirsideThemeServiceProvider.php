@@ -279,6 +279,16 @@ class AirsideThemeServiceProvider extends ServiceProvider
                     ->in(['sidebar', 'topbar'])
                     ->default('sidebar')
                     ->required(),
+                Select::make('drawer_style')
+                    ->label(__('airside::customize.drawer_style'))
+                    ->helperText(__('airside::customize.drawer_style_help'))
+                    ->options([
+                        'slide' => __('airside::customize.drawer_style_slide'),
+                        'modal' => __('airside::customize.drawer_style_modal'),
+                    ])
+                    ->in(['slide', 'modal'])
+                    ->default('slide')
+                    ->required(),
                 Select::make('ready_map_scope')
                     ->label(__('airside::customize.ready_map_scope'))
                     ->options([
