@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     // Base URL of the addon registry API.
-    'registry_url' => env('ADDON_REGISTRY_URL', 'https://registry.phpvms.net'),
+    'registry_url' => env('ADDON_REGISTRY_URL', 'https://addons.phpvms.net'),
 
     // How long (seconds) to cache the fetched catalog before a background
     // refresh. Default 6 hours.
