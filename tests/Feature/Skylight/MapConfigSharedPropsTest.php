@@ -9,9 +9,8 @@ use Illuminate\Http\Request;
 
 /**
  * design.md D7 "one config DTO, two transports" — the skylight side. One
- * resolver (MapConfigService) shared with AdminPanelProvider's
- * window.filamentData.maps; see MapConfigSharedPropsTest's admin sibling,
- * AdminMapConfigDataTest.
+ * resolver (MapConfigService) shared with the admin live-map Blade
+ * component; see the admin sibling, AdminMapConfigOnDemandTest.
  */
 it('shares the current map config lazily as MapConfigData', function (): void {
     MapLayer::factory()->basemap()->create([

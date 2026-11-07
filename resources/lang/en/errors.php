@@ -17,4 +17,13 @@ return [
         'title'   => 'Internal Error',
         'message' => 'An Error Occured',
     ],
+    'database_unreachable' => [
+        'title'   => 'Temporarily unavailable',
+        'message' => 'This site is down right now. Please try again shortly.',
+    ],
+    'not_installed' => [
+        'title'   => 'Not set up yet',
+        'message' => 'phpvms is not set up yet. If you run this site, open the installer to finish setup.',
+        'link'    => 'Open the installer',
+    ],
 ];

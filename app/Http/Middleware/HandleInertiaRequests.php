@@ -109,7 +109,7 @@ class HandleInertiaRequests extends Middleware
             'pilotChrome' => fn (): ?PilotChromeData => $user ? PilotChromeData::fromUser($user) : null,
 
             // Basemap + overlay config for every skylight map surface. One
-            // resolver shared with the admin panel's window.filamentData.maps
+            // resolver shared with the admin live-map Blade component
             // (design.md D7) — lazy because resolving it queries enabled
             // map_layers rows, and not every SPA page renders a map.
             'map' => $this->mapConfig->resolve(...),

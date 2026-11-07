@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Setting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -150,7 +151,7 @@ return new class() extends Migration
         }
 
         foreach ($keys as $key) {
-            Cache::forget($cache['key'].$key);
+            Cache::forget($cache['key'].Setting::formatKey($key));
         }
     }
 };

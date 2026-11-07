@@ -310,13 +310,13 @@ it('forgets the cached lock values for all three keys', function (): void {
 
     $prefix = config('cache.keys.SETTINGS.key');
     foreach (['bids.block_aircraft', 'simbrief.block_aircraft', 'operations.block_aircraft'] as $key) {
-        Cache::put($prefix.$key, 'stale');
+        Cache::put($prefix.Setting::formatKey($key), 'stale');
     }
 
     operationSettingsMigration()->up();
 
     foreach (['bids.block_aircraft', 'simbrief.block_aircraft', 'operations.block_aircraft'] as $key) {
-        expect(Cache::has($prefix.$key))->toBeFalse();
+        expect(Cache::has($prefix.Setting::formatKey($key)))->toBeFalse();
     }
 });
 

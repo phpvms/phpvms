@@ -39,7 +39,9 @@ use App\Services\RouteForge\Rules\L7SubfleetsHaveNoFares;
 use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
 use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Services\SettingService;
+use App\Services\Theme\ActiveThemeService;
 use App\Support\Branding;
+use App\Support\InstallMarker;
 use App\Support\PirepView\PirepViewTabRegistry;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
@@ -51,6 +53,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
@@ -61,6 +64,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -77,7 +81,6 @@ use Override;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature;
-use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\Yaml\Yaml;
 
@@ -87,7 +90,7 @@ class AppServiceProvider extends ServiceProvider
      * @throws UnknownUnitOfMeasure
      * @throws NonStringUnitName
      */
-    public function boot(OAuthConnectionService $oauthConnections): void
+    public function boot(): void
     {
         Schema::defaultStringLength(191);
 
@@ -132,6 +135,16 @@ class AppServiceProvider extends ServiceProvider
 
             if (in_array($event->command, $cronCommands, true)) {
                 Log::setDefaultDriver('cron_daily');
+            }
+        });
+
+        // Data migrations rewrite settings rows through the query builder,
+        // which fires no model events, so nothing busts the values the
+        // `setting()` helper has cached. The web Updater runs optimize:clear
+        // after migrating; a CLI `migrate-data` run gets the same cache flush.
+        Event::listen(CommandFinished::class, static function (CommandFinished $event): void {
+            if ($event->command === 'migrate-data' && $event->exitCode === 0) {
+                Cache::flush();
             }
         });
 
@@ -281,14 +294,6 @@ class AppServiceProvider extends ServiceProvider
             Metar::class,
             config('phpvms.metar_lookup')
         );
-
-        $oauthConnections->loadRuntimeConfiguration();
-
-        Event::listen(function (SocialiteWasCalled $event) use ($oauthConnections): void {
-            foreach ($oauthConnections->providerClasses() as $driver => $providerClass) {
-                $event->extendSocialite($driver, $providerClass);
-            }
-        });
     }
 
     /**
@@ -316,6 +321,10 @@ class AppServiceProvider extends ServiceProvider
             'command.migrate-data.install',
             fn (Application $app): DataMigrationInstallCommand => new DataMigrationInstallCommand($app['migration.data.repository'])
         );
+
+        // The "this site is installed" marker file. Stateless/Octane-safe;
+        // bound as a singleton so tests can swap the path.
+        $this->app->singleton(InstallMarker::class, fn (): InstallMarker => new InstallMarker(InstallMarker::defaultPath()));
 
         // Core settings read/write. Bound as a singleton so the per-request
         // Tier-1 memo ($memo array) is shared across all setting() calls within
@@ -352,6 +361,11 @@ class AppServiceProvider extends ServiceProvider
         // starts every request with an empty memo instead of one worker's
         // lookups leaking into the next request it serves.
         $this->app->scoped(AssetService::class);
+
+        // Memoises the active theme revision per request (see
+        // ActiveThemeService::$revisions). Scoped for the same reason as
+        // AssetService above: Octane starts each request with an empty memo.
+        $this->app->scoped(ActiveThemeService::class);
 
         $this->app->singleton(PirepViewTabRegistry::class);
 

@@ -15,7 +15,7 @@ use App\Models\MapLayer;
  * `map` settings group; it moved into `map_layers` so the whole map
  * configuration is edited in one admin screen.
  *
- * One resolver serving two transports — Filament's `window.filamentData.maps`
+ * One resolver serving two transports — the admin live-map Blade component
  * and Inertia shared props — per design.md D7; callers must not grow a second
  * resolution path for either transport.
  */

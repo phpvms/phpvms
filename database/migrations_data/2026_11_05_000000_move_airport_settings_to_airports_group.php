@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Setting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -51,8 +52,8 @@ return new class() extends Migration
 
             $cache = config('cache.keys.SETTINGS');
             if (is_array($cache) && isset($cache['key'])) {
-                Cache::forget($cache['key'].$old);
-                Cache::forget($cache['key'].$new);
+                Cache::forget($cache['key'].Setting::formatKey($old));
+                Cache::forget($cache['key'].Setting::formatKey($new));
             }
         }
     }
