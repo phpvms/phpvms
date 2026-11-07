@@ -10,6 +10,7 @@ use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Tests for the in-request SettingService memo (Tier 1 cache).
@@ -143,4 +144,39 @@ it('busts the cached value of a setting a YAML import overwrites', function (): 
     ]);
 
     expect(setting('general.theme'))->toBe('from_yaml');
+});
+
+it('busts the cached value when the settings row is written through the model', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+    $key = config('cache.keys.SETTINGS.key').'general_theme';
+
+    setting('general.theme');
+    expect(Cache::has($key))->toBeTrue();
+
+    Setting::query()->byKey('general.theme')->firstOrFail()->update(['value' => 'from_model']);
+
+    expect(Cache::has($key))->toBeFalse()
+        ->and(setting('general.theme'))->toBe('from_model');
+});
+
+it('busts the cached value when the settings row is deleted through the model', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+    $key = config('cache.keys.SETTINGS.key').'general_theme';
+
+    setting('general.theme');
+    expect(Cache::has($key))->toBeTrue();
+
+    Setting::query()->byKey('general.theme')->firstOrFail()->delete();
+
+    expect(Cache::has($key))->toBeFalse();
+});
+
+it('flushes the application cache after a migrate-data run', function (): void {
+    // A data migration fetches simbrief data; answer offline so it skips the import.
+    Http::fake(['*' => Http::response(status: 503)]);
+    Cache::put('stale-after-migrate-data', 'yes', 60);
+
+    $this->artisan('migrate-data')->assertSuccessful();
+
+    expect(Cache::has('stale-after-migrate-data'))->toBeFalse();
 });

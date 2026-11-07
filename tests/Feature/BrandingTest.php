@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Data\BrandingData;
 use App\Jobs\GenerateBrandingSizes;
 use App\Models\Setting;
 use App\Services\SettingService;
 use App\Support\Branding;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 
 function brandingMigrationForBrandingTest(): object
@@ -305,4 +307,20 @@ describe('cached branding', function (): void {
 
         expect($assetQueries)->toBeLessThanOrEqual(1);
     });
+});
+
+it('survives a cache store that refuses to unserialize objects', function (): void {
+    brandingMigrationForBrandingTest()->up();
+    $path = sys_get_temp_dir().'/branding-cache-'.uniqid();
+    config(['cache.default' => 'file', 'cache.stores.file.path' => $path]);
+    app('cache')->forgetDriver('file');
+    app(SettingService::class)->save('general.site_name', 'Serialized Airline');
+    Branding::flush();
+
+    app(Branding::class)->name();
+    app()->forgetInstance(BrandingData::class);
+
+    expect(app(Branding::class)->name())->toBe('Serialized Airline');
+
+    File::deleteDirectory($path);
 });

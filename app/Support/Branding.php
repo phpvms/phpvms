@@ -88,6 +88,10 @@ final class Branding
      * container instance, so the dozen accessor calls in one page do not each
      * make a cache round trip. The scoped binding is registered here, on first
      * use, so this class owns its own memo.
+     *
+     * The shared cache holds the array form, not the DTO: `cache.serializable_classes`
+     * is false, so a persistent store refuses to unserialize objects and would
+     * hand back an incomplete class on the next request.
      */
     public function getBranding(): BrandingData
     {
@@ -95,7 +99,9 @@ final class Branding
             app()->scoped(BrandingData::class, function (): BrandingData {
                 $cache = config('cache.keys.BRANDING');
 
-                return Cache::remember($cache['key'], $cache['time'], fn (): BrandingData => $this->assemble());
+                return BrandingData::from(
+                    Cache::remember($cache['key'], $cache['time'], fn (): array => $this->assemble()->toArray())
+                );
             });
         }
 

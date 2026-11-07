@@ -89,12 +89,10 @@ class SettingService extends Service
      * the key does not exist OR when the caller passes a null $value
      * (does not insert new settings — these are seeded by migrations).
      *
-     * Invalidates the per-key application cache slot on success so the
-     * `setting()` global helper observes the new value. The cache slot
-     * is keyed by the ORIGINAL caller-supplied key (not the formatted
-     * one), matching the behavior of the deleted Filament page's inline
-     * Cache::forget — see `app/helpers.php` Cache::remember call which
-     * also caches under the original key.
+     * Saving through the model fires SettingObserver, which drops the
+     * cached value (see {@see forgetCached()}) so the `setting()` helper
+     * observes the new value; the explicit call below keeps that true when
+     * model events are muted.
      */
     public function store(string $key, mixed $value): mixed
     {
@@ -121,11 +119,6 @@ class SettingService extends Service
             $setting->save();
 
             $this->forgetCached($formattedKey);
-            unset($this->memo[$formattedKey]);
-
-            if (in_array($formattedKey, Branding::SETTING_KEYS, true)) {
-                Branding::flush();
-            }
         }
 
         return $value;
@@ -150,15 +143,25 @@ class SettingService extends Service
     }
 
     /**
-     * Drop the shared cache entry the `setting()` helper keeps for one key.
-     * Keyed by the formatted key, so raw writes (YAML import) can bust it by
-     * row id.
+     * Drop every copy of one setting this request could serve: the request
+     * memo, the shared cache entry the `setting()` helper keeps, and the
+     * branding cache when the key feeds it. Keyed by the formatted key, so
+     * writes that bypass store() (SettingObserver, YAML import) can bust it
+     * by row id.
      */
     public function forgetCached(string $key): void
     {
+        $formattedKey = Setting::formatKey($key);
+
+        unset($this->memo[$formattedKey]);
+
         $cache = config('cache.keys.SETTINGS');
         if (is_array($cache) && isset($cache['key'])) {
-            Cache::forget($cache['key'].Setting::formatKey($key));
+            Cache::forget($cache['key'].$formattedKey);
+        }
+
+        if (in_array($formattedKey, Branding::SETTING_KEYS, true)) {
+            Branding::flush();
         }
     }
 }

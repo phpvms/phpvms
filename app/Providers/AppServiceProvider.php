@@ -53,6 +53,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
@@ -63,6 +64,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -133,6 +135,16 @@ class AppServiceProvider extends ServiceProvider
 
             if (in_array($event->command, $cronCommands, true)) {
                 Log::setDefaultDriver('cron_daily');
+            }
+        });
+
+        // Data migrations rewrite settings rows through the query builder,
+        // which fires no model events, so nothing busts the values the
+        // `setting()` helper has cached. The web Updater runs optimize:clear
+        // after migrating; a CLI `migrate-data` run gets the same cache flush.
+        Event::listen(CommandFinished::class, static function (CommandFinished $event): void {
+            if ($event->command === 'migrate-data' && $event->exitCode === 0) {
+                Cache::flush();
             }
         });
 

@@ -107,7 +107,8 @@ class Installer extends Page
     /**
      * Filament aborts with 403 when canAccess() is false. An installed site
      * sends the visitor to the home page instead. Livewire runs this hook
-     * after mount(), which is why mount() does not repeat the check.
+     * after mount(), which is why mount() bails out early on the same check
+     * instead of redirecting itself.
      */
     #[Override]
     public function mountCanAuthorizeAccess(): void

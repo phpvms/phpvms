@@ -11,7 +11,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * Map basemap + overlay configuration, resolved once by
  * {@see MapConfigService} and delivered through two
- * transports: Filament's `window.filamentData.maps` and Inertia shared
+ * transports: the admin live-map Blade component and Inertia shared
  * props (design.md D7 "one config DTO, two transports"). The package's
  * `createMap(el, { config, theme })` seam (D6) takes this shape directly.
  *
