@@ -250,13 +250,17 @@ class AddonSettings extends Page
         $navLinks = [];
 
         // General leads, the rest keep SettingsTabs' alphabetical order.
+        // union(), not merge(): addon group names are free text, and merge()
+        // renumbers the integer key a numeric name ("2024") becomes.
         $groups = SettingsTabs::group($this->settings())->toBase();
-        $general = $groups->filter(fn ($settings, string $group): bool => strcasecmp($group, 'general') === 0);
-        $groups = $general->merge($groups->diffKeys($general));
+        $general = $groups->filter(fn ($settings, string|int $group): bool => strcasecmp((string) $group, 'general') === 0);
+        $groups = $general->union($groups->diffKeys($general));
+
+        $ids = [];
 
         foreach ($groups as $group => $settings) {
             $group = (string) $group;
-            $id = 'settings-'.(Str::slug($group) ?: 'general');
+            $id = $this->sectionId($group, $ids);
             $navLinks[] = ['id' => $id, 'label' => $this->groupLabel($group)];
 
             // Not collapsible, as on the core Settings page: the nav is how you
@@ -296,6 +300,28 @@ class AddonSettings extends Page
                 ->columnSpanFull()
                 ->disabled(!static::canEdit()),
         ];
+    }
+
+    /**
+     * A section id unique on the page. The id also keys the section and names
+     * its Save action, and the nav finds sections by id, so groups whose names
+     * slug alike ("Fuel", "fuel") get a numbered suffix instead of sharing one.
+     *
+     * @param array<string, true> $taken ids already used on the page
+     */
+    private function sectionId(string $group, array &$taken): string
+    {
+        $slug = Str::slug($group);
+        $base = 'settings-'.($slug === '' ? 'group' : $slug);
+        $id = $base;
+
+        for ($suffix = 2; isset($taken[$id]); $suffix++) {
+            $id = $base.'-'.$suffix;
+        }
+
+        $taken[$id] = true;
+
+        return $id;
     }
 
     private function groupLabel(string $group): string

@@ -7,6 +7,7 @@ use App\Models\Addon;
 use App\Models\AddonSetting;
 use App\Models\Permission;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Livewire\Livewire;
@@ -99,4 +100,49 @@ it('shows a user who cannot edit the settings without a save', function (): void
         ->assertSuccessful()
         ->assertDontSeeHtml('saveSection-settings-fuel')
         ->assertFormFieldDisabled('settings-fuel.fuel_margin');
+});
+
+it('keeps groups whose names slug alike apart', function (): void {
+    foreach (['Fuel' => 'upper', 'fuel' => 'lower'] as $group => $value) {
+        AddonSetting::factory()->create([
+            'registry_id' => 'phpvms/demo',
+            'key'         => AddonSetting::formatKey($value.'.value'),
+            'group'       => $group,
+            'type'        => 'text',
+            'value'       => $value,
+        ]);
+    }
+
+    $page = Livewire::test(AddonSettings::class)
+        ->assertSeeHtml('id="settings-fuel"')
+        ->assertSeeHtml('id="settings-fuel-2"');
+
+    // Each section's Save writes its own group: one group per section.
+    $page->fillForm(['lower_value' => 'LOWER', 'upper_value' => 'UPPER']);
+
+    $saved = fn (): array => [demoSetting('upper.value'), demoSetting('lower.value')];
+
+    $page->callAction(TestAction::make('saveSection-settings-fuel')->schemaComponent('settings-fuel'));
+    expect(array_intersect($saved(), ['UPPER', 'LOWER']))->toHaveCount(1);
+
+    $page->callAction(TestAction::make('saveSection-settings-fuel-2')->schemaComponent('settings-fuel-2'));
+    expect($saved())->toBe(['UPPER', 'LOWER']);
+});
+
+it('keeps a numeric group name', function (): void {
+    AddonSetting::factory()->create([
+        'registry_id' => 'phpvms/demo',
+        'key'         => AddonSetting::formatKey('season.name'),
+        'group'       => '2024',
+        'type'        => 'text',
+        'value'       => 'winter',
+    ]);
+
+    Livewire::test(AddonSettings::class)
+        ->assertSeeHtml('id="settings-2024"')
+        ->fillForm(['season_name' => 'summer'])
+        ->call('saveGroup', '2024')
+        ->assertHasNoFormErrors();
+
+    expect(demoSetting('season.name'))->toBe('summer');
 });
