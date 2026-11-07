@@ -106,7 +106,7 @@ final readonly class PlaceBid
                 throw new BidExistsForFlight($lockedFlight);
             }
 
-            if ((bool) setting('bids.block_aircraft', false) && $lockedAircraft === null) {
+            if ((bool) setting('operations.block_aircraft', false) && $lockedAircraft === null) {
                 throw ValidationException::withMessages([
                     'aircraftId' => 'Select an eligible aircraft before placing this bid.',
                 ]);

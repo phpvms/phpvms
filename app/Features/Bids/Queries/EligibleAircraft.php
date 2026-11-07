@@ -31,7 +31,7 @@ final class EligibleAircraft
             ->where('status', AircraftStatus::ACTIVE)
             ->whereIn('subfleet_id', $subfleetIds)
             ->when(
-                (bool) setting('simbrief.block_aircraft', false),
+                (bool) setting('operations.block_aircraft', false),
                 fn (Builder $query): Builder => $query->whereDoesntHave(
                     'simbriefs',
                     fn (Builder $simbrief): Builder => $simbrief->whereNull('pirep_id'),

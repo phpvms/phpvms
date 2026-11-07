@@ -22,7 +22,7 @@ final class ListFilingAircraft
     public function handle(User $user, bool $addBlank = false): array
     {
         $location = filled($user->curr_airport_id) ? $user->curr_airport_id : $user->home_airport_id;
-        $locationCheck = setting('pireps.only_aircraft_at_dpt_airport', false);
+        $locationCheck = setting('operations.only_aircraft_at_dpt_airport', false);
 
         $aircraft = [];
 

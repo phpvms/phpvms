@@ -177,7 +177,7 @@ final readonly class SaveManualPirep
         }
 
         // Can they fly this aircraft?
-        if (setting('pireps.restrict_aircraft_to_rank', false)
+        if (setting('operations.restrict_aircraft_to_rank', false)
             && !$user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists()) {
             Log::info('Pilot '.$user->id.' not allowed to fly aircraft');
 
@@ -192,7 +192,7 @@ final readonly class SaveManualPirep
             throw new PirepFilingDenied("The aircraft for the PIREP hasn't been found");
         }
 
-        if (setting('pireps.only_aircraft_at_dpt_airport')
+        if (setting('operations.only_aircraft_at_dpt_airport')
             && $aircraft->airport_id !== $pirep->dpt_airport_id
         ) {
             Log::info(
