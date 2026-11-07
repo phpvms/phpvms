@@ -4697,23 +4697,33 @@ html[data-density="comfortable"] .tbl tbody td {
 /* Vendor spans the control over two of three columns; here it is the second
  * of two, bounded and pushed right. */
 :is(.settings-page, .fi-aside) .fi-fo-field-has-inline-label .fi-fo-field-content-col,
-:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-content-col {
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-content-col {
   @apply w-full justify-self-end sm:col-span-1;
 }
 
 :is(.settings-page, .fi-aside) .fi-fo-field-label-content,
-:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-label-content {
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-label-content {
   @apply text-[13px] text-(--ink);
   font-weight: 550;
 }
 
 :is(.settings-page, .fi-aside) .fi-fo-field-label-col .fi-sc-text,
-:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-label-col .fi-sc-text {
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-label-col
+  .fi-sc-text {
   @apply text-[12px] font-normal leading-snug text-(--ink-3);
 }
 
 :is(.settings-page, .fi-aside) .fi-fo-field-content-col > .fi-toggle,
-:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) .fi-fo-field-content-col > .fi-toggle {
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-content-col
+  > .fi-toggle {
   @apply justify-self-end;
 }
 
@@ -5748,12 +5758,20 @@ html[data-density="comfortable"] .tbl tbody td {
   padding: 0;
 }
 
-.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-header .fi-section-header-heading {
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-header
+  .fi-section-header-heading {
   @apply text-[15px] font-semibold normal-case tracking-normal text-(--ink);
   line-height: 1.35;
 }
 
-.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-header .fi-section-header-description {
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-header
+  .fi-section-header-description {
   @apply mt-1 text-[13px] text-(--ink-3);
   line-height: 1.5;
 }
@@ -5765,13 +5783,21 @@ html[data-density="comfortable"] .tbl tbody td {
   --tw-ring-shadow: 0 0 #0000;
 }
 
-.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-content-ctn > .fi-section-content {
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-content-ctn
+  > .fi-section-content {
   padding: 0;
 }
 
 /* The footer (Cancel/Save) sits under the fields column, aligned to their
  * left edge rather than inset by the footer padding. */
-.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-content-ctn > .fi-section-footer {
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-content-ctn
+  > .fi-section-footer {
   @apply mt-6 px-0;
 }
 
