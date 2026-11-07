@@ -76,3 +76,9 @@ compile({
   entryPoints: ["./resources/js/apps/admin/components/pirep-landing-analysis.js"],
   outfile: "./resources/js/dist/admin/components/pirep-landing-analysis.js",
 });
+
+compile({
+  ...defaultOptions,
+  entryPoints: ["./resources/js/apps/admin/components/infinite-select.js"],
+  outfile: "./resources/js/dist/admin/components/infinite-select.js",
+});
