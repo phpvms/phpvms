@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\View\Components;
 
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\Component;
@@ -34,7 +34,7 @@ class SlotOutlet extends Component
     {
         $rendered = [];
 
-        foreach (Skylight::slots()->bladeEntriesFor($this->name) as $entry) {
+        foreach (Extensions::slots()->bladeEntriesFor($this->name) as $entry) {
             try {
                 $rendered[] = view($entry['view'], [...$this->context, ...$this->resolveProps($entry['props'] ?? [])])->render();
             } catch (Throwable $throwable) {

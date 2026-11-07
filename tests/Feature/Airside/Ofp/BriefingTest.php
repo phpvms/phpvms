@@ -9,7 +9,7 @@ use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Services\SimBriefService;
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
 
@@ -36,7 +36,7 @@ it('renders the addon entries of the briefing actions slot with the context', fu
         '<span id="slot-probe">{{ $flight->summary->callsign }}|{{ $aircraft->registration }}|{{ $briefing->id }}</span>',
     );
     View::addNamespace('ofpslot', sys_get_temp_dir());
-    Skylight::slots()->register(['slot' => 'flight.briefing.actions', 'view' => 'ofpslot::ofp-slot-'.getmypid()]);
+    Extensions::slots()->register(['slot' => 'flight.briefing.actions', 'view' => 'ofpslot::ofp-slot-'.getmypid()]);
 
     $this->actingAs($this->fixture['user'])
         ->get(route('frontend.ofp.briefing', $this->briefing->id))

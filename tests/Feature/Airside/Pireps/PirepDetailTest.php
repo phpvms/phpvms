@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__.'/../Support.php';
 
 use App\Models\Pirep;
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\Facades\View;
 
 /**
@@ -28,7 +28,7 @@ it('renders the views addons register in the pireps.detail.main outlet', functio
     file_put_contents($dir.'/probe.blade.php', '<p id="pirep-outlet">outlet for {{ $pirep->ident }}</p>');
     View::addNamespace('pireptest', $dir);
 
-    Skylight::slots()->register(['slot' => 'pireps.detail.main', 'view' => 'pireptest::probe']);
+    Extensions::slots()->register(['slot' => 'pireps.detail.main', 'view' => 'pireptest::probe']);
 
     $pirep = Pirep::factory()->create(['user_id' => $this->pilot->id]);
 

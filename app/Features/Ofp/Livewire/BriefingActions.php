@@ -8,7 +8,7 @@ use App\Http\Data\SimBriefBriefingData;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Services\SkylightSimBriefService;
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -56,7 +56,7 @@ class BriefingActions extends Component
     #[Computed]
     public function hasSlotActions(): bool
     {
-        return Skylight::slots()->bladeEntriesFor('flight.briefing.actions') !== [];
+        return Extensions::slots()->bladeEntriesFor('flight.briefing.actions') !== [];
     }
 
     /**

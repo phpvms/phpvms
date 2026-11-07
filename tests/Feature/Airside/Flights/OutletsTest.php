@@ -9,7 +9,7 @@ use App\Features\Bids\Livewire\BidList;
 use App\Features\Flights\Livewire\FlightActions;
 use App\Features\Flights\Livewire\FlightManifest;
 use App\Models\Bid;
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
 
@@ -25,7 +25,7 @@ beforeEach(function (): void {
     $this->actingAs($this->fixture['user']);
 
     foreach (['flights.row.actions', 'flights.detail.actions', 'bids.row.actions', 'bids.drawer.overview.actions'] as $slot) {
-        Skylight::slots()->register(['slot' => $slot, 'view' => 'flightsprobe::probe']);
+        Extensions::slots()->register(['slot' => $slot, 'view' => 'flightsprobe::probe']);
     }
 });
 

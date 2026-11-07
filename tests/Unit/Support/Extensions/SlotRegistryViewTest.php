@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\Skylight\SlotRegistry;
+use App\Support\Extensions\SlotRegistry;
 
 it('accepts an entry with only a Blade view', function (): void {
     $registry = new SlotRegistry()->register(['slot' => 'bids.row.actions', 'view' => 'acme::fly']);
