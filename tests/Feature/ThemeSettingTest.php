@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 use App\Models\ThemeSetting;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 it('enforces the (theme, name) composite key', function (): void {
     ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'hero']);
 
-    expect(fn () => ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'hero']))
+    // Inside a savepoint: Postgres aborts the whole transaction on a failed
+    // statement, and the test runs inside RefreshDatabase's.
+    expect(fn () => DB::transaction(fn () => ThemeSetting::factory()->create(['theme' => 'airside', 'name' => 'hero'])))
         ->toThrow(QueryException::class);
 
     ThemeSetting::factory()->create(['theme' => 'seven', 'name' => 'hero']);

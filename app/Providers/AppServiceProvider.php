@@ -43,6 +43,7 @@ use App\Services\Theme\ActiveThemeService;
 use App\Support\Branding;
 use App\Support\InstallMarker;
 use App\Support\PirepView\PirepViewTabRegistry;
+use App\Support\Themes;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
@@ -311,6 +312,8 @@ class AppServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        $this->app->singleton('igaster.themes', fn (): Themes => new Themes());
+
         $this->app->singleton('view.finder', fn (Application $app): ThemeViewFinder => new ThemeViewFinder(
             $app['files'],
             $app['config']['view.paths']
