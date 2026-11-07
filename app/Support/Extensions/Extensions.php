@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Skylight;
+namespace App\Support\Extensions;
 
 /**
- * The skylight SPA extension hub.
+ * The extension hub.
  *
- * A single container-bound instance holds every extension registry the SPA
- * exposes. Addons reach it through the {@see Facades\Skylight}
+ * A single container-bound instance holds every extension registry that
+ * themes (SPA and Blade) expose to addons. Addons reach it through the {@see Facades\Extensions}
  * facade from their ServiceProvider::boot():
  *
- *   Skylight::widgets()->register([...]);   // dashboard widget
- *   Skylight::slots()->register([...]);     // inject into a page slot
+ *   Extensions::widgets()->register([...]);   // dashboard widget
+ *   Extensions::slots()->register([...]);     // inject into a page slot
  *
  * The registries are read once per request by HandleInertiaRequests and shared
  * to the SPA as serialized props. Because addon providers boot before the
@@ -20,7 +20,7 @@ namespace App\Support\Skylight;
  * share() serializes it — and anything a disabled addon would have registered is
  * absent, because its provider never booted.
  */
-final readonly class Skylight
+final readonly class Extensions
 {
     private WidgetRegistry $widgets;
 
@@ -50,7 +50,7 @@ final readonly class Skylight
 
     /**
      * The full extension surface, JSON-serializable — the exact shape shared to
-     * the SPA under the `skylight` prop.
+     * SPA themes under the `skylight` Inertia prop.
      *
      * @return array{widgets: array<int, array<string, mixed>>, slots: array<int, array<string, mixed>>}
      */

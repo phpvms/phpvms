@@ -135,7 +135,7 @@ Then add **"Sample Vue widget"** from the dashboard's Add-widget menu.
 ## Disable-safety
 
 The only place this addon touches the host is inside `boot()`:
-`Route::get(...)` for the endpoint and `Skylight::widgets()->register([...])`
+`Route::get(...)` for the endpoint and `Extensions::widgets()->register([...])`
 for the widget. A phpVMS addon's ServiceProvider boots **only when the addon is
 enabled**. Disable it and:
 
@@ -144,7 +144,7 @@ enabled**. Disable it and:
 
 There is no runtime `enabled` flag to check and nothing to clean up — it's a
 property of *where* we register (`boot()`), not of any flag. See
-`app/Support/Skylight/WidgetRegistry.php` for the same guarantee.
+`app/Support/Extensions/WidgetRegistry.php` for the same guarantee.
 
 ---
 

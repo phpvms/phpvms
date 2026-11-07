@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Support\Skylight\Facades\Skylight as SkylightFacade;
-use App\Support\Skylight\Skylight;
+use App\Support\Extensions\Extensions;
+use App\Support\Extensions\Facades\Extensions as ExtensionsFacade;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Wires the skylight SPA extension hub into the container.
+ * Wires the extension hub into the container. Themes (SPA and Blade) and addons
+ * share it.
  *
  * The hub is a singleton so that addon providers (which boot after this one
  * registers) accumulate their widget/slot registrations onto the SAME instance
  * that HandleInertiaRequests later reads when serializing shared props.
  *
  * Registered ahead of the addon engine in bootstrap/providers.php so the
- * `skylight` binding exists before any addon ServiceProvider::boot() calls the
- * Skylight facade.
+ * `extensions` binding exists before any addon ServiceProvider::boot() calls the
+ * Extensions facade.
  */
-final class SkylightServiceProvider extends ServiceProvider
+final class ExtensionsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton('skylight', static fn (): Skylight => new Skylight());
+        $this->app->singleton('extensions', static fn (): Extensions => new Extensions());
     }
 
     /**
@@ -35,7 +36,7 @@ final class SkylightServiceProvider extends ServiceProvider
     {
         $module = '/build/skylight/elements.js';
 
-        SkylightFacade::widgets()
+        ExtensionsFacade::widgets()
             ->register([
                 'id'         => 'pv-hero',
                 'kind'       => 'tag',

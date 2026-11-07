@@ -9,7 +9,7 @@ use Illuminate\Support\ServiceProvider;
  * End-to-end verification of the addon registration path (tasks.md 5.2):
  * a metric registered from a provider's boot() is present once that boot()
  * has run, and absent otherwise -- the same structural disable-safety
- * app/Support/Skylight/WidgetRegistry.php documents for widgets. A disabled
+ * app/Support/Extensions/WidgetRegistry.php documents for widgets. A disabled
  * addon's ServiceProvider::boot() never runs at all, so there is nothing
  * addon-specific to fake beyond "boot() ran" vs "boot() did not run": the
  * registry has no runtime enabled flag to bypass either way.

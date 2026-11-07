@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Skylight;
+namespace App\Support\Extensions;
 
 use InvalidArgumentException;
 
 /**
- * Server-side registry of dashboard widgets contributed to the skylight SPA —
+ * Server-side registry of dashboard widgets contributed to themes (SPA and Blade) —
  * and, via the `tag` kind, the component catalog other consumers (e.g. a page
  * editor's insert menu) read from.
  *
@@ -95,7 +95,7 @@ final class WidgetRegistry
     public function register(array $definition): self
     {
         if (empty($definition['id']) || !is_string($definition['id'])) {
-            throw new InvalidArgumentException('Skylight widget definition requires a string "id".');
+            throw new InvalidArgumentException('Widget definition requires a string "id".');
         }
 
         $definition['kind'] ??= 'vue';
@@ -106,7 +106,7 @@ final class WidgetRegistry
         // SPA's own resolver fails visibly for when malformed — a missing tag
         // name would silently produce an unusable catalog entry. Fail loudly here.
         if ($definition['kind'] === 'tag' && (empty($definition['tag']) || !is_string($definition['tag']))) {
-            throw new InvalidArgumentException('A Skylight widget definition with kind "tag" requires a string "tag".');
+            throw new InvalidArgumentException('A widget definition with kind "tag" requires a string "tag".');
         }
 
         $this->widgets[$definition['id']] = $definition;

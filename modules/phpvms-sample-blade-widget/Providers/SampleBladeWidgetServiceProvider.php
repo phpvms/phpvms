@@ -2,7 +2,7 @@
 
 namespace Modules\SampleBladeWidget\Providers;
 
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\ServiceProvider;
 use Override;
 use Route;
@@ -25,13 +25,13 @@ use Route;
  * DISABLE-SAFETY (read this before worrying about "what if it's off?")
  * -------------------------------------------------------------------
  * The ONLY place this addon touches the SPA is inside boot() below, via
- * Skylight::widgets()->register([...]). A phpVMS addon's ServiceProvider only
+ * Extensions::widgets()->register([...]). A phpVMS addon's ServiceProvider only
  * boots when the addon is ENABLED. A disabled addon's provider never boots, so
  * register() is never called, so the widget simply never appears in the SPA's
  * catalog. There is no runtime "is this enabled?" check to add, no catalog
  * entry to clean up, and no dead endpoint to guard: disable-safety is a
  * property of *where* we register (boot()), not of any flag we set. See the
- * class docblock of App\Support\Skylight\WidgetRegistry for the same guarantee.
+ * class docblock of App\Support\Extensions\WidgetRegistry for the same guarantee.
  *
  * Note module.json ships with `"active": 0` on purpose — addon installs are
  * disabled by default. A human enables it (see this module's README:
@@ -111,7 +111,7 @@ class SampleBladeWidgetServiceProvider extends ServiceProvider
      * Contribute the widget to the skylight dashboard catalog.
      *
      * This single call is the entire integration surface. The keys map to
-     * App\Support\Skylight\WidgetRegistry::register()'s documented contract:
+     * App\Support\Extensions\WidgetRegistry::register()'s documented contract:
      *
      *   id          Unique, stable widget id (also the instance id).
      *   kind        'blade' → server-rendered fragment, hosted by BladeWidget.vue.
@@ -136,7 +136,7 @@ class SampleBladeWidgetServiceProvider extends ServiceProvider
      */
     protected function registerSkylightWidget(): void
     {
-        Skylight::widgets()->register([
+        Extensions::widgets()->register([
             'id'          => 'sample-blade-notams',
             'kind'        => 'blade',
             'mode'        => 'island',

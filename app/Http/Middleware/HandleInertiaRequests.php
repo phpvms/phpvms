@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Services\MapConfigService;
 use App\Services\NavigationService;
 use App\Services\Theme\ActiveThemeService;
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -93,7 +93,7 @@ class HandleInertiaRequests extends Middleware
             // so the SPA builds its catalog + slot registry from the same source
             // of truth. A disabled addon contributes nothing — its provider
             // never booted, so its entries are absent by construction.
-            'skylight' => Skylight::toArray(),
+            'skylight' => Extensions::toArray(),
 
             'auth' => [
                 'user' => $user ? [

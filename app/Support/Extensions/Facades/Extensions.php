@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Skylight\Facades;
+namespace App\Support\Extensions\Facades;
 
-use App\Support\Skylight\SlotRegistry;
-use App\Support\Skylight\WidgetRegistry;
+use App\Support\Extensions\SlotRegistry;
+use App\Support\Extensions\WidgetRegistry;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * Facade for the skylight extension hub.
+ * Facade for the extension hub.
  *
  * @method static WidgetRegistry widgets()
  * @method static SlotRegistry   slots()
  * @method static array          toArray()
  *
- * @see \App\Support\Skylight\Skylight
+ * @see \App\Support\Extensions\Extensions
  */
-final class Skylight extends Facade
+final class Extensions extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return 'skylight';
+        return 'extensions';
     }
 }

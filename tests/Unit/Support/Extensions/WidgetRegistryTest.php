@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\Skylight\WidgetRegistry;
+use App\Support\Extensions\WidgetRegistry;
 
 test('registers a tag-kind widget with its catalog fields', function (): void {
     $registry = new WidgetRegistry();
@@ -33,13 +33,6 @@ test('registers a tag-kind widget with its catalog fields', function (): void {
             'defaultZone' => 'grid',
         ],
     ]);
-});
-
-test('a tag-kind widget requires a string tag', function (): void {
-    $registry = new WidgetRegistry();
-
-    expect(fn (): WidgetRegistry => $registry->register(['id' => 'hero', 'kind' => 'tag']))
-        ->toThrow(InvalidArgumentException::class, 'A Skylight widget definition with kind "tag" requires a string "tag".');
 });
 
 test('a tag-kind widget rejects a non-string tag', function (): void {

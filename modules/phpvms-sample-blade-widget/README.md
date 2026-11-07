@@ -29,7 +29,7 @@ interactivity.
 
 | File | Role |
 | --- | --- |
-| `Providers/SampleBladeWidgetServiceProvider.php` | Registers views, the route, and the widget with the skylight hub — **the entire SPA integration surface**. |
+| `Providers/SampleBladeWidgetServiceProvider.php` | Registers views, the route, and the widget with the extensions hub — **the entire SPA integration surface**. |
 | `Http/Controllers/NotamsController.php` | The "hidden server logic": builds the data and returns a layout-less Blade fragment. |
 | `Resources/views/notams.blade.php` | The layout-less Blade fragment the shell injects into the dashboard. |
 
@@ -43,9 +43,9 @@ Laravel provider discovery), `Http/Routes/web.php` (the one route).
 Everything the SPA needs is one call, made from the provider's `boot()`:
 
 ```php
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 
-Skylight::widgets()->register([
+Extensions::widgets()->register([
     'id'          => 'sample-blade-notams',
     'kind'        => 'blade',
     'mode'        => 'island',
@@ -68,7 +68,7 @@ Skylight::widgets()->register([
 The `WidgetRegistry` is serialised into the Inertia shared props each request,
 so the Vue catalog is built from whatever is registered at that moment. The full
 list of recognised keys is documented on
-`App\Support\Skylight\WidgetRegistry::register()` — read that docblock.
+`App\Support\Extensions\WidgetRegistry::register()` — read that docblock.
 
 Three things must stay in sync — the route's **path** is the single source of
 truth:
@@ -94,7 +94,7 @@ register the widget from `boot()`, so:
 
 Disable-safety is a property of *where* you register (inside `boot()`), not of any
 flag you toggle at runtime. The same guarantee is documented on
-`App\Support\Skylight\WidgetRegistry`.
+`App\Support\Extensions\WidgetRegistry`.
 
 ---
 

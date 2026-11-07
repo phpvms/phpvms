@@ -4,7 +4,7 @@ namespace Modules\PhpvmsWidgets\Providers;
 
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Modules\PhpvmsWidgets\Http\Controllers\WeatherController;
@@ -37,7 +37,7 @@ use Route;
  * DISABLE-SAFETY
  * --------------
  * Everything this addon contributes happens inside boot() below: the data route,
- * the Skylight::widgets()->register([...]) calls for skylight, and the
+ * the Extensions::widgets()->register([...]) calls for skylight, and the
  * Tiles registrations for Blade themes. A phpVMS addon's
  * ServiceProvider only boots when the addon is ENABLED. Disabled → this never
  * runs → the widget never enters the catalog AND the endpoint never exists.
@@ -53,7 +53,7 @@ class PhpvmsWidgetsServiceProvider extends ServiceProvider
      * Bootstrap the addon (runs only when enabled — see class docblock).
      *
      *   1. Register the addon's own weather data route.
-     *   2. Register the bundled dashboard widgets with the skylight hub.
+     *   2. Register the bundled dashboard widgets with the extensions hub.
      *   3. Register their Livewire twins as tiles, for Blade themes.
      */
     public function boot(): void
@@ -111,7 +111,7 @@ class PhpvmsWidgetsServiceProvider extends ServiceProvider
      */
     protected function registerSkylightWidget(): void
     {
-        $widgets = Skylight::widgets();
+        $widgets = Extensions::widgets();
 
         $widgets->register([
             'id'          => 'kpi-hours',

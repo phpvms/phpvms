@@ -2,7 +2,7 @@
 
 namespace Modules\SampleVueWidget\Providers;
 
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\ServiceProvider;
 use Modules\SampleVueWidget\Http\Controllers\SamplePingController;
 use Override;
@@ -24,12 +24,12 @@ use Route;
  * DISABLE-SAFETY (read this before worrying about "what if it's off?")
  * -------------------------------------------------------------------
  * Everything this addon contributes to the host happens inside boot() below: the
- * data route and the Skylight::widgets()->register([...]) call. A phpVMS addon's
+ * data route and the Extensions::widgets()->register([...]) call. A phpVMS addon's
  * ServiceProvider only boots when the addon is ENABLED. Disabled → this never
  * runs → the widget never enters the catalog AND the /api/sample-vue/ping route
  * never exists. There is no runtime "enabled?" flag to check and no dead entry to
  * clean up: disable-safety is a property of *where* we register (boot()), not of
- * any flag. See App\Support\Skylight\WidgetRegistry's class docblock for the same
+ * any flag. See App\Support\Extensions\WidgetRegistry's class docblock for the same
  * guarantee.
  *
  * module.json ships with `"active": 0` on purpose — addons install disabled. A
@@ -80,7 +80,7 @@ class SampleVueWidgetServiceProvider extends ServiceProvider
     /**
      * Contribute the pre-built Vue widget to the skylight dashboard catalog.
      *
-     * Keys map to App\Support\Skylight\WidgetRegistry::register()'s contract:
+     * Keys map to App\Support\Extensions\WidgetRegistry::register()'s contract:
      *
      *   id          Unique, stable widget id (also the instance id).
      *   kind        'vue' → a Vue component.
@@ -98,7 +98,7 @@ class SampleVueWidgetServiceProvider extends ServiceProvider
      */
     protected function registerSkylightWidget(): void
     {
-        Skylight::widgets()->register([
+        Extensions::widgets()->register([
             'id'   => 'sample-vue-ping',
             'kind' => 'vue',
             // AddonAssetLinker symlinks public/ → public/ext/<strtolower(module NAME)>,
