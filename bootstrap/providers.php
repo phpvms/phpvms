@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Features\Tiles\TilesServiceProvider;
 use App\Features\Bids\BidsServiceProvider;
 use App\Features\Dashboard\DashboardServiceProvider;
 use App\Features\Flights\FlightsServiceProvider;
@@ -12,6 +11,7 @@ use App\Features\Pireps\PirepsServiceProvider;
 use App\Features\Profile\ProfileServiceProvider;
 use App\Features\Shell\ShellServiceProvider;
 use App\Features\Themes\ThemeFieldsServiceProvider;
+use App\Features\Tiles\TilesServiceProvider;
 use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
