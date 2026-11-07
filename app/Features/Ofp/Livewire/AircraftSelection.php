@@ -16,6 +16,7 @@ use App\Models\Bid;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -140,7 +141,7 @@ class AircraftSelection extends Component
     private function pilot(): User
     {
         /** @var User $user */
-        $user = auth()->user();
+        $user = Auth::user();
 
         return $user;
     }

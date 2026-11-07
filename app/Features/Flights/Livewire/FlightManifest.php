@@ -9,6 +9,7 @@ use App\Http\Data\FlightDispatchPolicyData;
 use App\Http\Data\FlightListItemData;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -229,11 +230,11 @@ class FlightManifest extends Component
         return $chips;
     }
 
-    public function mount(): void
+    public function mount(Request $request): void
     {
         // The old URLs name the airports `dpt_airport_id` / `arr_airport_id`.
-        $this->depIcao ??= request()->query('dpt_airport_id');
-        $this->arrIcao ??= request()->query('arr_airport_id');
+        $this->depIcao ??= $request->query('dpt_airport_id');
+        $this->arrIcao ??= $request->query('arr_airport_id');
     }
 
     public function render(): View

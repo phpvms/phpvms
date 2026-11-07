@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Services\SkylightSimBriefService;
 use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -120,7 +122,7 @@ class BriefingActions extends Component
             return false;
         }
 
-        session()->flash('success', 'The briefing was updated from SimBrief.');
+        Session::flash('success', 'The briefing was updated from SimBrief.');
         $this->redirect(route('frontend.ofp.briefing', $briefing->id));
 
         return true;
@@ -139,7 +141,7 @@ class BriefingActions extends Component
     private function pilot(): User
     {
         /** @var User $user */
-        $user = auth()->user();
+        $user = Auth::user();
 
         return $user;
     }

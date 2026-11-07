@@ -12,6 +12,7 @@ use App\Http\Data\TourListItemData;
 use App\Models\FlightBundle;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -126,7 +127,7 @@ class TourList extends Component
     private function pilot(): User
     {
         /** @var User $user */
-        $user = auth()->user();
+        $user = Auth::user();
 
         return $user;
     }

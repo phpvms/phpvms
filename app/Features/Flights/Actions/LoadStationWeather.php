@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Features\Flights\Actions;
 
 use App\Http\Controllers\Frontend\WeatherController;
+use Illuminate\Http\Request;
 use Throwable;
 
 /**
@@ -26,7 +27,7 @@ final readonly class LoadStationWeather
         }
 
         try {
-            $response = app(WeatherController::class)->show(request(), $icao);
+            $response = app(WeatherController::class)->show(app(Request::class), $icao);
             $payload = $response->getData(true);
         } catch (Throwable) {
             return ['state' => 'error', 'metar' => null, 'observedAt' => null];
