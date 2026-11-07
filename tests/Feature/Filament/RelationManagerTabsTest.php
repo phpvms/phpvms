@@ -15,23 +15,11 @@ use Livewire\Livewire;
 
 /**
  * HasRelationManagerTabs puts the form in the first tab and every relation
- * manager in a tab after it. The jump bar inside the form tab keeps the form's
- * sections only; the manager tabs carry the counts.
+ * manager in a tab after it; the manager tabs carry the counts.
  */
 beforeEach(function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     createAdminUser();
-});
-
-it('keeps only form sections in the jump bar', function (): void {
-    $subfleet = Subfleet::factory()->create();
-
-    $page = Livewire::test(EditSubfleet::class, ['record' => $subfleet->getRouteKey()])
-        ->assertSuccessful();
-
-    $ids = collect(invade($page->instance())->getSectionLinks())->pluck('id')->all();
-
-    expect($ids)->toBe(['subfleet-information', 'costs', 'operational-capability']);
 });
 
 it('badges each relation manager tab with its row count', function (): void {

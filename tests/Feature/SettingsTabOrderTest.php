@@ -7,20 +7,23 @@ use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
 
 /*
- * The tabs used to follow the order the database returned settings tied on
- * `order`, so they changed places between loads. They are alphabetical now.
+ * The categories used to follow the order the database returned settings tied
+ * on `order`, so they changed places between loads. General leads now and the
+ * rest are alphabetical.
  */
-it('lists the settings tabs in alphabetical order', function (): void {
+it('lists the settings categories with General first, then alphabetically', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     $this->actingAs(createAdminUser());
 
     $html = Livewire::test(Settings::class)->html();
-    preg_match_all('/fi-tabs-item-label">\s*([^<]*?)\s*</', $html, $matches);
-    $tabs = $matches[1];
+    preg_match_all('/fi-section-header-heading"\s*>\s*([^<]*?)\s*</', $html, $matches);
+    $categories = $matches[1];
 
-    $sorted = $tabs;
+    $rest = array_slice($categories, 1);
+    $sorted = $rest;
     natcasesort($sorted);
 
-    expect($tabs)->toContain('Airports', 'General', 'Pilots')
-        ->and($tabs)->toBe(array_values($sorted));
+    expect($categories)->toContain('Airports', 'General', 'Pilots')
+        ->and($categories[0])->toBe('General')
+        ->and($rest)->toBe(array_values($sorted));
 });

@@ -152,8 +152,8 @@ function createFullPirep(?Airline $airline = null): array
 }
 
 test('flight fares over api', function (): void {
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -220,9 +220,9 @@ test('flight fares over api', function (): void {
 });
 
 test('flight fares over api on user bids', function (): void {
-    updateSetting('bids.block_aircraft', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.block_aircraft', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $bidSvc = app(BidService::class);
     $fleetSvc = app(FleetService::class);
@@ -259,8 +259,8 @@ test('flight fares over api on user bids', function (): void {
 });
 
 test('subfleet fares over api', function (): void {
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     /**
      * Add a user and flights
@@ -906,7 +906,7 @@ test('pirep finances', function (): void {
  */
 function createAdvancedFuelHistory(): array
 {
-    updateSetting('pireps.advanced_fuel', true);
+    updateSetting('operations.advanced_fuel', true);
 
     [, $pirep] = createFullPirep();
 
@@ -967,7 +967,7 @@ test('advanced fuel falls back to the block on time for a pirep without submitte
 });
 
 test('pirep finances with advanced fuel and no submitted_at', function (): void {
-    updateSetting('pireps.advanced_fuel', true);
+    updateSetting('operations.advanced_fuel', true);
 
     [$user, $pirep] = createFullPirep();
     $pirep->update(['submitted_at' => null]);

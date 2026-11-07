@@ -82,7 +82,7 @@ class PirepController extends Controller
         $user_loc = filled(
             $user->curr_airport_id
         ) ? $user->curr_airport_id : $user->home_airport_id;
-        $location_check = setting('pireps.only_aircraft_at_dpt_airport', false);
+        $location_check = setting('operations.only_aircraft_at_dpt_airport', false);
 
         $aircraft = [];
 
@@ -382,7 +382,7 @@ class PirepController extends Controller
             }
 
             // Can they fly this aircraft?
-            if (setting('pireps.restrict_aircraft_to_rank', false)
+            if (setting('operations.restrict_aircraft_to_rank', false)
                 && !$user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists()) {
                 Log::info('Pilot '.$user->id.' not allowed to fly aircraft');
 
@@ -405,7 +405,7 @@ class PirepController extends Controller
                 );
             }
 
-            if (setting('pireps.only_aircraft_at_dpt_airport')
+            if (setting('operations.only_aircraft_at_dpt_airport')
                 && $aircraft->airport_id !== $pirep->dpt_airport_id
             ) {
                 Log::info(

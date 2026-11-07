@@ -16,7 +16,7 @@ use App\Services\FlightService;
 test('bids', function (): void {
     updateSetting('bids.allow_multiple_bids', true);
     updateSetting('bids.disable_flight_on_bid', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
 
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
@@ -241,7 +241,7 @@ test('findBidsForUser falls back to the bid date when two briefings share a time
 
 test('multiple bids single flight', function (): void {
     updateSetting('bids.disable_flight_on_bid', true);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
 
     $user1 = User::factory()->create();
     $user2 = User::factory()->create([
@@ -262,7 +262,7 @@ test('multiple bids single flight', function (): void {
 })->throws(BidExistsForFlight::class);
 
 test('add bid api', function (): void {
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
 
     $user = User::factory()->create();
     $user2 = User::factory()->create();
@@ -318,7 +318,7 @@ test('delete bid api returns not found for missing flight', function (): void {
 });
 
 test('delete flight with bids', function (): void {
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -360,10 +360,10 @@ test('delete flight with bids', function (): void {
 });
 
 test('bid with aircraft', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
     updateSetting('bids.allow_multiple_bids', true);
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -402,10 +402,10 @@ test('bid with aircraft', function (): void {
 });
 
 test('bid with aircraft held by another user', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
     updateSetting('bids.allow_multiple_bids', true);
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
 
     $user = User::factory()->create();
     $other_user = User::factory()->create();

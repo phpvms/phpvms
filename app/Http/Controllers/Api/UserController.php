@@ -92,7 +92,7 @@ class UserController extends Controller
         // Add a bid
         if ($request->isMethod('PUT') || $request->isMethod('POST')) {
             $flight_id = $request->input('flight_id');
-            if (setting('bids.block_aircraft')) {
+            if (setting('operations.block_aircraft')) {
                 $aircraft_id = $request->input('aircraft_id');
                 $aircraft = Aircraft::find($aircraft_id);
             }

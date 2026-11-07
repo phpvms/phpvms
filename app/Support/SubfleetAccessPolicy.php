@@ -23,10 +23,10 @@ final readonly class SubfleetAccessPolicy
         public User $user,
         public ?Flight $flight = null,
     ) {
-        $this->rankRestricted = (bool) setting('pireps.restrict_aircraft_to_rank', true);
-        $this->typeRatingRestricted = (bool) setting('pireps.restrict_aircraft_to_typerating', false);
-        $this->restrictToDepartureAirport = (bool) setting('pireps.only_aircraft_at_dpt_airport', false);
-        $this->blockBookedAircraft = (bool) setting('bids.block_aircraft', false);
+        $this->rankRestricted = (bool) setting('operations.restrict_aircraft_to_rank', false);
+        $this->typeRatingRestricted = (bool) setting('operations.restrict_aircraft_to_typerating', false);
+        $this->restrictToDepartureAirport = (bool) setting('operations.only_aircraft_at_dpt_airport', false);
+        $this->blockBookedAircraft = (bool) setting('operations.block_aircraft', false);
     }
 
     /**

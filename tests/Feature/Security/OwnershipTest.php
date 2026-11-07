@@ -240,8 +240,8 @@ it("does not let a pilot take over another pilot's simbrief briefing by its ofp 
 
 it("does not attach another pilot's briefing when prefiling", function (): void {
     updateSetting('pilots.only_flights_from_current', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('simbrief.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.block_aircraft', false);
     $briefing = SimBrief::factory()->create(['user_id' => $this->attacker->id]);
 
     app(PirepService::class)->prefile($this->owner, [
@@ -273,7 +273,7 @@ it("does not let an acars id overwrite another pirep's row", function (string $u
 
 it('ignores protected attributes when a pilot files a manual pirep', function (): void {
     updateSetting('pilots.only_flights_from_current', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
     $this->owner->rank->update(['auto_approve_acars' => true, 'auto_approve_manual' => false]);
 
     $this->actingAs($this->owner)->post(route('frontend.pireps.store'), [

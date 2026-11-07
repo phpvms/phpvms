@@ -215,7 +215,9 @@ class AddonSettings extends Page
         if ($setting->type === 'boolean' || $setting->type === 'bool') {
             return Toggle::make($setting->key)
                 ->label($setting->name)
-                ->helperText($setting->description)
+                ->belowLabel($setting->description)
+                ->columnSpanFull()
+                ->inlineLabel()
                 ->offIcon(Phosphor::XLight)
                 ->offColor('danger')
                 ->onIcon(Phosphor::CheckLight)

@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 
 test('rank subfleets', function (): void {
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+
     // Add subfleets and aircraft, but also add another
     // set of subfleets
     $subfleet = Subfleet::factory()->hasAircraft(2)->count(2)->create();
@@ -105,7 +107,7 @@ test('get all aircraft', function (): void {
 
     apiAs($user);
 
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $subfleets = $user->allowedSubfleets()->with(['aircraft', 'fares'])->get();
     expect($subfleets->count())->toEqual(2);
@@ -126,7 +128,7 @@ test('get all aircraft', function (): void {
     /**
      * Check via API, but should only show the single subfleet being returned
      */
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
 
     $resp = $this->get('/api/user/fleet')->assertStatus(200);
 
@@ -167,7 +169,7 @@ test('get aircraft allowed from flight', function (): void {
     updateSetting('pilots.only_flights_from_current', false);
 
     // And restrict the aircraft
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $response = $this->get('/api/flights/'.$flight->id);
     $response->assertStatus(200);
@@ -177,7 +179,7 @@ test('get aircraft allowed from flight', function (): void {
     /*
      * Now make sure it's filtered out
      */
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
 
     /**
      * Make sure it's filtered out from the single flight call
@@ -208,8 +210,8 @@ test('get aircraft allowed from flight', function (): void {
 test('api flight list excludes flights without allowable subfleets', function (): void {
     updateSetting('pilots.restrict_to_company', false);
     updateSetting('pilots.only_flights_from_current', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $airline = Airline::factory()->create();
     $allowedSubfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);

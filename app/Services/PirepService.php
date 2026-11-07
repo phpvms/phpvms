@@ -94,7 +94,7 @@ class PirepService extends Service
 
         // Check if the airports listed actually exist or not. If they're not in the local DB
         // throw an error which should bubble up to say that they don't
-        if (setting('general.allow_unadded_airports', false) === true) {
+        if (setting('airports.allow_unadded_airports', false) === true) {
             // Same as flight creation: the lookup may store the airport under
             // the catalog's id, so the PIREP takes the id it resolved to
             // rather than the value it asked about.
@@ -148,7 +148,7 @@ class PirepService extends Service
         }
 
         // See if this user is allowed to fly this aircraft
-        if (setting('pireps.restrict_aircraft_to_rank', false)
+        if (setting('operations.restrict_aircraft_to_rank', false)
             && !$user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists()) {
             throw new AircraftPermissionDenied($user, $pirep->aircraft);
         }
@@ -168,7 +168,7 @@ class PirepService extends Service
         }
 
         // See if this aircraft is being used by another user's active simbrief ofp
-        if (setting('simbrief.block_aircraft', false)) {
+        if (setting('operations.block_aircraft', false)) {
             $sb_aircraft = SimBrief::select('aircraft_id')
                 ->where('aircraft_id', $pirep->aircraft_id)
                 ->where('user_id', '!=', $pirep->user_id)
@@ -181,7 +181,7 @@ class PirepService extends Service
 
         // See if this aircraft is at the departure airport
         /* @noinspection NotOptimalIfConditionsInspection */
-        if (setting('pireps.only_aircraft_at_dpt_airport') && $aircraft->airport_id !== $pirep->dpt_airport_id) {
+        if (setting('operations.only_aircraft_at_dpt_airport') && $aircraft->airport_id !== $pirep->dpt_airport_id) {
             throw new AircraftNotAtAirport($pirep->aircraft);
         }
 
@@ -887,7 +887,7 @@ class PirepService extends Service
         $diversion_airport = Airport::find($diversion_airport_id);
 
         // Return if diversion airport not found and airport lookup is disabled
-        if (!$diversion_airport && !setting('general.auto_airport_lookup', false)) {
+        if (!$diversion_airport && !setting('airports.auto_airport_lookup', false)) {
             return;
         }
 

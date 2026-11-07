@@ -3,51 +3,27 @@
 namespace App\Filament\Resources\Airports\Pages;
 
 use App\Filament\Concerns\HasRelationManagerTabs;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\Airports\AirportResource;
-use App\Filament\Resources\Airports\Schemas\AirportForm;
 use App\Models\Airport;
 use App\Models\File;
 use App\Services\FileService;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\EmptyState;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Schema;
 use Override;
 
 class EditAirport extends EditRecord
 {
     use HasRelationManagerTabs;
-    use ReversePrimaryButtons;
+    use HasSaveBar;
 
     protected static string $resource = AirportResource::class;
-
-    /**
-     * One section only, so no jump bar.
-     *
-     * @return array<string, string>
-     */
-    protected function jumpBarFormSections(): array
-    {
-        return [];
-    }
-
-    /** The list modals share AirportForm bare; the full page sets it in a section. */
-    #[Override]
-    public function form(Schema $schema): Schema
-    {
-        return $schema->components([
-            Section::make(__('filament.airport_information'))
-                ->id('airport-information')
-                ->schema(AirportForm::components())
-                ->columnSpanFull(),
-        ]);
-    }
 
     /**
      * Details, then a placeholder Runways tab (no relation behind it yet),
@@ -77,11 +53,15 @@ class EditAirport extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()->icon(Phosphor::TrashLight),
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight)->before(function (Airport $record): void {
                 $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);

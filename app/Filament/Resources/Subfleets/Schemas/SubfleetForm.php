@@ -7,7 +7,6 @@ use App\Enums\FuelType;
 use App\Filament\Forms\Components\AirportSelect;
 use App\Models\SimBriefAirframe;
 use App\Models\Subfleet;
-use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -23,10 +22,6 @@ class SubfleetForm
         return $schema
             ->components([
                 Section::make(__('filament.subfleet_information'))
-                    ->id('subfleet-information')
-                    ->icon(Phosphor::StackSimpleLight)
-                    ->collapsible()
-                    ->persistCollapsed()
                     ->schema([
                         // On the edit page these live in the overview's drawer
                         // instead; the create page still needs them inline,
@@ -72,63 +67,59 @@ class SubfleetForm
                             ->options(FuelType::class)
                             ->searchable()
                             ->native(false),
-
-                        // Nested Sections render as sequent head bands inside
-                        // the same card, not as second and third cards.
-                        Section::make(__('filament.subfleets.sections.costs'))
-                            ->id('costs')
-                            ->icon(Phosphor::MoneyLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->columns(3)
-                            ->schema([
-                                TextInput::make('cost_block_hour')
-                                    ->label(__('common.cost_per_hour'))
-                                    ->minValue(0)
-                                    ->numeric()
-                                    ->step(0.01),
-
-                                TextInput::make('cost_delay_minute')
-                                    ->label(__('common.cost_delay_per_minute'))
-                                    ->minValue(0)
-                                    ->numeric()
-                                    ->step(0.01),
-
-                                TextInput::make('ground_handling_multiplier')
-                                    ->label(__('common.expense_multiplier'))
-                                    ->helperText(__('filament.subfleet_expense_multiplier_hint'))
-                                    ->minValue(0)
-                                    ->integer(),
-                            ])
-                            ->columnSpanFull(),
-
-                        Section::make(__('filament.subfleets.sections.operational_capability'))
-                            ->id('operational-capability')
-                            ->icon(Phosphor::MapTrifoldLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->columns(3)
-                            ->schema([
-                                TextInput::make('cruise_speed')
-                                    ->label(__('filament.subfleets.fields.cruise_speed'))
-                                    ->helperText(__('filament.subfleets.fields.cruise_speed_helper'))
-                                    ->suffix('kt')
-                                    ->integer()
-                                    ->minValue(0),
-
-                                TextInput::make('max_range_nm')
-                                    ->label(__('filament.subfleets.fields.max_range_nm'))
-                                    ->helperText(__('filament.subfleets.fields.max_range_nm_helper'))
-                                    ->suffix('nm')
-                                    ->integer()
-                                    ->minValue(0),
-
-                                self::routeTypesField(),
-                            ])
-                            ->columnSpanFull(),
                     ])
-                    ->columns(3)
-                    ->columnSpanFull(),
+                    ->aside()
+                    ->description(__('filament.subfleet_information_description'))
+                    ->columnSpanFull()
+                    ->columns(3),
+
+                Section::make(__('filament.subfleets.sections.costs'))
+                    ->schema([
+                        TextInput::make('cost_block_hour')
+                            ->label(__('common.cost_per_hour'))
+                            ->minValue(0)
+                            ->numeric()
+                            ->step(0.01),
+
+                        TextInput::make('cost_delay_minute')
+                            ->label(__('common.cost_delay_per_minute'))
+                            ->minValue(0)
+                            ->numeric()
+                            ->step(0.01),
+
+                        TextInput::make('ground_handling_multiplier')
+                            ->label(__('common.expense_multiplier'))
+                            ->helperText(__('filament.subfleet_expense_multiplier_hint'))
+                            ->minValue(0)
+                            ->integer(),
+                    ])
+                    ->aside()
+                    ->description(__('filament.subfleet_costs_description'))
+                    ->columnSpanFull()
+                    ->columns(3),
+
+                Section::make(__('filament.subfleets.sections.operational_capability'))
+                    ->schema([
+                        TextInput::make('cruise_speed')
+                            ->label(__('filament.subfleets.fields.cruise_speed'))
+                            ->helperText(__('filament.subfleets.fields.cruise_speed_helper'))
+                            ->suffix('kt')
+                            ->integer()
+                            ->minValue(0),
+
+                        TextInput::make('max_range_nm')
+                            ->label(__('filament.subfleets.fields.max_range_nm'))
+                            ->helperText(__('filament.subfleets.fields.max_range_nm_helper'))
+                            ->suffix('nm')
+                            ->integer()
+                            ->minValue(0),
+
+                        self::routeTypesField(),
+                    ])
+                    ->aside()
+                    ->description(__('filament.subfleet_operational_capability_description'))
+                    ->columnSpanFull()
+                    ->columns(3),
             ]);
     }
 

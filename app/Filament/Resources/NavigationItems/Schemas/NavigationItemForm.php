@@ -26,6 +26,9 @@ class NavigationItemForm
         return $schema
             ->components([
                 Section::make(__('filament.navigation_items.label'))
+                    ->id('navigation-item')
+                    ->aside()
+                    ->description(__('filament.navigation_items_description'))
                     ->schema([
                         Grid::make()
                             ->schema([
@@ -60,6 +63,9 @@ class NavigationItemForm
                     ->columnSpanFull(),
 
                 Section::make(__('filament.navigation_items.target_type'))
+                    ->id('navigation-item-target')
+                    ->aside()
+                    ->description(__('filament.navigation_items_target_description'))
                     ->schema([
                         Select::make('target_type')
                             ->label(__('filament.navigation_items.target_type'))
@@ -101,35 +107,39 @@ class NavigationItemForm
                     ->columnSpanFull(),
 
                 Section::make(__('filament.navigation_items.options'))
+                    ->id('navigation-item-options')
+                    ->aside()
+                    ->description(__('filament.navigation_items_options_description'))
                     ->schema([
-                        Grid::make()
-                            ->schema([
-                                Toggle::make('visible')
-                                    ->label(__('filament.navigation_items.visible'))
-                                    ->helperText(__('filament.navigation_items.visible_helper'))
-                                    ->default(true)
-                                    ->offIcon(Phosphor::XLight)
-                                    ->offColor('danger')
-                                    ->onIcon(Phosphor::CheckLight)
-                                    ->onColor('success'),
-
-                                Toggle::make('public')
-                                    ->label(__('common.public'))
-                                    ->default(true)
-                                    ->offIcon(Phosphor::XLight)
-                                    ->offColor('danger')
-                                    ->onIcon(Phosphor::CheckLight)
-                                    ->onColor('success'),
-
-                                Toggle::make('new_window')
-                                    ->label(__('filament.should_open_in_new_tab'))
-                                    ->offIcon(Phosphor::XLight)
-                                    ->offColor('danger')
-                                    ->onIcon(Phosphor::CheckLight)
-                                    ->onColor('success'),
-                            ])
+                        Toggle::make('visible')
+                            ->label(__('filament.navigation_items.visible'))
+                            ->belowLabel(__('filament.navigation_items.visible_helper'))
                             ->columnSpanFull()
-                            ->columns(3),
+                            ->inlineLabel()
+                            ->default(true)
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
+
+                        Toggle::make('public')
+                            ->label(__('common.public'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->default(true)
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
+
+                        Toggle::make('new_window')
+                            ->label(__('filament.should_open_in_new_tab'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
                     ])
                     ->columnSpanFull(),
             ]);

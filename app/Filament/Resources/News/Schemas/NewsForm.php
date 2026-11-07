@@ -28,6 +28,8 @@ class NewsForm
 
                 Toggle::make('send_notifications')
                     ->label(__('filament.news_send_notifications'))
+                    ->columnSpanFull()
+                    ->inlineLabel()
                     ->dehydrated(false)
                     ->default(false)
                     ->onColor('success')

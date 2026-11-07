@@ -9,6 +9,7 @@ use App\Exceptions\SettingNotFound;
 use App\Models\Setting;
 use App\Services\Concerns\CastsSettingValue;
 use App\Support\Branding;
+use App\Support\RenamedSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
@@ -49,7 +50,7 @@ class SettingService extends Service
      */
     public function retrieve(string $key): mixed
     {
-        $key = Setting::formatKey($key);
+        $key = Setting::formatKey(RenamedSettings::resolve($key));
 
         if (array_key_exists($key, $this->memo)) {
             return $this->memo[$key];
@@ -75,7 +76,7 @@ class SettingService extends Service
      */
     public function remember(string $key, callable $resolve): mixed
     {
-        $formattedKey = Setting::formatKey($key);
+        $formattedKey = Setting::formatKey(RenamedSettings::resolve($key));
 
         if (array_key_exists($formattedKey, $this->memo)) {
             return $this->memo[$formattedKey];
@@ -96,6 +97,8 @@ class SettingService extends Service
      */
     public function store(string $key, mixed $value): mixed
     {
+        $key = RenamedSettings::resolve($key);
+
         if ($key === 'bids.expire_time' && $value !== null && (int) $value < 0) {
             throw ValidationException::withMessages([
                 'bids.expire_time' => 'Bid expiry cannot be negative.',

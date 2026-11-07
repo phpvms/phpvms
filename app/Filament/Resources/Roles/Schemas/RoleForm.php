@@ -11,12 +11,12 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 
 class RoleForm
@@ -24,7 +24,8 @@ class RoleForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make()
+            Section::make(__('filament.role_information'))
+                ->description(__('filament.role_information_description'))
                 ->schema([
                     TextInput::make('name')
                         ->label(__('common.name'))
@@ -35,20 +36,25 @@ class RoleForm
 
                     Toggle::make('disable_activity_checks')
                         ->label(__('filament.disable_activity_checks'))
-                        ->helperText(__('filament.disable_activity_checks_help'))
+                        ->belowLabel(__('filament.disable_activity_checks_help'))
                         ->default(false)
-                        ->columnSpan(1),
+                        ->columnSpanFull()
+                        ->inlineLabel(),
                 ])
+                ->aside()
+                ->columnSpanFull()
                 ->columns(),
 
             // Super-admins bypass every check, so their grants are not editable.
             Section::make(__('filament.role_permissions'))
                 ->visible(fn (?Role $record): bool => RoleResource::isSuperAdmin($record))
                 ->schema([
-                    TextEntry::make('super_admin_notice')
-                        ->hiddenLabel()
-                        ->state(__('filament.role_super_admin_notice')),
-                ]),
+                    Text::make(__('filament.role_super_admin_notice'))
+                        ->columnSpanFull(),
+                ])
+                ->aside()
+                ->description(__('filament.role_super_admin_description'))
+                ->columnSpanFull(),
 
             Section::make(__('filament.role_permissions'))
                 ->description(__('filament.role_permissions_help'))
@@ -57,7 +63,9 @@ class RoleForm
                     Tabs::make('permissions')
                         ->tabs(static::permissionTabs())
                         ->columnSpanFull(),
-                ]),
+                ])
+                ->aside()
+                ->columnSpanFull(),
         ])->columns(1);
     }
 
@@ -74,14 +82,12 @@ class RoleForm
         foreach (RoleResource::scopePermissionGroups() as $group) {
             $key = $group['scope_key'];
 
-            if (!isset($scopes[$key])) {
-                $scopes[$key] = [
-                    'label' => $key === PermissionRegistry::CORE_SCOPE
-                        ? (string) __('filament.permissions_core_tab')
-                        : $group['scope'],
-                    'groups' => [],
-                ];
-            }
+            $scopes[$key] ??= [
+                'label' => $key === PermissionRegistry::CORE_SCOPE
+                    ? (string) __('filament.permissions_core_tab')
+                    : $group['scope'],
+                'groups' => [],
+            ];
 
             $scopes[$key]['groups'][] = $group;
         }

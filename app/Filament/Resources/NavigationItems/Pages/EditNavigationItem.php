@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\NavigationItems\Pages;
 
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\NavigationItems\NavigationItemResource;
 use App\Models\NavigationItem;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Override;
 
 class EditNavigationItem extends EditRecord
 {
-    use ReversePrimaryButtons;
+    use HasSaveBar;
 
     protected static string $resource = NavigationItemResource::class;
 
@@ -24,13 +25,10 @@ class EditNavigationItem extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
-    #[Override]
-    protected function getHeaderActions(): array
+    protected function saveBarDeleteAction(): ?Action
     {
-        return [
-            DeleteAction::make()
-                ->icon(Phosphor::TrashLight)
-                ->hidden(fn (NavigationItem $record): bool => $record->children()->exists()),
-        ];
+        return DeleteAction::make()
+            ->icon(Phosphor::TrashLight)
+            ->hidden(fn (NavigationItem $record): bool => $record->children()->exists());
     }
 }

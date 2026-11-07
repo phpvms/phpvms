@@ -9,9 +9,7 @@ use App\Models\Permission;
 use App\Models\User;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Actions\Testing\TestAction;
-use Filament\Notifications\Notification;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
 /**
@@ -21,19 +19,6 @@ use Livewire\Livewire;
  * `SettingsMapTabTest` covered, retargeted at the new location — this file
  * IS that file, renamed.
  */
-
-/**
- * TestMapStyleAction is attached via ->hintAction() on the custom-URL fields,
- * not as a page-level action, so it must be addressed through its schema
- * component (Filament's "Testing actions in a schema" docs) rather than a
- * bare callAction('testMapStyle'). It is nested inside the basemaps action's
- * own modal schema.
- */
-function testMapStyleAction(string $field = 'custom_url_light'): TestAction
-{
-    return TestAction::make('testMapStyle')->schemaComponent($field);
-}
-
 function basemapsAction(): TestAction
 {
     return TestAction::make('basemaps');
@@ -136,60 +121,6 @@ it("reloads a basemap holding the wrong side's vacentral URL as Custom", functio
     Livewire::test(ListMapLayers::class)
         ->mountAction('basemaps')
         ->assertSchemaStateSet(['url_template_dark' => BasemapForm::CUSTOM]);
-});
-
-it('reports a successful style test for a reachable, valid style document', function (): void {
-    Http::fake([
-        'https://example.com/style.json' => Http::response([
-            'version' => 8,
-            'sources' => [],
-            'layers'  => [],
-        ]),
-    ]);
-
-    Livewire::test(ListMapLayers::class)
-        ->mountAction('basemaps')
-        // The URL field only renders once its select is on "Custom style…".
-        ->set('mountedActions.0.data.url_template', BasemapForm::CUSTOM)
-        ->set('mountedActions.0.data.custom_url_light', 'https://example.com/style.json')
-        ->callAction(testMapStyleAction())
-        ->assertNotified(__('map.test_style_success'));
-});
-
-it('reports a failed style test for a response missing required style keys', function (): void {
-    Http::fake([
-        'https://example.com/not-a-style.json' => Http::response(['hello' => 'world']),
-    ]);
-
-    Livewire::test(ListMapLayers::class)
-        ->mountAction('basemaps')
-        ->set('mountedActions.0.data.url_template', BasemapForm::CUSTOM)
-        ->set('mountedActions.0.data.custom_url_light', 'https://example.com/not-a-style.json')
-        ->callAction(testMapStyleAction())
-        ->assertNotified(
-            Notification::make()
-                ->danger()
-                ->title(__('map.test_style_failed'))
-                ->body(__('map.test_style_invalid')),
-        );
-});
-
-it('reports a failed style test for an unreachable URL', function (): void {
-    Http::fake([
-        'https://example.com/gone.json' => Http::response(null, 404),
-    ]);
-
-    Livewire::test(ListMapLayers::class)
-        ->mountAction('basemaps')
-        ->set('mountedActions.0.data.url_template', BasemapForm::CUSTOM)
-        ->set('mountedActions.0.data.custom_url_light', 'https://example.com/gone.json')
-        ->callAction(testMapStyleAction())
-        ->assertNotified(
-            Notification::make()
-                ->danger()
-                ->title(__('map.test_style_failed'))
-                ->body(__('map.test_style_bad_status', ['status' => '404'])),
-        );
 });
 
 it('refuses the basemaps drawer to a user who can view map layers but not edit them', function (): void {

@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\Pireps\Pages;
 
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use Carbon\Carbon;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -16,7 +17,7 @@ use Override;
 
 class EditPirep extends EditRecord
 {
-    use ReversePrimaryButtons;
+    use HasSaveBar;
 
     protected static string $resource = PirepResource::class;
 
@@ -26,13 +27,17 @@ class EditPirep extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
             AcceptAction::make(),
             RejectAction::make(),
-            DeleteAction::make()->icon(Phosphor::TrashLight),
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
             RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];

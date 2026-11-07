@@ -4,11 +4,12 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use App\Enums\UserState;
 use App\Filament\Forms\Components\AirportSelect;
+use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
+use App\Filament\Resources\Users\Actions\VerifyEmailAction;
 use App\Models\Airline;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Timezonelist;
-use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -26,29 +27,22 @@ use League\ISO3166\ISO3166;
 
 class UserForm
 {
-    public static function configure(Schema $schema, bool $withIdentity = true): Schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
                 Section::make(__('filament.user_information'))
-                    ->id('user-information')
-                    ->icon(Phosphor::UserLight)
-                    ->collapsible()
-                    ->persistCollapsed()
-                    // The footer renders the toggle on its own ruled row above
-                    // the submit row, per the enable-toggle house pattern.
-                    ->footer([
-                        Toggle::make('auto_accept_pireps')
-                            ->inline()
-                            ->label(__('filament.user_auto_accept_pireps'))
-                            ->helperText(__('filament.user_auto_accept_pireps_hint')),
-                    ])
                     ->schema([
-                        // On the edit page these live in the overview's drawer
-                        // instead; the create page still needs them inline,
-                        // because there is no overview to edit yet.
-                        ...($withIdentity ? self::identityFields() : []),
+                        self::identityPreview(),
+                        ...self::identityFields(),
+                    ])
+                    ->aside()
+                    ->description(__('filament.user_identity_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
 
+                Section::make(__('filament.user_current_configuration'))
+                    ->schema([
                         Select::make('state')
                             ->label(__('common.state'))
                             ->required()
@@ -64,6 +58,15 @@ class UserForm
                             ->required()
                             ->native(false),
 
+                        Select::make('airline_id')
+                            ->label(__('common.airline'))
+                            ->relationship('airline', 'name')
+                            ->preload()
+                            ->searchable()
+                            ->required()
+                            ->live()
+                            ->native(false),
+
                         TextInput::make('transfer_time')
                             ->label(__('profile.transfer_hours'))
                             ->numeric(),
@@ -77,70 +80,70 @@ class UserForm
                             ->native(false)
                             ->multiple(),
 
-                        // Nested Sections render as sequent head bands inside
-                        // the same card, not as second and third cards.
-                        Section::make(__('filament.location_information'))
-                            ->id('location-information')
-                            ->icon(Phosphor::MapPinLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->columns(2)
-                            ->schema([
-                                Select::make('country')
-                                    ->label(__('common.country'))
-                                    ->options(collect(new ISO3166()->all())->mapWithKeys(fn (array $item, string $key): array => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
-                                    ->searchable()
-                                    ->native(false),
+                        Toggle::make('auto_accept_pireps')
+                            ->label(__('filament.user_auto_accept_pireps'))
+                            ->belowLabel(__('filament.user_auto_accept_pireps_hint'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->inline(),
+                    ])
+                    ->aside()
+                    ->description(__('filament.user_information_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
 
-                                Select::make('timezone')
-                                    ->label(__('common.timezone'))
-                                    ->options(Timezonelist::toArray())
-                                    ->searchable()
-                                    ->allowHtml()
-                                    ->native(false),
+                Section::make(__('filament.location_information'))
+                    ->schema([
+                        Select::make('country')
+                            ->label(__('common.country'))
+                            ->options(collect(new ISO3166()->all())->mapWithKeys(fn (array $item, string $key): array => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
+                            ->searchable()
+                            ->native(false),
 
-                                AirportSelect::make('home_airport_id')
-                                    ->label(__('airports.home'))
-                                    ->airportRelationship('home_airport')
-                                    ->required(),
+                        Select::make('timezone')
+                            ->label(__('common.timezone'))
+                            ->options(Timezonelist::toArray())
+                            ->searchable()
+                            ->allowHtml()
+                            ->native(false),
 
-                                AirportSelect::make('current_airport_id')
-                                    ->label(__('airports.current'))
-                                    ->airportRelationship('current_airport'),
-                            ])
-                            ->columnSpanFull(),
+                        AirportSelect::make('home_airport_id')
+                            ->label(__('airports.home'))
+                            ->airportRelationship('home_airport')
+                            ->required(),
 
-                        Section::make(__('common.notes'))
-                            ->icon(Phosphor::NoteLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->schema([
-                                Textarea::make('notes')
-                                    ->hiddenLabel()
-                                    // Floor the height: an empty autosized
-                                    // textarea collapses to a sliver that
-                                    // does not read as an input at all.
-                                    ->rows(4)
-                                    ->autosize()
-                                    ->columnSpanFull(),
-                            ])
+                        AirportSelect::make('current_airport_id')
+                            ->label(__('airports.current'))
+                            ->airportRelationship('current_airport'),
+                    ])
+                    ->aside()
+                    ->description(__('filament.user_location_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
+
+                Section::make(__('common.notes'))
+                    ->schema([
+                        Textarea::make('notes')
+                            ->hiddenLabel()
+                            // Floor the height: an empty autosized
+                            // textarea collapses to a sliver that
+                            // does not read as an input at all.
+                            ->rows(4)
+                            ->autosize()
                             ->columnSpanFull(),
                     ])
-                    ->columns(3)
-                    ->columnSpanFull(),
-            ])
-            ->columns(3);
+                    ->aside()
+                    ->description(__('filament.user_notes_description'))
+                    ->columnSpanFull()
+                    ->columns(1),
+            ]);
     }
 
     /**
      * Who the pilot is: the fields the ident, the ATC callsign and the login are
-     * built from. Shown in the edit page's overview and edited through its
-     * drawer, so the two places that render them stay in step.
+     * built from.
      *
-     * Every element is a Field, not just a Component -- EditUser maps over these
-     * calling getName(), which only Field has.
-     *
-     * They are `live` for the drawer's preview strip (identityPreview()), which
+     * They are `live` for the preview strip (identityPreview()), which
      * recomputes the ident from state rather than from the saved record.
      *
      * @return array<int, Field>
@@ -173,16 +176,11 @@ class UserForm
                 ->label(__('common.email'))
                 ->unique()
                 ->required()
-                ->email(),
-
-            Select::make('airline_id')
-                ->label(__('common.airline'))
-                ->relationship('airline', 'name')
-                ->preload()
-                ->searchable()
-                ->required()
-                ->live()
-                ->native(false),
+                ->email()
+                ->suffixActions([
+                    RequestEmailVerificationAction::make(),
+                    VerifyEmailAction::make(),
+                ]),
 
             TextInput::make('password')
                 ->label(__('auth.password'))
@@ -200,27 +198,25 @@ class UserForm
      * callsign and the airline's ICAO (User::ident() and User::atc()), so an
      * admin editing any of the three cannot tell what they are producing
      * without seeing it. The airline is read from state, not from the record,
-     * because the drawer can change it.
+     * because the form can change it.
      *
-     * Laid out as a strip so it reads as a header above the drawer's fields
+     * Laid out as a strip so it reads as a header above the fields
      * rather than as three more of them.
      */
     public static function identityPreview(): Grid
     {
-        return Grid::make(3)->columnSpanFull()->schema([
+        return Grid::make(3)->columnSpanFull()->extraAttributes(['class' => 'ident-preview'])->schema([
             Callout::make(__('filament.user_ident_preview_notice'))
                 ->info()
                 ->columnSpanFull(),
 
             TextEntry::make('ident_preview')
                 ->label(__('filament.user_ident'))
-                ->state(fn (Get $get): string => User::formatIdent(self::selectedAirline($get), $get('pilot_id')))
-                ->helperText(fn (Get $get): ?string => self::selectedAirline($get)?->name),
+                ->state(fn (Get $get): string => User::formatIdent(self::selectedAirline($get), $get('pilot_id'))),
 
             TextEntry::make('name_preview')
                 ->label(__('common.name'))
-                ->state(fn (Get $get): string => (string) $get('name'))
-                ->helperText(fn (?User $record): ?string => $record?->rank?->name),
+                ->state(fn (Get $get): string => (string) $get('name')),
 
             TextEntry::make('atc_preview')
                 ->label(__('filament.user_atc_callsign'))

@@ -560,7 +560,7 @@ class Flight extends Model
      *   1. the flight's own `flight_subfleet` pins, if it has any LIVE ones;
      *   2. otherwise its bundle's `bundle_subfleet` defaults, if any are LIVE;
      *   3. otherwise the fallback — airline subfleets when
-     *      `flights.only_company_aircraft` is on, all subfleets otherwise.
+     *      `operations.only_company_aircraft` is on, all subfleets otherwise.
      *
      * The rungs replace, they do not union: a flight with its own pins ignores
      * its bundle entirely. The winning rung is then narrowed by access, and a
@@ -681,7 +681,7 @@ class Flight extends Model
                             $inner->orWhere(function (Builder $fallback) use ($hasLiveBundleDefaults): void {
                                 $fallback->whereNotExists($hasLiveBundleDefaults);
 
-                                if (setting('flights.only_company_aircraft', false)) {
+                                if (setting('operations.only_company_aircraft', false)) {
                                     $fallback->where('subfleets.airline_id', $this->airline_id);
                                 }
                             });

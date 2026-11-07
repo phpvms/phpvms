@@ -55,6 +55,7 @@ class FilesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table->recordTitleAttribute('name')
+            ->description(__('filament.files_description'))
             ->columns([
                 TextColumn::make('name')
                     ->label(__('common.name')),

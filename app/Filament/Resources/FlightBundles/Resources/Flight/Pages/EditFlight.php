@@ -4,7 +4,7 @@ namespace App\Filament\Resources\FlightBundles\Resources\Flight\Pages;
 
 use App\Filament\Actions\EditDetailsAction;
 use App\Filament\Concerns\HasRelationManagerTabs;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\Schemas\FlightForm;
@@ -31,7 +31,7 @@ use Override;
 class EditFlight extends EditRecord
 {
     use HasRelationManagerTabs;
-    use ReversePrimaryButtons;
+    use HasSaveBar;
 
     protected static string $resource = FlightResource::class;
 
@@ -158,22 +158,7 @@ class EditFlight extends EditRecord
         return $breadcrumbs;
     }
 
-    /**
-     * The relation-manager half of the jump bar is derived by the trait.
-     *
-     * @return array<string, string>
-     */
-    protected function jumpBarFormSections(): array
-    {
-        return [
-            'flight-information' => __('filament.flight_information'),
-            'route'              => __('flights.route'),
-            'scheduling'         => __('filament.scheduling'),
-            'loadsheet'          => __('filament.flights.sections.loadsheet'),
-        ];
-    }
-
-    /** The identity overview sits above the jump bar. */
+    /** The identity overview sits at the top of the Details tab. */
     protected function contentHeader(): array
     {
         return [
@@ -244,10 +229,7 @@ class EditFlight extends EditRecord
 
         return EditDetailsAction::make($identityFields)
             ->modalHeading(__('filament.flight_information'))
-            ->mutateRecordDataUsing(fn (array $data): array => Arr::only($data, $keys))
-            ->extraModalFooterActions([
-                DeleteAction::make()->icon(Phosphor::TrashLight)->cancelParentActions(),
-            ]);
+            ->mutateRecordDataUsing(fn (array $data): array => Arr::only($data, $keys));
     }
 
     /** The identity fields live in the drawer, not the page form. */
@@ -320,11 +302,15 @@ class EditFlight extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            // Delete lives in the settings drawer's footer (editAction()).
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
             RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];

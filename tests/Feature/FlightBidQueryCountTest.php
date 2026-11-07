@@ -53,8 +53,8 @@ function buildBidFlight(User $user, int $extraSubfleets): Flight
 }
 
 test('get with bid query count is independent of total subfleet count', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -79,8 +79,8 @@ test('get with bid query count is independent of total subfleet count', function
 });
 
 test('search by id with bid query count is independent of total subfleet count', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -103,8 +103,8 @@ test('search by id with bid query count is independent of total subfleet count',
 });
 
 test('browse search with bid resolves all bids in a single batched query', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
     updateSetting('pilots.restrict_to_company', false);
     updateSetting('pilots.only_flights_from_current', false);
 
@@ -134,8 +134,8 @@ test('browse search with bid resolves all bids in a single batched query', funct
 });
 
 test('bid subfleet fare payload matches the legacy get output for that subfleet', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $fareSvc = app(FareService::class);
 

@@ -21,22 +21,14 @@ use Illuminate\Contracts\Support\Htmlable;
  * (`?relation=<manager key>`), so a tab survives a reload and can be linked.
  *
  * The form tab carries the page's own chrome: `contentHeader()` components
- * (an overview, typically) above a jump bar that lists only the form's
- * sections, and optionally a record switcher. Keeping the overview inside the
- * tab leaves the tab strip directly on the banner's bottom edge.
+ * (an overview, typically) above an optional record switcher. Keeping the
+ * overview inside the tab leaves the tab strip directly on the banner's bottom
+ * edge.
  */
 trait HasRelationManagerTabs
 {
     /**
-     * The form's own sections, listed in the jump bar. Keys are the DOM ids
-     * set with `Section::make()->id(...)`.
-     *
-     * @return array<string, string>
-     */
-    abstract protected function jumpBarFormSections(): array;
-
-    /**
-     * Optional record switcher pinned to the end of the jump bar, as a list of
+     * Optional record switcher shown above the form, as a list of
      * `['label' => ..., 'url' => ...]`. Empty means no switcher.
      *
      * @return array<int, array{label: string, url: string}>
@@ -53,7 +45,7 @@ trait HasRelationManagerTabs
     }
 
     /**
-     * Components rendered at the top of the form tab, above the jump bar --
+     * Components rendered at the top of the form tab, above the switcher --
      * an overview, typically.
      *
      * @return array<int, Component>
@@ -80,18 +72,27 @@ trait HasRelationManagerTabs
 
     public function getContentTabComponent(): Tab
     {
+        // Built once per render: the switcher can run a query, and both the
+        // hidden check and the view data need it.
+        $switcher = null;
+
         return Tab::make($this->getContentTabLabel())
             ->icon($this->getContentTabIcon())
             ->schema([
                 ...$this->contentHeader(),
                 View::make('filament.shared.section-nav')
-                    // Nothing to jump to: no bar, rather than an empty strip.
-                    ->hidden(fn (): bool => $this->getSectionLinks() === [] && $this->jumpBarSwitcher() === [])
-                    ->viewData(fn (): array => [
-                        'sectionLinks'  => $this->getSectionLinks(),
-                        'switcher'      => $this->jumpBarSwitcher(),
-                        'switcherLabel' => $this->jumpBarSwitcherLabel(),
-                    ]),
+                    // No switcher: no bar, rather than an empty strip.
+                    ->hidden(function () use (&$switcher): bool {
+                        $switcher = $this->jumpBarSwitcher();
+
+                        return $switcher === [];
+                    })
+                    ->viewData(function () use (&$switcher): array {
+                        return [
+                            'switcher'      => $switcher ?? $this->jumpBarSwitcher(),
+                            'switcherLabel' => $this->jumpBarSwitcherLabel(),
+                        ];
+                    }),
                 $this->getFormContentComponent(),
             ]);
     }
@@ -156,23 +157,6 @@ trait HasRelationManagerTabs
         }
 
         return $keyed;
-    }
-
-    /**
-     * The jump bar lists the form's sections only; relation managers have
-     * their own tabs.
-     *
-     * @return array<int, array{id: string, label: string}>
-     */
-    protected function getSectionLinks(): array
-    {
-        $links = [];
-
-        foreach ($this->jumpBarFormSections() as $id => $label) {
-            $links[] = ['id' => $id, 'label' => $label];
-        }
-
-        return $links;
     }
 
     /**

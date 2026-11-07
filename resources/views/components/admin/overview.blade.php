@@ -4,7 +4,7 @@
     (component tag on blade pages, View::make('components.admin.overview') in
     Filament schemas).
 
-    cards: list of [icon => Phosphor, tint => null|'blue'|'teal'|'violet'|'rose'|'amber',
+    cards: list of [icon => Phosphor, image (optional URL, replaces the icon), tint => null|'blue'|'teal'|'violet'|'rose'|'amber',
         label, value, note (optional)]
     editAction: the page's edit Action (pairs with
         App\Filament\Actions\EditDetailsAction's settings drawer), rendered in
@@ -17,8 +17,12 @@
 >
     @foreach ($cards as $card)
         <div @class(['overview__cell', 'overview__cell--edit' => $loop->last && $editAction !== null])>
-            <span @class(['overview__icon', 'overview__icon--' . ($card['tint'] ?? '') => filled($card['tint'] ?? null)])>
-                <x-filament::icon :icon="$card['icon']" />
+            <span @class(['overview__icon', 'overview__icon--' . ($card['tint'] ?? '') => filled($card['tint'] ?? null), 'overview__icon--image' => filled($card['image'] ?? null)])>
+                @if (filled($card['image'] ?? null))
+                    <img src="{{ $card['image'] }}" alt="" />
+                @else
+                    <x-filament::icon :icon="$card['icon']" />
+                @endif
             </span>
             <span class="overview__label">{{ $card['label'] }}</span>
             <span class="overview__value">{{ $card['value'] }}</span>

@@ -5,10 +5,10 @@ use App\Models\User;
 use App\Support\SubfleetAccessPolicy;
 
 it('reads settings into typed flags', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', true);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', true);
+    updateSetting('operations.block_aircraft', false);
 
     $user = User::factory()->make();
     $policy = new SubfleetAccessPolicy($user);
@@ -33,10 +33,10 @@ it('exposes the constructed user and flight', function (): void {
 });
 
 it('inverts flags when settings flip', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', true);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', true);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', true);
 
     $policy = new SubfleetAccessPolicy(User::factory()->make());
 
