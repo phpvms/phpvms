@@ -83,7 +83,7 @@ it('shares one cache slot between both spellings in production', function (): vo
     $service->store('airports.auto_airport_lookup', true);
     $service->clearMemo();
 
-    expect(Cache::has(config('cache.keys.SETTINGS.key').'general.auto_airport_lookup'))->toBeFalse()
+    expect(Cache::has(config('cache.keys.SETTINGS.key').Setting::formatKey('general.auto_airport_lookup')))->toBeFalse()
         ->and(setting('general.auto_airport_lookup'))->toBeTruthy()
         ->and(setting('airports.auto_airport_lookup'))->toBeTruthy();
 });
