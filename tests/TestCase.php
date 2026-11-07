@@ -14,6 +14,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\ParallelTesting;
 use Override;
+use TallStackUi\Components\Icon\Component as IconComponent;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -42,7 +43,19 @@ abstract class TestCase extends BaseTestCase
 
         self::$bundledThemesPrimed = true;
 
-        return $this->primeBundledThemes($app) ? parent::createApplication() : $app;
+        if (!$this->primeBundledThemes($app)) {
+            return $app;
+        }
+
+        $app = parent::createApplication();
+
+        // TallStackUI's boot read its component config from the first
+        // application into a process-wide static, before the theme's provider
+        // existed to switch the icon pack. Flushing rebuilds the map at once,
+        // so it has to run against the second application's config.
+        __ts_get_component_configuration(IconComponent::class, flush: true);
+
+        return $app;
     }
 
     /**
