@@ -116,7 +116,7 @@ class SimBriefController
                     'simbriefs' => fn ($q) => $q->whereNull('pirep_id'),
                 ])
                 ->when(
-                    setting('simbrief.block_aircraft'),
+                    setting('operations.block_aircraft'),
                     fn ($q) => $q->having('simbriefs_count', 0),
                 )
                 ->orderBy('icao')

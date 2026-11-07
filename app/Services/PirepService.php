@@ -148,7 +148,7 @@ class PirepService extends Service
         }
 
         // See if this user is allowed to fly this aircraft
-        if (setting('pireps.restrict_aircraft_to_rank', false)
+        if (setting('operations.restrict_aircraft_to_rank', false)
             && !$user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists()) {
             throw new AircraftPermissionDenied($user, $pirep->aircraft);
         }
@@ -168,7 +168,7 @@ class PirepService extends Service
         }
 
         // See if this aircraft is being used by another user's active simbrief ofp
-        if (setting('simbrief.block_aircraft', false)) {
+        if (setting('operations.block_aircraft', false)) {
             $sb_aircraft = SimBrief::select('aircraft_id')
                 ->where('aircraft_id', $pirep->aircraft_id)
                 ->where('user_id', '!=', $pirep->user_id)
@@ -181,7 +181,7 @@ class PirepService extends Service
 
         // See if this aircraft is at the departure airport
         /* @noinspection NotOptimalIfConditionsInspection */
-        if (setting('pireps.only_aircraft_at_dpt_airport') && $aircraft->airport_id !== $pirep->dpt_airport_id) {
+        if (setting('operations.only_aircraft_at_dpt_airport') && $aircraft->airport_id !== $pirep->dpt_airport_id) {
             throw new AircraftNotAtAirport($pirep->aircraft);
         }
 

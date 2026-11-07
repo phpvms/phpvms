@@ -216,9 +216,9 @@ class BidService extends Service
         $bid = DB::transaction(function () use ($flight, $user, $aircraft): Bid {
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
             $lockedFlight = Flight::query()->whereKey($flight->id)->lockForUpdate()->firstOrFail();
-            $lockedAircraft = !$aircraft instanceof Aircraft
-                ? null
-                : Aircraft::query()->whereKey($aircraft->id)->lockForUpdate()->firstOrFail();
+            $lockedAircraft = $aircraft instanceof Aircraft
+                ? Aircraft::query()->whereKey($aircraft->id)->lockForUpdate()->firstOrFail()
+                : null;
 
             $existing = Bid::query()
                 ->where('user_id', $lockedUser->id)
@@ -250,7 +250,7 @@ class BidService extends Service
                 throw new BidExistsForFlight($lockedFlight);
             }
 
-            if ((bool) setting('bids.block_aircraft', false) && $lockedAircraft === null) {
+            if ((bool) setting('operations.block_aircraft', false) && $lockedAircraft === null) {
                 throw ValidationException::withMessages([
                     'aircraftId' => 'Select an eligible aircraft before placing this bid.',
                 ]);
@@ -287,7 +287,7 @@ class BidService extends Service
             ->where('status', AircraftStatus::ACTIVE)
             ->whereIn('subfleet_id', $subfleetIds)
             ->when(
-                (bool) setting('simbrief.block_aircraft', false),
+                (bool) setting('operations.block_aircraft', false),
                 fn (Builder $query): Builder => $query->whereDoesntHave(
                     'simbriefs',
                     fn (Builder $simbrief): Builder => $simbrief->whereNull('pirep_id'),
@@ -406,7 +406,7 @@ class BidService extends Service
     /** Public for the same reason as assertFlightMayBeBid(). */
     public function assertAircraftMayBeBid(Flight $flight, User $user, Aircraft $aircraft): void
     {
-        if ((bool) setting('bids.block_aircraft', false)
+        if ((bool) setting('operations.block_aircraft', false)
             && Bid::query()
                 ->where('aircraft_id', $aircraft->id)
                 ->where('user_id', '!=', $user->id)
@@ -418,7 +418,7 @@ class BidService extends Service
             return;
         }
 
-        $reserved = (bool) setting('bids.block_aircraft', false)
+        $reserved = (bool) setting('operations.block_aircraft', false)
             && Bid::query()
                 ->where('aircraft_id', $aircraft->id)
                 ->where('user_id', '!=', $user->id)

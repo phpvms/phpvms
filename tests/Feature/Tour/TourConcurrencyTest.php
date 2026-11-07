@@ -133,7 +133,7 @@ function withCommittedTourFixtures(Closure $assertions): void
 }
 
 it('lets only one pilot reserve the aircraft for a tour', function (): void {
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
 
     ['user' => $first, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(3);
     $second = User::factory()->create([

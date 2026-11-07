@@ -203,7 +203,7 @@ class PirepFinanceService extends Service
             $fuel_cost = empty($ap->fuel_jeta_cost) ? setting('airports.default_jet_a_fuel_cost') : $ap->fuel_jeta_cost;
         }
 
-        if (setting('pireps.advanced_fuel', false)) {
+        if (setting('operations.advanced_fuel', false)) {
             // Find the previous accepted pirep on this aircraft, only looking at older ones so that
             // recalculating finances gives the same result. A pirep that was never submitted (e.g.
             // created from the admin) has no submitted_at, so fall back to when it was flown/created

@@ -39,15 +39,15 @@ beforeEach(function (): void {
     updateSetting('pilots.restrict_to_company', false);
     updateSetting('pilots.only_show_flights_from_current', false);
     updateSetting('pilots.only_flights_from_current', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.only_company_aircraft', false);
     updateSetting('bids.disable_flight_on_bid', false);
     updateSetting('bids.allow_multiple_bids', true);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
     updateSetting('bids.expire_time', 0);
-    updateSetting('simbrief.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
     updateSetting('simbrief.only_bids', false);
 });
 
@@ -112,17 +112,17 @@ it('returns every authoritative dispatch policy setting', function (): void {
     updateSetting('pilots.restrict_to_company', true);
     updateSetting('pilots.only_show_flights_from_current', true);
     updateSetting('pilots.only_flights_from_current', true);
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', true);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', true);
-    updateSetting('flights.only_company_aircraft', true);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', true);
+    updateSetting('operations.only_aircraft_at_dpt_airport', true);
+    updateSetting('operations.only_company_aircraft', true);
     updateSetting('bids.disable_flight_on_bid', true);
     updateSetting('bids.allow_multiple_bids', false);
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
     updateSetting('bids.expire_time', 12);
     updateSetting('simbrief.api_key', 'configured');
     updateSetting('simbrief.only_bids', true);
-    updateSetting('simbrief.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
 
     $policy = FlightDispatchPolicyData::fromSettings(true);
 
@@ -427,7 +427,7 @@ it('stores an optional aircraft preference or a flight-only bid when blocking is
 });
 
 it('requires an eligible aircraft when blocking is on', function (): void {
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
     $fixture = makeDispatchFixture();
 
     expect(fn () => app(BidService::class)->addBid($fixture['flight'], $fixture['user']))
@@ -465,7 +465,7 @@ it('returns typed pilot, flight, and aircraft conflicts', function (): void {
         ->assertJsonPath('type', 'flight-conflict');
 
     updateSetting('bids.disable_flight_on_bid', false);
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
     $reserved = makeDispatchFixture();
     app(BidService::class)->addBid($reserved['flight'], $reserved['user'], $reserved['aircraft']);
     $thirdPilot = User::factory()->create(['airline_id' => $first['user']->airline_id]);
@@ -498,9 +498,9 @@ it('returns a typed validation response for malformed selection input', function
 
 it('filters aircraft by active parked airport reservation and SimBrief rules', function (): void {
     $fixture = makeDispatchFixture();
-    updateSetting('pireps.only_aircraft_at_dpt_airport', true);
-    updateSetting('bids.block_aircraft', true);
-    updateSetting('simbrief.block_aircraft', true);
+    updateSetting('operations.only_aircraft_at_dpt_airport', true);
+    updateSetting('operations.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
 
     Aircraft::factory()->create([
         'subfleet_id' => $fixture['subfleet']->id,

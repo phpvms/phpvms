@@ -295,7 +295,7 @@ test('api calls', function (): void {
 });
 
 test('user bid simbrief', function (): void {
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
     $fares = [
         [
             'id'       => 100,
@@ -338,7 +338,7 @@ test('user bid simbrief', function (): void {
 
 test('user bid simbrief doesnt leak', function (): void {
     updateSetting('bids.disable_flight_on_bid', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
     $fares = [
         [
             'id'       => 100,

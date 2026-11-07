@@ -117,7 +117,7 @@ it('points a new flight at the id the lookup resolved to', function (): void {
 
 it('points a prefiled pirep at the id the lookup resolved to', function (): void {
     updateSetting('general.allow_unadded_airports', true);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
     fakeAirportCatalog(['KORD' => 'dRFXpqlxMeoq', 'KAUS' => 'Wm4kZ2tQ8bYn']);
 
     $user = User::factory()->create();
@@ -157,7 +157,7 @@ it('trims an aircraft airport id instead of folding its case', function (): void
  */
 it('prefiles a pirep against an icao when unadded airports are not allowed', function (): void {
     updateSetting('general.allow_unadded_airports', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     Airport::factory()->create(['id' => 'dRFXpqlxMeoq', 'icao' => 'KORD']);
     Airport::factory()->create(['id' => 'Wm4kZ2tQ8bYn', 'icao' => 'KAUS']);
@@ -270,7 +270,7 @@ it('points an updated flight at the id the lookup resolved to', function (): voi
  */
 it('refuses to prefile a pirep against an airport it cannot add', function (): void {
     updateSetting('general.allow_unadded_airports', true);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
     expect(setting('general.auto_airport_lookup'))->toBeFalsy();
 
     $user = User::factory()->create();

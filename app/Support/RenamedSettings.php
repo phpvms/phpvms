@@ -23,6 +23,14 @@ final class RenamedSettings
     public const array MAP = [
         'general.auto_airport_lookup'    => 'airports.auto_airport_lookup',
         'general.allow_unadded_airports' => 'airports.allow_unadded_airports',
+
+        'pireps.restrict_aircraft_to_rank'       => 'operations.restrict_aircraft_to_rank',
+        'pireps.restrict_aircraft_to_typerating' => 'operations.restrict_aircraft_to_typerating',
+        'pireps.only_aircraft_at_dpt_airport'    => 'operations.only_aircraft_at_dpt_airport',
+        'bids.block_aircraft'                    => 'operations.block_aircraft',
+        'simbrief.block_aircraft'                => 'operations.block_aircraft',
+        'pireps.advanced_fuel'                   => 'operations.advanced_fuel',
+        'flights.only_company_aircraft'          => 'operations.only_company_aircraft',
     ];
 
     /**

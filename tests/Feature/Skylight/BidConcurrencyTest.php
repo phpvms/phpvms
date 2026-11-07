@@ -23,12 +23,12 @@ beforeEach(function (): void {
     updateSetting('units.distance', 'nmi');
     updateSetting('bids.allow_multiple_bids', true);
     updateSetting('bids.disable_flight_on_bid', false);
-    updateSetting('bids.block_aircraft', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('flights.only_company_aircraft', false);
-    updateSetting('simbrief.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.only_company_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
 });
 
 /**
@@ -160,7 +160,7 @@ it('serializes concurrent bids for an exclusive flight', function (): void {
 });
 
 it('serializes concurrent reservations for one aircraft', function (): void {
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
 
     $first = User::factory()->create();
     $second = User::factory()->create(['airline_id' => $first->airline_id]);

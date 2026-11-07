@@ -26,9 +26,9 @@ use App\Models\User;
  * back.
  */
 test('a pilot unqualified for a flights only pinned subfleet is offered nothing', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', false);
 
     $airline = Airline::factory()->create();
 
@@ -59,9 +59,9 @@ test('a pilot unqualified for a flights only pinned subfleet is offered nothing'
 });
 
 test('a pilot qualified for a flights pinned subfleet gets exactly that subfleet', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', false);
 
     $airline = Airline::factory()->create();
     $rank = Rank::factory()->create(['name' => 'Line']);
@@ -87,9 +87,9 @@ test('a pilot qualified for a flights pinned subfleet gets exactly that subfleet
 });
 
 test('a flight with no pins still falls back for a qualified pilot', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', false);
 
     $airline = Airline::factory()->create();
     $rank = Rank::factory()->create(['name' => 'Line']);
@@ -108,9 +108,9 @@ test('a flight with no pins still falls back for a qualified pilot', function ()
 });
 
 test('a flight pinned only to a soft deleted subfleet falls back rather than resolving to nothing', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', false);
 
     $airline = Airline::factory()->create();
     $rank = Rank::factory()->create(['name' => 'Line']);
@@ -142,9 +142,9 @@ test('a flight pinned only to a soft deleted subfleet falls back rather than res
 });
 
 test('only_company_aircraft confines the fallback to the flights airline', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', true);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', true);
 
     $airline = Airline::factory()->create();
     $foreign = Airline::factory()->create();
@@ -167,9 +167,9 @@ test('only_company_aircraft confines the fallback to the flights airline', funct
 });
 
 test('only_company_aircraft does not narrow explicit pins', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', true);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', true);
 
     $airline = Airline::factory()->create();
     $foreign = Airline::factory()->create();
@@ -188,9 +188,9 @@ test('only_company_aircraft does not narrow explicit pins', function (): void {
 });
 
 test('a multi pin flight returns exactly the subset the pilot qualifies for', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', false);
 
     $airline = Airline::factory()->create();
     $junior = Rank::factory()->create(['name' => 'Junior']);

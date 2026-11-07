@@ -38,7 +38,7 @@
       {{ $flights->withQueryString()->links('pagination.bootstrap-5') }}
     </div>
   </div>
-  @if (setting('bids.block_aircraft', false))
+  @if (setting('operations.block_aircraft', false))
     @include('flights.bids_aircraft')
   @endif
 @endsection

@@ -608,7 +608,7 @@ test('cancel via api', function (): void {
 });
 
 test('pirep bid removed', function (): void {
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.block_aircraft', false);
     $bidSvc = app(BidService::class);
     $pirepSvc = app(PirepService::class);
 

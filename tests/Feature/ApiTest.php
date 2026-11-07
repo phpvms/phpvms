@@ -236,7 +236,7 @@ it('returns a real paginator on /api/user/fleet', function (): void {
 
     // Without rank restriction the endpoint exposes all subfleets,
     // which is the simplest setup that exercises pagination here.
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     Subfleet::factory()->count(5)->create();
 
