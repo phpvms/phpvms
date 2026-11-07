@@ -11,6 +11,9 @@ importers:
       '@date-fns/tz':
         specifier: ^1.5.0
         version: 1.5.0
+      '@phpvms/infinite-select':
+        specifier: workspace:*
+        version: link:resources/js/packages/infinite-select
       '@phpvms/map':
         specifier: workspace:*
         version: link:resources/js/packages/map
@@ -199,6 +202,12 @@ importers:
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@25.9.9)(happy-dom@21.0.4)(jiti@2.7.0)(jsdom@25.0.1)(lightningcss@1.33.0)(sass@1.105.2)
+
+  resources/js/packages/infinite-select:
+    dependencies:
+      tom-select:
+        specifier: ^2.6.2
+        version: 2.6.2
 
   resources/js/packages/map:
     dependencies:
@@ -961,6 +970,12 @@ packages:
 
   '@one-ini/wasm@0.2.1':
     resolution: {integrity: sha512-TUqERXGNTifZ9y2g3wPxQrw3HpHv/02DsW3D90T9x0hhonrL1ZqpSmNrU2XkoIq0fP1N6gZfVQzy2Fw1ZvGBNg==}
+
+  '@orchidjs/sifter@1.1.0':
+    resolution: {integrity: sha512-mYwHCfr736cIWWdhhSZvDbf90AKt2xyrJspKFC3qyIJG1LtrJeJunYEqCGG4Aq2ijENbc4WkOjszcvNaIAS/pQ==}
+
+  '@orchidjs/unicode-variants@1.2.2':
+    resolution: {integrity: sha512-Tfdm/fa2NN+75KwtkjpdOvUeaBOgZlyo08Ngb3m6UXe4ACPcKlgnX32vAI5lp39tlLdv2tXiRW0PPdbWyM5ieA==}
 
   '@oxc-project/types@0.154.0':
     resolution: {integrity: sha512-KYOUGQFlLWR+s4QMV2Q9ko38TZm7EdO87Qm7rvZLqk/webse/cDjtyxKhg/47l0byCbs/k46LT8qc4PKjAikzA==}
@@ -3688,6 +3703,9 @@ packages:
     resolution: {integrity: sha512-48dH6aSpQnpbzDUc4vIQZ1VjB8tkK+e8c1yx05/SZK+rkssgjEOlxDd/yU8/a4vGYQ9vRgJr9dwMq9TJ0b3X2Q==}
     hasBin: true
 
+  tom-select@2.6.2:
+    resolution: {integrity: sha512-eiXIkk82XzzUTOVQDFpy+ZGejuqdTvMukyUyeZBQaKnqW42UoTiTZnrod/eX0rkqJEc4rZY9DZ3zdjV07i29wQ==}
+
   topojson-client@3.1.0:
     resolution: {integrity: sha512-605uxS6bcYxGXw9qi62XyrV6Q3xwbndjachmNxu8HWTtVPxZfEJN9fd/SZS1Q54Sn2y0TMyMxFj/cJINqGHrKw==}
     hasBin: true
@@ -5050,6 +5068,12 @@ snapshots:
       - unplugin
 
   '@one-ini/wasm@0.2.1': {}
+
+  '@orchidjs/sifter@1.1.0':
+    dependencies:
+      '@orchidjs/unicode-variants': 1.2.2
+
+  '@orchidjs/unicode-variants@1.2.2': {}
 
   '@oxc-project/types@0.154.0': {}
 
@@ -7597,6 +7621,11 @@ snapshots:
   tldts@7.4.19:
     dependencies:
       tldts-core: 7.4.19
+
+  tom-select@2.6.2:
+    dependencies:
+      '@orchidjs/sifter': 1.1.0
+      '@orchidjs/unicode-variants': 1.2.2
 
   topojson-client@3.1.0:
     dependencies:

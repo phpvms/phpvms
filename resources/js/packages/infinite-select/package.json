@@ -1,0 +1,12 @@
+{
+  "name": "@phpvms/infinite-select",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "tom-select": "^2.6.2"
+  }
+}
