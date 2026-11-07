@@ -93,6 +93,14 @@ jobs:
       - name: Check generated TypeScript types are up to date
         run: composer test:types-drift
 
+      # Larastan boots the app to resolve view names and addon classes, and
+      # both come from the addon boot cache, which a fresh checkout lacks and
+      # which is only rebuilt from a provider's boot(). Without it the bundled
+      # airside theme is invisible and every theme view reads as unknown.
+      # Priming needs no database: with none, every addon on disk is written.
+      - name: Prime the addon boot cache
+        run: php artisan phpvms:addons-prime
+
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --memory-limit=2G
 
