@@ -88,7 +88,7 @@
             this.handle?.destroy();
             this.handle = await phpvms.map.render_pirep_map_from_api(@js($mapElementId), {
                 pirepId: @js((string) $record->id),
-                config: window.filamentData.maps,
+                config: @js(app(\App\Services\MapConfigService::class)->resolve()->toArray()),
                 theme,
                 fallback: {
                     from: { icao: @js($record->dpt_airport_id) },

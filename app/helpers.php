@@ -3,6 +3,7 @@
 use App\Addons\Support\AddonAssetLinker;
 use App\Exceptions\SettingNotFound;
 use App\Models\Addon;
+use App\Models\Setting;
 use App\Services\AddonSettingService;
 use App\Services\KvpService;
 use App\Services\SettingService;
@@ -145,7 +146,10 @@ if (!function_exists('skin_view')) {
  */
 if (!function_exists('setting')) {
     /**
-     * Read a setting from the settings table
+     * Read a setting from the settings table.
+     *
+     * Cached (request memo + application cache) in every environment except
+     * `testing`; SettingService::store() busts the cache on write.
      *
      * @param  mixed      $default
      * @return mixed|null
@@ -156,14 +160,14 @@ if (!function_exists('setting')) {
         $settingService = app(SettingService::class);
 
         try {
-            if (app()->environment('production')) {
+            if (!app()->environment('testing')) {
                 $cache = config('cache.keys.SETTINGS');
 
                 // Through the request memo first: the cache is shared across
                 // requests, but reading it again within one is a wasted round trip.
                 $value = $settingService->remember(
                     $key,
-                    fn () => Cache::remember($cache['key'].$key, $cache['time'], fn () => $settingService->retrieve($key)),
+                    fn () => Cache::remember($cache['key'].Setting::formatKey($key), $cache['time'], fn () => $settingService->retrieve($key)),
                 );
             } else {
                 $value = $settingService->retrieve($key);

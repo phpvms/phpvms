@@ -7,15 +7,40 @@ namespace App\Services\Theme;
 use App\Models\ActiveThemePublication;
 use App\Models\PublishedThemeRevision;
 
-final readonly class ActiveThemeService
+final class ActiveThemeService
 {
+    /** @var array<string, PublishedThemeRevision|null> */
+    private array $revisions = [];
+
     public function __construct(
-        private ThemeAssetService $assets,
-        private ThemeDocumentNormalizer $normalizer,
-        private ThemePublicationService $publications,
+        private readonly ThemeAssetService $assets,
+        private readonly ThemeDocumentNormalizer $normalizer,
+        private readonly ThemePublicationService $publications,
     ) {}
 
+    /**
+     * Memoised per theme for the life of the instance, which is bound scoped
+     * so each request resolves the revision once.
+     */
     public function revision(string $themeName): ?PublishedThemeRevision
+    {
+        if (!array_key_exists($themeName, $this->revisions)) {
+            $this->revisions[$themeName] = $this->resolveRevision($themeName);
+        }
+
+        return $this->revisions[$themeName];
+    }
+
+    /**
+     * Drop the memoised revision after a publish or rollback so the same
+     * request sees the change.
+     */
+    public function forget(string $themeName): void
+    {
+        unset($this->revisions[$themeName]);
+    }
+
+    private function resolveRevision(string $themeName): ?PublishedThemeRevision
     {
         $revision = ActiveThemePublication::query()
             ->with('revision')

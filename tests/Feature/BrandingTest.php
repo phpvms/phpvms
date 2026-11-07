@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Data\BrandingData;
 use App\Jobs\GenerateBrandingSizes;
 use App\Models\Setting;
+use App\Services\SettingService;
 use App\Support\Branding;
 use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 
 function brandingMigrationForBrandingTest(): object
@@ -230,4 +234,93 @@ describe('with the branding rows seeded but empty', function (): void {
 
         expect(app(Branding::class)->brandPalette())->toBe(Color::generatePalette('#067ec1'));
     });
+});
+
+describe('cached branding', function (): void {
+    beforeEach(function (): void {
+        brandingMigrationForBrandingTest()->up();
+        fakeAssetDisks();
+        Queue::fake();
+    });
+
+    it('serves new uploads after a store, even once branding was cached', function (): void {
+        $branding = app(Branding::class);
+        $before = $branding->logo();
+        $branding->favicon();
+
+        $branding->store(Branding::KEY_LOGO, ASSET_TEST_PNG);
+        $branding->store(Branding::KEY_FAVICON, ASSET_TEST_PNG."\x00favicon");
+
+        expect($branding->logo())->not->toBe($before)
+            ->and($branding->hasLogo())->toBeTrue()
+            ->and($branding->favicon())->not->toBe(asset('assets/img/favicon.png'));
+
+        $branding->forget(Branding::KEY_LOGO);
+
+        expect($branding->hasLogo())->toBeFalse();
+    });
+
+    it('picks up an asset written straight through the model', function (): void {
+        $branding = app(Branding::class);
+        expect($branding->banner())->toBeNull();
+
+        $banner = createBrandingAsset(Branding::KEY_BANNER);
+
+        expect($branding->banner())->toBe($banner->url());
+    });
+
+    it('picks up a saved site name and brand colour', function (): void {
+        $branding = app(Branding::class);
+        $branding->name();
+        $branding->brandColor();
+
+        app(SettingService::class)->save('general.site_name', 'Renamed Virtual Airline');
+        app(SettingService::class)->save('branding.brand_color', '#112233');
+
+        expect($branding->name())->toBe('Renamed Virtual Airline')
+            ->and($branding->brandColor())->toBe('#112233');
+    });
+
+    it('answers a page of accessor calls with at most one assets query', function (): void {
+        createBrandingAsset(Branding::KEY_LOGO);
+        Branding::flush();
+        $branding = app(Branding::class);
+
+        DB::enableQueryLog();
+        foreach (range(1, 3) as $ignored) {
+            $branding->favicon();
+            $branding->logo();
+            $branding->logo(64);
+            $branding->logoDark();
+            $branding->hasLogo();
+            $branding->hasDarkLogo();
+            $branding->hasFavicon();
+            $branding->banner();
+            $branding->name();
+            $branding->brandPalette();
+        }
+
+        $assetQueries = collect(DB::getQueryLog())
+            ->filter(fn (array $query): bool => str_contains((string) $query['query'], 'from "assets"') || str_contains((string) $query['query'], 'from `assets`'))
+            ->count();
+        DB::disableQueryLog();
+
+        expect($assetQueries)->toBeLessThanOrEqual(1);
+    });
+});
+
+it('survives a cache store that refuses to unserialize objects', function (): void {
+    brandingMigrationForBrandingTest()->up();
+    $path = sys_get_temp_dir().'/branding-cache-'.uniqid();
+    config(['cache.default' => 'file', 'cache.stores.file.path' => $path]);
+    app('cache')->forgetDriver('file');
+    app(SettingService::class)->save('general.site_name', 'Serialized Airline');
+    Branding::flush();
+
+    app(Branding::class)->name();
+    app()->forgetInstance(BrandingData::class);
+
+    expect(app(Branding::class)->name())->toBe('Serialized Airline');
+
+    File::deleteDirectory($path);
 });

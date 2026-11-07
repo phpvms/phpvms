@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Features\Assets\AssetService;
 use App\Features\Assets\AssetTypes;
+use App\Support\Branding;
 use App\Traits\HasAssets;
 use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -158,12 +159,20 @@ class Asset extends Model
         // route sees the memo cleared before the next find().
         static::saved(function (self $asset): void {
             app(AssetService::class)->forgetMemo($asset->slot, $asset->key);
+
+            if ($asset->slot === self::SLOT_BRANDING) {
+                Branding::flush();
+            }
         });
 
         // The file IS the asset. Leaving it behind orphans bytes nothing owns —
         // and on a disk with a URL, bytes that are still reachable.
         static::deleted(function (self $asset): void {
             app(AssetService::class)->forgetMemo($asset->slot, $asset->key);
+
+            if ($asset->slot === self::SLOT_BRANDING) {
+                Branding::flush();
+            }
 
             // A link asset owns no bytes, so there is nothing to delete and its
             // `path` is not a path.

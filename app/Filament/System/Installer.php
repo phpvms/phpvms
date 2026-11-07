@@ -12,6 +12,7 @@ use App\Services\Installer\RequirementsService;
 use App\Services\Installer\StreamedCommandsService;
 use App\Services\UserService;
 use App\Support\Countries;
+use App\Support\InstallMarker;
 use App\Support\Utils;
 use Database\Seeders\DatabaseSeeder;
 use Exception;
@@ -30,7 +31,6 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -76,20 +76,45 @@ class Installer extends Page
      * Before that point (a fresh or partially-completed install) the page stays
      * reachable so the operator can finish setup: the `users` table may not
      * exist yet, or exists but holds no rows.
+     *
+     * A trusted install marker closes the installer without asking the
+     * database, so it stays closed during a database outage too. Where the
+     * marker is only advisory (local, demo) the database still decides, but an
+     * outage behind an existing marker is an outage, not a fresh install.
      */
     #[Override]
     public static function canAccess(): bool
     {
+        $marker = app(InstallMarker::class);
+
+        if ($marker->isTrusted()) {
+            return false;
+        }
+
         try {
             if (!Schema::hasTable('users')) {
                 return true;
             }
 
             return !User::query()->withoutGlobalScopes()->exists();
-        } catch (QueryException) {
-            // DB unreachable/not yet migrated — treat as not installed so the
-            // installer can run.
-            return true;
+        } catch (Throwable) {
+            // Unreachable or not yet migrated: only a site that never finished
+            // installing may open the installer.
+            return !$marker->exists();
+        }
+    }
+
+    /**
+     * Filament aborts with 403 when canAccess() is false. An installed site
+     * sends the visitor to the home page instead. Livewire runs this hook
+     * after mount(), which is why mount() bails out early on the same check
+     * instead of redirecting itself.
+     */
+    #[Override]
+    public function mountCanAuthorizeAccess(): void
+    {
+        if (!static::canAccess()) {
+            $this->redirect('/');
         }
     }
 
@@ -98,18 +123,8 @@ class Installer extends Page
      */
     public function mount(): void
     {
-        try {
-            if (Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists()) {
-                Notification::make()
-                    ->title(__('installer.already_installed'))
-                    ->danger()
-                    ->send();
-
-                $this->redirect('/admin');
-
-                return;
-            }
-        } catch (QueryException) {
+        if (!static::canAccess()) {
+            return;
         }
 
         if ($this->requirementsMet()) {
@@ -405,6 +420,7 @@ class Installer extends Page
     {
         $this->validate();
         $this->airlineAndUserSetup();
+        app(InstallMarker::class)->write();
 
         flash()->success(__('installer.install_completed'));
 

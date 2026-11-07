@@ -1,75 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-  <meta charset="utf-8"/>
-  <link rel="apple-touch-icon" sizes="76x76" href="/assets/frontend/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="/assets/frontend/img/favicon.png">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-  <title>@yield('title') - installer</title>
-  <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
-        name='viewport'/>
-  <!--     Fonts and icons     -->
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet"/>
-  <link rel="stylesheet"
-        href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css"/>
-  <!-- CSS Files -->
-  <link href="{{ public_asset('/assets/frontend/css/bootstrap.min.css') }}" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/frontend/css/now-ui-kit.css') }}" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/frontend/css/styles.css') }}" rel="stylesheet"/>
-  {{--<link href="/assets/frontend/css/installer.css" rel="stylesheet"/>--}}
-
-  <link rel="stylesheet"
-        href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{{ $title }}</title>
   <style>
-    .table tr:first-child td {
-      border-top: 0px;
+    :root { color-scheme: light dark; --bg: #f8fafc; --fg: #0f172a; --muted: #475569; --card: #fff; --line: #e2e8f0; --accent: #2563eb; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0b1120; --fg: #e2e8f0; --muted: #94a3b8; --card: #111a2e; --line: #1e293b; --accent: #60a5fa; }
     }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+      background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { width: 100%; max-width: 32rem; background: var(--card); border: 1px solid var(--line); border-radius: .75rem; padding: 2rem; }
+    .brand { font-weight: 700; letter-spacing: .02em; color: var(--accent); margin: 0 0 1.25rem; }
+    h1 { font-size: 1.375rem; margin: 0 0 .5rem; }
+    p { margin: 0 0 1rem; color: var(--muted); }
+    a { color: var(--accent); }
+    pre { margin: 1rem 0 0; padding: .75rem; overflow: auto; font-size: .8125rem; border: 1px solid var(--line); border-radius: .5rem; white-space: pre-wrap; word-break: break-word; }
   </style>
-  @yield('css')
 </head>
-
 <body>
-<!-- Navbar -->
-<nav class="navbar navbar-toggleable-md" style="background: #067ec1;">
-  <div class="container" style="width: 85%!important;">
-    <div class="navbar-translate">
-      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
-              data-target="#navigation" aria-controls="navigation-index" aria-expanded="false"
-              aria-label="Toggle navigation">
-        <span class="navbar-toggler-bar bar1"></span>
-        <span class="navbar-toggler-bar bar2"></span>
-        <span class="navbar-toggler-bar bar3"></span>
-      </button>
-      <p class="navbar-brand text-white" data-placement="bottom" target="_blank">
-        <a href="{{ url('/') }}">
-          <img src="{{ public_asset('/assets/frontend/img/logo_blue_bg.svg') }}" width="135px" style=""/>
-        </a>
-      </p>
-    </div>
-    <div class="justify-content-center" id="navigation"
-         style="margin-left: 50px; color: white; font-size: 20px;">
-      @yield('title')
-    </div>
-  </div>
-</nav>
-<!-- End Navbar -->
-{{--<div class="clearfix" style="height: 25px;"></div>--}}
-<div class="wrapper">
-  <div class="clear"></div>
-  <div class="container" style="width: 50%">
-    <div class="row">
-      <div class="col-12">
-        <h2>Database Error</h2>
-        {{ $error }}
-      </div>
-    </div>
-  </div>
-  <div class="clearfix" style="height: 200px;"></div>
-</div>
-
-@yield('scripts')
-
+  <main>
+    <p class="brand">phpvms</p>
+    <h1>{{ $title }}</h1>
+    <p>{{ $message }}</p>
+    @isset($link)
+      <p><a href="{{ $link['url'] }}">{{ $link['text'] }}</a></p>
+    @endisset
+    @isset($detail)
+      <pre>{{ $detail }}</pre>
+    @endisset
+  </main>
 </body>
 </html>

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\SetActiveTheme;
+use App\Models\User;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,6 +22,7 @@ it('falls back to an installed theme when the configured one is unknown', functi
 });
 
 it('serves a themed view under a theme that is missing from the cache', function (): void {
+    User::factory()->create();
     updateSetting('general.theme', 'does-not-exist');
 
     $this->followingRedirects()->get('/')->assertOk();

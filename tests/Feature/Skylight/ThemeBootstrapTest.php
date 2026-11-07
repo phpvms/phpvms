@@ -8,6 +8,7 @@ use App\Services\Theme\ThemeDocumentNormalizer;
 use App\Services\Theme\ThemePublicationService;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
@@ -163,3 +164,27 @@ function parentInertiaVersion(Request $request): ?string
 {
     return (new class() extends Middleware {})->version($request);
 }
+
+it('reads the active theme publication once per request and again on the next', function (): void {
+    app(ThemePublicationService::class)->publish('skylight', app(ThemeDocumentNormalizer::class)->defaults());
+    // What Octane does between requests; a singleton would survive it.
+    app()->forgetScopedInstances();
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    $themes = app(ActiveThemeService::class);
+    $themes->revision('skylight');
+    $themes->revision('skylight');
+
+    $reads = fn (): int => collect(DB::getQueryLog())
+        ->filter(fn (array $query): bool => str_contains($query['query'], 'active_theme_publications'))
+        ->count();
+
+    expect($reads())->toBe(1);
+
+    app()->forgetInstance(ActiveThemeService::class);
+    app(ActiveThemeService::class)->revision('skylight');
+
+    expect($reads())->toBe(2);
+});

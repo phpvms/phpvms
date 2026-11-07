@@ -15,6 +15,7 @@ use App\Models\OAuthConnection;
 use App\Models\User;
 use App\Models\UserIdentity;
 use App\Models\UserOAuthToken;
+use App\Providers\AppServiceProvider;
 use Illuminate\Auth\Events\Login as AuthLogin;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -1084,4 +1085,36 @@ test('a discord login failure before completion does not change the private chan
 
     expect($user->fresh()->discord_private_channel_id)->toBe('old-discord-dm-channel');
     Http::assertNothingSent();
+});
+
+test('booting and serving an unrelated page never reads the oauth connections table', function (): void {
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    // Boot already ran in setUp, before the query log existed; run it again.
+    new AppServiceProvider($this->app)->boot();
+    $this->get('/api/status')->assertOk();
+
+    $touched = collect(DB::getQueryLog())
+        ->filter(fn (array $query): bool => str_contains($query['query'], 'oauth_connections'));
+
+    expect($touched)->toBeEmpty();
+});
+
+test('a real oauth redirect configures and registers the enabled provider on demand', function (): void {
+    oauthConnection();
+    config(['services.discord' => []]);
+
+    $this->get(route('oauth.redirect', ['provider' => 'discord', 'intent' => 'login']))
+        ->assertRedirectContains('https://discord.com/');
+
+    expect(config('services.discord.client_id'))->toBe('client-id')
+        ->and(config('services.discord.redirect'))->toBe(url('/oauth/discord/callback'));
+});
+
+test('the login page offers an enabled connection from the service', function (): void {
+    oauthConnection();
+
+    expect(app(OAuthConnectionService::class)->enabledFor('login')->pluck('connection_id')->all())
+        ->toContain('discord');
 });
