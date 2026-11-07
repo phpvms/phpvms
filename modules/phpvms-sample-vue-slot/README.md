@@ -22,7 +22,7 @@ to the bids table.
 | Renders where | a dashboard grid/zone frame | wherever a page draws `<PvSlot name="…">` |
 | Instances | one per board placement | one **per host-provided context** (here: per bid row) |
 | Gets its data from | its own endpoint / static `props` | the page's per-instance `context` via `@`-refs |
-| Registry | `Skylight::widgets()->register(...)` | `Skylight::slots()->register(...)` |
+| Registry | `Extensions::widgets()->register(...)` | `Extensions::slots()->register(...)` |
 
 Both ship the **same kind of build**: a pre-built ESM module with `vue`
 externalized, loaded by the SPA at runtime by URL. Only the *placement mechanism*
@@ -54,8 +54,8 @@ The ServiceProvider registers the slot entry with a `props` map whose values are
 **`@`-refs**:
 
 ```php
-Skylight::slots()->register([
-  'slot'      => 'bids.row.actions',
+Extensions::slots()->register([
+  'slot'      => Slot::BidsRowActions,
   'component' => 'SampleBidsSlot',                       // unique resolver key
   'module'    => '/ext/samplevueslot/widgets/slot.js', // pre-built ESM URL
   'order'     => 100,
@@ -75,7 +75,7 @@ The **host resolves the refs**; the component just declares
 props, so a `@bid` ref works even though `bid` is not a page-level prop.
 
 Relevant source (read-only):
-- `app/Support/Skylight/SlotRegistry.php` — the `register()` contract.
+- `app/Support/Extensions/SlotRegistry.php` — the `register()` contract.
 - `resources/js/apps/fe-vue/src/shared/components/PvSlot.vue` — resolves `@`-refs against `{ ...pageProps, ...context }`.
 - `resources/js/apps/fe-vue/src/app/PvApp.vue` — calls `provideExtensionContext()` at the app root.
 - `resources/js/apps/fe-vue/src/app/extensions/provideExtensionContext.ts` — iterates the server slot entries and, for each one with a `module`, registers `resolver[component] = defineAsyncComponent(() => import(module))`.
@@ -144,7 +144,7 @@ table shows the `◉ ACARS` control on every bid row.
 ## Disable-safety
 
 Everything this addon contributes happens inside the ServiceProvider's `boot()`
-(the single `Skylight::slots()->register(...)` call). A phpVMS addon's provider
+(the single `Extensions::slots()->register(...)` call). A phpVMS addon's provider
 **only boots when the addon is enabled**. Disabled → the slot entry is never
 registered → `PvSlot` renders nothing for this addon → the component code never
 runs. There is no runtime flag to check and no dead entry to clean up.
@@ -159,7 +159,7 @@ modules/phpvms-sample-vue-slot/
 ├── composer.json                 # phpvms/sample-vue-slot, psr-4, laravel provider
 ├── module.json                   # active:0, provider listed
 ├── Providers/
-│   └── SampleVueSlotServiceProvider.php   # boot() → Skylight::slots()->register(...)
+│   └── SampleVueSlotServiceProvider.php   # boot() → Extensions::slots()->register(...)
 ├── ui/
 │   ├── SampleBidsSlot.vue         # the per-row Vue control (imports only 'vue')
 │   └── vite.config.ts             # preset build → public/widgets/slot.js

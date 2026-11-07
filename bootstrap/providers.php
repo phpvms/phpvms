@@ -6,12 +6,12 @@ use App\Features\Tiles\TilesServiceProvider;
 use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
+use App\Providers\ExtensionsServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\Filament\SystemPanelProvider;
 use App\Providers\FirstPartyMetricsServiceProvider;
 use App\Providers\MetricsServiceProvider;
 use App\Providers\PassportServiceProvider;
-use App\Providers\SkylightServiceProvider;
 use App\Providers\TypeScriptTransformerServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider;
 
@@ -21,11 +21,11 @@ return [
      */
     AppServiceProvider::class,
 
-    // Register the skylight extension hub BEFORE the addon engine so the
-    // `skylight` binding exists when addon providers boot and register widgets.
-    SkylightServiceProvider::class,
+    // Register the extension hub BEFORE the addon engine so the
+    // `extensions` binding exists when addon providers boot and register widgets.
+    ExtensionsServiceProvider::class,
 
-    // Same reasoning as SkylightServiceProvider: the `metrics` binding must
+    // Same reasoning as ExtensionsServiceProvider: the `metrics` binding must
     // exist before any addon ServiceProvider::boot() calls the Metrics
     // facade. FirstPartyMetricsServiceProvider registers core's own metrics
     // from boot() the same way an addon would, so it is listed after the hub

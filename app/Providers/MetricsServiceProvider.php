@@ -15,7 +15,7 @@ use Illuminate\Support\ServiceProvider;
  * The hub is a singleton so that addon providers (which boot after this one
  * registers) accumulate their metric registrations onto the SAME instance
  * that a later request resolves metrics from -- the same reasoning as
- * {@see SkylightServiceProvider}.
+ * {@see ExtensionsServiceProvider}.
  *
  * Registered ahead of the addon engine in bootstrap/providers.php so the
  * `metrics` binding exists before any addon ServiceProvider::boot() calls the

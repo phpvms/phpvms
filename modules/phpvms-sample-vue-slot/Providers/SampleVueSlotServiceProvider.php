@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\SampleVueSlot\Providers;
 
-use App\Support\Skylight\Facades\Skylight;
+use App\Enums\Slot;
+use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -29,12 +30,12 @@ use Override;
  * DISABLE-SAFETY (read this before worrying about "what if it's off?")
  * -------------------------------------------------------------------
  * Everything this addon contributes to the host happens inside boot() below: the
- * single Skylight::slots()->register([...]) call. A phpVMS addon's ServiceProvider
+ * single Extensions::slots()->register([...]) call. A phpVMS addon's ServiceProvider
  * only boots when the addon is ENABLED. Disabled → this never runs → the slot
  * entry never enters the registry → PvSlot renders nothing for this addon. There
  * is no runtime "enabled?" flag to check and no dead entry to clean up:
  * disable-safety is a property of *where* we register (boot()), not of any flag.
- * See App\Support\Skylight\SlotRegistry's class docblock for the same guarantee.
+ * See App\Support\Extensions\SlotRegistry's class docblock for the same guarantee.
  *
  * module.json ships with `"active": 0` on purpose — addons install disabled. A
  * human enables it (see README: `php artisan addons:prime`, toggle it on in the
@@ -64,7 +65,7 @@ class SampleVueSlotServiceProvider extends ServiceProvider
     /**
      * Inject the pre-built Vue component into the `bids.row.actions` slot.
      *
-     * Keys map to App\Support\Skylight\SlotRegistry::register()'s contract:
+     * Keys map to App\Support\Extensions\SlotRegistry::register()'s contract:
      *
      *   slot      Named outlet to fill. The My Bids page draws
      *             `<PvSlot name="bids.row.actions" :context="{ bid, flight }" />`
@@ -87,8 +88,8 @@ class SampleVueSlotServiceProvider extends ServiceProvider
      */
     protected function registerSkylightSlot(): void
     {
-        Skylight::slots()->register([
-            'slot'      => 'bids.row.actions',
+        Extensions::slots()->register([
+            'slot'      => Slot::BidsRowActions,
             'component' => 'SampleBidsSlot',                       // unique resolver key
             // AddonAssetLinker symlinks public/ → public/ext/<strtolower(module NAME)>,
             // i.e. "SampleVueSlot" → "samplevueslot" (NOT the hyphenated alias).

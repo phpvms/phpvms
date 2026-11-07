@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Metrics;
 
-use App\Support\Skylight\WidgetRegistry;
+use App\Support\Extensions\WidgetRegistry;
 use Closure;
 use InvalidArgumentException;
 

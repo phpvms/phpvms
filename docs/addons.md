@@ -127,11 +127,12 @@ cached.
 
 ### Frontend: the `pireps.detail.main` slot
 
-The skylight SPA's PIREP detail layout exposes a Skylight slot with the pirep as context:
+The skylight SPA's PIREP detail layout exposes an extension slot (`App\Enums\Slot::PirepsDetailMain`) with the pirep as context.
+The hub facade is `App\Support\Extensions\Facades\Extensions`.
 
 ```php
-Skylight::slots()->register([
-    'slot'      => 'pireps.detail.main',
+Extensions::slots()->register([
+    'slot'      => Slot::PirepsDetailMain,
     'component' => 'AcarsDebriefPanel',
     'module'    => '/ext/vmsacars/widgets/debrief.js',
     'props'     => ['pirep' => '@pirep'],   // @-ref resolved from the slot context

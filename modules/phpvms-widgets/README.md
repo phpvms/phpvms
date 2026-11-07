@@ -57,7 +57,7 @@ read the current airport. Instead the widget takes a plain **`icao` prop**, and
 the addon registers it with a **page-DTO ref**:
 
 ```php
-Skylight::widgets()->register([
+Extensions::widgets()->register([
   'id'          => 'weather',
   'kind'        => 'vue',
   'module'      => '/ext/phpvmswidgets/widgets/weather.js',
@@ -141,7 +141,7 @@ default sidebar layout.
 ## Disable-safety
 
 The only place this addon touches the host is inside `boot()`: the
-`Route::get(...)` for the endpoint and `Skylight::widgets()->register([...])`
+`Route::get(...)` for the endpoint and `Extensions::widgets()->register([...])`
 for the widget. A phpVMS addon's ServiceProvider boots **only when the addon is
 enabled**. Disable it and:
 

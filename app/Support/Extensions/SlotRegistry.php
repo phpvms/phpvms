@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Skylight;
+namespace App\Support\Extensions;
 
+use App\Enums\Slot;
 use InvalidArgumentException;
 
 /**
  * Server-side registry of SLOT entries — components injected into named
- * extension points ("slots") on first-party SPA pages (e.g. the flight-detail
- * page's `flight.detail.aside` slot).
+ * extension points ("slots") on first-party theme pages (e.g. the flight-detail
+ * page's `flights.detail.actions` slot). Core slots are the {@see Slot} cases;
+ * addons may also define their own slots by plain string.
  *
  * This is the page-level counterpart to the widget board: a widget is placed by
  * the PILOT, a slot entry is injected by an ADDON and always renders wherever the
@@ -32,7 +34,8 @@ final class SlotRegistry
      * Register a slot entry.
      *
      * Recognised keys:
-     *   slot      string  required. Named outlet to fill, e.g. 'flight.detail.aside'.
+     *   slot      Slot|string  required. Named outlet to fill, e.g. Slot::FlightsDetailActions.
+     *                          A Slot case is stored as its string value.
      *   component string  bundled resolver-map name (first-party) OR the export
      *                     name of a third-party ESM module.
      *   module    string  URL of a pre-built ESM module for a third-party entry
@@ -47,15 +50,19 @@ final class SlotRegistry
      */
     public function register(array $entry): self
     {
+        if (($entry['slot'] ?? null) instanceof Slot) {
+            $entry['slot'] = $entry['slot']->value;
+        }
+
         if (empty($entry['slot']) || !is_string($entry['slot'])) {
-            throw new InvalidArgumentException('Skylight slot entry requires a string "slot".');
+            throw new InvalidArgumentException('Slot entry requires a string "slot".');
         }
 
         // A `module` entry is imported at runtime under its `component` name (the
         // resolver key). Without a string component the SPA would key the resolver
         // with `undefined` and the slot could never resolve — fail loudly here.
         if (!empty($entry['module']) && (empty($entry['component']) || !is_string($entry['component']))) {
-            throw new InvalidArgumentException('A Skylight slot entry with a "module" requires a string "component" (the resolver key it is imported under).');
+            throw new InvalidArgumentException('A slot entry with a "module" requires a string "component" (the resolver key it is imported under).');
         }
 
         $entry['order'] ??= 100;
