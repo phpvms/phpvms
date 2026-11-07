@@ -344,3 +344,77 @@ it('does nothing to the operations rows when only the new rows exist', function 
     expect(Setting::find('operations_advanced_fuel')->value)->toBe($fuel)
         ->and(Setting::find('operations_block_aircraft')->value)->toBe('0');
 });
+
+/** @var array<string, string> old key => new key, for the pilot location moves */
+const PILOT_LOCATION_MOVES = [
+    'pilots.home_hubs_only'                 => 'operations.home_hubs_only',
+    'pilots.only_flights_from_current'      => 'operations.only_flights_from_current',
+    'pilots.only_show_flights_from_current' => 'operations.only_show_flights_from_current',
+];
+
+function pilotLocationSettingsMigration(): object
+{
+    return require base_path('database/migrations_data/2026_11_07_000001_move_pilot_location_settings_to_operations_group.php');
+}
+
+/** Put the DB in the pre-upgrade shape: only the old rows exist. */
+function seedOldPilotLocationRows(string $value): void
+{
+    foreach (PILOT_LOCATION_MOVES as $old => $new) {
+        Setting::whereIn('id', [Setting::formatKey($old), Setting::formatKey($new)])->delete();
+        insertOldSetting($old, $value);
+    }
+
+    app(SettingService::class)->clearMemo();
+}
+
+it('reads each moved pilot location setting through its old key', function (): void {
+    foreach (PILOT_LOCATION_MOVES as $old => $new) {
+        app(SettingService::class)->store($new, true);
+        app(SettingService::class)->clearMemo();
+        expect(setting($old))->toBeTruthy();
+
+        setting_save($old, false);
+        expect(Setting::find(Setting::formatKey($new))->value)->toBe('0');
+    }
+});
+
+it('renames the old pilot location rows in place and keeps their values', function (): void {
+    seedOldPilotLocationRows('1');
+
+    pilotLocationSettingsMigration()->up();
+
+    foreach (PILOT_LOCATION_MOVES as $old => $new) {
+        $row = Setting::find(Setting::formatKey($new));
+
+        expect($row->value)->toBe('1')
+            ->and($row->key)->toBe($new)
+            ->and($row->group)->toBe('operations')
+            ->and(Setting::find(Setting::formatKey($old)))->toBeNull();
+    }
+});
+
+it('copies old pilot location values onto seeded new rows and removes the old rows', function (): void {
+    seedOldPilotLocationRows('1');
+    $this->seed(SettingsSeeder::class);
+
+    // The seeder ran first: the new rows hold their defaults, the old rows still exist.
+    expect(Setting::find('operations_home_hubs_only')->value)->toBe('false')
+        ->and(Setting::find('pilots_home_hubs_only'))->not->toBeNull();
+
+    pilotLocationSettingsMigration()->up();
+
+    foreach (PILOT_LOCATION_MOVES as $old => $new) {
+        expect(Setting::find(Setting::formatKey($new))->value)->toBe('1')
+            ->and(Setting::find(Setting::formatKey($old)))->toBeNull();
+    }
+});
+
+it('does nothing to the pilot location rows when only the new rows exist', function (): void {
+    app(SettingService::class)->store('operations.only_flights_from_current', true);
+
+    pilotLocationSettingsMigration()->up();
+    pilotLocationSettingsMigration()->up();
+
+    expect(Setting::find('operations_only_flights_from_current')->value)->toBe('1');
+});

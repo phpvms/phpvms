@@ -27,7 +27,7 @@ function tourSettingsBaseline(): void
     updateSetting('operations.block_aircraft', false);
     updateSetting('bids.expire_time', 0);
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
     updateSetting('operations.restrict_aircraft_to_rank', false);
     updateSetting('operations.restrict_aircraft_to_typerating', false);
     updateSetting('operations.only_aircraft_at_dpt_airport', false);

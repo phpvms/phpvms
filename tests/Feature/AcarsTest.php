@@ -89,7 +89,7 @@ it('should return a prefile error', function (): void {
 });
 
 it('should not start pirep if the aircraft is not at the departure airport', function (): void {
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
     updateSetting('operations.restrict_aircraft_to_rank', false);
     updateSetting('operations.only_aircraft_at_dpt_airport', true);
 
@@ -150,7 +150,7 @@ it('should not start pirep without airports', function (): void {
 });
 
 it('should not start pirep if the pilot is not at the departure airport', function (): void {
-    updateSetting('pilots.only_flights_from_current', true);
+    updateSetting('operations.only_flights_from_current', true);
     updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $user = User::factory()->create([

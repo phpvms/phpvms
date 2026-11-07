@@ -303,7 +303,7 @@ The `settings` table and the `setting()` helper are unchanged in concept
   (a route now accepts a webhook URL **or** a channel ID, which requires
   `DISCORD_BOT_TOKEN`).
 - **New:** `livemap.live_time` / `livemap.idle_time`,
-  `fares.auto_price` / `fares.low_cost_multiplier`, `pilots.only_show_flights_from_current`,
+  `fares.auto_price` / `fares.low_cost_multiplier`, `operations.only_show_flights_from_current`,
   `registry.public_key` (addon registry), `va_global_id`.
 
 ### 3.9 Themes
