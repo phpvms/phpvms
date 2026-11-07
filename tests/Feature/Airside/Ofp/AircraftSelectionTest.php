@@ -16,6 +16,7 @@ use Livewire\Livewire;
  * 7.6: the aircraft selection on the planning page.
  */
 beforeEach(function (): void {
+    $this->withoutVite();
     $this->fixture = airsideOfpFixture();
     $this->actingAs($this->fixture['user']);
 });

@@ -20,8 +20,10 @@ use Override;
  * Filter fields:
  *   flight_id        Exact match on flights.id
  *   airline_id       Filter by airline
- *   flight_number    Exact match (was 'like' under Prettus, but every caller
- *                    used exact matching against the searchCriteria branch)
+ *   flight_number    Exact match on the integer column (was 'like' under
+ *                    Prettus, but every caller used exact matching against the
+ *                    searchCriteria branch). Postgres rejects a non-numeric
+ *                    value outright, so it is validated as an integer.
  *   callsign         Exact match
  *   flight_type      PIREP flight_type code; '0' is treated as no filter
  *   route_code       Exact match
@@ -98,7 +100,7 @@ class SearchFlightsRequest extends FormRequest
             'search'         => ['sometimes', 'string', 'max:255'],
             'flight_id'      => ['sometimes', 'string'],
             'airline_id'     => ['sometimes', 'integer'],
-            'flight_number'  => ['sometimes', 'string', 'max:32'],
+            'flight_number'  => ['sometimes', 'integer'],
             'callsign'       => ['sometimes', 'string', 'max:32'],
             'flight_type'    => ['sometimes', 'string', 'max:8'],
             'route_code'     => ['sometimes', 'string', 'max:8'],
@@ -137,24 +139,24 @@ class SearchFlightsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'search.max'         => 'The search field must not exceed 255 characters.',
-            'flight_number.max'  => 'The flight number must not exceed 32 characters.',
-            'callsign.max'       => 'The callsign must not exceed 32 characters.',
-            'flight_type.max'    => 'The flight type must not exceed 8 characters.',
-            'route_code.max'     => 'The route code must not exceed 8 characters.',
-            'dpt_airport_id.max' => 'The departure airport ID must not exceed 16 characters.',
-            'dep_icao.max'       => 'The departure ICAO must not exceed 8 characters.',
-            'arr_airport_id.max' => 'The arrival airport ID must not exceed 16 characters.',
-            'arr_icao.max'       => 'The arrival ICAO must not exceed 8 characters.',
-            'icao_type.max'      => 'The ICAO type must not exceed 8 characters.',
-            'dgt.min'            => 'The minimum distance must be 0 or greater.',
-            'dlt.min'            => 'The maximum distance must be 0 or greater.',
-            'tgt.min'            => 'The minimum flight time must be 0 or greater.',
-            'tlt.min'            => 'The maximum flight time must be 0 or greater.',
-            'orderBy.max'        => 'The orderBy field must not exceed 255 characters.',
-            'sortedBy.max'       => 'The sortedBy field must not exceed 255 characters.',
-            'page.min'           => 'The page must be at least 1.',
-            'limit.min'          => 'The limit must be at least 1.',
+            'search.max'            => 'The search field must not exceed 255 characters.',
+            'flight_number.integer' => 'The flight number must be a whole number.',
+            'callsign.max'          => 'The callsign must not exceed 32 characters.',
+            'flight_type.max'       => 'The flight type must not exceed 8 characters.',
+            'route_code.max'        => 'The route code must not exceed 8 characters.',
+            'dpt_airport_id.max'    => 'The departure airport ID must not exceed 16 characters.',
+            'dep_icao.max'          => 'The departure ICAO must not exceed 8 characters.',
+            'arr_airport_id.max'    => 'The arrival airport ID must not exceed 16 characters.',
+            'arr_icao.max'          => 'The arrival ICAO must not exceed 8 characters.',
+            'icao_type.max'         => 'The ICAO type must not exceed 8 characters.',
+            'dgt.min'               => 'The minimum distance must be 0 or greater.',
+            'dlt.min'               => 'The maximum distance must be 0 or greater.',
+            'tgt.min'               => 'The minimum flight time must be 0 or greater.',
+            'tlt.min'               => 'The maximum flight time must be 0 or greater.',
+            'orderBy.max'           => 'The orderBy field must not exceed 255 characters.',
+            'sortedBy.max'          => 'The sortedBy field must not exceed 255 characters.',
+            'page.min'              => 'The page must be at least 1.',
+            'limit.min'             => 'The limit must be at least 1.',
         ];
     }
 
