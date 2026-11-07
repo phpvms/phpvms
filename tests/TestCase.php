@@ -43,19 +43,42 @@ abstract class TestCase extends BaseTestCase
 
         self::$bundledThemesPrimed = true;
 
-        if (!$this->primeBundledThemes($app)) {
-            return $app;
+        // Under --parallel another worker may write the cache between this
+        // worker's first boot and its prime check, so the check alone can
+        // report nothing missing while the booted app still has no theme.
+        // Decide on the providers the first boot actually registered.
+        if ($this->primeBundledThemes($app) || !$this->bundledThemesRegistered($app)) {
+            $app = parent::createApplication();
         }
-
-        $app = parent::createApplication();
 
         // TallStackUI's boot read its component config from the first
         // application into a process-wide static, before the theme's provider
         // existed to switch the icon pack. Flushing rebuilds the map at once,
-        // so it has to run against the second application's config.
+        // so it has to run against the final application's config.
         __ts_get_component_configuration(IconComponent::class, flush: true);
 
         return $app;
+    }
+
+    /**
+     * Whether every bundled theme now in the boot cache had its providers
+     * registered by the given application.
+     */
+    private function bundledThemesRegistered(Application $app): bool
+    {
+        foreach ($app->make(BootCache::class)->read() as $entry) {
+            if ($entry->type !== 'theme' || !$entry->enabled) {
+                continue;
+            }
+
+            foreach ($entry->providers as $provider) {
+                if ($app->getProvider($provider) === null) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
