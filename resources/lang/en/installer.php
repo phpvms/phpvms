@@ -41,6 +41,8 @@ return [
     'click_update_to_run'               => 'Click "Update" to run the script.',
     'update'                            => 'Update',
     'migrations_not_completed'          => 'You still have :count migrations to run. Please try again...',
+    'restarted_database_changed'        => 'The database changed underneath this install. Starting over from the beginning.',
+    'user_already_seeded'               => 'The seed data already created a user, so there is nothing left to set up. Taking you to the login page.',
     'pause'                             => 'Pause',
     'resume'                            => 'Resume',
     'user_and_airline_setup'            => 'User & Airline Setup',

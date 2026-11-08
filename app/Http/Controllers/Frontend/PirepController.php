@@ -6,6 +6,9 @@ use App\Contracts\Controller;
 use App\Enums\PirepFieldSource;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
+use App\Features\Pireps\Actions\ListFilingAircraft;
+use App\Features\Pireps\Actions\PirepFilingDenied;
+use App\Features\Pireps\Actions\SaveManualPirep;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Http\Data\PirepData;
 use App\Http\Data\PirepListItemData;
@@ -20,26 +23,18 @@ use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\PirepField;
 use App\Models\SimBrief;
-use App\Models\Subfleet;
 use App\Models\User;
 use App\Queries\PirepSearchQuery;
 use App\Services\FareService;
 use App\Services\GeoService;
 use App\Services\PirepService;
-use App\Services\SimBriefService;
-use App\Support\PirepLevelNormalizer;
-use App\Support\Units\Fuel;
 use App\Support\Units\Time;
-use Carbon\Carbon;
 use Closure;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Inertia\Response as InertiaResponse;
@@ -47,24 +42,13 @@ use Laracasts\Flash\Flash;
 
 class PirepController extends Controller
 {
-    /**
-     * Columns a pilot may never set from the form. The state moves only through
-     * submit/accept/reject; the key and owner come from the server; and the
-     * source, timestamps and flight-quality values decide auto-approval and
-     * awards, so they are never taken from a manual report.
-     *
-     * @var list<string>
-     */
-    private const array PROTECTED_ATTRIBUTES = [
-        'id', 'state', 'user_id', 'source', 'source_name', 'status', 'score', 'landing_rate',
-        'submitted_at', 'block_off_time', 'block_on_time', 'created_at', 'updated_at',
-    ];
-
     public function __construct(
         private readonly FareService $fareSvc,
         private readonly GeoService $geoSvc,
         private readonly PirepSearchQuery $pirepSearchQuery,
         private readonly PirepService $pirepSvc,
+        private readonly ListFilingAircraft $filingAircraft,
+        private readonly SaveManualPirep $saveManualPirep,
     ) {
         $this->middleware(function (Request $request, Closure $next) {
             abort_if(setting('pireps.disable_manual', false), 405, 'Manual PIREP filing is disabled.');
@@ -78,63 +62,7 @@ class PirepController extends Controller
      */
     public function aircraftList(bool $add_blank = false): array
     {
-        $user = Auth::user();
-        $user_loc = filled(
-            $user->curr_airport_id
-        ) ? $user->curr_airport_id : $user->home_airport_id;
-        $location_check = setting('operations.only_aircraft_at_dpt_airport', false);
-
-        $aircraft = [];
-
-        if ($add_blank) {
-            $aircraft[''] = '';
-        }
-
-        /** @var Collection<int, Subfleet> $subfleets */
-        $subfleets = $user->allowedSubfleets()
-            ->with([
-                'aircraft' => fn ($q) => $q->when(
-                    $location_check,
-                    fn ($q2) => $q2->where('airport_id', $user_loc),
-                ),
-            ])
-            ->get();
-
-        foreach ($subfleets as $subfleet) {
-            $tmp = [];
-            foreach ($subfleet->aircraft as $ac) {
-                $tmp[$ac->id] = $ac->name.' - '.$ac->registration;
-            }
-
-            $aircraft[$subfleet->type] = $tmp;
-        }
-
-        return $aircraft;
-    }
-
-    /**
-     * Save any custom fields found
-     */
-    protected function saveCustomFields(Request $request): array
-    {
-        $fields = [];
-        $pirep_fields = PirepField::whereIn('pirep_source', [PirepFieldSource::MANUAL, PirepFieldSource::BOTH])->get();
-        foreach ($pirep_fields as $field) {
-            if (!$request->filled($field->slug)) {
-                continue;
-            }
-
-            $fields[] = [
-                'name'   => $field->name,
-                'slug'   => $field->slug,
-                'value'  => $request->input($field->slug),
-                'source' => PirepSource::MANUAL,
-            ];
-        }
-
-        Log::info('PIREP Custom Fields', $fields);
-
-        return $fields;
+        return $this->filingAircraft->handle(Auth::user(), $add_blank);
     }
 
     /**
@@ -246,7 +174,7 @@ class PirepController extends Controller
         if (empty($pirep)) {
             Flash::error('Pirep not found');
 
-            return redirect(route('frontend.pirep.index'));
+            return redirect(route('frontend.pireps.index'));
         }
 
         $map_features = $this->geoSvc->pirepGeoJson($pirep);
@@ -359,124 +287,17 @@ class PirepController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $pirep = new Pirep(PirepLevelNormalizer::normalize(Arr::except($request->post(), self::PROTECTED_ATTRIBUTES)));
-        $pirep->user_id = $user->id;
+        $submit = strtolower((string) $request->input('submit'));
 
-        $attrs = $request->all();
-        $attrs['submit'] = strtolower((string) $attrs['submit']);
-
-        if ($attrs['submit'] === 'submit') {
-            // Are they allowed at this airport?
-            if (setting('pilots.only_flights_from_current')
-                && $user->curr_airport_id !== $pirep->dpt_airport_id) {
-                Log::info(
-                    'Pilot '.$user->id
-                    .' not at departure airport (curr='.$user->curr_airport_id
-                    .', dpt='.$pirep->dpt_airport_id.')'
-                );
-
-                return $this->flashError(
-                    'You are currently not at the departure airport!',
-                    'frontend.pireps.create'
-                );
-            }
-
-            // Can they fly this aircraft?
-            if (setting('operations.restrict_aircraft_to_rank', false)
-                && !$user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists()) {
-                Log::info('Pilot '.$user->id.' not allowed to fly aircraft');
-
-                return $this->flashError(
-                    'You are not allowed to fly this aircraft!',
-                    'frontend.pireps.create'
-                );
-            }
-
-            // is the aircraft in the right place?
-            /* @noinspection NotOptimalIfConditionsInspection */
-            // Get the aircraft
-            $aircraft = Aircraft::find($pirep->aircraft_id);
-            if ($aircraft === null) {
-                Log::error('Aircraft for PIREP not found, id='.$pirep->aircraft_id);
-
-                return $this->flashError(
-                    "The aircraft for the PIREP hasn't been found",
-                    'frontend.pireps.create'
-                );
-            }
-
-            if (setting('operations.only_aircraft_at_dpt_airport')
-                && $aircraft->airport_id !== $pirep->dpt_airport_id
-            ) {
-                Log::info(
-                    'Aircraft '.$pirep->aircraft_id.' not at departure airport (curr='.$pirep->aircraft->airport_id.', apt='.$pirep->dpt_airport_id.')'
-                );
-
-                return $this->flashError(
-                    'This aircraft is not positioned at the departure airport!',
-                    'frontend.pireps.create'
-                );
-            }
-
-            // Make sure this isn't a duplicate
-            $dupe_pirep = $this->pirepSvc->findDuplicate($pirep);
-            if ($dupe_pirep !== false) {
-                Log::info('Duplicate PIREP found');
-
-                return $this->flashError(
-                    'This PIREP has already been filed.',
-                    'frontend.pireps.create'
-                );
-            }
+        try {
+            $pirep = $this->saveManualPirep->create($user, $request->post(), $submit, $request->input('sb_id'));
+        } catch (PirepFilingDenied $pirepFilingDenied) {
+            return $this->flashError($pirepFilingDenied->getMessage(), 'frontend.pireps.create');
         }
 
-        // Any special fields
-        $hours = (int) $request->input('hours', 0);
-        $minutes = (int) $request->input('minutes', 0);
-        $pirep->flight_time = Time::hoursToMinutes($hours) + $minutes;
-
-        // Set the correct fuel units
-        $pirep->block_fuel = Fuel::make(
-            (float) $request->input('block_fuel'),
-            setting('units.fuel')
-        );
-        $pirep->fuel_used = Fuel::make((float) $request->input('fuel_used'), setting('units.fuel'));
-
-        // Put the time that this is currently submitted
-        $attrs['submitted_at'] = Carbon::now('UTC');
-        $pirep->submitted_at = Carbon::now('UTC');
-
-        $fields = $this->saveCustomFields($request);
-        $pirep = $this->pirepSvc->create($pirep, $fields);
-        $this->saveFares($pirep, $request);
-        $this->pirepSvc->saveRoute($pirep);
-
-        if ($request->has('sb_id')) {
-            $brief = SimBrief::where('user_id', Auth::id())->find($request->input('sb_id'));
-            if ($brief !== null) {
-                /** @var SimBriefService $sbSvc */
-                $sbSvc = app(SimBriefService::class);
-                // Keep the flight_id with SimBrief depending on the button selected
-                // Save = Keep the flight_id , Submit = Remove the flight_id
-                if ($attrs['submit'] === 'save') {
-                    $sbSvc->attachSimbriefToPirep($pirep, $brief, true);
-                } elseif ($attrs['submit'] === 'submit') {
-                    $sbSvc->attachSimbriefToPirep($pirep, $brief);
-                }
-            }
-        }
-
-        // Depending on the button they selected, set an initial state
-        // Can be saved as a draft or just submitted
-        if ($attrs['submit'] === 'save') {
-            if (!$pirep->read_only) {
-                $pirep->state = PirepState::DRAFT;
-            }
-
-            $pirep->save();
+        if ($submit === 'save') {
             Flash::success('PIREP saved successfully.');
-        } elseif ($attrs['submit'] === 'submit') {
-            $this->pirepSvc->submit($pirep);
+        } elseif ($submit === 'submit') {
             Flash::success('PIREP submitted!');
         }
 
@@ -573,36 +394,13 @@ class PirepController extends Controller
             return redirect(PirepResource::getUrl());
         }
 
-        $orig_route = $pirep->route;
-        $attrs = Arr::except($request->all(), self::PROTECTED_ATTRIBUTES);
-        $attrs['submit'] = strtolower((string) $attrs['submit']);
+        $outcome = $this->saveManualPirep->update($pirep, $request->all(), (string) $request->input('submit'));
 
-        // Fix the time
-        $attrs['flight_time'] = Time::init($attrs['minutes'], $attrs['hours'])->getMinutes();
-
-        // Fix the fuel
-        $attrs['block_fuel'] = Fuel::make((float) $attrs['block_fuel'], setting('units.fuel'));
-        $attrs['fuel_used'] = Fuel::make((float) $attrs['fuel_used'], setting('units.fuel'));
-
-        $pirep->update(PirepLevelNormalizer::normalize($attrs));
-        $pirep->refresh();
-
-        // A route change in the PIREP, so update the saved points in the ACARS table
-        if ($pirep->route !== $orig_route) {
-            $this->pirepSvc->saveRoute($pirep);
-        }
-
-        $fields = $this->saveCustomFields($request);
-        $this->pirepSvc->updateCustomFields($pirep->id, $fields);
-        $this->saveFares($pirep, $request);
-
-        if ($attrs['submit'] === 'save') {
+        if ($outcome === 'save') {
             Flash::success('PIREP saved successfully.');
-        } elseif ($attrs['submit'] === 'submit') {
-            $this->pirepSvc->submit($pirep);
+        } elseif ($outcome === 'submit') {
             Flash::success('PIREP submitted!');
-        } elseif ($attrs['submit'] === 'delete' || $attrs['submit'] === 'cancel') {
-            $this->pirepSvc->delete($pirep);
+        } elseif ($outcome === 'delete' || $outcome === 'cancel') {
             Flash::success('PIREP deleted!');
 
             return redirect(route('frontend.pireps.index'));

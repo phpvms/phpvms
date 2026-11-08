@@ -31,7 +31,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
-use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Js;
@@ -286,14 +285,6 @@ class Settings extends Page
                         }
 
                         if ($setting->type === 'select') {
-                            if ($setting->id === 'general_theme') {
-                                return Select::make($setting->key)
-                                    ->label($setting->name)
-                                    ->inlineLabel()
-                                    ->belowLabel($setting->description)
-                                    ->options(list_to_assoc($this->getThemes()));
-                            }
-
                             if ($setting->id === 'units_currency') {
                                 return Select::make($setting->key)
                                     ->label($setting->name)
@@ -346,30 +337,6 @@ class Settings extends Page
                 ])
                 ->columnSpanFull(),
         ];
-    }
-
-    private function getThemes(): array
-    {
-        Theme::rebuildCache();
-        $themes = Theme::all();
-        $theme_list = [];
-        foreach ($themes as $t) {
-            if (!$t) {
-                continue;
-            }
-
-            if (!$t->name) {
-                continue;
-            }
-
-            if ($t->name === 'false') {
-                continue;
-            }
-
-            $theme_list[] = $t->name;
-        }
-
-        return $theme_list;
     }
 
     private function getCurrencyList(): array

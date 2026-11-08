@@ -7,6 +7,10 @@ use App\Models\Permission;
 use App\Models\User;
 use Database\Seeders\RolesPermissionsSeeder;
 
+// The preview route is under admin/, which the theme middleware renders on
+// the default theme (airside), whose layout needs built Vite assets.
+beforeEach(fn () => $this->withoutVite());
+
 it('shows the draft on the preview and the published body on the live url', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     $page = Page::factory()->published()->claiming('/about')->create([

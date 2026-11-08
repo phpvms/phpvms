@@ -866,3 +866,9 @@ test('diversion handler reuses matching reposition flight and attaches subfleet'
     expect($matchingFlights)->toHaveCount(1)
         ->and($repositionFlight->fresh()->subfleets->pluck('id')->all())->toBe([$subfleet->id]);
 });*/
+
+it('redirects the seven PIREP page to the list when the PIREP does not exist', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->get('/pireps/does-not-exist')
+        ->assertRedirect(route('frontend.pireps.index'));
+});

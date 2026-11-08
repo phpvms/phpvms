@@ -48,8 +48,8 @@ final class SimBriefBriefingData extends Data
 
         return new self(
             id: $briefing->id,
-            flight: FlightDetailData::fromModel($briefing->flight, $bid ? [$briefing->flight_id => $bid->id] : []),
-            bid: $bid ? BidData::fromModel($bid) : null,
+            flight: FlightDetailData::fromModel($briefing->flight, $bid instanceof Bid ? [$briefing->flight_id => $bid->id] : []),
+            bid: $bid instanceof Bid ? BidData::fromModel($bid) : null,
             aircraft: EligibleAircraftData::fromModel($briefing->aircraft),
             route: $ofp?->general->route ?? '',
             plannedFixes: self::plannedFixes($ofp),
@@ -87,7 +87,7 @@ final class SimBriefBriefingData extends Data
      *
      * @return list<MapPlannedFixData>
      */
-    private static function plannedFixes(?SimBriefOfp $ofp): array
+    public static function plannedFixes(?SimBriefOfp $ofp): array
     {
         if (!$ofp instanceof SimBriefOfp) {
             return [];

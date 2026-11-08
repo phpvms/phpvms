@@ -22,6 +22,8 @@ it('falls back to an installed theme when the configured one is unknown', functi
 });
 
 it('serves a themed view under a theme that is missing from the cache', function (): void {
+    // The fallback theme is airside, whose layout needs built Vite assets.
+    $this->withoutVite();
     User::factory()->create();
     updateSetting('general.theme', 'does-not-exist');
 

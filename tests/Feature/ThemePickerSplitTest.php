@@ -64,23 +64,6 @@ it('reflects a brand colour change on the next request without an Octane worker 
         ->not->toBe($firstPrimary600);
 });
 
-it('no longer exposes brand-colour swatches or a hex input in the topbar picker', function (): void {
-    get('/admin')
-        ->assertOk()
-        ->assertDontSee('fi-picker-hex', escape: false)
-        ->assertDontSee('data-hex-color', escape: false)
-        ->assertDontSee('data-preset', escape: false);
-});
-
-it('still renders appearance and density controls in the topbar picker', function (): void {
-    get('/admin')
-        ->assertOk()
-        ->assertSee('data-mode="light"', escape: false)
-        ->assertSee('data-mode="dark"', escape: false)
-        ->assertSee('data-density="compact"', escape: false)
-        ->assertSee('data-density="comfortable"', escape: false);
-});
-
 // A stale `brand` key in localStorage is client-side state this PHP test
 // suite can't observe -- covered instead by
 // resources/js/apps/admin/theme-picker.test.js "ignores a stale brand colour

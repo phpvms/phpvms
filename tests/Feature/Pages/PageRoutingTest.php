@@ -147,11 +147,11 @@ it('lets a real route beat a page that claims the same path', function (): void 
     // Saving is blocked by validation, but a row that got there another way must
     // still not shadow a registered route.
     Page::factory()->published()->create([
-        'path' => '/livemap',
+        'path' => '/live',
         'body' => 'CLAIMED-BY-A-PAGE',
     ]);
 
-    $this->get('/livemap')->assertOk()->assertDontSee('CLAIMED-BY-A-PAGE');
+    $this->get('/live')->assertOk()->assertDontSee('CLAIMED-BY-A-PAGE');
 });
 
 it('registers both fallbacks as serialisable controller routes', function (): void {

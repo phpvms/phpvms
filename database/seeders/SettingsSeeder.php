@@ -28,10 +28,11 @@ class SettingsSeeder extends Seeder
             'description' => 'The airline name shown across the admin panel and frontend',
         ],
         [
-            'key'         => 'general.theme',
-            'name'        => 'Current Theme',
-            'group'       => 'general',
-            'value'       => 'skylight',
+            'key'   => 'general.theme',
+            'name'  => 'Current Theme',
+            'group' => 'general',
+            'value' => 'airside',
+            // Edited on Content > Theme, not the Settings page.
             'type'        => 'hidden',
             'options'     => '',
             'description' => 'The currently active theme',

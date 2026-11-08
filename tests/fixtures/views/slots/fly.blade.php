@@ -1,0 +1,1 @@
+Fly {{ $bid }} via {{ $target }}

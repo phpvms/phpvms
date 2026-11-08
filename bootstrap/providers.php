@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Features\Bids\BidsServiceProvider;
+use App\Features\Dashboard\DashboardServiceProvider;
+use App\Features\Flights\FlightsServiceProvider;
+use App\Features\Hooks\HooksServiceProvider;
+use App\Features\Ofp\OfpServiceProvider;
+use App\Features\Pireps\PirepsServiceProvider;
+use App\Features\Profile\ProfileServiceProvider;
+use App\Features\Shell\ShellServiceProvider;
+use App\Features\Themes\ThemeFieldsServiceProvider;
 use App\Features\Tiles\TilesServiceProvider;
 use App\Features\Tour\TourServiceProvider;
 use App\Providers\AddonServiceProvider;
@@ -36,6 +45,9 @@ return [
     // Same reasoning again: the tile registry must be bound before addon
     // providers register tiles, so every provider sees the one singleton.
     TilesServiceProvider::class,
+    // The hook dispatcher must be bound before addon providers boot and
+    // register their hook listeners.
+    HooksServiceProvider::class,
 
     AddonServiceProvider::class,
     PassportServiceProvider::class,
@@ -43,6 +55,16 @@ return [
     // Hooks the tour slice to the PIREP lifecycle; event discovery does not
     // reach app/Features, and the deletion hook is a model event.
     TourServiceProvider::class,
+
+    // Feature slices: each registers its Livewire component namespace.
+    FlightsServiceProvider::class,
+    BidsServiceProvider::class,
+    ProfileServiceProvider::class,
+    DashboardServiceProvider::class,
+    PirepsServiceProvider::class,
+    OfpServiceProvider::class,
+    ShellServiceProvider::class,
+    ThemeFieldsServiceProvider::class,
 
     AdminPanelProvider::class,
     SystemPanelProvider::class,

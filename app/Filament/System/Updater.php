@@ -2,6 +2,7 @@
 
 namespace App\Filament\System;
 
+use App\Addons\Support\AddonCacheRefresher;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
@@ -166,6 +167,9 @@ class Updater extends Page
 
             return;
         }
+
+        // After `optimize`, so the reload restarts the workers on the final caches.
+        app(AddonCacheRefresher::class)->refresh();
 
         $this->streamOutput(PHP_EOL.__('installer.update_completed').PHP_EOL);
 

@@ -3,7 +3,7 @@
 The **first-party home for phpvms widgets** (skylight Vue widgets and Livewire tiles). This addon ships the
 **weather (METAR) widget** as a **pre-built Vue (ESM) widget** that **owns its
 own data endpoint** — and it rides the exact same addon path as a third-party
-widget (compare `modules/phpvms-sample-vue-widget`).
+widget.
 
 The weather widget used to be bundled directly into the skylight SPA
 (`WxWidget.vue`, registered in the front-end catalog). Moving it here proves the
@@ -28,8 +28,7 @@ the SPA renders it inside a widget frame
 
 The widget is built as a **Vue library in ESM format with `vue` EXTERNALIZED**,
 so the host and every addon widget run on **one** shared Vue instance via the
-import-map the SPA shell emits. See `modules/phpvms-sample-vue-widget/README.md` for the
-full shared-Vue / import-map explanation — this addon follows the same model.
+import-map the SPA shell emits.
 
 ---
 

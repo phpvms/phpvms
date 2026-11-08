@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
-use App\Enums\AircraftState;
-use App\Enums\AircraftStatus;
-use App\Enums\BundleType;
 use App\Exceptions\BidExistsForAircraft;
-use App\Exceptions\BidExistsForFlight;
-use App\Exceptions\UserBidLimit;
+use App\Features\Bids\Actions\PlaceBid;
+use App\Features\Bids\Queries\EligibleAircraft;
 use App\Features\Tour\TourService;
 use App\Models\Aircraft;
 use App\Models\Bid;
@@ -192,111 +189,22 @@ class BidService extends Service
     }
 
     /**
-     * Allow a user to bid on a flight. Check settings and all that good stuff
-     *
-     *
-     * @throws BidExistsForAircraft
-     * @throws BidExistsForFlight
-     * @throws UserBidLimit
-     * @throws ValidationException
+     * Place a bid. Kept for existing callers; the logic and the `PlacingBid`
+     * gate live in {@see PlaceBid}.
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null): Bid
     {
-        // A tour is bid as a unit, so the whole chain is created at once and the
-        // bid handed back is still this flight's. Resolved from the container
-        // rather than injected: TourService depends on this service.
-        if ($flight->bundle?->type === BundleType::Tour) {
-            $bid = app(TourService::class)->start($flight, $user, $aircraft);
-
-            $flight->refresh();
-
-            return $this->getBid($user, $bid->id) ?? $bid;
-        }
-
-        $bid = DB::transaction(function () use ($flight, $user, $aircraft): Bid {
-            $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
-            $lockedFlight = Flight::query()->whereKey($flight->id)->lockForUpdate()->firstOrFail();
-            $lockedAircraft = $aircraft instanceof Aircraft
-                ? Aircraft::query()->whereKey($aircraft->id)->lockForUpdate()->firstOrFail()
-                : null;
-
-            $existing = Bid::query()
-                ->where('user_id', $lockedUser->id)
-                ->where('flight_id', $lockedFlight->id)
-                ->lockForUpdate()
-                ->first();
-
-            if ($existing instanceof Bid) {
-                if ($existing->aircraft_id === null && $lockedAircraft instanceof Aircraft) {
-                    $this->assertAircraftMayBeBid($lockedFlight, $lockedUser, $lockedAircraft);
-                    $existing->aircraft()->associate($lockedAircraft);
-                    $existing->save();
-                }
-
-                $this->recomputeFlightBidState($lockedFlight);
-
-                return $existing;
-            }
-
-            $this->assertFlightMayBeBid($lockedFlight, $lockedUser);
-
-            if (!(bool) setting('bids.allow_multiple_bids', false)
-                && Bid::query()->where('user_id', $lockedUser->id)->exists()) {
-                throw new UserBidLimit($lockedUser);
-            }
-
-            if ((bool) setting('bids.disable_flight_on_bid', false)
-                && Bid::query()->where('flight_id', $lockedFlight->id)->exists()) {
-                throw new BidExistsForFlight($lockedFlight);
-            }
-
-            if ((bool) setting('operations.block_aircraft', false) && $lockedAircraft === null) {
-                throw ValidationException::withMessages([
-                    'aircraftId' => 'Select an eligible aircraft before placing this bid.',
-                ]);
-            }
-
-            if ($lockedAircraft instanceof Aircraft) {
-                $this->assertAircraftMayBeBid($lockedFlight, $lockedUser, $lockedAircraft);
-            }
-
-            $created = Bid::query()->create([
-                'user_id'     => $lockedUser->id,
-                'flight_id'   => $lockedFlight->id,
-                'aircraft_id' => $lockedAircraft?->id,
-            ]);
-
-            $this->recomputeFlightBidState($lockedFlight);
-
-            return $created;
-        }, 3);
-
-        $flight->refresh();
-
-        return $this->getBid($user, $bid->id) ?? $bid;
+        return app(PlaceBid::class)->handle($flight, $user, $aircraft);
     }
 
-    /** @return Builder<Aircraft> */
+    /**
+     * Kept for existing callers; see {@see EligibleAircraft}.
+     *
+     * @return Builder<Aircraft>
+     */
     public function eligibleAircraftQuery(Flight $flight, User $user, ?int $subfleetId = null): Builder
     {
-        $subfleetIds = $flight->accessibleSubfleetsFor($user)->pluck('id');
-
-        return Aircraft::query()
-            ->allowedFor($user, $flight)
-            ->where('state', AircraftState::PARKED)
-            ->where('status', AircraftStatus::ACTIVE)
-            ->whereIn('subfleet_id', $subfleetIds)
-            ->when(
-                (bool) setting('operations.block_aircraft', false),
-                fn (Builder $query): Builder => $query->whereDoesntHave(
-                    'simbriefs',
-                    fn (Builder $simbrief): Builder => $simbrief->whereNull('pirep_id'),
-                ),
-            )
-            ->when($subfleetId !== null, fn (Builder $query): Builder => $query->where('subfleet_id', $subfleetId))
-            ->with(['airport', 'subfleet'])
-            ->orderBy('icao')
-            ->orderBy('registration');
+        return app(EligibleAircraft::class)->for($flight, $user, $subfleetId);
     }
 
     /**

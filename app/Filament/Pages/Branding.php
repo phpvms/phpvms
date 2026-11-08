@@ -43,7 +43,7 @@ use Override;
 use UnitEnum;
 
 /**
- * Config → Branding: airline name, brand colour, logo, favicon and banner. Name
+ * Customize → Branding: airline name, brand colour, logo, favicon and banner. Name
  * and colour save on submit; the image upload fields autosave through
  * {@see AutosavesFields} (following AirlineForm/EditAirline's logo pattern).
  *
@@ -55,7 +55,7 @@ class Branding extends Page
     use AutosavesFields;
     use ReversePrimaryButtons;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Customize;
 
     protected static ?int $navigationSort = 0;
 

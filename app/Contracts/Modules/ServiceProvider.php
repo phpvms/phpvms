@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Contracts\Modules;
 
+use App\Addons\Support\AddonQuarantine;
+use App\Features\Hooks\Facades\Hooks;
+use App\Features\Hooks\Hook;
 use App\Support\RegistersApiScopes;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use LogicException;
 use Override;
 use ReflectionClass;
 use ReflectionException;
@@ -30,7 +35,9 @@ use ReflectionNamedType;
  *  - lang/            → loadTranslationsFrom
  *  - database/migrations → loadMigrationsFrom
  *  - app/Console/Commands/*.php → commands() (top-level dir only; no subdirectory scan)
- *  - app/Listeners/*.php        → Event::listen (top-level dir only; no subdirectory scan)
+ *  - app/Listeners/*.php        → Event::listen, or the hook dispatcher when the
+ *                                 first parameter is a filter or gate hook point
+ *                                 (top-level dir only; no subdirectory scan)
  *
  * Octane-safe: no mutable instance state; all registrations are idempotent.
  */
@@ -279,7 +286,7 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
     }
 
     /**
-     * Auto-discover and register event listeners from app/Listeners/*.php.
+     * Auto-discover and register event and hook listeners from app/Listeners/*.php.
      *
      * Convention: the listener's `handle` method (or `__invoke` when no
      * `handle` exists) must type-hint a single named event class as its
@@ -309,10 +316,48 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
             $eventClass = $this->resolveListenerEventClass($fqcn);
 
-            if ($eventClass !== null) {
-                Event::listen($eventClass, $fqcn);
+            if ($eventClass === null) {
+                continue;
+            }
+
+            try {
+                $this->registerListener($fqcn, $eventClass);
+            } catch (LogicException|InvalidArgumentException $failure) {
+                // One broken listener must not stop every boot (the admin panel
+                // included): quarantine the addon and skip the rest of its listeners.
+                $this->app->make(AddonQuarantine::class)->handle($rootNamespace, $this->addonNamespace(), $fqcn, $failure);
+
+                return;
             }
         }
+    }
+
+    /**
+     * Bind one listener to its hook point or event.
+     *
+     * @throws LogicException           when the listener targets a hook point that does not exist
+     * @throws InvalidArgumentException when the listener targets a class that is not a hook point
+     */
+    private function registerListener(string $fqcn, string $eventClass): void
+    {
+        if (is_subclass_of($eventClass, Hook::class)) {
+            Hooks::listen($eventClass, $fqcn, $this->addonNamespace());
+
+            return;
+        }
+
+        // A hook point binds by class, so a typo must fail here rather
+        // than register an event listener that never fires.
+        if (!class_exists($eventClass) && str_starts_with($eventClass, 'App\\Features\\Hooks\\')) {
+            throw new LogicException(sprintf(
+                'Addon "%s": listener %s targets hook point %s, which does not exist.',
+                $this->addonNamespace(),
+                $fqcn,
+                $eventClass,
+            ));
+        }
+
+        Event::listen($eventClass, $fqcn);
     }
 
     /**
