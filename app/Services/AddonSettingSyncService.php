@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\BootCache;
-use App\Contracts\Addons\HasSettings;
+use App\Contracts\Addons\AddonServiceProvider;
 use App\Contracts\Service;
 use App\Models\AddonSetting;
 use Illuminate\Contracts\Foundation\Application;
@@ -17,8 +17,7 @@ use Throwable;
  * Synchronizes each enabled addon's declared settings schema into the
  * `addon_settings` table.
  *
- * For every enabled boot-cache entry, finds any service provider implementing
- * {@see HasSettings} and upserts the declared
+ * For every enabled boot-cache entry, finds any addon service provider and upserts the declared
  * schema: new keys are inserted with their `default` as the initial value,
  * metadata (name/group/type/options/description/order/alias) is reconciled,
  * and existing user-edited `value`s are preserved. Idempotent.
@@ -93,7 +92,7 @@ class AddonSettingSyncService extends Service
     }
 
     /**
-     * Merge the settings declared by every HasSettings provider on this entry.
+     * Merge the settings declared by every addon provider on this entry.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -110,14 +109,14 @@ class AddonSettingSyncService extends Service
                 continue;
             }
 
-            if (!is_a($providerClass, HasSettings::class, true)) {
+            if (!is_a($providerClass, AddonServiceProvider::class, true)) {
                 continue;
             }
 
             try {
-                /** @var HasSettings $provider */
+                /** @var AddonServiceProvider $provider */
                 $provider = $this->app->getProvider($providerClass) ?? new $providerClass($this->app);
-                $schema = [...$schema, ...$provider->settings()];
+                $schema = [...$schema, ...$provider->registerSettings()];
             } catch (Throwable $throwable) {
                 Log::warning('AddonSettingSync: failed to read settings from '.$providerClass, [
                     'exception' => $throwable->getMessage(),

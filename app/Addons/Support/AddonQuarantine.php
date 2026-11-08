@@ -14,33 +14,36 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Takes an addon out of service when one of its listeners cannot be registered
- * (a hook point that does not exist, or a listener typed to a class that is not
- * a hook point), so one broken third-party addon cannot stop every boot,
- * including the admin panel the operator needs to turn it off.
+ * Takes an addon out of service when one of its declarations fails: a listener
+ * that cannot be registered (a hook point that does not exist, or a listener
+ * typed to a class that is not a hook point), a declaration method that throws,
+ * or a provider that is not on the addon base. One broken third-party addon
+ * therefore cannot stop every boot, including the admin panel the operator
+ * needs to turn it off.
  *
  * The addon is disabled and the super-admins get a database notification in
- * the admin panel naming the addon, the listener and the reason. A bundled
- * addon, or the active theme, cannot be disabled; those are logged only, and
- * the listener is skipped.
+ * the admin panel naming the addon, the source of the failure and the reason. A
+ * bundled addon, or the active theme, cannot be disabled; those are logged
+ * only, and the failing declaration is skipped.
  *
- * Never throws: this runs inside an addon provider's boot().
+ * Never throws: this runs inside an addon provider's register() and boot().
  */
 class AddonQuarantine
 {
     public function __construct(private readonly AddonRegistry $registry) {}
 
     /**
-     * @param string $namespace PSR-4 root namespace of the addon, as stored on its row
-     * @param string $addon     short addon identifier, for the log line
-     * @param string $listener  FQCN of the listener that failed to register
+     * @param  string $namespace PSR-4 root namespace of the addon, as stored on its row
+     * @param  string $addon     short addon identifier, for the log line
+     * @param  string $source    what failed: a listener FQCN, a provider FQCN or a method name
+     * @return bool   whether the addon was disabled
      */
-    public function handle(string $namespace, string $addon, string $listener, Throwable $failure): void
+    public function handle(string $namespace, string $addon, string $source, Throwable $failure): bool
     {
-        Log::error(sprintf('Addon "%s" quarantined: listener %s could not be registered: %s', $addon, $listener, $failure->getMessage()));
+        Log::error(sprintf('Addon "%s" quarantined: %s failed: %s', $addon, $source, $failure->getMessage()));
 
         if (!installed()) {
-            return;
+            return false;
         }
 
         try {
@@ -49,13 +52,13 @@ class AddonQuarantine
             if (!$row instanceof Addon) {
                 Log::warning(sprintf('Addon "%s" has no addons row for namespace %s, so it was not disabled.', $addon, $namespace));
 
-                return;
+                return false;
             }
 
             if ($row->isBundled()) {
-                Log::error(sprintf('Addon "%s" is bundled and cannot be disabled; its listener %s is skipped.', $addon, $listener));
+                Log::error(sprintf('Addon "%s" is bundled and cannot be disabled; %s is skipped.', $addon, $source));
 
-                return;
+                return false;
             }
 
             $this->registry->disable($row->name);
@@ -63,17 +66,19 @@ class AddonQuarantine
             // The active theme cannot be disabled from under the site.
             Log::error(sprintf('Addon "%s" could not be disabled: %s', $addon, $runtimeException->getMessage()));
 
-            return;
+            return false;
         } catch (Throwable $throwable) {
             Log::warning(sprintf('Addon "%s" quarantine failed: %s', $addon, $throwable->getMessage()));
 
-            return;
+            return false;
         }
 
-        $this->notifySuperAdmins($row, $listener, $failure);
+        $this->notifySuperAdmins($row, $source, $failure);
+
+        return true;
     }
 
-    private function notifySuperAdmins(Addon $row, string $listener, Throwable $failure): void
+    private function notifySuperAdmins(Addon $row, string $source, Throwable $failure): void
     {
         try {
             $admins = User::query()->whereHas('roles', function ($query): void {
@@ -86,7 +91,7 @@ class AddonQuarantine
 
             Notification::make()
                 ->title(sprintf('Addon "%s" was disabled', $row->name))
-                ->body(sprintf('Its listener %s could not be registered: %s Fix the addon, then enable it again.', $listener, $failure->getMessage()))
+                ->body(sprintf('%s failed: %s Fix the addon, then enable it again.', $source, $failure->getMessage()))
                 ->danger()
                 ->persistent()
                 ->sendToDatabase($admins);

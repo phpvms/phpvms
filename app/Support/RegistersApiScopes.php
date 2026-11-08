@@ -10,8 +10,9 @@ use App\Services\PermissionRegistry;
  * One-line declaration of permission-backed OAuth scopes from a provider's
  * `boot()`. Forwards each name to {@see PermissionRegistry::registerApiScope()},
  * which records it as both an assignable permission and an OAuth-exposable
- * scope. Shared by `App\Contracts\Modules\ServiceProvider` (addon-authored
- * providers) and `App\Providers\AddonServiceProvider` (the core addon engine).
+ * scope. Used by `App\Providers\AddonServiceProvider` (the core addon engine).
+ * Addon-authored providers declare scopes through
+ * `App\Contracts\Addons\AddonServiceProvider::registerScopes()` instead.
  */
 trait RegistersApiScopes
 {

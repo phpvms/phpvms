@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace PhpvmsBadHooksFixture\Providers;
 
-use App\Contracts\Modules\ServiceProvider;
+use App\Contracts\Addons\AddonServiceProvider;
 
-class BadHooksServiceProvider extends ServiceProvider {}
+class BadHooksServiceProvider extends AddonServiceProvider {}

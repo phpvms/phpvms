@@ -2,10 +2,11 @@
 
 namespace Modules\PhpvmsWidgets\Providers;
 
+use App\Contracts\Addons\AddonServiceProvider;
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
 use App\Support\Extensions\Facades\Extensions;
-use Illuminate\Support\ServiceProvider;
+use Closure;
 use Livewire\Livewire;
 use Modules\PhpvmsWidgets\Http\Controllers\WeatherController;
 use Override;
@@ -36,9 +37,9 @@ use Route;
  *
  * DISABLE-SAFETY
  * --------------
- * Everything this addon contributes happens inside boot() below: the data route,
- * the Extensions::widgets()->register([...]) calls for skylight, and the
- * Tiles registrations for Blade themes. A phpVMS addon's
+ * Everything this addon contributes happens inside onBoot() and
+ * registerAppTiles() below: the data route, the Extensions::widgets()->register([...])
+ * calls for skylight, and the tiles for Blade themes. A phpVMS addon's
  * ServiceProvider only boots when the addon is ENABLED. Disabled → this never
  * runs → the widget never enters the catalog AND the endpoint never exists.
  *
@@ -47,30 +48,25 @@ use Route;
  * Addons page, then `php artisan addons:relink` so public/ is symlinked to
  * public/ext/phpvmswidgets/ and the built widget is web-served).
  */
-class PhpvmsWidgetsServiceProvider extends ServiceProvider
+class PhpvmsWidgetsServiceProvider extends AddonServiceProvider
 {
     /**
      * Bootstrap the addon (runs only when enabled — see class docblock).
      *
      *   1. Register the addon's own weather data route.
      *   2. Register the bundled dashboard widgets with the extensions hub.
-     *   3. Register their Livewire twins as tiles, for Blade themes.
-     */
-    public function boot(): void
-    {
-        $this->registerRoutes();
-        $this->registerSkylightWidget();
-        $this->registerTiles();
-    }
-
-    /**
-     * Nothing to bind — all registration is deferred to boot() so it only
-     * happens when the addon is enabled. Kept empty on purpose.
+     *   3. Register the view, translation and Livewire namespaces the tiles use.
      */
     #[Override]
-    public function register(): void
+    protected function onBoot(): void
     {
-        //
+        $this->registerWeatherRoutes();
+        $this->registerSkylightWidget();
+
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'phpvmswidgets');
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'phpvmswidgets');
+
+        Livewire::addNamespace('phpvmswidgets', classNamespace: 'Modules\\PhpvmsWidgets\\Livewire');
     }
 
     /**
@@ -80,7 +76,7 @@ class PhpvmsWidgetsServiceProvider extends ServiceProvider
      * fetch is authenticated; `auth` restricts it to a logged-in pilot (the
      * dashboard is behind auth anyway). The addon OWNS this endpoint end-to-end.
      */
-    protected function registerRoutes(): void
+    protected function registerWeatherRoutes(): void
     {
         Route::middleware(['web', 'auth'])->group(function (): void {
             Route::get('/api/phpvms-widgets/weather/{icao}', [WeatherController::class, 'show'])
@@ -185,22 +181,18 @@ class PhpvmsWidgetsServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the Livewire twins of the skylight widgets as {@see Tiles}, for
-     * Blade themes such as airside.
+     * The Livewire twins of the skylight widgets, as {@see Tiles} for Blade
+     * themes such as airside.
      *
      * Same ids, zones and default-on flags as the skylight entries above, so a
      * pilot sees the same dashboard whichever theme is active. Each closure runs
      * when a theme first reads the registry, per locale, so `__()` is safe there.
+     *
+     * @return array<string, Closure(): Tile>
      */
-    protected function registerTiles(): void
+    #[Override]
+    public function registerAppTiles(): array
     {
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'phpvmswidgets');
-        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'phpvmswidgets');
-
-        Livewire::addNamespace('phpvmswidgets', classNamespace: 'Modules\\PhpvmsWidgets\\Livewire');
-
-        $tiles = $this->app->make(Tiles::class);
-
         $twins = [
             ['kpi-hours', 'total-hours', 'hours', 'clock', Tile::ZONE_GRID, 10],
             ['kpi-flights', 'flights', 'flights', 'plane', Tile::ZONE_GRID, 20],
@@ -210,8 +202,10 @@ class PhpvmsWidgetsServiceProvider extends ServiceProvider
             ['weather', 'weather', 'weather', 'cloud-sun', Tile::ZONE_SIDEBAR, 20],
         ];
 
+        $tiles = [];
+
         foreach ($twins as [$id, $component, $title, $icon, $zone, $order]) {
-            $tiles->register($id, fn (): Tile => Tile::livewire(
+            $tiles[$id] = fn (): Tile => Tile::livewire(
                 id: $id,
                 component: 'phpvmswidgets::'.$component,
                 title: __('phpvmswidgets::widgets.'.$title),
@@ -220,7 +214,9 @@ class PhpvmsWidgetsServiceProvider extends ServiceProvider
                 zone: $zone,
                 default: true,
                 order: $order,
-            ));
+            );
         }
+
+        return $tiles;
     }
 }
