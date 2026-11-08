@@ -76,7 +76,7 @@ const form = useForm<ProfileFormData>({
  * Airports are searched, not shipped: the table is unbounded, so the card seeds
  * the menu with the currently-selected airport and queries
  * `GET /api/airports/search` as the pilot types. `hubs=1` mirrors the
- * `pilots.home_hubs_only` setting the Blade form honours.
+ * `operations.home_hubs_only` setting the Blade form honours.
  */
 const airportItems = shallowRef<App.Http.Data.SelectOptionData[]>(
   props.edit.homeAirport ? [props.edit.homeAirport] : [],

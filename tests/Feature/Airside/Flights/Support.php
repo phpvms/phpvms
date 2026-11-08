@@ -20,8 +20,8 @@ function airsideFlightsBaseline(): void
 {
     updateSetting('units.distance', 'nmi');
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_show_flights_from_current', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_show_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
     updateSetting('pireps.restrict_aircraft_to_typerating', false);
     updateSetting('pireps.only_aircraft_at_dpt_airport', false);

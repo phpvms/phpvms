@@ -102,7 +102,7 @@
             <a class="btn btn-sm btn-primary" href="{{ route('frontend.flights.show', [$flight->id]) }}">
                 {{ __('flights.viewflight') }}
             </a>
-            @if (!setting('pilots.only_flights_from_current') || $flight->dpt_airport_id === $user->current_airport->icao)
+            @if (!setting('operations.only_flights_from_current') || $flight->dpt_airport_id === $user->current_airport->icao)
               @if ($acars_plugin)
                 @if (isset($saved[$flight->id]))
                   <a href="vmsacars:bid/{{ $saved[$flight->id] }}" class="btn btn-sm btn-primary">Load in

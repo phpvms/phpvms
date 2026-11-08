@@ -31,6 +31,10 @@ final class RenamedSettings
         'simbrief.block_aircraft'                => 'operations.block_aircraft',
         'pireps.advanced_fuel'                   => 'operations.advanced_fuel',
         'flights.only_company_aircraft'          => 'operations.only_company_aircraft',
+
+        'pilots.home_hubs_only'                 => 'operations.home_hubs_only',
+        'pilots.only_flights_from_current'      => 'operations.only_flights_from_current',
+        'pilots.only_show_flights_from_current' => 'operations.only_show_flights_from_current',
     ];
 
     /**

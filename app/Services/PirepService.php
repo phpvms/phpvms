@@ -142,7 +142,7 @@ class PirepService extends Service
 
         // See if this user is at the current airport
         /* @noinspection NotOptimalIfConditionsInspection */
-        if (setting('pilots.only_flights_from_current', false)
+        if (setting('operations.only_flights_from_current', false)
             && $user->curr_airport_id !== $pirep->dpt_airport_id) {
             throw new UserNotAtAirport($user, $pirep->dpt_airport);
         }

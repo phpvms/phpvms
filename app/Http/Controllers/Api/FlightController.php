@@ -99,7 +99,7 @@ class FlightController extends Controller
                 $query->where('airline_id', $user->airline_id);
             }
 
-            if (setting('pilots.only_flights_from_current')) {
+            if (setting('operations.only_flights_from_current')) {
                 $query->where('dpt_airport_id', $user->curr_airport_id);
             }
         }

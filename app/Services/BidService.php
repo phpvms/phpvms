@@ -302,7 +302,7 @@ class BidService extends Service
             ]);
         }
 
-        if ((bool) setting('pilots.only_flights_from_current', false)
+        if ((bool) setting('operations.only_flights_from_current', false)
             && $flight->dpt_airport_id !== $user->curr_airport_id) {
             throw ValidationException::withMessages([
                 'flightId' => 'You must be at the departure airport to place this bid.',
