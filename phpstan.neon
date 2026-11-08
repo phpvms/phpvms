@@ -21,6 +21,12 @@ parameters:
     # with and without the scan, and the `Modules\Sample` ignore below was
     # already unmatched either way.
 
+    # A first-party module the tests use. It is a plain directory, not a
+    # symlink, so scanning just it is cheap. It is not a composer PSR-4 entry,
+    # because that would win over the addon loader's copy of an updated addon.
+    scanDirectories:
+        - modules/phpvms-widgets
+
     # Deliberately broken fixture: a provider on the removed addon base class, to
     # test that the loader quarantines it instead of failing boot. A missing
     # parent class cannot be ignored by identifier, only excluded.

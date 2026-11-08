@@ -228,11 +228,13 @@ wrapper or classes.
 
 Outside the dashboard, render one by id: `<x-tile id="weather" />`.
 
-The tag takes `tile` (a `Tile`) or `id` (looked up in the registry), never both. An unknown `id`
+The tag takes `tile` (a `Tile`) or `id` (looked up in the registry), never both. When the same tile
+is on a page more than once, give each an `instance` (`instance="arrival"`) so each Livewire child
+gets its own key. An unknown `id`
 renders nothing, or an HTML comment naming it when `app.debug` is on.
 
 `:with` carries page data the tile needs. A Livewire tile receives only the keys its `mount()`
 arguments or public properties accept, plus Livewire's own control keys such as `lazy`, so one shared
-`:with` is safe; the rest are dropped instead of becoming HTML attributes. It is keyed `tile-{id}`. A
+`:with` is safe; the rest are dropped instead of becoming HTML attributes. It is keyed `tile-{id}`, or `tile-{id}:{instance}`. A
 view tile receives its declared `data` with `:with` merged over it, so render-time values win
 (`Tile::dataWith()`).

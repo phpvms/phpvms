@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Modules\PhpvmsWidgets\Support;
 
 use App\Support\Metar;
-use Modules\PhpvmsWidgets\Http\Data\WeatherData;
 use Throwable;
 
 /**
  * Summarises a parsed METAR into the conditions, temperature and wind rows the
- * weather widgets show. Shared by the Vue widget's endpoint and the Livewire widget.
+ * weather tile shows.
  */
 final class WeatherSummary
 {

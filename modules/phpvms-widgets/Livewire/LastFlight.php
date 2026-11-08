@@ -28,7 +28,6 @@ class LastFlight extends Component
 
         return view('phpvmswidgets::livewire.last-flight', [
             'pirep' => $pirep,
-            // HH:MM, the same as the skylight widget, so both themes match.
             'block' => $pirep?->flight_time === null ? '—' : sprintf('%02d:%02d', intdiv((int) $pirep->flight_time, 60), (int) $pirep->flight_time % 60),
         ]);
     }

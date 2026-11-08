@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\PhpvmsWidgets\Livewire;
 
+use App\Models\Airport;
 use App\Services\AirportService;
 use App\Support\Metar;
 use Illuminate\Contracts\View\View;
@@ -11,12 +12,12 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Modules\PhpvmsWidgets\Http\Data\WeatherData;
+use Modules\PhpvmsWidgets\Support\WeatherData;
 use Modules\PhpvmsWidgets\Support\WeatherSummary;
 use Throwable;
 
 /**
- * Weather (METAR) for one station: the pilot's current airport, else home, unless
+ * Weather (METAR) for one station: the ICAO of the pilot's current airport, else home, unless
  * the theme passes `icao`. Lazy, so a slow weather provider never holds up the page.
  */
 #[Lazy]
@@ -27,8 +28,15 @@ class Weather extends Component
 
     public function mount(): void
     {
+        if ($this->icao !== null) {
+            return;
+        }
+
+        // An airport id is seeded from its ICAO but can differ from it, so the
+        // ICAO is looked up rather than taken from the id.
         $user = Auth::user();
-        $this->icao ??= $user?->curr_airport_id ?? $user?->home_airport_id;
+        $airportId = $user?->curr_airport_id ?? $user?->home_airport_id;
+        $this->icao = $airportId === null ? null : Airport::query()->whereKey($airportId)->value('icao');
     }
 
     public function render(AirportService $airports): View
