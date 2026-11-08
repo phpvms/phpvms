@@ -8,9 +8,11 @@ use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonServiceProvider;
 use App\Contracts\Service;
+use App\Features\AddonSettings\Setting;
 use App\Models\AddonSetting;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -116,7 +118,11 @@ class AddonSettingSyncService extends Service
             try {
                 /** @var AddonServiceProvider $provider */
                 $provider = $this->app->getProvider($providerClass) ?? new $providerClass($this->app);
-                $schema = [...$schema, ...$provider->registerSettings()];
+                $settings = $provider->registerSettings();
+
+                $this->requireSettings($settings);
+
+                $schema = [...$schema, ...array_map(static fn (Setting $setting): array => $setting->toArray(), $settings)];
             } catch (Throwable $throwable) {
                 Log::warning('AddonSettingSync: failed to read settings from '.$providerClass, [
                     'exception' => $throwable->getMessage(),
@@ -125,6 +131,22 @@ class AddonSettingSyncService extends Service
         }
 
         return $schema;
+    }
+
+    /**
+     * An addon is third-party code, so the declared list type is checked at run time.
+     *
+     * @param array<mixed> $settings
+     *
+     * @throws InvalidArgumentException
+     */
+    private function requireSettings(array $settings): void
+    {
+        foreach ($settings as $setting) {
+            if (!$setting instanceof Setting) {
+                throw new InvalidArgumentException('registerSettings() must return a list of Setting objects.');
+            }
+        }
     }
 
     /**

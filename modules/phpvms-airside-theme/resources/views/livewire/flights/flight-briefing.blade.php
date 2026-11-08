@@ -319,7 +319,7 @@
                                 <div class="vms-briefing-fly grid gap-2.5">
                                     <p class="m-0 text-[13px] text-dark-500 dark:text-dark-400">Start the flight from your client when the steps above are done.</p>
                                     <div class="flex flex-wrap items-center gap-2.5 not-has-[*]:hidden">
-                                        <x-slot-outlet name="flights.detail.actions" :context="['flight' => $flight, 'policy' => $policy]" />
+                                        <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingFlightActions($summary, $policy, auth()->user(), $bid, null)" />
                                     </div>
                                 </div>
                             @endif

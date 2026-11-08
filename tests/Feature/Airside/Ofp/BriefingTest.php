@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 require_once __DIR__.'/Support.php';
 
+use App\Features\Hooks\Facades\Hooks;
+use App\Features\Hooks\Fill;
+use App\Features\Hooks\Points\RenderingBriefingActions;
 use App\Features\Ofp\Livewire\BriefingActions;
 use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Services\SimBriefService;
-use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
+
+final class BriefingSlotProbe
+{
+    public function handle(RenderingBriefingActions $hook): void
+    {
+        $hook->add(Fill::view('ofpslot::ofp-slot-'.getmypid(), ['flight' => $hook->flight, 'aircraft' => $hook->aircraft, 'briefing' => $hook->briefing]));
+    }
+}
 
 /**
  * 7.6: the OFP briefing page and its actions.
@@ -30,18 +40,32 @@ it('is a 404 for another pilot', function (): void {
         ->assertNotFound();
 });
 
-it('renders the addon entries of the briefing actions slot with the context', function (): void {
+it('renders the fills of the briefing actions hook with the briefing values', function (): void {
     file_put_contents(
         sys_get_temp_dir().'/ofp-slot-'.getmypid().'.blade.php',
         '<span id="slot-probe">{{ $flight->summary->callsign }}|{{ $aircraft->registration }}|{{ $briefing->id }}</span>',
     );
     View::addNamespace('ofpslot', sys_get_temp_dir());
-    Extensions::slots()->register(['slot' => 'flight.briefing.actions', 'view' => 'ofpslot::ofp-slot-'.getmypid()]);
+    Hooks::listen(RenderingBriefingActions::class, BriefingSlotProbe::class);
 
     $this->actingAs($this->fixture['user'])
         ->get(route('frontend.ofp.briefing', $this->briefing->id))
         ->assertOk()
         ->assertSee('<span id="slot-probe">'.$this->fixture['flight']->ident.'|'.$this->fixture['aircraft']->registration.'|'.$this->briefing->id.'</span>', false);
+
+    @unlink(sys_get_temp_dir().'/ofp-slot-'.getmypid().'.blade.php');
+});
+
+it('shows the separator only when a fill is added to the briefing actions hook', function (): void {
+    $component = fn () => Livewire::actingAs($this->fixture['user'])->test(BriefingActions::class, ['briefingId' => (string) $this->briefing->id]);
+
+    $component()->assertDontSeeHtml('<hr');
+
+    Hooks::listen(RenderingBriefingActions::class, BriefingSlotProbe::class);
+    file_put_contents(sys_get_temp_dir().'/ofp-slot-'.getmypid().'.blade.php', '<span id="slot-probe"></span>');
+    View::addNamespace('ofpslot', sys_get_temp_dir());
+
+    $component()->assertSeeHtml('<hr');
 
     @unlink(sys_get_temp_dir().'/ofp-slot-'.getmypid().'.blade.php');
 });

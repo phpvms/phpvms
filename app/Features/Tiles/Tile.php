@@ -13,10 +13,11 @@ use InvalidArgumentException;
  * `showInDashboard` offers the tile on the pilot dashboard. `zone`, `span`,
  * `default` and `order` are dashboard layout hints and are ignored elsewhere.
  *
- * Build it with {@see self::livewire()} or {@see self::view()}. Two named
- * constructors are used instead of a fluent builder: the render target is the
- * only mutually exclusive input, so each constructor makes the invalid state
- * (both or neither target) impossible to express, and the value stays immutable.
+ * Build it with {@see self::livewire()}, {@see self::view()} or
+ * {@see self::element()}. Named constructors are used instead of a fluent
+ * builder: the render target is the only mutually exclusive input, so each
+ * constructor sets exactly one of livewire/view/tag, and the value stays
+ * immutable. The constructor enforces that too.
  */
 final readonly class Tile
 {
@@ -27,8 +28,15 @@ final readonly class Tile
     /** @var list<string> */
     public const array ZONES = [self::ZONE_GRID, self::ZONE_SIDEBAR];
 
+    public const string KIND_LIVEWIRE = 'livewire';
+
+    public const string KIND_VIEW = 'view';
+
+    public const string KIND_ELEMENT = 'element';
+
     /**
      * @param array<string, mixed> $data
+     * @param array<string, mixed> $attributes Attributes of an element tile; scalars only.
      */
     private function __construct(
         public string $id,
@@ -43,7 +51,14 @@ final readonly class Tile
         public ?string $view,
         public array $data,
         public int $order,
+        public ?string $tag = null,
+        public ?string $module = null,
+        public array $attributes = [],
     ) {
+        if (trim($id) === '') {
+            throw new InvalidArgumentException('Tile id must not be empty.');
+        }
+
         if (preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $id) !== 1) {
             throw new InvalidArgumentException("Tile id [{$id}] must be lower-kebab-case.");
         }
@@ -60,8 +75,32 @@ final readonly class Tile
             throw new InvalidArgumentException("Tile [{$id}] is default but not shown in the dashboard.");
         }
 
-        if (trim((string) ($livewire ?? $view)) === '') {
-            throw new InvalidArgumentException("Tile [{$id}] needs a non-empty livewire component or view name.");
+        if (count(array_filter([$livewire, $view, $tag], fn (?string $target): bool => $target !== null)) !== 1) {
+            throw new InvalidArgumentException("Tile [{$id}] needs exactly one of livewire, view or tag.");
+        }
+
+        if (trim((string) ($livewire ?? $view ?? $tag)) === '') {
+            throw new InvalidArgumentException("Tile [{$id}] needs a non-empty livewire component, view name or tag.");
+        }
+
+        if ($tag !== null) {
+            if (preg_match('/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/', $tag) !== 1) {
+                throw new InvalidArgumentException("Tile [{$id}] tag [{$tag}] must be a custom element name such as [pv-hero].");
+            }
+
+            if (trim((string) $module) === '') {
+                throw new InvalidArgumentException("Tile [{$id}] needs a non-empty module url.");
+            }
+
+            foreach ($attributes as $name => $value) {
+                if (preg_match('/^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/', (string) $name) !== 1) {
+                    throw new InvalidArgumentException("Tile [{$id}] attribute name [{$name}] is not valid.");
+                }
+
+                if (!is_scalar($value)) {
+                    throw new InvalidArgumentException("Tile [{$id}] attribute [{$name}] must be a scalar value.");
+                }
+            }
         }
     }
 
@@ -105,9 +144,45 @@ final readonly class Tile
     }
 
     /**
+     * A tile rendered as a custom element, e.g. `<pv-hero>`, loaded from the
+     * ES module at `$module`. `$attributes` are scalar values written onto the
+     * element; a module shared by several tiles is loaded once per page.
+     *
+     * @param array<string, mixed> $attributes
+     */
+    public static function element(
+        string $id,
+        string $tag,
+        string $module,
+        string $title,
+        string $icon,
+        array $attributes = [],
+        bool $showInDashboard = true,
+        string $zone = self::ZONE_GRID,
+        int $span = 1,
+        bool $default = false,
+        int $order = 100,
+    ): self {
+        return new self($id, $title, $icon, $showInDashboard, $zone, $span, $default, false, null, null, [], $order, $tag, $module, $attributes);
+    }
+
+    /**
+     * Which render target the tile has: `livewire`, `view` or `element`.
+     */
+    public function kind(): string
+    {
+        return match (true) {
+            $this->tag !== null  => self::KIND_ELEMENT,
+            $this->view !== null => self::KIND_VIEW,
+            default              => self::KIND_LIVEWIRE,
+        };
+    }
+
+    /**
      * The data a tile receives when rendered.
      *
-     * Livewire tiles get `$runtime` as mount params. View tiles get the
+     * Livewire tiles get `$runtime` as mount params. Element tiles ignore it;
+     * their attributes are declared. View tiles get the
      * declared `data` with `$runtime` merged over it, so render-time values win.
      *
      * @param  array<string, mixed> $runtime

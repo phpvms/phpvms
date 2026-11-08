@@ -9,15 +9,17 @@ use App\Addons\Support\AddonPanelBuilder;
 use App\Addons\Support\AddonQuarantine;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ThemeAddonRegistrar;
+use App\Features\AddonSettings\Setting;
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Hook;
 use App\Features\Themes\ThemeOptions;
+use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
 use App\Services\PermissionRegistry;
-use App\Support\Extensions\Extensions;
-use App\Support\Extensions\SlotRegistry;
+use App\Support\Metrics\Metric;
 use App\Support\Metrics\MetricRegistry;
 use App\Support\Metrics\Metrics;
+use App\Support\Permissions\Scope;
 use Closure;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -77,7 +79,7 @@ use Throwable;
  * routes can override core routes; `onBoot()` therefore cannot call `route()`
  * for the addon's own routes.
  *
- * Lazy declarations (`registerAppSlots`, `registerAppTiles`, `registerMetrics`,
+ * Lazy declarations (`registerAppTiles`, `registerMetrics`,
  * `registerScopes`, `registerSchedule`) run when core first resolves the
  * matching registry in a process, or at once when it is already resolved.
  * The registry-backed ones return data, which core applies as a whole, so a
@@ -197,21 +199,14 @@ abstract class AddonServiceProvider extends ServiceProvider
     public function registerAppComponents(): void {}
 
     /**
-     * Slot entries for the pilot theme's slot outlets, in the shape of
-     * {@see SlotRegistry::register()}. Called when the slot registry is first used.
+     * Tiles, as a list of closures that each return a {@see Tile}
+     * (`Tile::livewire()`, `Tile::view()` or `Tile::element()`). Called when
+     * the tile registry is first used. A non-closure entry, or a closure that
+     * throws, registers none of the tiles and quarantines the addon.
      *
-     * @return list<array<string, mixed>>
-     */
-    public function registerAppSlots(): array
-    {
-        return [];
-    }
-
-    /**
-     * Tiles, keyed by tile id. Each closure builds the tile when the tile
-     * registry is first read. Called when the tile registry is first used.
+     * To fill a theme outlet, listen to a `RenderHook` point in `app/Listeners`.
      *
-     * @return array<string, Closure(): object>
+     * @return list<Closure(): Tile>
      */
     public function registerAppTiles(): array
     {
@@ -272,11 +267,12 @@ abstract class AddonServiceProvider extends ServiceProvider
     public function registerSchedule(Schedule $schedule): void {}
 
     /**
-     * Permission-backed API scopes, keyed by group. Each group holds a list of
-     * scope names or a `name => label` map. Called when the permission
-     * registry is first used.
+     * Permission-backed API scopes, as a list of {@see Scope}
+     * (`new Scope($name, $group, $label)`). Called when the permission
+     * registry is first used. A non-Scope entry registers none and
+     * quarantines the addon.
      *
-     * @return array<string, array<int|string, string>>
+     * @return list<Scope>
      */
     public function registerScopes(): array
     {
@@ -284,11 +280,11 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
-     * Metric definitions, in the shape of
-     * {@see MetricRegistry::register()}. Called when the
-     * metrics hub is first used.
+     * Metrics, as a list of {@see Metric} (`Metric::integer()` or
+     * `Metric::float()`). Called when the metrics hub is first used. A
+     * non-Metric entry registers none and quarantines the addon.
      *
-     * @return list<array<string, mixed>>
+     * @return list<Metric>
      */
     public function registerMetrics(): array
     {
@@ -304,18 +300,11 @@ abstract class AddonServiceProvider extends ServiceProvider
      * Read values back with `addon_setting()` / `addon_setting_save()`,
      * addressing the addon by its manifest `alias` or `registry_id`.
      *
-     * Each entry is an associative array. Only `key` is required:
-     *  - `key`         string  Machine key, normalised to lower-case, dots to underscores.
-     *  - `name`        string  Human-readable label (defaults to the key).
-     *  - `default`     scalar  Initial value for new keys (defaults to '').
-     *  - `group`       string  Tab group on the settings page (defaults to 'general').
-     *  - `type`        string  text|string|boolean|bool|int|integer|number|float|date|select
-     *                          (defaults to 'text').
-     *  - `options`     string  Comma-separated options for `select` (e.g. 'a,b=Bee').
-     *  - `description` string  Help text shown under the field.
-     *  - `order`       int     Sort order within the group.
+     * A list of {@see Setting} (`Setting::text()`, `int()`, `float()`, `bool()`,
+     * `date()`, `select()` or `hidden()`). A hidden setting is stored but not
+     * listed on the settings page.
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<Setting>
      */
     public function registerSettings(): array
     {
@@ -529,37 +518,44 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
+     * An addon is third-party code, so a declared list type is checked at run time.
+     *
+     * @param array<mixed> $items
+     * @param class-string $class
+     *
+     * @throws InvalidArgumentException
+     */
+    private function requireListOf(array $items, string $class, string $method): void
+    {
+        foreach ($items as $item) {
+            if (!$item instanceof $class) {
+                throw new InvalidArgumentException(sprintf('%s() must return a list of %s.', $method, $class));
+            }
+        }
+    }
+
+    /**
      * Wire the declarations that apply when core first uses a registry.
      * Wired only when the method is overridden.
      */
     private function declareLazily(): void
     {
-        if ($this->overrides('registerAppSlots')) {
-            $this->callAfterResolving('extensions', function (Extensions $skylight): void {
-                $this->guard('registerAppSlots', function () use ($skylight): void {
-                    $entries = $this->registerAppSlots();
-
-                    // Validate the whole set first, so a bad entry leaves none registered.
-                    $scratch = new SlotRegistry();
-
-                    foreach ($entries as $entry) {
-                        $scratch->register($entry);
-                    }
-
-                    foreach ($entries as $entry) {
-                        $skylight->slots()->register($entry);
-                    }
-                });
-            });
-        }
-
         if ($this->overrides('registerAppTiles')) {
-            $this->callAfterResolving(self::TILES_REGISTRY, function (object $tiles): void {
+            $this->callAfterResolving(self::TILES_REGISTRY, function (Tiles $tiles): void {
                 $this->guard('registerAppTiles', function () use ($tiles): void {
-                    $registrations = $this->registerAppTiles();
+                    $builders = $this->registerAppTiles();
 
-                    foreach ($registrations as $id => $build) {
-                        call_user_func([$tiles, 'register'], (string) $id, $build);
+                    $this->requireListOf($builders, Closure::class, 'registerAppTiles');
+
+                    // Build every tile on a scratch registry first, so a throwing builder leaves none registered.
+                    $scratch = new Tiles();
+
+                    foreach ($builders as $build) {
+                        $scratch->register($build);
+                    }
+
+                    foreach ($builders as $build) {
+                        $tiles->register($build);
                     }
                 });
             });
@@ -568,16 +564,18 @@ abstract class AddonServiceProvider extends ServiceProvider
         if ($this->overrides('registerMetrics')) {
             $this->callAfterResolving('metrics', function (Metrics $metrics): void {
                 $this->guard('registerMetrics', function () use ($metrics): void {
-                    $definitions = $this->registerMetrics();
+                    $list = $this->registerMetrics();
+
+                    $this->requireListOf($list, Metric::class, 'registerMetrics');
 
                     $scratch = new MetricRegistry();
 
-                    foreach ($definitions as $definition) {
-                        $scratch->register($definition);
+                    foreach ($list as $metric) {
+                        $scratch->register($metric->toDefinition());
                     }
 
-                    foreach ($definitions as $definition) {
-                        $metrics->registry()->register($definition);
+                    foreach ($list as $metric) {
+                        $metrics->registry()->register($metric->toDefinition());
                     }
                 });
             });
@@ -586,18 +584,12 @@ abstract class AddonServiceProvider extends ServiceProvider
         if ($this->overrides('registerScopes')) {
             $this->callAfterResolving(PermissionRegistry::class, function (PermissionRegistry $registry): void {
                 $this->guard('registerScopes', function () use ($registry): void {
-                    $groups = $this->registerScopes();
+                    $scopes = $this->registerScopes();
 
-                    foreach ($groups as $group => $scopes) {
-                        foreach ($scopes as $name => $label) {
-                            if (is_int($name)) {
-                                $registry->registerApiScope($label, (string) $group);
+                    $this->requireListOf($scopes, Scope::class, 'registerScopes');
 
-                                continue;
-                            }
-
-                            $registry->registerApiScope($name, (string) $group, $label);
-                        }
+                    foreach ($scopes as $scope) {
+                        $registry->registerApiScope($scope->name, $scope->group, $scope->label);
                     }
                 });
             });

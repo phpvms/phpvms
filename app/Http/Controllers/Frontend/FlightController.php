@@ -13,6 +13,10 @@ use App\Features\Bids\Actions\RemoveBid;
 use App\Features\Bids\Queries\EligibleAircraft;
 use App\Features\Flights\Queries\VisibleFlights;
 use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Hooks\Points\RenderingBidDrawerActions;
+use App\Features\Hooks\Points\RenderingBidRowActions;
+use App\Features\Hooks\Points\RenderingFlightActions;
+use App\Features\Hooks\Points\RenderingFlightRowActions;
 use App\Http\Data\BidRowData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
@@ -219,6 +223,10 @@ class FlightController extends Controller
                     'icaoTypes' => $viewData['icao_codes'],
                 ],
             ],
+            renderHooks: fn (): array => [
+                RenderingFlightActions::forList($policy, $user),
+                RenderingFlightRowActions::forList($policy),
+            ],
         );
     }
 
@@ -292,6 +300,10 @@ class FlightController extends Controller
                     ->all(),
                 'policy' => $policy,
             ],
+            renderHooks: fn (): array => [
+                RenderingBidRowActions::forList(),
+                RenderingBidDrawerActions::forList(),
+            ],
         );
     }
 
@@ -357,6 +369,7 @@ class FlightController extends Controller
                 ),
                 'policy' => $policy,
             ],
+            renderHooks: fn (): array => [RenderingFlightActions::forList($policy, $user)],
         );
     }
 

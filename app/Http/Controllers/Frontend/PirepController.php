@@ -6,6 +6,7 @@ use App\Contracts\Controller;
 use App\Enums\PirepFieldSource;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
+use App\Features\Hooks\Points\RenderingPirepDetail;
 use App\Features\Pireps\Actions\ListFilingAircraft;
 use App\Features\Pireps\Actions\PirepFilingDenied;
 use App\Features\Pireps\Actions\SaveManualPirep;
@@ -188,6 +189,7 @@ class PirepController extends Controller
                 'user'         => Auth::user(),
             ],
             spa: fn (): array => ['pirep' => PirepData::fromModel($pirep)],
+            renderHooks: fn (): array => [new RenderingPirepDetail($pirep)],
         );
     }
 

@@ -95,7 +95,7 @@
                     </div>
 
                     <div class="vms-flight-row-actions col-span-full flex items-center gap-2 not-has-[*]:hidden" x-on:click.stop x-on:keydown.stop>
-                        <x-slot-outlet name="flights.row.actions" :context="['flight' => $flight, 'policy' => $policy]" />
+                        <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingFlightRowActions($flight, $policy)" />
                     </div>
 
                     @if ($flight->availabilityReason)

@@ -6,23 +6,41 @@ require_once __DIR__.'/Support.php';
 
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
+use App\Features\Tiles\TilesServiceProvider;
 
-it('builds tiles only when the registry is read', function (): void {
+// Start from an empty registry; the first-party element tiles are checked in their own test.
+beforeEach(fn () => app()->instance(Tiles::class, new Tiles()));
+
+it('builds once to read the id, then again only when the registry is read', function (): void {
     $built = 0;
-    app(Tiles::class)->register('alpha', function () use (&$built): Tile {
+    $registry = app(Tiles::class);
+    $registry->register(function () use (&$built): Tile {
         $built++;
 
         return dashboardTile('alpha');
     });
-    $registry = app(Tiles::class);
 
     expect($registry->has('alpha'))->toBeTrue()
-        ->and($built)->toBe(0);
+        ->and($built)->toBe(1);
 
     $registry->all();
     $registry->find('alpha');
 
-    expect($built)->toBe(1);
+    expect($built)->toBe(2);
+});
+
+it('builds tiles again for each locale', function (): void {
+    app(Tiles::class)->register(fn (): Tile => Tile::livewire(
+        'alpha', 'x::alpha', app()->getLocale() === 'fr' ? 'Bonjour' : 'Hello', 'star',
+    ));
+    $registry = app(Tiles::class);
+
+    app()->setLocale('en');
+    $english = $registry->find('alpha')?->title;
+    app()->setLocale('fr');
+    $french = $registry->find('alpha')?->title;
+
+    expect([$english, $french])->toBe(['Hello', 'Bonjour']);
 });
 
 it('lets the last registration override a duplicate id', function (): void {
@@ -39,7 +57,6 @@ it('lets the last registration override a duplicate id', function (): void {
 it('removes a tile whether it is registered before or after the removal', function (): void {
     $registry = app(Tiles::class);
     registerTiles(dashboardTile('early'));
-    $registry->all();
 
     $registry->remove('early');
     $registry->remove('late');
@@ -49,10 +66,19 @@ it('removes a tile whether it is registered before or after the removal', functi
         ->and($registry->has('late'))->toBeFalse();
 });
 
-it('rejects a closure that builds a tile with another id', function (): void {
-    app(Tiles::class)->register('alpha', fn (): Tile => dashboardTile('beta'));
+it('indexes a tile by its own id and replaces a duplicate', function (): void {
+    $registry = app(Tiles::class);
+    $registry->register(fn (): Tile => dashboardTile('alpha'));
+    $registry->register(fn (): Tile => Tile::view('alpha', 'x::second', 'Second', 'star'));
 
-    expect(fn () => app(Tiles::class)->all())->toThrow(InvalidArgumentException::class);
+    expect($registry->has('alpha'))->toBeTrue()
+        ->and($registry->find('alpha')?->view)->toBe('x::second')
+        ->and(array_keys($registry->all()))->toBe(['alpha']);
+
+    $registry->remove('alpha');
+
+    expect($registry->has('alpha'))->toBeFalse()
+        ->and($registry->find('alpha'))->toBeNull();
 });
 
 it('accepts a numeric id', function (): void {
@@ -62,20 +88,6 @@ it('accepts a numeric id', function (): void {
 
     expect($registry->find('123')?->id)->toBe('123')
         ->and($registry->find('alpha')?->id)->toBe('alpha');
-});
-
-it('builds tiles again for each locale', function (): void {
-    app(Tiles::class)->register('alpha', fn (): Tile => Tile::livewire(
-        'alpha', 'x::alpha', app()->getLocale() === 'fr' ? 'Bonjour' : 'Hello', 'star',
-    ));
-    $registry = app(Tiles::class);
-
-    app()->setLocale('en');
-    $english = $registry->find('alpha')?->title;
-    app()->setLocale('fr');
-    $french = $registry->find('alpha')?->title;
-
-    expect([$english, $french])->toBe(['Hello', 'Bonjour']);
 });
 
 it('builds the default layout by zone, defaults only, sorted by order', function (): void {
@@ -140,4 +152,39 @@ it('rejects invalid definitions', function (callable $make): void {
     'empty view'            => [fn (): Tile => Tile::view('ok', '', 'T', 'star')],
     'empty component'       => [fn (): Tile => Tile::livewire('ok', ' ', 'T', 'star')],
     'default off-dashboard' => [fn (): Tile => Tile::livewire('ok', 'x::y', 'T', 'star', default: true)],
+    'empty id'              => [fn (): Tile => Tile::element('', 'pv-x', '/x.js', 'T', 'star')],
+    'element bad zone'      => [fn (): Tile => Tile::element('ok', 'pv-x', '/x.js', 'T', 'star', zone: 'footer')],
+    'element empty tag'     => [fn (): Tile => Tile::element('ok', '', '/x.js', 'T', 'star')],
+    'element plain tag'     => [fn (): Tile => Tile::element('ok', 'div', '/x.js', 'T', 'star')],
+    'element empty module'  => [fn (): Tile => Tile::element('ok', 'pv-x', ' ', 'T', 'star')],
+    'array attribute'       => [fn (): Tile => Tile::element('ok', 'pv-x', '/x.js', 'T', 'star', ['items' => ['a']])],
+    'null attribute'        => [fn (): Tile => Tile::element('ok', 'pv-x', '/x.js', 'T', 'star', ['heading' => null])],
+    'bad attribute name'    => [fn (): Tile => Tile::element('ok', 'pv-x', '/x.js', 'T', 'star', ['a b="x' => 'y'])],
 ]);
+
+it('reports the kind of each tile, with exactly one render target set', function (): void {
+    $livewire = Tile::livewire('a', 'x::a', 'A', 'star');
+    $view = Tile::view('b', 'x::b', 'B', 'star');
+    $element = Tile::element('c', 'pv-c', '/c.js', 'C', 'star', ['n' => 1, 'on' => true]);
+
+    expect([$livewire->kind(), $view->kind(), $element->kind()])->toBe(['livewire', 'view', 'element'])
+        ->and(array_map(fn (Tile $t): int => count(array_filter([$t->livewire, $t->view, $t->tag])), [$livewire, $view, $element]))->toBe([1, 1, 1])
+        ->and($element->module)->toBe('/c.js')
+        ->and($element->attributes)->toBe(['n' => 1, 'on' => true]);
+});
+
+it('registers the first-party element tiles outside the dashboard', function (): void {
+    app()->forgetInstance(Tiles::class);
+    $registry = app(Tiles::class);
+    new TilesServiceProvider(app())->boot();
+
+    foreach (['pv-hero', 'pv-callout', 'pv-stat-group'] as $id) {
+        $tile = $registry->find($id);
+
+        expect($tile)->not->toBeNull()
+            ->and($tile?->kind())->toBe('element')
+            ->and($tile?->tag)->toBe($id)
+            ->and($tile?->module)->toBe('/build/skylight/elements.js')
+            ->and($registry->dashboard())->not->toHaveKey($id);
+    }
+});

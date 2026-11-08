@@ -57,6 +57,14 @@ class Tile extends Component
             return new HtmlString(config('app.debug') ? '<!-- tile ['.e($this->id).'] not found -->' : '');
         }
 
+        if ($tile->tag !== null) {
+            return view('components.tile-element', [
+                'tag'               => $tile->tag,
+                'module'            => (string) $tile->module,
+                'elementAttributes' => $tile->attributes,
+            ]);
+        }
+
         $data = $tile->dataWith($this->with);
 
         if ($tile->view !== null) {

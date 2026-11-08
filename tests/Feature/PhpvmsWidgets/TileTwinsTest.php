@@ -23,6 +23,10 @@ it('registers every twin under a Livewire name that resolves, in the skylight de
     $registry = app(Tiles::class);
 
     foreach ($registry->all() as $tile) {
+        if ($tile->livewire === null) {
+            continue;
+        }
+
         expect(class_exists(app('livewire.factory')->resolveComponentClass((string) $tile->livewire)))->toBeTrue();
     }
 

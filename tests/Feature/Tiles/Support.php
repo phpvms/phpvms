@@ -12,7 +12,7 @@ use App\Features\Tiles\Tiles;
 function registerTiles(Tile ...$tiles): void
 {
     foreach ($tiles as $tile) {
-        app(Tiles::class)->register($tile->id, fn (): Tile => $tile);
+        app(Tiles::class)->register(fn (): Tile => $tile);
     }
 }
 

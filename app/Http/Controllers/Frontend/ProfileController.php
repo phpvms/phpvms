@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
+use App\Features\Hooks\Points\RenderingProfileCards;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Features\Profile\Actions\CreatePersonalToken;
@@ -113,6 +114,12 @@ class ProfileController extends Controller
         // loaded collection, so they share the preload.
         Award::preloadAssetUrls($user->awards);
 
+        // Built once, on demand: both the page props and the render hook read it.
+        $profileData = null;
+        $profile = function () use (&$profileData, $user, $userFields, $isOwnProfile): ProfileData {
+            return $profileData ??= ProfileData::fromModel($user, $userFields, $this->acarsEnabled(), $isOwnProfile);
+        };
+
         return response()->themed(
             'Profile',
             'profile.index',
@@ -122,7 +129,7 @@ class ProfileController extends Controller
                 'acars'      => $this->acarsEnabled(),
             ],
             spa: fn (): array => [
-                'profile' => ProfileData::fromModel($user, $userFields, $this->acarsEnabled(), $isOwnProfile),
+                'profile' => $profile(),
                 // Only the pilot's own profile carries the edit payload -- it
                 // holds their email, so attaching it unconditionally would leak
                 // it to anyone viewing the page. Built inside the closure so a
@@ -150,6 +157,7 @@ class ProfileController extends Controller
                         : null,
                 ),
             ],
+            renderHooks: fn (): array => [new RenderingProfileCards($profile())],
         );
     }
 

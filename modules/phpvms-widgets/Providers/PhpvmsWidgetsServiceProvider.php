@@ -5,7 +5,6 @@ namespace Modules\PhpvmsWidgets\Providers;
 use App\Contracts\Addons\AddonServiceProvider;
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
-use App\Support\Extensions\Facades\Extensions;
 use Closure;
 use Livewire\Livewire;
 use Modules\PhpvmsWidgets\Http\Controllers\WeatherController;
@@ -38,10 +37,9 @@ use Route;
  * DISABLE-SAFETY
  * --------------
  * Everything this addon contributes happens inside onBoot() and
- * registerAppTiles() below: the data route, the Extensions::widgets()->register([...])
- * calls for skylight, and the tiles for Blade themes. A phpVMS addon's
+ * registerAppTiles() below: the data route and the tiles for Blade themes. A phpVMS addon's
  * ServiceProvider only boots when the addon is ENABLED. Disabled → this never
- * runs → the widget never enters the catalog AND the endpoint never exists.
+ * runs → the tiles never enter the registry AND the endpoint never exists.
  *
  * module.json ships with `"active": 0` on purpose — addons install disabled. A
  * human enables it (`php artisan addons:prime`, toggle it on in the Filament
@@ -54,14 +52,12 @@ class PhpvmsWidgetsServiceProvider extends AddonServiceProvider
      * Bootstrap the addon (runs only when enabled — see class docblock).
      *
      *   1. Register the addon's own weather data route.
-     *   2. Register the bundled dashboard widgets with the extensions hub.
-     *   3. Register the view, translation and Livewire namespaces the tiles use.
+     *   2. Register the view, translation and Livewire namespaces the tiles use.
      */
     #[Override]
     protected function onBoot(): void
     {
         $this->registerWeatherRoutes();
-        $this->registerSkylightWidget();
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'phpvmswidgets');
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'phpvmswidgets');
@@ -85,110 +81,13 @@ class PhpvmsWidgetsServiceProvider extends AddonServiceProvider
     }
 
     /**
-     * Contribute the bundled dashboard widgets to the skylight catalog, all as
-     * pre-built ESM modules served from /ext/phpvmswidgets/widgets/*.js.
+     * The dashboard widgets as Livewire {@see Tiles} for Blade themes such as
+     * airside.
      *
-     * These used to live in the core SPA (lib/widgets/catalog.ts + a resolver
-     * map + a WsKpi presentation component). They now ride the same addon path
-     * as third-party widgets — proving core-authored widgets are not special.
+     * Each closure runs when a theme first reads the registry, per locale, so
+     * `__()` is safe there.
      *
-     * Each `id`, `title`, `icon`, `defaultZone`, `span` and `defaultOn` matches
-     * the previous first-party catalog entry, so existing saved layouts keep
-     * resolving unchanged. The KPI/rank/last-flight widgets take NO endpoint:
-     * their data arrives as `@`-ref props (DashboardData keys) resolved by the
-     * Dashboard before binding — the same mechanism that feeds weather its
-     * station, so none of them import inertia/usePage(). Registration order sets
-     * the default-layout order within each zone (route stays a core widget and
-     * renders first in the grid).
-     *
-     * AddonAssetLinker symlinks public/ → public/ext/<strtolower(module NAME)>,
-     * i.e. "PhpvmsWidgets" → "phpvmswidgets" (NOT the hyphenated alias); the
-     * bundles are emitted by the widget preset to modules/phpvms-widgets/public/widgets/.
-     */
-    protected function registerSkylightWidget(): void
-    {
-        $widgets = Extensions::widgets();
-
-        $widgets->register([
-            'id'          => 'kpi-hours',
-            'kind'        => 'vue',
-            'module'      => '/ext/phpvmswidgets/widgets/hours.js',
-            'title'       => 'Total hours',
-            'icon'        => 'clock',
-            'defaultZone' => 'grid',
-            'span'        => 1,
-            'defaultOn'   => true,
-            'props'       => ['value' => '@flightTimeMinutes'],
-        ]);
-
-        $widgets->register([
-            'id'          => 'kpi-flights',
-            'kind'        => 'vue',
-            'module'      => '/ext/phpvmswidgets/widgets/flights.js',
-            'title'       => 'Flights',
-            'icon'        => 'plane',
-            'defaultZone' => 'grid',
-            'span'        => 1,
-            'defaultOn'   => true,
-            'props'       => ['value' => '@flights'],
-        ]);
-
-        $widgets->register([
-            'id'          => 'kpi-balance',
-            'kind'        => 'vue',
-            'module'      => '/ext/phpvmswidgets/widgets/balance.js',
-            'title'       => 'Balance',
-            'icon'        => 'wallet',
-            'defaultZone' => 'grid',
-            'span'        => 1,
-            'defaultOn'   => true,
-            'props'       => ['balance' => '@balance'],
-        ]);
-
-        $widgets->register([
-            'id'          => 'rank',
-            'kind'        => 'vue',
-            'module'      => '/ext/phpvmswidgets/widgets/rank.js',
-            'title'       => 'Rank progress',
-            'icon'        => 'trending-up',
-            'defaultZone' => 'grid',
-            'span'        => 1,
-            'defaultOn'   => true,
-            'props'       => ['rank' => '@rank'],
-        ]);
-
-        $widgets->register([
-            'id'          => 'last-flight',
-            'kind'        => 'vue',
-            'module'      => '/ext/phpvmswidgets/widgets/lastflight.js',
-            'title'       => 'Last flight',
-            'icon'        => 'plane-landing',
-            'defaultZone' => 'sidebar',
-            'defaultOn'   => true,
-            'props'       => ['pirep' => '@lastPirep'],
-        ]);
-
-        $widgets->register([
-            'id'          => 'weather',
-            'kind'        => 'vue',
-            'module'      => '/ext/phpvmswidgets/widgets/weather.js',
-            'title'       => 'Weather (METAR)',
-            'icon'        => 'cloud-sun',
-            'defaultZone' => 'sidebar',
-            'defaultOn'   => true,
-            'props'       => ['icao' => '@currentAirport'],
-        ]);
-    }
-
-    /**
-     * The Livewire twins of the skylight widgets, as {@see Tiles} for Blade
-     * themes such as airside.
-     *
-     * Same ids, zones and default-on flags as the skylight entries above, so a
-     * pilot sees the same dashboard whichever theme is active. Each closure runs
-     * when a theme first reads the registry, per locale, so `__()` is safe there.
-     *
-     * @return array<string, Closure(): Tile>
+     * @return list<Closure(): Tile>
      */
     #[Override]
     public function registerAppTiles(): array
@@ -205,7 +104,7 @@ class PhpvmsWidgetsServiceProvider extends AddonServiceProvider
         $tiles = [];
 
         foreach ($twins as [$id, $component, $title, $icon, $zone, $order]) {
-            $tiles[$id] = fn (): Tile => Tile::livewire(
+            $tiles[] = fn (): Tile => Tile::livewire(
                 id: $id,
                 component: 'phpvmswidgets::'.$component,
                 title: __('phpvmswidgets::widgets.'.$title),

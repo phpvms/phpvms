@@ -21,6 +21,24 @@ it('registers the first-party catalog', function (): void {
         ->and(Metrics::has('aircraft.active'))->toBeTrue();
 });
 
+it('keeps the value type, format and ttl of every first-party metric', function (): void {
+    $expected = [
+        'pilots.total'    => ['integer', 'integer'],
+        'flights.total'   => ['integer', 'integer'],
+        'pireps.total'    => ['integer', 'integer'],
+        'hours.total'     => ['float', 'decimal_1'],
+        'distance.total'  => ['integer', 'integer'],
+        'aircraft.total'  => ['integer', 'integer'],
+        'aircraft.active' => ['integer', 'integer'],
+    ];
+
+    foreach ($expected as $id => [$valueType, $format]) {
+        expect(Metrics::registry()->get($id))->toMatchArray(['value_type' => $valueType, 'format' => $format, 'ttl' => 300]);
+    }
+
+    expect(collect(Metrics::registry()->all())->pluck('id')->all())->toContain(...array_keys($expected));
+});
+
 it('counts pilots.total excluding both soft-deleted and UserState::DELETED users', function (): void {
     User::factory()->count(2)->create(['state' => UserState::ACTIVE]);
     User::factory()->create(['state' => UserState::DELETED]);

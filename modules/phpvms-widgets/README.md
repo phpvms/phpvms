@@ -55,17 +55,10 @@ An ESM addon widget **must not import inertia**, so it can't call `usePage()` to
 read the current airport. Instead the widget takes a plain **`icao` prop**, and
 the addon registers it with a **page-DTO ref**:
 
+The provider no longer registers the Vue widgets: `registerAppTiles()` returns only the Livewire tiles, and the `Extensions::widgets()` calls are gone. The `props` map below is the page-DTO ref format the Vue widgets use:
+
 ```php
-Extensions::widgets()->register([
-  'id'          => 'weather',
-  'kind'        => 'vue',
-  'module'      => '/ext/phpvmswidgets/widgets/weather.js',
-  'title'       => 'Weather (METAR)',
-  'icon'        => 'cloud-sun',
-  'defaultZone' => 'sidebar',
-  'defaultOn'   => true,
-  'props'       => ['icao' => '@currentAirport'],
-]);
+['icao' => '@currentAirport']
 ```
 
 `Dashboard.vue` resolves any `@`-prefixed widget prop against the live page DTO
@@ -84,7 +77,7 @@ it as a normal `icao` prop with no host imports.
 | `ui/vite.config.ts` | Build config. Imports the shared widget preset; outputs `public/widgets/weather.js`. |
 | `Http/Data/WeatherData.php` | `spatie/laravel-data` `Data` = the endpoint's typed success JSON shape. |
 | `Http/Controllers/WeatherController.php` | `show(icao)` — delegates to core `AirportService`, mirrors the core weather JSON. |
-| `Providers/PhpvmsWidgetsServiceProvider.php` | `boot()` registers the route **and** the widget. The entire integration surface. |
+| `Providers/PhpvmsWidgetsServiceProvider.php` | `onBoot()` registers the route; `registerAppTiles()` returns the six Livewire tiles. |
 | `module.json` / `composer.json` | Addon identity. Ships `"active": 0` (installs disabled). Providers are listed in `module.json`. |
 
 ---
@@ -140,11 +133,10 @@ default sidebar layout.
 ## Disable-safety
 
 The only place this addon touches the host is inside `boot()`: the
-`Route::get(...)` for the endpoint and `Extensions::widgets()->register([...])`
-for the widget. A phpVMS addon's ServiceProvider boots **only when the addon is
+`Route::get(...)` for the endpoint and the tiles from `registerAppTiles()`. A phpVMS addon's ServiceProvider boots **only when the addon is
 enabled**. Disable it and:
 
-- the weather widget never enters the SPA catalog, and
+- the tiles never enter the tile registry, and
 - the `/api/phpvms-widgets/weather/{icao}` route never exists.
 
 Because weather is now addon-provided, the skylight dashboard shows the weather

@@ -88,12 +88,10 @@ class HandleInertiaRequests extends Middleware
                 'messages' => $this->spaMessages(),
             ],
 
-            // The skylight extension surface (widget catalog + page slots),
-            // accumulated from every ENABLED addon's provider. Serialized here
-            // so the SPA builds its catalog + slot registry from the same source
-            // of truth. A disabled addon contributes nothing — its provider
-            // never booted, so its entries are absent by construction.
-            'skylight' => Extensions::toArray(),
+            // The skylight extension surface: this request's page slot entries
+            // (the `vue` fills of the render hooks the controller dispatched).
+            // Lazy, so it is read after the controller has filled the slots.
+            'skylight' => fn (): array => Extensions::toArray(),
 
             'auth' => [
                 'user' => $user ? [

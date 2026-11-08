@@ -13,6 +13,8 @@ use App\Enums\PirepState;
 use App\Enums\UserState;
 use App\Features\Assets\AssetService;
 use App\Features\Assets\AssetTypes;
+use App\Features\Hooks\Facades\Hooks;
+use App\Features\Hooks\RenderHook;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Http\Composers\PageLinksComposer;
@@ -41,6 +43,7 @@ use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Services\SettingService;
 use App\Services\Theme\ActiveThemeService;
 use App\Support\Branding;
+use App\Support\Extensions\Facades\Extensions;
 use App\Support\InstallMarker;
 use App\Support\PirepView\PirepViewTabRegistry;
 use App\Support\Themes;
@@ -187,9 +190,13 @@ class AppServiceProvider extends ServiceProvider
          * legacy model-rich shape; toInertiaArray() returns a flat JSON-
          * serializable DTO. See spec: spa-theme-render-switch/spec.md.
          *
-         * @param string $inertiaPage Inertia component name (e.g. 'Dashboard')
-         * @param string $bladeView   Blade view name (e.g. 'dashboard.index')
-         * @param object $presenter   Object with toInertiaArray() and toBladeArray()
+         * @param string                                                   $inertiaPage Inertia component name (e.g. 'Dashboard')
+         * @param string                                                   $bladeView   Blade view name (e.g. 'dashboard.index')
+         * @param object                                                   $presenter   Object with toInertiaArray() and toBladeArray()
+         * @param array<int, RenderHook>|Closure(): array<int, RenderHook> $renderHooks
+         *                                                                              Render hooks for the page. Dispatched, and their
+         *                                                                              `vue` fills stored as slot entries, on the SPA path
+         *                                                                              only; a Blade page dispatches nothing.
          */
         ResponseFacade::macro('themed', function (
             string $inertiaPage,
@@ -197,11 +204,20 @@ class AppServiceProvider extends ServiceProvider
             ?object $presenter = null,
             Closure|array|Arrayable $bladeData = [],
             Closure|array|Arrayable|null $spa = null,
+            array|Closure $renderHooks = [],
         ) {
+            $dispatchRenderHooks = static function () use ($renderHooks): void {
+                foreach ($renderHooks instanceof Closure ? $renderHooks() : $renderHooks as $hook) {
+                    Extensions::slots()->addAll($hook::name(), Hooks::filter($hook));
+                }
+            };
+
             // Legacy presenter path (one object exposing BOTH projections). Kept
             // for controllers not yet migrated.
             if ($presenter !== null && method_exists($presenter, 'toInertiaArray')) {
                 if (theme_kind() === 'spa') {
+                    $dispatchRenderHooks();
+
                     return Inertia::render($inertiaPage, $presenter->toInertiaArray());
                 }
 
@@ -213,6 +229,8 @@ class AppServiceProvider extends ServiceProvider
             // theme's payload is realised, so a Closure defers the other's cost
             // (e.g. the SPA DTO isn't built on the Blade path, and vice-versa).
             if (theme_kind() === 'spa') {
+                $dispatchRenderHooks();
+
                 return Inertia::render($inertiaPage, $spa instanceof Closure ? $spa() : ($spa ?? []));
             }
 

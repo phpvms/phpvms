@@ -12,6 +12,7 @@ use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\User;
 use App\Support\Metrics\Facades\Metrics;
+use App\Support\Metrics\Metric;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -40,10 +41,16 @@ final class FirstPartyMetricsServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->registerPilotMetrics();
-        $this->registerFlightMetrics();
-        $this->registerHoursAndDistanceMetrics();
-        $this->registerFleetMetrics();
+        $metrics = [
+            ...$this->pilotMetrics(),
+            ...$this->flightMetrics(),
+            ...$this->hoursAndDistanceMetrics(),
+            ...$this->fleetMetrics(),
+        ];
+
+        foreach ($metrics as $metric) {
+            Metrics::registry()->register($metric->toDefinition());
+        }
     }
 
     /**
@@ -55,20 +62,23 @@ final class FirstPartyMetricsServiceProvider extends ServiceProvider
      * when they have none. So soft-delete exclusion alone is not enough:
      * `pilots.total` excludes both, which is every population removeUser()
      * can produce for a account that still has a row.
+     *
+     * @return list<Metric>
      */
-    private function registerPilotMetrics(): void
+    private function pilotMetrics(): array
     {
-        Metrics::registry()->register([
-            'id'         => 'pilots.total',
-            'label'      => 'Total Pilots',
-            'group'      => 'pilots',
-            'value_type' => 'integer',
-            'format'     => 'integer',
-            'ttl'        => 300,
-            'resolve'    => static fn (): int => User::query()
-                ->where('state', '!=', UserState::DELETED)
-                ->count(),
-        ]);
+        return [
+            Metric::integer(
+                'pilots.total',
+                static fn (): int => User::query()
+                    ->where('state', '!=', UserState::DELETED)
+                    ->count(),
+                'Total Pilots',
+                'pilots',
+                'integer',
+                300,
+            ),
+        ];
     }
 
     /**
@@ -91,33 +101,35 @@ final class FirstPartyMetricsServiceProvider extends ServiceProvider
      * list, per design.md D7 -- an exclusion list silently admits every state
      * added later (PENDING, REJECTED, PAUSED, DELETED all remain uncounted
      * here, matching app/Enums/PirepState.php:13-20).
+     *
+     * @return list<Metric>
      */
-    private function registerFlightMetrics(): void
+    private function flightMetrics(): array
     {
-        Metrics::registry()->register([
-            'id'         => 'flights.total',
-            'label'      => 'Flights',
-            'group'      => 'flights',
-            'value_type' => 'integer',
-            'format'     => 'integer',
-            'ttl'        => 300,
-            'resolve'    => static fn (): int => Flight::query()
-                ->where('enabled', true)
-                ->where('visible', true)
-                ->count(),
-        ]);
+        return [
+            Metric::integer(
+                'flights.total',
+                static fn (): int => Flight::query()
+                    ->where('enabled', true)
+                    ->where('visible', true)
+                    ->count(),
+                'Flights',
+                'flights',
+                'integer',
+                300,
+            ),
 
-        Metrics::registry()->register([
-            'id'         => 'pireps.total',
-            'label'      => 'Flights Completed',
-            'group'      => 'flights',
-            'value_type' => 'integer',
-            'format'     => 'integer',
-            'ttl'        => 300,
-            'resolve'    => static fn (): int => Pirep::query()
-                ->where('state', PirepState::ACCEPTED)
-                ->count(),
-        ]);
+            Metric::integer(
+                'pireps.total',
+                static fn (): int => Pirep::query()
+                    ->where('state', PirepState::ACCEPTED)
+                    ->count(),
+                'Flights Completed',
+                'flights',
+                'integer',
+                300,
+            ),
+        ];
     }
 
     /**
@@ -136,36 +148,38 @@ final class FirstPartyMetricsServiceProvider extends ServiceProvider
      * aggregate operating on the raw column, so no cast is applied here --
      * matching the existing `DistanceFlownChart` widget's convention of
      * summing the raw decimal and rounding to the nearest whole unit.
+     *
+     * @return list<Metric>
      */
-    private function registerHoursAndDistanceMetrics(): void
+    private function hoursAndDistanceMetrics(): array
     {
-        Metrics::registry()->register([
-            'id'         => 'hours.total',
-            'label'      => 'Hours Flown',
-            'group'      => 'flights',
-            'value_type' => 'float',
-            'format'     => 'decimal_1',
-            'ttl'        => 300,
-            'resolve'    => static function (): float {
-                $minutes = (float) Pirep::query()->where('state', PirepState::ACCEPTED)->sum('flight_time');
+        return [
+            Metric::float(
+                'hours.total',
+                static function (): float {
+                    $minutes = (float) Pirep::query()->where('state', PirepState::ACCEPTED)->sum('flight_time');
 
-                return round($minutes / 60, 1);
-            },
-        ]);
+                    return round($minutes / 60, 1);
+                },
+                'Hours Flown',
+                'flights',
+                'decimal_1',
+                300,
+            ),
 
-        Metrics::registry()->register([
-            'id'         => 'distance.total',
-            'label'      => 'Distance Flown (nmi)',
-            'group'      => 'flights',
-            'value_type' => 'integer',
-            'format'     => 'integer',
-            'ttl'        => 300,
-            'resolve'    => static function (): int {
-                $distance = (float) Pirep::query()->where('state', PirepState::ACCEPTED)->sum('distance');
+            Metric::integer(
+                'distance.total',
+                static function (): int {
+                    $distance = (float) Pirep::query()->where('state', PirepState::ACCEPTED)->sum('distance');
 
-                return (int) round($distance);
-            },
-        ]);
+                    return (int) round($distance);
+                },
+                'Distance Flown (nmi)',
+                'flights',
+                'integer',
+                300,
+            ),
+        ];
     }
 
     /**
@@ -181,29 +195,31 @@ final class FirstPartyMetricsServiceProvider extends ServiceProvider
      * an aircraft can be soft-deleted regardless of its status, and this
      * metric inherits the same default soft-delete exclusion as
      * `aircraft.total`.
+     *
+     * @return list<Metric>
      */
-    private function registerFleetMetrics(): void
+    private function fleetMetrics(): array
     {
-        Metrics::registry()->register([
-            'id'         => 'aircraft.total',
-            'label'      => 'Total Aircraft',
-            'group'      => 'fleet',
-            'value_type' => 'integer',
-            'format'     => 'integer',
-            'ttl'        => 300,
-            'resolve'    => static fn (): int => Aircraft::query()->count(),
-        ]);
+        return [
+            Metric::integer(
+                'aircraft.total',
+                static fn (): int => Aircraft::query()->count(),
+                'Total Aircraft',
+                'fleet',
+                'integer',
+                300,
+            ),
 
-        Metrics::registry()->register([
-            'id'         => 'aircraft.active',
-            'label'      => 'Active Aircraft',
-            'group'      => 'fleet',
-            'value_type' => 'integer',
-            'format'     => 'integer',
-            'ttl'        => 300,
-            'resolve'    => static fn (): int => Aircraft::query()
-                ->where('status', AircraftStatus::ACTIVE)
-                ->count(),
-        ]);
+            Metric::integer(
+                'aircraft.active',
+                static fn (): int => Aircraft::query()
+                    ->where('status', AircraftStatus::ACTIVE)
+                    ->count(),
+                'Active Aircraft',
+                'fleet',
+                'integer',
+                300,
+            ),
+        ];
     }
 }

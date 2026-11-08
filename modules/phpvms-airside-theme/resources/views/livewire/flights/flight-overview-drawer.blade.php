@@ -76,7 +76,7 @@
                         @if ($summary->primaryAction === 'unavailable' && $summary->availabilityReason)
                             <p class="vms-flight-reason px-3 py-2 text-[12.5px] font-medium" role="status">{{ $summary->availabilityReason }}</p>
                         @endif
-                        <x-slot-outlet name="flights.detail.actions" :context="['flight' => $summary, 'policy' => $policy]" />
+                        <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingFlightActions($summary, $policy, auth()->user(), null, null)" />
                     </div>
                 </div>
             @endif
