@@ -159,7 +159,10 @@ function mountIsland(root: HTMLElement): () => void {
         setState("complete");
         popup?.close();
         popup = null;
-        window.location.assign(data.returnUrl ?? result.briefingUrl);
+        // Disabled until the generate step moves to Livewire with a server-side
+        // redirect (CodeQL js/xss-through-dom: the URL is read from the page's
+        // JSON block). The page shows the complete state instead of navigating.
+        // window.location.assign(data.returnUrl ?? result.briefingUrl);
       }
     } catch (error) {
       if (disposed) return;

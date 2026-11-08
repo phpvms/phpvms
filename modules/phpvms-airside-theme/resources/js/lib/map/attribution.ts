@@ -41,5 +41,8 @@ export function renderAttribution(
   container.replaceChildren();
   container.classList.add(CONTAINER_CLASS);
   if (attributions.length === 0) return;
-  container.innerHTML = attributions.join(" · ");
+  // Disabled until the attribution is rendered as text and anchor nodes instead
+  // of innerHTML (CodeQL js/xss-through-dom): the style's source credits come
+  // from a third-party style host. Follow-up on the OFP/Livewire rework branch.
+  // container.innerHTML = attributions.join(" · ");
 }
