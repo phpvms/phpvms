@@ -147,39 +147,42 @@ targets it.
 ## Tiles
 
 A tile is a self-contained piece of pilot UI, rendered by a Livewire component or a Blade view, that
-a theme can place on any page. Core, a theme or an addon registers tiles from its service provider's
-`boot()`. Each registration is an id and a closure that builds the tile. The closure runs when the
-registry is first read, never at boot, and again for each locale, so `__()` in it is safe. It must
-not read other request state (user, session, request):
+a theme can place on any page. An addon declares its tiles in `registerAppTiles()` on its
+`AddonServiceProvider`: a list of closures that each return a `Tile`. The closures run when the registry is
+first read, never at boot, and again for each locale, so `__()` in them is safe. They must not read
+other request state (user, session, request):
 
 ```php
 use App\Features\Tiles\Tile;
-use App\Features\Tiles\Tiles;
+use Closure;
 
-public function boot(): void
+/** @return list<Closure(): Tile> */
+public function registerAppTiles(): array
 {
-    $tiles = app(Tiles::class);
-
-    $tiles->register('my-addon-stats', fn (): Tile => Tile::livewire(
-        id: 'my-addon-stats',
-        component: 'my-addon::stats',
-        title: __('my-addon::tiles.stats'),
-        icon: 'chart-bar',
-        showInDashboard: true,
-        default: true,
-    ));
-
-    $tiles->register('my-addon-news', fn (): Tile => Tile::view(
-        id: 'my-addon-news',
-        view: 'my-addon::tiles.news',
-        title: 'News',
-        icon: 'newspaper',
-        data: ['limit' => 5],
-        showInDashboard: true,
-        zone: Tile::ZONE_SIDEBAR,
-    ));
+    return [
+        fn (): Tile => Tile::livewire(
+            id: 'my-addon-stats',
+            component: 'my-addon::stats',
+            title: __('my-addon::tiles.stats'),
+            icon: 'chart-bar',
+            showInDashboard: true,
+            default: true,
+        ),
+        fn (): Tile => Tile::view(
+            id: 'my-addon-news',
+            view: 'my-addon::tiles.news',
+            title: 'News',
+            icon: 'newspaper',
+            data: ['limit' => 5],
+            showInDashboard: true,
+            zone: Tile::ZONE_SIDEBAR,
+        ),
+    ];
 }
 ```
+
+Core and theme code that is not an addon provider calls `app(Tiles::class)->register($closure)`
+from `boot()` instead.
 
 | Field                | Notes                                                                                           |
 | -------------------- | ----------------------------------------------------------------------------------------------- |
@@ -228,11 +231,13 @@ wrapper or classes.
 
 Outside the dashboard, render one by id: `<x-tile id="weather" />`.
 
-The tag takes `tile` (a `Tile`) or `id` (looked up in the registry), never both. An unknown `id`
+The tag takes `tile` (a `Tile`) or `id` (looked up in the registry), never both. When the same tile
+is on a page more than once, give each an `instance` (`instance="arrival"`) so each Livewire child
+gets its own key. An unknown `id`
 renders nothing, or an HTML comment naming it when `app.debug` is on.
 
 `:with` carries page data the tile needs. A Livewire tile receives only the keys its `mount()`
 arguments or public properties accept, plus Livewire's own control keys such as `lazy`, so one shared
-`:with` is safe; the rest are dropped instead of becoming HTML attributes. It is keyed `tile-{id}`. A
+`:with` is safe; the rest are dropped instead of becoming HTML attributes. It is keyed `tile-{id}`, or `tile-{id}:{instance}`. A
 view tile receives its declared `data` with `:with` merged over it, so render-time values win
 (`Tile::dataWith()`).

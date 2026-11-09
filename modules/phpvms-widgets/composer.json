@@ -1,7 +1,7 @@
 {
     "name": "phpvms/phpvms-widgets",
     "type": "phpvms-module",
-    "description": "First-party phpVMS addon: the home for skylight dashboard widgets. Ships the weather (METAR) widget as a pre-built Vue (ESM) widget plus its own data endpoint.",
+    "description": "First-party phpvms addon: pilot tiles for Blade themes.",
     "require": {
         "composer/installers": "~1.0"
     },

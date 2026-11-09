@@ -7,7 +7,6 @@ namespace App\View\Components;
 use App\Features\Tiles\Tile as TileDefinition;
 use App\Features\Tiles\Tiles;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
@@ -22,9 +21,10 @@ use ReflectionProperty;
  * or classes. The theme draws the frame.
  *
  *     <x-tile :tile="$tile" :with="['route' => $route]" />
- *     <x-tile id="weather" />
+ *     <x-tile id="weather" instance="arrival" :with="['icao' => $arrival]" />
  *
- * Pass either `tile` or `id`, never both. An unknown id renders nothing, or
+ * Pass either `tile` or `id`, never both. Pass `instance` when the same tile is
+ * on one page more than once, so each Livewire child gets its own key. An unknown id renders nothing, or
  * an HTML comment naming the id when `app.debug` is on.
  *
  * Class-based so the exclusive-props check, registry lookup and routing between
@@ -41,6 +41,7 @@ class Tile extends Component
         ?TileDefinition $tile = null,
         public readonly ?string $id = null,
         public readonly array $with = [],
+        public readonly ?string $instance = null,
     ) {
         if ($tile instanceof TileDefinition !== ($id === null)) {
             throw new InvalidArgumentException('<x-tile> needs exactly one of [tile] or [id].');
@@ -49,7 +50,7 @@ class Tile extends Component
         $this->resolved = $tile ?? app(Tiles::class)->find((string) $id);
     }
 
-    public function render(): View|Htmlable
+    public function render(): Htmlable
     {
         $tile = $this->resolved;
 
@@ -67,17 +68,29 @@ class Tile extends Component
 
         $data = $tile->dataWith($this->with);
 
+        // Rendered here, not returned as a view: Blade merges this component's
+        // public properties (`id`, `with`, ...) over a returned view's data, which
+        // would overwrite tile data that uses the same keys.
         if ($tile->view !== null) {
-            return view($tile->view, $data);
+            return new HtmlString(view($tile->view, $data)->render());
         }
 
         $component = (string) $tile->livewire;
 
-        return view('components.tile', [
+        return new HtmlString(view('components.tile', [
             'component' => $component,
             'params'    => $this->acceptedParams($component, $data),
-            'key'       => 'tile-'.$tile->id,
-        ]);
+            'key'       => $this->livewireKey($tile),
+        ])->render());
+    }
+
+    /**
+     * The Livewire key for a tile: `tile-{id}`, plus `:{instance}` when given.
+     * Tile ids cannot contain `:`, so an id and instance never match another id.
+     */
+    public function livewireKey(TileDefinition $tile): string
+    {
+        return 'tile-'.$tile->id.($this->instance === null ? '' : ':'.$this->instance);
     }
 
     /**

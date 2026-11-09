@@ -87,6 +87,21 @@ it('renders a view tile from its view with the merged data', function (): void {
     expect(trim($html))->toBe('probe:runtime:5');
 });
 
+it('gives a view tile its own data even for keys the renderer also uses', function (): void {
+    registerTiles(Tile::view('keys', 'probe::keys', 'Keys', 'star', data: ['id' => 42, 'with' => 'declared']));
+    $tile = app(Tiles::class)->find('keys');
+
+    expect(trim(Blade::render('<x-tile id="keys" />')))->toBe('42|declared')
+        ->and(trim(Blade::render('<x-tile :tile="$tile" :with="[\'id\' => 7]" />', ['tile' => $tile])))->toBe('7|declared');
+});
+
+it('keys repeated instances of one tile apart', function (): void {
+    $tile = dashboardTile('weather');
+
+    expect(new TileComponent(tile: $tile, instance: 'arrival')->livewireKey($tile))->toBe('tile-weather:arrival')
+        ->and(new TileComponent(tile: $tile)->livewireKey($tile))->toBe('tile-weather');
+});
+
 it('mounts the Livewire component of a livewire tile with the render-time data', function (): void {
     Livewire::component('probe-widget', MountProbe::class);
     $tile = Tile::livewire('stats', 'probe-widget', 'Stats', 'star');
