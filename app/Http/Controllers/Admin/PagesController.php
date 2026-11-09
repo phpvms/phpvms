@@ -51,21 +51,11 @@ class PagesController extends Controller
     }
 
     /**
-     * Display the specified page
+     * No show view; redirect to edit
      */
-    public function show(int $id): View
+    public function show(int $id): RedirectResponse
     {
-        $pages = $this->pageRepo->findWithoutFail($id);
-
-        if (empty($pages)) {
-            Flash::error('Page not found');
-
-            return redirect(route('admin.page.index'));
-        }
-
-        return view('admin.pages.show', [
-            'pages' => $pages,
-        ]);
+        return redirect(route('admin.pages.edit', [$id]));
     }
 
     /**
@@ -106,7 +96,7 @@ class PagesController extends Controller
 
         Flash::success('pages updated successfully.');
 
-        return redirect(route('admin.pages.index'));
+        return redirect(route('admin.pages.edit', [$id]));
     }
 
     /**

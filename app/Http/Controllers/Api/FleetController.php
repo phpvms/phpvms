@@ -41,12 +41,12 @@ class FleetController extends Controller
      */
     public function get_aircraft(string $id, Request $request): AircraftResource
     {
-        $where = [];
-        if ($request->filled('type')) {
-            $where[$request->get('type')] = $id;
-        } else {
-            $where['id'] = $id;
+        $type = $request->get('type', 'id');
+        if (!in_array($type, ['id', 'registration', 'icao', 'iata', 'fin', 'hex_code'], true)) {
+            $type = 'id';
         }
+
+        $where = [$type => $id];
 
         $aircraft = $this->aircraftRepo
             ->with('subfleet.fares')

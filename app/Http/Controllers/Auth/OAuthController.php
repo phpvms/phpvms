@@ -107,7 +107,15 @@ class OAuthController extends Controller
             return redirect(route('frontend.profile.index'));
         }
 
-        $user = User::where($provider.'_id', $providerUser->getId())->orWhere('email', $providerUser->getEmail())->first();
+        $user = User::where($provider.'_id', $providerUser->getId())->first();
+
+        // Unlinked email match: password login first, the intended URL completes the link
+        if ($user === null && User::where('email', $providerUser->getEmail())->exists()) {
+            $request->session()->put('url.intended', route('oauth.redirect', ['provider' => $provider]));
+            flash()->info('An account with this email already exists. Log in to link your '.ucfirst($provider).' account.');
+
+            return redirect(url('/login'));
+        }
 
         if ($user) {
             $user->update([
@@ -141,6 +149,9 @@ class OAuthController extends Controller
                 if ($user->state === UserState::SUSPENDED) {
                     return view('auth.suspended');
                 }
+
+                // Only active accounts can log in
+                abort(403, 'This account is not active');
             }
 
             $tokens = UserOAuthToken::updateOrCreate([

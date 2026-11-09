@@ -121,6 +121,9 @@ class LoginController extends Controller
             if ($user->state === UserState::SUSPENDED) {
                 return view('auth.suspended');
             }
+
+            // Only active accounts can log in
+            abort(403, 'This account is not active');
         }
 
         $request->session()->regenerate();

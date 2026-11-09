@@ -43,4 +43,4 @@ echo "FULL_VERSION=${FULL_VERSION}" >> "$GITHUB_ENV"
 
 echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 echo "full_version=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
-echo "discord_msg=Version ${FULL_VERSION} is available, download: [zip](https://phpvms.cdn.vmslabs.net/$ZIP_NAME) | [tar](https://phpvms.cdn.vmslabs.net/$TAR_NAME)" >> "$GITHUB_OUTPUT"
+echo "discord_msg=Version ${FULL_VERSION} is available, download: [zip](https://downloads.phpvms.net/$ZIP_NAME) | [tar](https://downloads.phpvms.net/$TAR_NAME)" >> "$GITHUB_OUTPUT"

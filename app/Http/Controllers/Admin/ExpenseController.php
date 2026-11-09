@@ -9,6 +9,7 @@ use App\Models\Enums\FlightType;
 use App\Models\Enums\ImportExportType;
 use App\Models\Expense;
 use App\Repositories\AirlineRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\ExpenseRepository;
 use App\Services\ExportService;
 use App\Services\FinanceService;
@@ -17,7 +18,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExpenseController extends Controller

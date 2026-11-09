@@ -7,12 +7,12 @@ use App\Http\Requests\CreateAwardRequest;
 use App\Http\Requests\UpdateAwardRequest;
 use App\Models\UserAward;
 use App\Repositories\AwardRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Services\AwardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 
 class AwardController extends Controller
 {

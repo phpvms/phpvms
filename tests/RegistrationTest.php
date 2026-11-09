@@ -12,6 +12,7 @@ use App\Services\UserService;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 final class RegistrationTest extends TestCase
@@ -205,5 +206,43 @@ final class RegistrationTest extends TestCase
 
         $this->post('/register', $userData)
             ->assertForbidden();
+    }
+
+    public function test_registration_ignores_server_owned_columns(): void
+    {
+        $this->updateSetting('pilots.auto_accept', false);
+
+        $this->post('/register', array_merge($this->getUserData(), [
+            'rank_id'           => 999,
+            'flight_time'       => 100000,
+            'state'             => UserState::ACTIVE,
+            'email_verified_at' => now()->toDateTimeString(),
+        ]))->assertViewIs('auth.pending');
+
+        $user = User::where('email', 'test@phpvms.net')->first();
+        $this->assertNotNull($user);
+        $this->assertNotEquals(999, $user->rank_id);
+        $this->assertEquals(0, $user->flight_time);
+        $this->assertEquals(UserState::PENDING, $user->state);
+        $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_password_reset_only_logs_in_active_accounts(): void
+    {
+        foreach ([UserState::DELETED => false, UserState::ACTIVE => true] as $state => $loggedIn) {
+            $user = User::factory()->create(['state' => $state]);
+
+            $this->post('/password/reset', [
+                'token'                 => Password::broker()->createToken($user),
+                'email'                 => $user->email,
+                'password'              => 'new-password-123',
+                'password_confirmation' => 'new-password-123',
+            ]);
+
+            $this->assertTrue(Hash::check('new-password-123', $user->fresh()->password));
+            $loggedIn ? $this->assertAuthenticatedAs($user) : $this->assertGuest();
+
+            auth()->logout();
+        }
     }
 }

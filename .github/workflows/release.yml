@@ -20,19 +20,19 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       # https://github.com/marketplace/actions/gittools
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.1.1
+        uses: gittools/actions/gitversion/setup@v4.7.0
         with:
-          versionSpec: '6.0.x'
+          versionSpec: '6.8.x'
 
       - name: Determine Version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v3.1.1
+        uses: gittools/actions/gitversion/execute@v4.7.0
         with:
           useConfigFile: true
           configFilePath: .github/version.yml
@@ -42,16 +42,13 @@ jobs:
         with:
           php-version: '8.3'
 
-      - uses: olegtarasov/get-tag@v2.1.2
-        id: tagName
-
       # Configure Caching
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -76,7 +73,10 @@ jobs:
           composer dump-autoload
           sudo chmod +x ./.github/scripts/*
 
-      - name: Get version
+      - id: version
+        name: Get version
+        env:
+          GIT_TAG_NAME: ${{ github.event.release.tag_name }}
         run: .github/scripts/version.sh
 
       - name: Build Distro
@@ -97,16 +97,16 @@ jobs:
           tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: BetaHuhn/do-spaces-action@v2
-        id: spaces
-        with:
-          access_key: ${{ secrets.SPACE_ACCESS_KEY}}
-          secret_key: ${{ secrets.SPACE_SECRET_KEY }}
-          space_name: ${{ secrets.SPACE_NAME }}
-          space_region: ${{ secrets.SPACE_REGION }}
-          source: dist
-          cdn_domain: phpvms.cdn.vmslabs.net
-          permission: public-read
+      - name: Upload to Bunny storage
+        env:
+          AWS_ACCESS_KEY_ID: phpvms
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BUNNY_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+          # AWS CLI v2.23+ sends checksum headers many S3-compatible stores reject
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+        run: |
+          aws s3 cp dist/ s3://phpvms/ --recursive \
+            --endpoint-url https://ny-s3.storage.bunnycdn.com
 
 #       - name: Add Assets
 #         uses: ./gitreleasemanager/addasset
@@ -127,7 +127,7 @@ jobs:
 
       # Push to Docker
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -135,7 +135,7 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -147,7 +147,7 @@ jobs:
 
       - name: Build and push
         id: push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
@@ -155,7 +155,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
@@ -166,4 +166,4 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: ${{ steps.discord.outputs.discord_msg }}
+          args: ${{ steps.version.outputs.discord_msg }}

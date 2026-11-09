@@ -162,21 +162,17 @@ class ProfileController extends Controller
                 ->withInput();
         }
 
-        $req_data = $request->all();
-
         // Check for any additional technical fields added to the form
-        if (isset($req_data['rank_id']) || isset($req_data['flights']) || isset($req_data['flight_time']) || isset($req_data['transfer_time'])) {
+        if ($request->hasAny(['rank_id', 'flights', 'flight_time', 'transfer_time', 'api_key', 'pilot_id'])) {
             Log::warning('FORM CHECK | '.$user->name_private.' trying to manipulate profile details...', ['id' => $id, 'ident' => $user->ident, 'name' => $user->name]);
         }
 
-        // Unset technical fields which should not be editable by the user
-        unset($req_data['rank_id']);
-        unset($req_data['flights']);
-        unset($req_data['flight_time']);
-        unset($req_data['transfer_time']);
-        unset($req_data['status']);
-        unset($req_data['state']);
-        
+        // Profile form fields only
+        $req_data = $request->only([
+            'name', 'email', 'airline_id', 'home_airport_id', 'country', 'timezone',
+            'opt_in', 'vatsim_id', 'ivao_id', 'password',
+        ]);
+
         if (!$request->filled('password')) {
             unset($req_data['password']);
         } else {

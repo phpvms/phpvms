@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Frontend;
 use App\Contracts\Controller;
 use App\Models\Aircraft;
 use App\Models\Bid;
-use App\Models\Enums\AircraftStatus;
 use App\Models\Enums\AircraftState;
+use App\Models\Enums\AircraftStatus;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
 use App\Models\Typerating;
 use App\Repositories\AirlineRepository;
 use App\Repositories\AirportRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\SubfleetRepository;
@@ -26,7 +27,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 
 class FlightController extends Controller

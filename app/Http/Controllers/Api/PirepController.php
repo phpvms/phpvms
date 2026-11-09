@@ -7,6 +7,7 @@ use App\Events\PirepUpdated;
 use App\Exceptions\AircraftPermissionDenied;
 use App\Exceptions\PirepCancelled;
 use App\Exceptions\PirepError;
+use App\Exceptions\Unauthorized;
 use App\Http\Requests\Acars\CommentRequest;
 use App\Http\Requests\Acars\FieldsRequest;
 use App\Http\Requests\Acars\FileRequest;
@@ -20,9 +21,12 @@ use App\Http\Resources\Pirep as PirepResource;
 use App\Http\Resources\PirepComment as PirepCommentResource;
 use App\Http\Resources\PirepFieldCollection;
 use App\Models\Acars;
+use App\Models\Aircraft;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepSource;
+use App\Models\Enums\PirepState;
+use App\Models\Enums\UserState;
 use App\Models\Pirep;
 use App\Models\PirepComment;
 use App\Models\PirepFare;
@@ -53,12 +57,14 @@ class PirepController extends Controller
 
     /**
      * Parse any PIREP added in
+     *
+     * @param string[] $except Extra attributes to drop
      */
-    protected function parsePirep(Request $request): ?array
+    protected function parsePirep(Request $request, array $except = []): ?array
     {
         // The state moves only through the service (prefile, file, accept,
         // reject); the key and the owner are never client-supplied.
-        $attrs = Arr::except($request->input(), ['id', 'state', 'user_id']);
+        $attrs = Arr::except($request->input(), ['id', 'state', 'user_id', ...$except]);
 
         if (array_key_exists('created_at', $attrs)) {
             $attrs['created_at'] = Carbon::createFromTimeString($attrs['created_at']);
@@ -89,10 +95,29 @@ class PirepController extends Controller
     }
 
     /**
-     * Check if a PIREP is cancelled
+     * Check the pilot may fly the submitted aircraft
+     *
+     * @param array<string, mixed> $attrs
+     *
+     * @throws \App\Exceptions\AircraftPermissionDenied
+     */
+    protected function checkAircraftChange(User $user, array $attrs): void
+    {
+        if (empty($attrs['aircraft_id']) || !setting('pireps.restrict_aircraft_to_rank', false)) {
+            return;
+        }
+
+        $aircraft = Aircraft::findOrFail($attrs['aircraft_id']);
+        if (!$this->userSvc->aircraftAllowed($user, $aircraft->id)) {
+            throw new AircraftPermissionDenied($user, $aircraft);
+        }
+    }
+
+    /**
+     * Check if a PIREP is read-only
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
+     * @throws \App\Exceptions\PirepError
      */
     protected function checkReadOnly(Pirep $pirep): void
     {
@@ -156,7 +181,6 @@ class PirepController extends Controller
             'aircraft',
             'arr_airport',
             'dpt_airport',
-            'comments',
             'flight',
             'simbrief',
             'position',
@@ -166,6 +190,12 @@ class PirepController extends Controller
         $pirep = $this->pirepRepo
             ->with($with)
             ->find($id);
+
+        // Public route (live map); comments only for the owner or an admin
+        $caller = $this->apiKeyUser(request());
+        if ($pirep !== null && $caller !== null && $this->canReadComments($caller, $pirep)) {
+            $pirep->load('comments');
+        }
 
         return new PirepResource($pirep);
     }
@@ -224,18 +254,10 @@ class PirepController extends Controller
         $this->checkCancelled($pirep);
         $this->checkReadOnly($pirep);
 
-        $attrs = $this->parsePirep($request);
+        $attrs = $this->parsePirep($request, ['source']);
         $attrs['user_id'] = Auth::id();
 
-        // If aircraft is being changed, see if this user is allowed to fly this aircraft
-        if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
-        ) {
-            $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
-            if (!$can_use_ac) {
-                throw new AircraftPermissionDenied($user, $pirep->aircraft);
-            }
-        }
+        $this->checkAircraftChange($user, $attrs);
 
         $fields = $this->getFields($request);
         $fares = $this->getFares($request);
@@ -267,17 +289,9 @@ class PirepController extends Controller
         $this->checkCancelled($pirep);
         $this->checkReadOnly($pirep);
 
-        $attrs = $this->parsePirep($request);
+        $attrs = $this->parsePirep($request, ['source']);
 
-        // If aircraft is being changed, see if this user is allowed to fly this aircraft
-        if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
-        ) {
-            $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
-            if (!$can_use_ac) {
-                throw new AircraftPermissionDenied($user, $pirep->aircraft);
-            }
-        }
+        $this->checkAircraftChange($user, $attrs);
 
         try {
             $fields = $this->getFields($request);
@@ -328,7 +342,10 @@ class PirepController extends Controller
      */
     public function comments_get(string $id): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
+        if (!$this->canReadComments(Auth::user(), $pirep)) {
+            throw new Unauthorized(new \Exception('Comments can only be read by the PIREP owner'));
+        }
 
         return PirepCommentResource::collection($pirep->comments);
     }
@@ -383,9 +400,9 @@ class PirepController extends Controller
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
-    public function finances_get(string $id): AnonymousResourceCollection
+    public function finances_get(string $id, OwnPirepRequest $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
         $transactions = $this->journalRepo->getAllForObject($pirep);
 
         return JournalTransactionResource::collection($transactions['transactions']);
@@ -399,7 +416,13 @@ class PirepController extends Controller
      */
     public function finances_recalculate(string $id, OwnPirepRequest $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
+
+        // Only accepted PIREPs have finances
+        if ($pirep->state !== PirepState::ACCEPTED) {
+            throw new PirepError($pirep, 'Finances can only be recalculated for an accepted PIREP');
+        }
+
         $this->financeSvc->processFinancesForPirep($pirep);
 
         $pirep->refresh();
@@ -447,7 +470,11 @@ class PirepController extends Controller
             return $this->message('No points to add');
         }
 
+        $columns = (new Acars())->getFillable();
+
         foreach ($route as $position) {
+            // Only real Acars columns
+            $position = Arr::only($position, $columns);
             $position['pirep_id'] = $id;
             $position['type'] = AcarsType::ROUTE;
 
@@ -457,7 +484,8 @@ class PirepController extends Controller
             }
 
             if (isset($position['id'])) {
-                Acars::updateOrInsert(['id' => $position['id']], $position);
+                // Via the model so virtual attributes (altitude) map to columns
+                Acars::updateOrCreate(['id' => $position['id']], $position);
             } else {
                 $acars = Acars::create($position);
                 $acars->save();
@@ -467,6 +495,26 @@ class PirepController extends Controller
         }
 
         return $this->message($count.' points added', $count);
+    }
+
+    private function canReadComments(?User $user, Pirep $pirep): bool
+    {
+        return $user !== null && ($user->id === $pirep->user_id || $user->ability('admin', 'pireps'));
+    }
+
+    /**
+     * User for the API key, on routes without api.auth
+     */
+    private function apiKeyUser(Request $request): ?User
+    {
+        $api_key = $request->header('x-api-key') ?? $request->header('Authorization');
+        if (blank($api_key)) {
+            return null;
+        }
+
+        return User::where('api_key', $api_key)
+            ->whereIn('state', [UserState::ACTIVE, UserState::ON_LEAVE])
+            ->first();
     }
 
     /**

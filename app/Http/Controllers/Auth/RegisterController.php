@@ -183,8 +183,11 @@ class RegisterController extends Controller
             ]);
         }
 
-        // Default options
-        $opts = $request->all();
+        // Registration form fields only
+        $opts = $request->only([
+            'name', 'email', 'airline_id', 'home_airport_id', 'password',
+            'timezone', 'country', 'opt_in', 'toc_accepted', 'transfer_time',
+        ]);
         $opts['password'] = Hash::make($opts['password']);
 
         if (setting('general.record_user_ip', true)) {
@@ -206,7 +209,7 @@ class RegisterController extends Controller
             UserFieldValue::updateOrCreate([
                 'user_field_id' => $field->id,
                 'user_id'       => $user->id,
-            ], ['value' => $opts[$field_name]]);
+            ], ['value' => $request->get($field_name)]);
         }
 
         return $user;

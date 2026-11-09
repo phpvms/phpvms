@@ -314,6 +314,59 @@ class PirepController extends Controller
     /**
      * @throws \Exception
      */
+    /**
+     * Pre-submit checks for create, update and submit. Returns an error, or null
+     */
+    private function submitError(User $user, Pirep $pirep): ?string
+    {
+        // Are they allowed at this airport?
+        if (setting('pilots.only_flights_from_current')
+            && $user->curr_airport_id !== $pirep->dpt_airport_id) {
+            Log::info(
+                'Pilot '.$user->id
+                .' not at departure airport (curr='.$user->curr_airport_id
+                .', dpt='.$pirep->dpt_airport_id.')'
+            );
+
+            return 'You are currently not at the departure airport!';
+        }
+
+        // Can they fly this aircraft?
+        if (setting('pireps.restrict_aircraft_to_rank', false)
+            && !$this->userSvc->aircraftAllowed($user, $pirep->aircraft_id)) {
+            Log::info('Pilot '.$user->id.' not allowed to fly aircraft');
+
+            return 'You are not allowed to fly this aircraft!';
+        }
+
+        // Is the aircraft in the right place?
+        $aircraft = $this->aircraftRepo->findWithoutFail($pirep->aircraft_id);
+        if ($aircraft === null) {
+            Log::error('Aircraft for PIREP not found, id='.$pirep->aircraft_id);
+
+            return 'The aircraft for the PIREP hasn\'t been found';
+        }
+
+        if (setting('pireps.only_aircraft_at_dpt_airport')
+            && $aircraft->airport_id !== $pirep->dpt_airport_id
+        ) {
+            Log::info(
+                'Aircraft '.$pirep->aircraft_id.' not at departure airport (curr='.$aircraft->airport_id.', apt='.$pirep->dpt_airport_id.')'
+            );
+
+            return 'This aircraft is not positioned at the departure airport!';
+        }
+
+        // Duplicate check; a draft does not count itself
+        if ($this->pirepSvc->findDuplicate($pirep, $pirep->id) !== false) {
+            Log::info('Duplicate PIREP found');
+
+            return 'This PIREP has already been filed.';
+        }
+
+        return null;
+    }
+
     public function store(CreatePirepRequest $request): RedirectResponse
     {
         /** @var User $user */
@@ -326,67 +379,9 @@ class PirepController extends Controller
         $attrs['submit'] = strtolower($attrs['submit']);
 
         if ($attrs['submit'] === 'submit') {
-            // Are they allowed at this airport?
-            if (setting('pilots.only_flights_from_current')
-                && $user->curr_airport_id !== $pirep->dpt_airport_id) {
-                Log::info(
-                    'Pilot '.$user->id
-                    .' not at departure airport (curr='.$user->curr_airport_id
-                    .', dpt='.$pirep->dpt_airport_id.')'
-                );
-
-                return $this->flashError(
-                    'You are currently not at the departure airport!',
-                    'frontend.pireps.create'
-                );
-            }
-
-            // Can they fly this aircraft?
-            if (setting('pireps.restrict_aircraft_to_rank', false)
-                && !$this->userSvc->aircraftAllowed($user, $pirep->aircraft_id)) {
-                Log::info('Pilot '.$user->id.' not allowed to fly aircraft');
-
-                return $this->flashError(
-                    'You are not allowed to fly this aircraft!',
-                    'frontend.pireps.create'
-                );
-            }
-
-            // is the aircraft in the right place?
-            /* @noinspection NotOptimalIfConditionsInspection */
-            // Get the aircraft
-            $aircraft = $this->aircraftRepo->findWithoutFail($pirep->aircraft_id);
-            if ($aircraft === null) {
-                Log::error('Aircraft for PIREP not found, id='.$pirep->aircraft_id);
-
-                return $this->flashError(
-                    'The aircraft for the PIREP hasn\'t been found',
-                    'frontend.pireps.create'
-                );
-            }
-
-            if (setting('pireps.only_aircraft_at_dpt_airport')
-                && $aircraft->airport_id !== $pirep->dpt_airport_id
-            ) {
-                Log::info(
-                    'Aircraft '.$pirep->aircraft_id.' not at departure airport (curr='.$pirep->aircraft->airport_id.', apt='.$pirep->dpt_airport_id.')'
-                );
-
-                return $this->flashError(
-                    'This aircraft is not positioned at the departure airport!',
-                    'frontend.pireps.create'
-                );
-            }
-
-            // Make sure this isn't a duplicate
-            $dupe_pirep = $this->pirepSvc->findDuplicate($pirep);
-            if ($dupe_pirep !== false) {
-                Log::info('Duplicate PIREP found');
-
-                return $this->flashError(
-                    'This PIREP has already been filed.',
-                    'frontend.pireps.create'
-                );
+            $error = $this->submitError($user, $pirep);
+            if ($error !== null) {
+                return $this->flashError($error, 'frontend.pireps.create');
             }
         }
 
@@ -436,6 +431,13 @@ class PirepController extends Controller
             $pirep->save();
             Flash::success('PIREP saved successfully.');
         } elseif ($attrs['submit'] === 'submit') {
+            $error = $this->submitError($user, $pirep);
+            if ($error !== null) {
+                Flash::error($error);
+
+                return redirect(route('frontend.pireps.edit', [$pirep->id]));
+            }
+
             $this->pirepSvc->submit($pirep);
             Flash::success('PIREP submitted!');
         }
@@ -539,6 +541,12 @@ class PirepController extends Controller
             return redirect(route('admin.pireps.index'));
         }
 
+        if ($pirep->read_only) {
+            Flash::error('This PIREP has already been finalized and cannot be changed!');
+
+            return redirect(route('frontend.pireps.show', [$pirep->id]));
+        }
+
         $orig_route = $pirep->route;
         $attrs = Arr::except($request->all(), self::PROTECTED_ATTRIBUTES);
         $attrs['submit'] = strtolower($attrs['submit']);
@@ -564,6 +572,13 @@ class PirepController extends Controller
         if ($attrs['submit'] === 'save') {
             Flash::success('PIREP saved successfully.');
         } elseif ($attrs['submit'] === 'submit') {
+            $error = $this->submitError($user, $pirep);
+            if ($error !== null) {
+                Flash::error($error);
+
+                return redirect(route('frontend.pireps.edit', [$pirep->id]));
+            }
+
             $this->pirepSvc->submit($pirep);
             Flash::success('PIREP submitted!');
         } elseif ($attrs['submit'] === 'delete' || $attrs['submit'] === 'cancel') {
@@ -595,6 +610,19 @@ class PirepController extends Controller
             Flash::error('Cannot edit someone else\'s PIREP!');
 
             return redirect(route('admin.pireps.index'));
+        }
+
+        if ($pirep->read_only) {
+            Flash::error('This PIREP has already been finalized and cannot be submitted again!');
+
+            return redirect(route('frontend.pireps.show', [$pirep->id]));
+        }
+
+        $error = $this->submitError(Auth::user(), $pirep);
+        if ($error !== null) {
+            Flash::error($error);
+
+            return redirect(route('frontend.pireps.show', [$pirep->id]));
         }
 
         $this->pirepSvc->submit($pirep);

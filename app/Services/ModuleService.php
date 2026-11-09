@@ -199,8 +199,12 @@ class ModuleService extends Service
         }
 
         try {
+            $this->assertSafeArchiveEntries($zipper);
             $zipper->extractTo($temp);
+            $this->assertExtractedWithin($temp_ext_folder);
         } catch (Exception $e) {
+            File::deleteDirectory($temp_ext_folder);
+
             throw new ModuleInstallationError();
         }
 
@@ -220,7 +224,8 @@ class ModuleService extends Service
             return flash()->error('Module Structure Not Correct!');
         }
 
-        if (!$module) {
+        // Must be a plain directory name
+        if (!$module || !is_string($module) || !preg_match('/^[A-Za-z0-9_-]+$/', $module)) {
             File::deleteDirectory($temp_ext_folder);
 
             return flash()->error('Not a Valid Module File.');
@@ -247,6 +252,45 @@ class ModuleService extends Service
         Artisan::call('module:migrate', ['module' => $module, '--force' => true]);
 
         return flash()->success('Module Installed');
+    }
+
+    /**
+     * Reject zip entries with absolute paths, traversal or backslashes. Tar uses the post-extraction check
+     *
+     * @throws Exception
+     */
+    private function assertSafeArchiveEntries(Madzipper|PharData $archive): void
+    {
+        if (!$archive instanceof Madzipper) {
+            return;
+        }
+
+        foreach ($archive->listFiles() as $name) {
+            $name = (string) $name;
+            if (str_starts_with($name, '/') || str_contains($name, '..') || str_contains($name, '\\')) {
+                throw new Exception('Unsafe archive entry: '.$name);
+            }
+        }
+    }
+
+    /**
+     * Every extracted file must resolve inside the staging folder
+     *
+     * @throws Exception
+     */
+    private function assertExtractedWithin(string $dir): void
+    {
+        $real_dir = realpath($dir);
+        if ($real_dir === false) {
+            throw new Exception('Staging folder missing');
+        }
+
+        foreach (File::allFiles($dir) as $file) {
+            $real = realpath($file->getPathname());
+            if ($real === false || !str_starts_with($real, $real_dir.DIRECTORY_SEPARATOR)) {
+                throw new Exception('Archive entry escaped the staging folder: '.$file->getPathname());
+            }
+        }
     }
 
     /**

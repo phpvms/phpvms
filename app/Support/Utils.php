@@ -31,11 +31,13 @@ class Utils
     }
 
     /**
-     * Returns a 40 character API key that a user can use
+     * Generate a 20 character API key
+     *
+     * @throws \Exception
      */
     public static function generateApiKey(): string
     {
-        return substr(sha1(time().mt_rand()), 0, 20);
+        return bin2hex(random_bytes(10));
     }
 
     /**

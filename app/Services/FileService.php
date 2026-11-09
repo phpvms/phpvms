@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Exceptions\FileTypeNotAllowed;
 use App\Models\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -33,9 +34,14 @@ class FileService extends Service
         $id = File::createNewHashId();
         $path_info = pathinfo($file->getClientOriginalName());
 
+        $extension = strtolower($path_info['extension'] ?? '');
+        if (!in_array($extension, config('phpvms.file_upload_extensions', []), true)) {
+            throw new FileTypeNotAllowed($extension);
+        }
+
         // Create the file, add the ID to the front of the file to account
         // for any duplicate filenames, but still can be found in an `ls`
-        $filename = $id.'_'.str_slug(trim($path_info['filename'])).'.'.$path_info['extension'];
+        $filename = $id.'_'.str_slug(trim($path_info['filename'])).'.'.$extension;
         $file_path = $file->storeAs($folder, $filename, $attrs['disk']);
 
         Log::info('File saved to '.$file_path);

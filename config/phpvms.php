@@ -103,6 +103,17 @@ return [
     'kvp_storage_path' => storage_path('app/kvp.json'),
 
     /*
+     * Extensions allowed for admin file uploads. Never add server-executable types
+     */
+    'file_upload_extensions' => [
+        'pdf', 'txt', 'md', 'rtf', 'csv', 'json', 'xml', 'yml', 'yaml',
+        'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp',
+        'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp',
+        'zip', 'rar', '7z', 'gz', 'tgz', 'tar',
+        'kml', 'kmz', 'gpx', 'fms', 'pln', 'flp', 'fpl', 'rte', 'xfp',
+    ],
+
+    /*
      * DO NOT CHANGE THESE! It will result in messed up data
      * The setting you're looking for is in the admin panel,
      * under settings, for the display units

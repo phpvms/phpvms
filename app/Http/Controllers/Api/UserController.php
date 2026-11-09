@@ -13,6 +13,7 @@ use App\Http\Resources\User as UserResource;
 use App\Models\Bid;
 use App\Models\Enums\PirepState;
 use App\Repositories\AircraftRepository;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\PirepRepository;
@@ -22,7 +23,6 @@ use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 
 class UserController extends Controller
@@ -37,12 +37,18 @@ class UserController extends Controller
 
     protected function getUserId(Request $request): mixed
     {
-        $id = $request->get('id');
-        if ($id === null || $id === 'me') {
+        // users/{id} uses the route param, user/... the query
+        $id = $request->route('id') ?? $request->get('id');
+        if ($id === null || $id === 'me' || (int) $id === Auth::id()) {
             return Auth::user()->id;
         }
 
-        return $request->get('id');
+        // Other pilots' data is admin-only
+        if (!Auth::user()->ability('admin', 'users')) {
+            throw new Unauthorized(new \Exception('Only administrators can read another user\'s data'));
+        }
+
+        return $id;
     }
 
     /**
@@ -62,9 +68,16 @@ class UserController extends Controller
      */
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
-        $user = $this->userSvc->getUser($id, $with_subfleets);
+        // Bids and the rank's fleet are only for the user or an admin
+        $private = $id === Auth::id() || Auth::user()->ability('admin', 'users');
+
+        $user = $this->userSvc->getUser($id, $with_subfleets && $private);
         if ($user === null) {
             throw new UserNotFound();
+        }
+
+        if (!$private) {
+            $user->unsetRelation('bids');
         }
 
         return new UserResource($user);

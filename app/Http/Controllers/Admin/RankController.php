@@ -6,6 +6,7 @@ use App\Contracts\Controller;
 use App\Http\Requests\CreateRankRequest;
 use App\Http\Requests\UpdateRankRequest;
 use App\Models\Rank;
+use App\Repositories\Criteria\RequestCriteria;
 use App\Repositories\RankRepository;
 use App\Repositories\SubfleetRepository;
 use App\Repositories\UserRepository;
@@ -15,7 +16,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
 
 class RankController extends Controller
 {

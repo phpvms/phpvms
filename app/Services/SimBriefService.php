@@ -58,7 +58,10 @@ class SimBriefService extends Service
         if ($sb_user_id && $sb_static_id) {
             // $uri = str_replace('{sb_user_id}', $sb_user_id, config('phpvms.simbrief_update_url'));
             // $uri = str_replace('{sb_static_id}', $sb_static_id, $uri);
-            $uri = 'https://www.simbrief.com/api/xml.fetcher.php?userid='.$sb_user_id.'&static_id='.$sb_static_id;
+            $uri = 'https://www.simbrief.com/api/xml.fetcher.php?'.http_build_query([
+                'userid'    => $sb_user_id,
+                'static_id' => $sb_static_id,
+            ]);
         }
 
         $opts = [
@@ -136,7 +139,6 @@ class SimBriefService extends Service
             }
         } catch (GuzzleException $e) {
             Log::error('Simbrief HTTP Error: '.$e->getMessage());
-            dd($e);
 
             return null;
         }

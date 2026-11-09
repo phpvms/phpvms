@@ -31,7 +31,7 @@ class PirepComment extends Resource
                 'id'       => $user->id,
                 'pilot_id' => $user->pilot_id,
                 'ident'    => $user->ident,
-                'name'     => $user->name,
+                'name'     => $user->name_private,
             ],
         ];
     }

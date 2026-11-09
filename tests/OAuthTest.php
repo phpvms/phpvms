@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery\LegacyMockInterface;
 use Mockery\MockInterface;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class OAuthTest extends TestCase
@@ -81,7 +82,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to link a non-logged-in user from the login page using its email
+     * Unlinked email match goes to password login; the link completes after
      */
     public function test_link_account_from_login(): void
     {
@@ -94,20 +95,13 @@ final class OAuthTest extends TestCase
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
 
             $this->get(route('oauth.callback', ['provider' => $driver]))
-                ->assertRedirect(route('frontend.dashboard.index'));
+                ->assertRedirect(url('/login'))
+                ->assertSessionHas('url.intended', route('oauth.redirect', ['provider' => $driver]));
 
+            $this->assertGuest();
             $user->refresh();
-            $this->assertEquals(123456789, $user->{$driver.'_id'});
-            $this->assertTrue($user->lastlogin_at->diffInSeconds(now()) <= 2);
-
-            $tokens = $user->oauth_tokens()->where('provider', $driver)->first();
-
-            $this->assertNotNull($tokens);
-            $this->assertEquals('token', $tokens->token);
-            $this->assertEquals('refresh_token', $tokens->refresh_token);
-            $this->assertTrue($tokens->last_refreshed_at->diffInSeconds(now()) <= 2);
-
-            Auth::logout();
+            $this->assertEmpty($user->{$driver.'_id'});
+            $this->assertEquals(0, $user->oauth_tokens()->where('provider', $driver)->count());
         }
     }
 
@@ -166,6 +160,8 @@ final class OAuthTest extends TestCase
         ]);
 
         foreach ($this->drivers as $driver) {
+            // Only linked accounts reach the state check
+            $user->update([$driver.'_id' => 123456789]);
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
 
             $this->get(route('oauth.callback', ['provider' => $driver]))
@@ -243,5 +239,28 @@ final class OAuthTest extends TestCase
             ->assertStatus(404);
 
         Config::set('services.discord.enabled', $originalConfigValue);
+    }
+
+    public function test_login_with_deleted_account_is_refused(): void
+    {
+        $user = User::factory()->create([
+            'name'  => 'OAuth user',
+            'email' => 'oauth.user@phpvms.net',
+            'state' => UserState::DELETED,
+        ]);
+
+        $driver = $this->drivers[0];
+        $user->update([$driver.'_id' => 123456789]);
+        Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
+
+        // Exception handling is off, so the 403 throws
+        try {
+            $this->get(route('oauth.callback', ['provider' => $driver]));
+            $this->fail('A deleted account must not be able to log in');
+        } catch (HttpException $e) {
+            $this->assertSame(403, $e->getStatusCode());
+        }
+
+        $this->assertGuest();
     }
 }
