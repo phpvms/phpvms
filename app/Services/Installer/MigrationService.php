@@ -17,7 +17,6 @@ use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class MigrationService extends Service
@@ -58,17 +57,19 @@ class MigrationService extends Service
         // finds as enabled — so the set of addons that *will* be enabled is
         // exactly what's on disk right now. Scan disk directly rather than
         // waiting for a table that a single migration pass will create.
-        $modules = Schema::hasTable('addons')
-            ? $this->addonRegistry->enabled()->mapWithKeys(fn ($module): array => [$module->getName() => $module->getPath()])
+        $hasAddonsTable = Schema::hasTable('addons');
+        $enabled = $hasAddonsTable
+            ? $this->addonRegistry->enabled()->keyBy(fn (Addon $addon): string => $addon->getName())
+            : collect();
+        $modules = $hasAddonsTable
+            ? $enabled->map(fn (Addon $addon): string => $addon->getPath())
             : $this->scanAddonPathsOnDisk();
 
         foreach ($modules as $name => $path) {
             if (!is_dir($path)) {
-                Log::warning(sprintf(
-                    'Addon "%s" is enabled but its path does not exist on disk: %s',
-                    $name,
-                    $path,
-                ));
+                if ($enabled->has($name)) {
+                    $this->addonRegistry->disableMissing($enabled->get($name));
+                }
 
                 continue;
             }

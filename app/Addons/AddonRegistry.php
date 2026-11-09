@@ -87,6 +87,28 @@ class AddonRegistry
     }
 
     /**
+     * Disable an enabled addon whose directory is gone, so the warning is
+     * logged once rather than on every request that scans enabled addons.
+     *
+     * A bundled addon or the active theme cannot be disabled; that refusal is
+     * logged and swallowed so the caller's scan carries on.
+     */
+    public function disableMissing(Addon $addon): void
+    {
+        Log::warning(sprintf(
+            'Addon "%s" is enabled but its path does not exist on disk; disabling it: %s',
+            $addon->getName(),
+            $addon->getPath(),
+        ));
+
+        try {
+            $this->disable($addon->getName());
+        } catch (RuntimeException $runtimeException) {
+            Log::warning(sprintf('Addon "%s" could not be disabled: %s', $addon->getName(), $runtimeException->getMessage()));
+        }
+    }
+
+    /**
      * Enable an addon: flip the DB flag and regenerate the boot cache.
      * No-op when the addon is unknown.
      */

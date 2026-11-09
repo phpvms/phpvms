@@ -6,6 +6,7 @@ use App\Models\Addon;
 use App\Services\Installer\MigrationService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -179,6 +180,22 @@ describe('post-install (addons table present)', function (): void {
 
         expect($paths)->toHaveKey($enabled->getName())
             ->and($paths)->not->toHaveKey($disabled->getName());
+    });
+
+    it('disables an enabled addon whose path is gone and warns only once', function (): void {
+        $missing = Addon::factory()->create([
+            'name'    => 'Missing',
+            'path'    => $this->addonBase.'/Missing',
+            'enabled' => true,
+        ]);
+
+        Log::spy();
+
+        app(MigrationService::class)->getMigrationPaths();
+        app(MigrationService::class)->getMigrationPaths();
+
+        expect($missing->refresh()->isEnabled())->toBeFalse();
+        Log::shouldHaveReceived('warning')->once();
     });
 });
 
