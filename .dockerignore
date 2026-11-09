@@ -56,7 +56,6 @@ build/
 out/
 .oxfmtrc.json
 .oxlintrc.json
-tsconfig.json
 vitest.config.ts
 
 ### Docker
