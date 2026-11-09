@@ -87,14 +87,15 @@ jobs:
         run: |
           find . -maxdepth 2  -type f
 
-      - name: Create Release
+      - name: Attach assets to the release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dist/*.*"
           allowUpdates: true
-          generateReleaseNotes: true
-          name: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          tag: ${{ github.event.release.tag_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to Bunny storage
