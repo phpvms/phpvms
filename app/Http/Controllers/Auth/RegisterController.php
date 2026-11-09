@@ -183,8 +183,7 @@ class RegisterController extends Controller
             ]);
         }
 
-        // Only the registration form's own fields; everything else on the
-        // users table (rank, hours, state, email_verified_at...) is server-owned
+        // Registration form fields only
         $opts = $request->only([
             'name', 'email', 'airline_id', 'home_airport_id', 'password',
             'timezone', 'country', 'opt_in', 'toc_accepted', 'transfer_time',

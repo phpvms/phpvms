@@ -122,7 +122,7 @@ class LoginController extends Controller
                 return view('auth.suspended');
             }
 
-            // Deleted or any other non-active state: never fall through to a login
+            // Only active accounts can log in
             abort(403, 'This account is not active');
         }
 

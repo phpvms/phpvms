@@ -47,7 +47,7 @@ class User extends Resource
     }
 
     /**
-     * Linked provider ids are only shown to the user themselves or an admin
+     * Provider ids only for the user or an admin
      */
     private function isSelfOrAdmin($request): bool
     {

@@ -8,10 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * The Log Viewer hosts endpoint serialises each configured remote host with
- * its `auth` and `headers` config, which hands any log viewer user the bearer
- * token or basic-auth credentials for the remote instance. Only the server
- * side proxy needs those, so strip them before the response leaves.
+ * Strip remote host auth/headers from the Log Viewer hosts response
  */
 class StripLogViewerHostCredentials
 {

@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 /**
- * Admin uploads: module archives must not write outside their staging folder and
- * the files feature must not accept server-executable extensions
+ * Module archives stay in staging; file uploads reject executable types
  */
 final class UploadGuardsTest extends TestCase
 {

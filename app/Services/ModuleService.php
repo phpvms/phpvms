@@ -224,7 +224,7 @@ class ModuleService extends Service
             return flash()->error('Module Structure Not Correct!');
         }
 
-        // The name becomes a path under modules/, so it must be a plain directory name
+        // Must be a plain directory name
         if (!$module || !is_string($module) || !preg_match('/^[A-Za-z0-9_-]+$/', $module)) {
             File::deleteDirectory($temp_ext_folder);
 
@@ -255,9 +255,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Zip-slip guard: reject zip entries with absolute paths, parent traversal or backslash
-     * separators before anything is written to disk. PharData normalises tar entry names
-     * itself, so tar archives rely on the post-extraction check.
+     * Reject zip entries with absolute paths, traversal or backslashes. Tar uses the post-extraction check
      *
      * @throws Exception
      */
@@ -276,8 +274,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Post-extraction guard: every extracted file must resolve inside the staging folder
-     * (symlink entries or path normalisation that slipped past the name check)
+     * Every extracted file must resolve inside the staging folder
      *
      * @throws Exception
      */

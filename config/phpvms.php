@@ -103,9 +103,7 @@ return [
     'kvp_storage_path' => storage_path('app/kvp.json'),
 
     /*
-     * File extensions that can be uploaded through the admin "files" feature. Uploads land on
-     * a web-reachable disk, so anything the server could execute (php, phtml, phar, html, ...)
-     * must stay off this list.
+     * Extensions allowed for admin file uploads. Never add server-executable types
      */
     'file_upload_extensions' => [
         'pdf', 'txt', 'md', 'rtf', 'csv', 'json', 'xml', 'yml', 'yaml',

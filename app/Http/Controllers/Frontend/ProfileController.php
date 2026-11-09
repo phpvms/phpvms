@@ -167,9 +167,7 @@ class ProfileController extends Controller
             Log::warning('FORM CHECK | '.$user->name_private.' trying to manipulate profile details...', ['id' => $id, 'ident' => $user->ident, 'name' => $user->name]);
         }
 
-        // Only the profile form's own fields; everything else on the users
-        // table (rank, hours, state, api_key, pilot_id, current airport, ids
-        // from OAuth providers...) is server-owned
+        // Profile form fields only
         $req_data = $request->only([
             'name', 'email', 'airline_id', 'home_airport_id', 'country', 'timezone',
             'opt_in', 'vatsim_id', 'ivao_id', 'password',

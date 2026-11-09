@@ -82,8 +82,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * A provider email matching an unlinked account is not proof of ownership: the user is
-     * sent to the password login and the link completes afterwards through the intended URL
+     * Unlinked email match goes to password login; the link completes after
      */
     public function test_link_account_from_login(): void
     {
@@ -161,7 +160,7 @@ final class OAuthTest extends TestCase
         ]);
 
         foreach ($this->drivers as $driver) {
-            // Only a linked account reaches the state check; an email match alone goes to the login page
+            // Only linked accounts reach the state check
             $user->update([$driver.'_id' => 123456789]);
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
 
@@ -254,7 +253,7 @@ final class OAuthTest extends TestCase
         $user->update([$driver.'_id' => 123456789]);
         Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
 
-        // The base TestCase disables exception handling, so the 403 surfaces as an exception
+        // Exception handling is off, so the 403 throws
         try {
             $this->get(route('oauth.callback', ['provider' => $driver]));
             $this->fail('A deleted account must not be able to log in');

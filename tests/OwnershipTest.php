@@ -408,7 +408,7 @@ final class OwnershipTest extends TestCase
         $this->updateSetting('pireps.only_aircraft_at_dpt_airport', false);
         $this->pirep->update(['state' => PirepState::DRAFT]);
 
-        // Same user, airline, flight number and airports, filed just now: a duplicate of the draft
+        // Duplicate of the draft
         Pirep::factory()->create([
             'user_id'        => $this->owner->id,
             'airline_id'     => $this->pirep->airline_id,
@@ -446,7 +446,7 @@ final class OwnershipTest extends TestCase
         $this->assertCount(1, $this->get($uri, [], $this->owner)->assertOk()->json('data'));
         $this->assertCount(1, $this->get($uri, [], User::find(1))->assertOk()->json('data'));
 
-        // The public pirep endpoint follows the same rule for an API-key caller
+        // Same rule on the public pirep endpoint
         $this->assertArrayNotHasKey('comments', $this->get('/api/pireps/'.$this->pirep->id, [], $this->attacker)->json('data'));
     }
 

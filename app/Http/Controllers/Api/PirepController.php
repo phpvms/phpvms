@@ -58,7 +58,7 @@ class PirepController extends Controller
     /**
      * Parse any PIREP added in
      *
-     * @param string[] $except Extra attributes the caller may not set on this call
+     * @param string[] $except Extra attributes to drop
      */
     protected function parsePirep(Request $request, array $except = []): ?array
     {
@@ -95,8 +95,7 @@ class PirepController extends Controller
     }
 
     /**
-     * When the request changes the aircraft, make sure the pilot may fly the
-     * aircraft being submitted, not the one already on the PIREP
+     * Check the pilot may fly the submitted aircraft
      *
      * @param array<string, mixed> $attrs
      *
@@ -192,7 +191,7 @@ class PirepController extends Controller
             ->with($with)
             ->find($id);
 
-        // This route is public for the live map; comments are only for the owner or an admin
+        // Public route (live map); comments only for the owner or an admin
         $caller = $this->apiKeyUser(request());
         if ($pirep !== null && $caller !== null && $this->canReadComments($caller, $pirep)) {
             $pirep->load('comments');
@@ -419,8 +418,7 @@ class PirepController extends Controller
     {
         $pirep = Pirep::findOrFail($id);
 
-        // Finances only exist for accepted reports; recalculating anything else
-        // would pay the pilot for a report nobody approved
+        // Only accepted PIREPs have finances
         if ($pirep->state !== PirepState::ACCEPTED) {
             throw new PirepError($pirep, 'Finances can only be recalculated for an accepted PIREP');
         }
@@ -475,7 +473,7 @@ class PirepController extends Controller
         $columns = (new Acars())->getFillable();
 
         foreach ($route as $position) {
-            // Unknown keys would reach the raw updateOrInsert and blow up as a database error
+            // Only real Acars columns
             $position = Arr::only($position, $columns);
             $position['pirep_id'] = $id;
             $position['type'] = AcarsType::ROUTE;
@@ -486,7 +484,7 @@ class PirepController extends Controller
             }
 
             if (isset($position['id'])) {
-                // Through the model, so virtual attributes like `altitude` are mapped to real columns
+                // Via the model so virtual attributes (altitude) map to columns
                 Acars::updateOrCreate(['id' => $position['id']], $position);
             } else {
                 $acars = Acars::create($position);
@@ -505,7 +503,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Resolve the user behind an API key on a route that does not run the api.auth middleware
+     * User for the API key, on routes without api.auth
      */
     private function apiKeyUser(Request $request): ?User
     {

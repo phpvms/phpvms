@@ -31,7 +31,7 @@ class Utils
     }
 
     /**
-     * Returns a 20 character API key that a user can use
+     * Generate a 20 character API key
      *
      * @throws \Exception
      */

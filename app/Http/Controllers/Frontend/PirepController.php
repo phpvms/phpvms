@@ -315,8 +315,7 @@ class PirepController extends Controller
      * @throws \Exception
      */
     /**
-     * The checks a PIREP must pass before it can be submitted, shared by create, update and
-     * the submit button so a saved draft cannot skip them. Returns the error to show, or null.
+     * Pre-submit checks for create, update and submit. Returns an error, or null
      */
     private function submitError(User $user, Pirep $pirep): ?string
     {
@@ -358,7 +357,7 @@ class PirepController extends Controller
             return 'This aircraft is not positioned at the departure airport!';
         }
 
-        // Make sure this isn't a duplicate; a saved draft must not count itself
+        // Duplicate check; a draft does not count itself
         if ($this->pirepSvc->findDuplicate($pirep, $pirep->id) !== false) {
             Log::info('Duplicate PIREP found');
 

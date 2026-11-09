@@ -8,8 +8,7 @@ use App\Models\User;
 use App\Models\UserOAuthToken;
 
 /**
- * The repository request grammar must not let an API caller pull columns,
- * relations or joined tables that the endpoint never meant to expose.
+ * Request criteria must not expose columns, relations or joins
  */
 final class ApiRequestCriteriaTest extends TestCase
 {
@@ -24,7 +23,7 @@ final class ApiRequestCriteriaTest extends TestCase
             Airport::factory()->create(['id' => $icao, 'icao' => $icao, 'hub' => $hub]);
         }
 
-        // A hub airport joined to an active user is what the orderBy join needs
+        // The orderBy join needs a hub airport with an active user
         $this->pilot = User::factory()->create([
             'home_airport_id' => 'KAUS',
             'state'           => UserState::ACTIVE,

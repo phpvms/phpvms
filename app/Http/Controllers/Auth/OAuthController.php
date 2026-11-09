@@ -109,9 +109,7 @@ class OAuthController extends Controller
 
         $user = User::where($provider.'_id', $providerUser->getId())->first();
 
-        // The provider's email is not proof of ownership. If it matches an account that has
-        // not been linked yet, make them log in with their password first; after that the
-        // intended URL sends them back through the provider and the logged-in branch above links it.
+        // Unlinked email match: password login first, the intended URL completes the link
         if ($user === null && User::where('email', $providerUser->getEmail())->exists()) {
             $request->session()->put('url.intended', route('oauth.redirect', ['provider' => $provider]));
             flash()->info('An account with this email already exists. Log in to link your '.ucfirst($provider).' account.');
@@ -152,7 +150,7 @@ class OAuthController extends Controller
                     return view('auth.suspended');
                 }
 
-                // Deleted or any other non-active state: never fall through to a login
+                // Only active accounts can log in
                 abort(403, 'This account is not active');
             }
 

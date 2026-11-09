@@ -6,15 +6,7 @@ use Illuminate\Http\Request;
 use Prettus\Repository\Criteria\RequestCriteria as BaseRequestCriteria;
 
 /**
- * Request-driven search/sort criteria that only honours the parts of the
- * l5-repository query grammar that are safe for a caller to control.
- *
- * The upstream criteria lets any request pick the selected columns
- * (`filter`), eager-load any relation (`with`, `withCount`) and left-join any
- * table through `orderBy=table:col|col`. On a public endpoint that is enough
- * to read `users.*` (api keys, password hashes) or `users.oauth_tokens`
- * through an Airport. Only `search`, `searchFields`, `searchJoin` and a plain
- * single-table `orderBy`/`sortedBy` are passed through.
+ * RequestCriteria without filter/with/withCount; orderBy takes plain columns only
  */
 class RequestCriteria extends BaseRequestCriteria
 {
@@ -30,7 +22,7 @@ class RequestCriteria extends BaseRequestCriteria
     }
 
     /**
-     * Return a copy of the request with the unsafe criteria parameters removed
+     * Request without the unsafe criteria params
      */
     private static function sanitize(Request $request): Request
     {
