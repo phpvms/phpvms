@@ -90,11 +90,7 @@ class SeederService extends Service
             // broken symlink) must not be loaded. Skip it rather than resolve a
             // phantom path.
             if (!is_dir($addon->getPath())) {
-                Log::warning(sprintf(
-                    'Addon "%s" is enabled but its path does not exist on disk; skipping its seeders: %s',
-                    $addon->getName(),
-                    $addon->getPath(),
-                ));
+                $this->addonRegistry->disableMissing($addon);
 
                 continue;
             }
