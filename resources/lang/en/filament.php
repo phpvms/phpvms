@@ -302,7 +302,6 @@ return [
     'global_edits'                              => 'Global Edits',
     'config'                                    => 'Config',
     'content'                                   => 'Content',
-    'customize'                                 => 'Customize',
     'operations'                                => 'Operations',
     'addons'                                    => 'Add-Ons',
     'addon_remove_tables'                       => 'Also remove its data',

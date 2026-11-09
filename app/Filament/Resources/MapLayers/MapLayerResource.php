@@ -30,7 +30,7 @@ class MapLayerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Phosphor::MapTrifoldLight;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Content;
 
     protected static ?int $navigationSort = 4;
 
