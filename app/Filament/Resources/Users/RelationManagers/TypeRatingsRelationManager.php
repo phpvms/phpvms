@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Users\RelationManagers;
 
+use App\Features\Typeratings\Queries\TyperatingOptions;
+use App\Filament\Forms\Components\InfiniteSelect;
+use App\Models\Typerating;
 use Filament\Actions\AttachAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DetachAction;
@@ -10,6 +13,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
@@ -47,7 +51,16 @@ class TypeRatingsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                AttachAction::make(),
+                AttachAction::make()
+                    ->recordSelect(function (): InfiniteSelect {
+                        $scope = fn (Builder $query) => $query->whereNotIn('id', $this->getRelationship()->select(new Typerating()->qualifyColumn('id')));
+
+                        return InfiniteSelect::make('recordId')
+                            ->hiddenLabel()
+                            ->required()
+                            ->getPageUsing(fn (string $search, int $page, int $perPage): array => new TyperatingOptions()->page($search, $page, $perPage, $scope))
+                            ->getOptionLabelUsing(fn (mixed $value): ?string => new TyperatingOptions()->label($value, $scope));
+                    }),
             ])
             ->recordActions([
                 DetachAction::make(),

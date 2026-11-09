@@ -11,6 +11,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\Support\Assets\AlpineComponent;
+use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
@@ -175,6 +176,14 @@ class AdminPanelProvider extends BasePanelProvider
             AlpineComponent::make(
                 'pirep-landing-analysis',
                 resource_path('js/dist/admin/components/pirep-landing-analysis.js'),
+            ),
+            AlpineComponent::make(
+                'infinite-select',
+                resource_path('js/dist/admin/components/infinite-select.js'),
+            ),
+            Css::make(
+                'infinite-select',
+                resource_path('css/filament/admin/infinite-select.css'),
             ),
         ]);
     }
