@@ -339,6 +339,70 @@ it('wires the resources of an addon once when it lists two providers', function 
         ->and($finder instanceof FileViewFinder ? $finder->getHints()['probe'] : null)->toBe([$this->probeDir.'/resources/views']);
 });
 
+/**
+ * Write a PHP class file under the probe directory and return its FQCN.
+ */
+function probeClass(string $directory, string $namespace, string $class, string $body): string
+{
+    File::ensureDirectoryExists($directory);
+    File::put($directory.'/'.$class.'.php', "<?php\nnamespace ".$namespace.";\n".$body);
+
+    return $namespace.'\\'.$class;
+}
+
+it('registers the listeners of an addon once when the first-listed provider sits outside Providers', function (): void {
+    $namespace = 'ProbeWire'.bin2hex(random_bytes(4));
+    $loader = new ClassLoader();
+    $loader->addPsr4($namespace.'\\', $this->probeDir.'/app');
+    $loader->register();
+
+    try {
+        $event = probeClass($this->probeDir.'/app/Events', $namespace.'\Events', 'Ping', 'class Ping {}');
+        probeClass($this->probeDir.'/app/Listeners', $namespace.'\Listeners', 'PingListener', '
+#[\App\Contracts\Addons\Attributes\AddonListener]
+class PingListener { public static int $handled = 0; public function handle(\\'.$event.' $event): void { self::$handled++; } }');
+        $first = probeClass($this->probeDir.'/app/Admin', $namespace.'\Admin', 'PanelProvider', 'class PanelProvider extends \\'.AddonServiceProvider::class.' {}');
+        $second = probeClass($this->probeDir.'/app/Providers', $namespace.'\Providers', 'MainProvider', 'class MainProvider extends \\'.AddonServiceProvider::class.' {}');
+
+        probeBootCache($first, ['namespace' => $namespace, 'providers' => [$first, $second], 'autoload_path' => $this->probeDir.'/app']);
+        registerProbe($first);
+        registerProbe($second);
+
+        event(new $event());
+
+        expect(($namespace.'\Listeners\PingListener')::$handled)->toBe(1);
+    } finally {
+        $loader->unregister();
+    }
+});
+
+it('never includes a template, route or helper file while looking for the models of a root-layout addon', function (): void {
+    $namespace = 'ProbeOwn'.bin2hex(random_bytes(4));
+    $loader = new ClassLoader();
+    $loader->addPsr4($namespace.'\\', $this->probeDir);
+    $loader->register();
+
+    try {
+        $trap = '<?php throw new \RuntimeException(\'a non-class file was included\');';
+        File::ensureDirectoryExists($this->probeDir.'/resources/views');
+        File::ensureDirectoryExists($this->probeDir.'/routes');
+        File::put($this->probeDir.'/resources/views/boom.blade.php', $trap);
+        File::put($this->probeDir.'/routes/Web.php', $trap);
+        File::put($this->probeDir.'/helpers.php', $trap);
+        File::put($this->probeDir.'/Bootstrap.php', $trap);
+        $model = probeClass($this->probeDir.'/Models', $namespace.'\Models', 'Widget', '
+#[\App\Contracts\Addons\Attributes\AddonModel]
+class Widget extends \Illuminate\Database\Eloquent\Model { protected $table = \'probe_widgets\'; }');
+        $provider = probeClass($this->probeDir.'/Providers', $namespace.'\Providers', 'Owner', 'class Owner extends \\'.AddonServiceProvider::class.' {}');
+
+        probeBootCache($provider, ['namespace' => $namespace, 'layout' => 'root', 'autoload_path' => $this->probeDir]);
+
+        expect(new $provider(app())->ownedModels())->toBe([$model]);
+    } finally {
+        $loader->unregister();
+    }
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Guard and quarantine
 // ─────────────────────────────────────────────────────────────────────────────

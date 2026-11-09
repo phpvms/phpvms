@@ -22,10 +22,10 @@ use App\Support\Extensions\SlotRegistry;
 use App\Support\Metrics\MetricRegistry;
 use App\Support\Metrics\Metrics;
 use Closure;
+use Composer\ClassMapGenerator\ClassMapGenerator;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Schemas\Components\Component;
-use FilesystemIterator;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
@@ -36,8 +36,6 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use LogicException;
 use Override;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -107,6 +105,14 @@ abstract class AddonServiceProvider extends ServiceProvider
      * Container key of the addon roots whose resources are already wired.
      */
     private const string WIRED_ROOTS = self::class.'.wired';
+
+    /**
+     * Directories the model scan never reads: third-party code, test classes
+     * whose parents may not be installed, and front-end packages.
+     *
+     * @var list<string>
+     */
+    private const array SCAN_EXCLUDED_DIRECTORIES = ['vendor', 'tests', 'node_modules'];
 
     private ?AddonBootCache $bootEntry = null;
 
@@ -409,6 +415,18 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
+     * The namespace that listener, command and model discovery derive class
+     * names from: the boot cache entry's, else the one inferred from this
+     * provider's class name. The entry wins, so a provider that sits outside
+     * `\Providers\` (an admin panel provider listed first) still finds the
+     * addon's classes.
+     */
+    private function discoveryNamespace(): ?string
+    {
+        return $this->bootEntry()->namespace ?? $this->addonRootNamespace();
+    }
+
+    /**
      * Resolve the short identifier used for view/translation namespaces and
      * config-key prefix derivation.
      *
@@ -547,42 +565,37 @@ abstract class AddonServiceProvider extends ServiceProvider
      * The addon's models: the classes in its own PSR-4 tree that extend
      * `Model`, are not abstract and carry {@see AddonModel}. Core reads the
      * tables to drop on uninstall from here. The tree is scanned on demand
-     * (uninstall only, never at boot), skipping `vendor/` and `tests/`; a model
-     * without the attribute is not the addon's and its table is left alone.
+     * (uninstall only, never at boot), skipping `vendor/`, `tests/` and
+     * `node_modules/`; a model without the attribute is not the addon's and its
+     * table is left alone.
      *
      * @return list<class-string<Model>>
      */
     final public function ownedModels(): array
     {
         $entry = $this->bootEntry();
-        $namespace = rtrim($entry->namespace ?? $this->addonRootNamespace() ?? '', '\\');
+        $namespace = rtrim($this->discoveryNamespace() ?? '', '\\');
         $root = $entry->autoloadPath ?? null;
 
         if ($root === null || $root === '') {
             $root = new ManifestParser()->parse($this->addonBasePath())->autoloadPath ?? $this->addonBasePath();
         }
 
-        if ($namespace === '' || !is_dir($root)) {
+        $root = realpath($root);
+
+        if ($namespace === '' || $root === false || !is_dir($root)) {
             return [];
         }
 
+        // Composer's class map generator reads each file's tokens without running
+        // it, so only files that declare a class at its PSR-4 path are loaded.
+        // Templates, routes, config and helpers are never included.
+        $generator = new ClassMapGenerator();
+        $generator->scanPaths($root, null, 'psr-4', $namespace.'\\', self::SCAN_EXCLUDED_DIRECTORIES);
+
         $models = [];
-        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
-        $skipped = [DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR.'tests'.DIRECTORY_SEPARATOR];
 
-        foreach ($files as $file) {
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $relative = substr($file->getPathname(), strlen(rtrim($root, '/\\')));
-
-            if (array_filter($skipped, fn (string $dir): bool => str_starts_with($relative, $dir)) !== []) {
-                continue;
-            }
-
-            $fqcn = $namespace.str_replace('/', '\\', substr($relative, 0, -4));
-
+        foreach (array_keys($generator->getClassMap()->getMap()) as $fqcn) {
             if (!str_starts_with($fqcn, $namespace.'\\') || !class_exists($fqcn) || !is_subclass_of($fqcn, Model::class)) {
                 continue;
             }
@@ -903,7 +916,7 @@ abstract class AddonServiceProvider extends ServiceProvider
             return;
         }
 
-        $rootNamespace = $this->addonRootNamespace();
+        $rootNamespace = $this->discoveryNamespace();
 
         if ($rootNamespace === null) {
             return;
@@ -931,7 +944,7 @@ abstract class AddonServiceProvider extends ServiceProvider
      */
     private function registerListeners(): void
     {
-        $rootNamespace = $this->addonRootNamespace();
+        $rootNamespace = $this->discoveryNamespace();
 
         if ($rootNamespace === null) {
             return;
