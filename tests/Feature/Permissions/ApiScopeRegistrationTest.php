@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Contracts\Modules\ServiceProvider as ModuleServiceProvider;
+use App\Contracts\Addons\AddonServiceProvider as AddonBaseProvider;
 use App\Providers\AddonServiceProvider;
 use App\Providers\PassportServiceProvider;
 use App\Services\PermissionRegistry;
@@ -11,7 +11,7 @@ use Laravel\Passport\Passport;
 
 /*
  * Slice 3: the catalog merge (PassportServiceProvider::boot()) and the
- * registerApiScopes() base-provider helper (design.md §4).
+ * registerScopes() addon-provider declaration (design.md §4).
  */
 
 it('merges registered API scopes into the Passport catalog without clobbering legacy ApiScope entries', function (): void {
@@ -28,13 +28,12 @@ it('merges registered API scopes into the Passport catalog without clobbering le
     expect(Passport::hasScope(ApiScope::UserRead->value))->toBeTrue();
 });
 
-it('gives App\\Contracts\\Modules\\ServiceProvider a registerApiScopes() helper that forwards to the registry', function (): void {
-    $app = app();
-    $provider = new class($app) extends ModuleServiceProvider
+it('applies the API scopes an addon provider returns from registerScopes()', function (): void {
+    $provider = new class(app()) extends AddonBaseProvider
     {
-        public function boot(): void
+        public function registerScopes(): array
         {
-            $this->registerApiScopes(['x:module-scope'], 'ModuleGroup');
+            return ['ModuleGroup' => ['x:module-scope']];
         }
     };
 
@@ -45,13 +44,12 @@ it('gives App\\Contracts\\Modules\\ServiceProvider a registerApiScopes() helper 
     expect($registry->all())->toContain('x:module-scope');
 });
 
-it('preserves an explicit label when registerApiScopes is given a name => label map', function (): void {
-    $app = app();
-    $provider = new class($app) extends ModuleServiceProvider
+it('preserves an explicit label when registerScopes() is given a name => label map', function (): void {
+    $provider = new class(app()) extends AddonBaseProvider
     {
-        public function boot(): void
+        public function registerScopes(): array
         {
-            $this->registerApiScopes(['x:labelled' => 'Nice Label'], 'ModuleGroup');
+            return ['ModuleGroup' => ['x:labelled' => 'Nice Label']];
         }
     };
 

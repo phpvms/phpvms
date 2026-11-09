@@ -6,10 +6,10 @@ use App\Addons\AddonAutoLoader;
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
+use App\Contracts\Addons\AddonServiceProvider;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Collection;
-use Illuminate\Support\ServiceProvider;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -244,23 +244,11 @@ it('register() skips autoload.files paths that do not exist', function (): void 
 // Inline test service provider (defined in file scope to avoid autoloading)
 // ---------------------------------------------------------------------------
 
-class AddonLoaderTestServiceProvider extends ServiceProvider
-{
-    #[Override]
-    public function register(): void {}
-}
+class AddonLoaderTestServiceProvider extends AddonServiceProvider {}
 
-class AddonLoaderTestProviderAlpha extends ServiceProvider
-{
-    #[Override]
-    public function register(): void {}
-}
+class AddonLoaderTestProviderAlpha extends AddonServiceProvider {}
 
-class AddonLoaderTestProviderBeta extends ServiceProvider
-{
-    #[Override]
-    public function register(): void {}
-}
+class AddonLoaderTestProviderBeta extends AddonServiceProvider {}
 
 // ---------------------------------------------------------------------------
 // Loader resolution vs. foreign autoloaders

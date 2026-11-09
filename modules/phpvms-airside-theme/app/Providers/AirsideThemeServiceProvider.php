@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\PhpvmsAirsideTheme\Providers;
 
-use App\Contracts\Modules\ServiceProvider;
+use App\Contracts\Addons\AddonServiceProvider;
 use App\Features\Themes\ThemeOptions;
 use App\Filament\Support\ExpandableEditor;
 use Filament\Forms\Components\CodeEditor;
@@ -25,9 +25,9 @@ use TallStackUi\Facades\TallStackUi;
  * `@airsideVite` directive. Views reach the request-scoped ShellData with
  * `@inject('shell', ShellData::class)`. Components render with TallStackUI's
  * defaults except for a small soft customisation: avatar border and sidebar
- * widths (see `boot()`).
+ * widths (see `configureAppTheme()`).
  */
-class AirsideThemeServiceProvider extends ServiceProvider
+class AirsideThemeServiceProvider extends AddonServiceProvider
 {
     public const string COMPONENT_PREFIX = 'ts-';
 
@@ -92,10 +92,8 @@ class AirsideThemeServiceProvider extends ServiceProvider
     ];
 
     #[Override]
-    public function register(): void
+    protected function onRegister(): void
     {
-        parent::register();
-
         // TallStackUI reads the prefix while it registers its components,
         // which happens after every provider's register(). `tallstackui` is the
         // key its config file is published under; `ts-ui` is the merged copy
@@ -230,27 +228,35 @@ class AirsideThemeServiceProvider extends ServiceProvider
     }
 
     #[Override]
-    public function boot(): void
+    public function registerAppComponents(): void
     {
-        parent::boot();
-
         Blade::anonymousComponentNamespace('components', 'vms');
+    }
 
+    #[Override]
+    public function configureAppTheme(): void
+    {
         $this->customizeSidebarWidth();
         $this->customizeShell();
         $this->customizeAvatar();
+    }
 
+    #[Override]
+    protected function onBoot(): void
+    {
         $this->registerViteDirective();
-        $this->registerThemeOptions();
     }
 
     /**
-     * The form on the Theme admin page. The closure builds fresh components on
-     * each call and holds no request state, so it is safe under Octane.
+     * The form on the Theme admin page. The tabs are built fresh on each call
+     * and hold no request state, so this is safe under Octane.
+     *
+     * @return array<int, Tab>
      */
-    private function registerThemeOptions(): void
+    #[Override]
+    public function registerThemeOptions(string $theme): array
     {
-        app(ThemeOptions::class)->register('airside', fn (string $theme): array => [
+        return [
             Tab::make(__('airside::customize.tab_css'))->schema([
                 ThemeOptions::colorSchemeSelect('phpvms')
                     ->label(__('airside::customize.color_scheme')),
@@ -318,7 +324,7 @@ class AirsideThemeServiceProvider extends ServiceProvider
                     ->default('compact')
                     ->required(),
             ]),
-        ]);
+        ];
     }
 
     private function registerViteDirective(): void

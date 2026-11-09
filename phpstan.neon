@@ -21,6 +21,12 @@ parameters:
     # with and without the scan, and the `Modules\Sample` ignore below was
     # already unmatched either way.
 
+    # Deliberately broken fixture: a provider on the removed addon base class, to
+    # test that the loader quarantines it instead of failing boot. A missing
+    # parent class cannot be ignored by identifier, only excluded.
+    excludePaths:
+        - tests/fixtures/Addons/badbase/app/Providers/RemovedBaseProvider.php
+
     # Level 10 is the highest level
     level: 5
 

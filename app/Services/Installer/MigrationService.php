@@ -253,10 +253,13 @@ class MigrationService extends Service
      * migrations table, so the addon's tables are dropped. Used when
      * uninstalling an addon with table removal requested. No-op when the addon
      * ships no migrations directory.
+     *
+     * @param string|null $addonPath Directory to read the migrations from, when the
+     *                               addon's files have been moved from `$addon->getPath()`.
      */
-    public function rollbackAddonMigrations(Addon $addon): void
+    public function rollbackAddonMigrations(Addon $addon, ?string $addonPath = null): void
     {
-        $path = $addon->getPath().'/database/migrations';
+        $path = ($addonPath ?? $addon->getPath()).'/database/migrations';
 
         if (!is_dir($path)) {
             return;
@@ -305,10 +308,13 @@ class MigrationService extends Service
      * Matches records by the migration filenames present in the addon's
      * `database/migrations` directory, so a later reinstall re-runs them against
      * the freshly dropped tables. No-op when the addon ships no migrations.
+     *
+     * @param string|null $addonPath Directory to read the migrations from, when the
+     *                               addon's files have been moved from `$addon->getPath()`.
      */
-    public function purgeAddonMigrationRecords(Addon $addon): void
+    public function purgeAddonMigrationRecords(Addon $addon, ?string $addonPath = null): void
     {
-        $path = $addon->getPath().'/database/migrations';
+        $path = ($addonPath ?? $addon->getPath()).'/database/migrations';
 
         if (!is_dir($path)) {
             return;

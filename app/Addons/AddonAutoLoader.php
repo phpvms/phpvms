@@ -6,14 +6,16 @@ namespace App\Addons;
 
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Models\AddonManifest;
+use App\Addons\Support\AddonQuarantine;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
+use App\Contracts\Addons\AddonServiceProvider;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\ServiceProvider as IlluminateServiceProvider;
 use RuntimeException;
+use Throwable;
 
 /**
  * Runtime PSR-4 + service-provider registration for enabled addons.
@@ -195,9 +197,13 @@ class AddonAutoLoader
     /**
      * Register all service providers declared by a single addon entry.
      *
-     * Each declared class is validated to be a genuine ServiceProvider before
-     * registration — a manifest is addon-controlled input, so a crafted
+     * Each declared class must extend the addon base provider before it is
+     * registered: a manifest is addon-controlled input, so a crafted
      * `providers` entry must never be able to instantiate an arbitrary class.
+     * A provider that extends anything else, or whose class cannot be loaded
+     * (for example a parent class that no longer exists), is not registered.
+     * The addon is quarantined once the application has booted: in the register
+     * phase the database and notifications are not ready to use.
      *
      * Laravel deduplicates already-registered providers by class, so calling
      * this method multiple times for the same entry is idempotent and Octane-safe.
@@ -209,12 +215,23 @@ class AddonAutoLoader
                 continue;
             }
 
-            if (!is_a($providerClass, IlluminateServiceProvider::class, true)) {
+            try {
+                $failure = is_a($providerClass, AddonServiceProvider::class, true) ? null : new RuntimeException(sprintf('The provider %s must extend %s.', $providerClass, AddonServiceProvider::class));
+            } catch (Throwable $throwable) {
+                $failure = new RuntimeException(sprintf('The provider %s could not be loaded (%s). It must extend %s.', $providerClass, $throwable->getMessage(), AddonServiceProvider::class), 0, $throwable);
+            }
+
+            if ($failure instanceof Throwable) {
                 Log::warning(sprintf(
-                    'AddonAutoLoader: skipping provider "%s" for addon "%s" — not a ServiceProvider subclass.',
+                    'AddonAutoLoader: skipping provider "%s" for addon "%s": %s',
                     $providerClass,
                     $entry->namespace,
+                    $failure->getMessage(),
                 ));
+
+                $app->booted(function () use ($app, $entry, $providerClass, $failure): void {
+                    $app->make(AddonQuarantine::class)->handle($entry->namespace, $entry->alias ?? $entry->name, 'provider '.$providerClass, $failure);
+                });
 
                 continue;
             }

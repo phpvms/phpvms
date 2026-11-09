@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Awards\Providers;
 
-use App\Contracts\Modules\ServiceProvider;
+use App\Contracts\Addons\AddonServiceProvider;
 
-class AwardServiceProvider extends ServiceProvider {}
+class AwardServiceProvider extends AddonServiceProvider {}

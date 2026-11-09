@@ -1,0 +1,8 @@
+{
+    "name": "acme/fixture",
+    "autoload": {
+        "psr-4": {
+            "PhpvmsAddonFixture\\": "app/"
+        }
+    }
+}
