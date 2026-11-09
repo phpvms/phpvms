@@ -1,44 +1,71 @@
 <?php
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonAssetLinker;
-use App\Models\Addon;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Data migration: the bundled `phpvms/dashboard` addon is now `phpvms/widgets`
- * (modules/phpvms-dashboard → modules/phpvms-widgets).
+ * Data migration: carry the bundled `phpvms/dashboard` addon row over to its new
+ * identity, `phpvms/widgets` (modules/phpvms-dashboard → modules/phpvms-widgets).
  *
- * The new addon is discovered and, when the old one was enabled, its row is
- * enabled directly. AddonRegistry::enable() is not used: it reloads Octane in
- * the middle of the migration. Then the old asset link is removed and, last,
- * the old row deleted. A failure part-way leaves the old row, so a retry runs
- * every step again.
+ * registry_id is the addon identity, so without this an install that enabled the
+ * old module would keep an enabled row pointing at a deleted directory, and
+ * discovery would add the renamed module as a new, disabled row.
+ *
+ * The old row is re-pointed rather than replaced, so its id, `enabled` and
+ * `installed_at` survive. A `phpvms/widgets` row that discovery may already have
+ * inserted is merged in (enabled if either was) and deleted first, because
+ * `namespace` is unique. Settings keyed on the old registry_id move with it.
  */
 return new class() extends Migration
 {
+    private const string OLD_REGISTRY_ID = 'phpvms/dashboard';
+
+    private const string OLD_NAMESPACE = 'Modules\\PhpvmsDashboard';
+
+    private const string NEW_REGISTRY_ID = 'phpvms/widgets';
+
+    private const string NEW_NAMESPACE = 'Modules\\PhpvmsWidgets';
+
     public function up(): void
     {
         if (!Schema::hasTable('addons')) {
             return;
         }
 
-        $old = Addon::query()->where('registry_id', 'phpvms/dashboard')->first();
+        $old = DB::table('addons')
+            ->where('registry_id', self::OLD_REGISTRY_ID)
+            ->orWhere('namespace', self::OLD_NAMESPACE)
+            ->first();
+
         if ($old === null) {
             return;
         }
 
-        $discovery = app(AddonDiscoveryService::class);
-        $discovery->discoverNewAddons();
+        $new = DB::table('addons')
+            ->where('registry_id', self::NEW_REGISTRY_ID)
+            ->orWhere('namespace', self::NEW_NAMESPACE)
+            ->first();
 
-        if ($old->enabled) {
-            Addon::query()->where('registry_id', 'phpvms/widgets')->update(['enabled' => true]);
-        }
+        DB::transaction(function () use ($old, $new): void {
+            if ($new !== null) {
+                DB::table('addons')->where('id', $new->id)->delete();
+            }
 
-        app(AddonAssetLinker::class)->unlink('PhpvmsDashboard');
-        $old->delete();
+            DB::table('addons')->where('id', $old->id)->update([
+                'name'        => 'PhpvmsWidgets',
+                'registry_id' => self::NEW_REGISTRY_ID,
+                'namespace'   => self::NEW_NAMESPACE,
+                'path'        => base_path('modules/phpvms-widgets'),
+                'enabled'     => (bool) $old->enabled || (bool) ($new->enabled ?? false),
+                'updated_at'  => now(),
+            ]);
 
-        $discovery->rebuildCache();
+            if (Schema::hasTable('addon_settings') && Schema::hasColumn('addon_settings', 'registry_id')) {
+                DB::table('addon_settings')
+                    ->where('registry_id', self::OLD_REGISTRY_ID)
+                    ->update(['registry_id' => self::NEW_REGISTRY_ID]);
+            }
+        });
     }
 };

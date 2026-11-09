@@ -2,63 +2,75 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\BootCache;
-use App\Models\Addon;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 function renameDashboardAddonMigration(): object
 {
     return require base_path('database/migrations_data/2026_11_05_000000_rename_phpvms_dashboard_addon.php');
 }
 
-function seedOldDashboardAddon(bool $enabled): void
+/**
+ * @param array<string, mixed> $overrides
+ */
+function seedAddonRow(array $overrides): int
 {
-    Addon::factory()->create([
-        'name'        => 'PhpvmsDashboard',
-        'registry_id' => 'phpvms/dashboard',
-        'namespace'   => 'Modules\\PhpvmsDashboard',
-        'path'        => base_path('modules/phpvms-dashboard'),
-        'enabled'     => $enabled,
+    return DB::table('addons')->insertGetId([
+        'name'         => 'PhpvmsDashboard',
+        'registry_id'  => 'phpvms/dashboard',
+        'type'         => 'module',
+        'namespace'    => 'Modules\\PhpvmsDashboard',
+        'path'         => base_path('modules/phpvms-dashboard'),
+        'enabled'      => true,
+        'installed_at' => now()->subYear(),
+        'created_at'   => now(),
+        'updated_at'   => now(),
+        ...$overrides,
     ]);
 }
 
 beforeEach(function (): void {
-    Addon::query()->whereIn('registry_id', ['phpvms/dashboard', 'phpvms/widgets'])->delete();
-
-    $this->assets = sys_get_temp_dir().'/phpvms-ext-'.uniqid('', true);
-    config(['addons.paths.assets' => $this->assets]);
+    DB::table('addons')->whereIn('registry_id', ['phpvms/dashboard', 'phpvms/widgets'])->delete();
 });
 
-afterEach(function (): void {
-    File::deleteDirectory($this->assets);
-});
-
-it('replaces an enabled old addon with the new one, enabled and cached, and drops the old link', function (): void {
-    seedOldDashboardAddon(enabled: true);
-    File::ensureDirectoryExists($this->assets);
-    symlink(sys_get_temp_dir(), $this->assets.'/phpvmsdashboard');
+it('moves the enabled old row to the new identity and keeps its id', function (): void {
+    $id = seedAddonRow([]);
 
     renameDashboardAddonMigration()->up();
 
-    $namespaces = app(BootCache::class)->enabled()->map(fn ($entry): string => $entry->namespace)->all();
+    $row = DB::table('addons')->where('registry_id', 'phpvms/widgets')->sole();
 
-    expect(Addon::query()->where('registry_id', 'phpvms/dashboard')->exists())->toBeFalse()
-        ->and(Addon::query()->where('registry_id', 'phpvms/widgets')->value('enabled'))->toBeTruthy()
-        ->and($namespaces)->toContain('Modules\\PhpvmsWidgets')
-        ->and(is_link($this->assets.'/phpvmsdashboard'))->toBeFalse();
+    expect($row->id)->toBe($id)
+        ->and((bool) $row->enabled)->toBeTrue()
+        ->and($row->namespace)->toBe('Modules\\PhpvmsWidgets')
+        ->and($row->path)->toBe(base_path('modules/phpvms-widgets'))
+        ->and(DB::table('addons')->where('registry_id', 'phpvms/dashboard')->exists())->toBeFalse();
 });
 
-it('leaves the new addon disabled when the old one was disabled', function (): void {
-    seedOldDashboardAddon(enabled: false);
+it('merges a disabled row that discovery already added for the new module', function (): void {
+    $id = seedAddonRow([]);
+    seedAddonRow([
+        'name'        => 'PhpvmsWidgets',
+        'registry_id' => 'phpvms/widgets',
+        'namespace'   => 'Modules\\PhpvmsWidgets',
+        'path'        => base_path('modules/phpvms-widgets'),
+        'enabled'     => false,
+    ]);
 
     renameDashboardAddonMigration()->up();
 
-    expect(Addon::query()->where('registry_id', 'phpvms/dashboard')->exists())->toBeFalse()
-        ->and(Addon::query()->where('registry_id', 'phpvms/widgets')->sole()->enabled)->toBeFalse();
+    $rows = DB::table('addons')->where('registry_id', 'phpvms/widgets')->get();
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first()->id)->toBe($id)
+        ->and((bool) $rows->first()->enabled)->toBeTrue();
 });
 
-it('does nothing on an install that never had the old addon', function (): void {
+it('keeps a disabled old row disabled, and does nothing without one', function (): void {
+    renameDashboardAddonMigration()->up();
+    expect(DB::table('addons')->where('registry_id', 'phpvms/widgets')->exists())->toBeFalse();
+
+    seedAddonRow(['enabled' => false]);
     renameDashboardAddonMigration()->up();
 
-    expect(Addon::query()->where('registry_id', 'phpvms/widgets')->exists())->toBeFalse();
+    expect((bool) DB::table('addons')->where('registry_id', 'phpvms/widgets')->value('enabled'))->toBeFalse();
 });
