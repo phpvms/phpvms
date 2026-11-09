@@ -38,7 +38,7 @@ it('applies the filing rules when a saved draft is submitted', function (): void
     $draft = app(SaveManualPirep::class)->create($fx['pilot'], $input, 'save');
     expect($draft->state)->toBe(PirepState::DRAFT);
 
-    updateSetting('pilots.only_flights_from_current', true);
+    updateSetting('operations.only_flights_from_current', true);
     $fx['pilot']->update(['curr_airport_id' => $fx['arr']->id]);
 
     expect(fn () => app(SaveManualPirep::class)->update($draft, $input, 'submit'))

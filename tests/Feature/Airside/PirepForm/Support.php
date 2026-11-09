@@ -22,7 +22,7 @@ function pirepFormFixture(): array
 {
     $pilot = useAirside();
 
-    foreach (['pilots.only_flights_from_current', 'pireps.restrict_aircraft_to_rank', 'pireps.only_aircraft_at_dpt_airport', 'pireps.disable_manual'] as $setting) {
+    foreach (['operations.only_flights_from_current', 'pireps.restrict_aircraft_to_rank', 'pireps.only_aircraft_at_dpt_airport', 'pireps.disable_manual'] as $setting) {
         updateSetting($setting, false);
     }
 

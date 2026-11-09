@@ -146,7 +146,7 @@ test('search with bid token decorates bid flights with subfleet and empty for no
     updateSetting('operations.restrict_aircraft_to_rank', false);
     updateSetting('operations.restrict_aircraft_to_typerating', false);
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -201,7 +201,7 @@ test('search with flight_id returns invisible flight', function (): void {
 test('browse search without flight_id hides invisible flights', function (): void {
     updateSetting('operations.restrict_aircraft_to_rank', false);
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
 
     $user = User::factory()->create();
     apiAs($user);

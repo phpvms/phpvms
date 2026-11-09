@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace PhpvmsAddonFixture\Listeners;
 
+use App\Contracts\Addons\Attributes\AddonListener;
 use PhpvmsAddonFixture\Events\AcmeFixtureEvent;
 
+#[AddonListener]
 class AcmeListener
 {
     /**

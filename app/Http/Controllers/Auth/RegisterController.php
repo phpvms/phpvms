@@ -109,7 +109,7 @@ class RegisterController extends Controller
             'countries'         => Countries::getSelectList(),
             'timezones'         => Timezonelist::toArray(),
             'userFields'        => $userFields,
-            'hubs_only'         => setting('pilots.home_hubs_only'),
+            'hubs_only'         => setting('operations.home_hubs_only'),
             'invite'            => $invite ?? null,
             'oauthRegistration' => is_string($oauthRegistration) ? $oauthRegistration : null,
             'oauthProviderName' => $oauthProviderName,

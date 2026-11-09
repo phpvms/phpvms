@@ -9,6 +9,7 @@ use App\Models\Addon;
 use App\Models\AddonSetting;
 use App\Services\Installer\MigrationService;
 use Composer\Autoload\ClassLoader;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -70,6 +71,7 @@ afterEach(function (): void {
     File::deleteDirectory($this->root);
     Schema::dropIfExists('own_widgets');
     Schema::dropIfExists('own_widget_tags');
+    Schema::dropIfExists('own_plain_widgets');
 });
 
 it('drops the declared model table and the manifest tables, then deletes the files', function (): void {
@@ -116,6 +118,53 @@ it('puts the files back and keeps the addon when dropping the tables fails', fun
     expect(is_file($dir.'/module.json'))->toBeTrue()
         ->and(array_map(basename(...), File::directories($this->root)))->toBe(['acme-ownership'])
         ->and(Addon::query()->where('name', 'Ownership')->exists())->toBeTrue();
+});
+
+it('drops no table of a model without #[AddonModel]', function (): void {
+    Schema::create('own_plain_widgets', function (Blueprint $table): void {
+        $table->id();
+    });
+    ($this->installFixture)();
+
+    app(AddonRegistry::class)->delete('Ownership', true);
+
+    expect(Schema::hasTable('own_plain_widgets'))->toBeTrue()
+        ->and(Schema::hasTable('own_widgets'))->toBeFalse();
+});
+
+it('skips a model carrying #[AddonModel] whose table is a core table, with a warning', function (): void {
+    ($this->installFixture)();
+    Log::spy();
+
+    app(AddonRegistry::class)->delete('Ownership', true);
+
+    expect(Schema::hasTable('users'))->toBeTrue()
+        ->and(Schema::hasTable('own_widgets'))->toBeFalse();
+    Log::shouldHaveReceived('warning')
+        ->withArgs(fn (string $message): bool => str_contains($message, '"users"') && str_contains($message, 'Ownership'))
+        ->once();
+});
+
+it('finishes the uninstall and leaves the staged files when they cannot be deleted after the data is dropped', function (): void {
+    $dir = ($this->installFixture)();
+    Log::spy();
+    File::partialMock()
+        ->shouldReceive('deleteDirectory')
+        ->withArgs(fn (string $path): bool => str_contains($path, '.removing-'))
+        ->andReturnFalse();
+    File::shouldReceive('deleteDirectory')
+        ->withArgs(fn (string $path): bool => !str_contains($path, '.removing-'))
+        ->passthru();
+
+    app(AddonRegistry::class)->delete('Ownership', true);
+
+    expect(Addon::query()->where('name', 'Ownership')->exists())->toBeFalse()
+        ->and(Schema::hasTable('own_widgets'))->toBeFalse()
+        ->and(is_dir($dir))->toBeFalse()
+        ->and(glob($this->root.'/.acme-ownership.removing-*'))->toHaveCount(1);
+    Log::shouldHaveReceived('error')
+        ->withArgs(fn (string $message): bool => str_contains($message, 'remain at'))
+        ->once();
 });
 
 it('never drops a core table the manifest lists, and logs a warning for each', function (): void {
@@ -171,7 +220,7 @@ it('finishes the uninstall when onUninstall throws', function (): void {
 /**
  * Zip the ownership fixture, with the given version, for install/update.
  */
-function zipOwnershipFixture(string $directory, string $version): string
+function zipOwnershipFixture(string $directory, string $version, string $namespace = 'PhpvmsOwnershipFixture'): string
 {
     $fixture = realpath(__DIR__.'/../../fixtures/Addons/ownership');
     $path = $directory.'/ownership-'.$version.'.zip';
@@ -181,9 +230,18 @@ function zipOwnershipFixture(string $directory, string $version): string
 
     foreach (File::allFiles($fixture) as $file) {
         $relative = $file->getRelativePathname();
-        $zip->addFromString($relative, $relative === 'module.json'
-            ? json_encode([...json_decode((string) file_get_contents($file->getPathname()), true), 'version' => $version])
-            : (string) file_get_contents($file->getPathname()));
+        $contents = (string) file_get_contents($file->getPathname());
+
+        if ($relative === 'module.json') {
+            $contents = json_encode([...json_decode($contents, true), 'version' => $version]);
+        }
+
+        // A JSON file holds the namespace with doubled backslashes.
+        $zip->addFromString($relative, str_replace(
+            'PhpvmsOwnershipFixture',
+            str_ends_with($relative, '.json') ? addslashes($namespace) : $namespace,
+            $contents,
+        ));
     }
 
     $zip->close();
@@ -192,12 +250,19 @@ function zipOwnershipFixture(string $directory, string $version): string
 }
 
 it('calls onInstall after an install and onUpdate with both versions after an update', function (): void {
+    // A namespace no process has loaded yet, so the provider class is first
+    // loaded from the installed directory.
+    $namespace = 'Acme\\Ownership'.bin2hex(random_bytes(4));
+    $provider = $namespace.'\\Providers\\OwnershipServiceProvider';
     $registry = app(AddonRegistry::class);
 
-    $registry->install(new ZipSource(zipOwnershipFixture($this->root, '1.0.0')));
-    $registry->update('Ownership', new ZipSource(zipOwnershipFixture($this->root, '2.0.0')));
+    $registry->install(new ZipSource(zipOwnershipFixture($this->root, '1.0.0', $namespace)));
+    $registry->update('Ownership', new ZipSource(zipOwnershipFixture($this->root, '2.0.0', $namespace)));
 
-    expect(OwnershipServiceProvider::$calls)->toBe([['onInstall'], ['onUpdate', '1.0.0', '2.0.0']]);
+    expect($provider::$calls)->toBe([
+        ['onInstall', realpath($this->root.'/acme-ownership')],
+        ['onUpdate', '1.0.0', '2.0.0'],
+    ]);
 });
 
 it('completes the update when onUpdate throws', function (): void {

@@ -151,8 +151,8 @@ it('searches airports from two characters and picks one as the home airport', fu
     expect($this->pilot->refresh()->home_airport_id)->toBe($airport->id);
 });
 
-it('limits the search to hubs when pilots.home_hubs_only is on', function (): void {
-    updateSetting('pilots.home_hubs_only', true);
+it('limits the search to hubs when operations.home_hubs_only is on', function (): void {
+    updateSetting('operations.home_hubs_only', true);
     Airport::factory()->create(['icao' => 'KHUB', 'name' => 'Hub Field', 'hub' => true]);
     Airport::factory()->create(['icao' => 'KOUT', 'name' => 'Hub Outstation', 'hub' => false]);
 

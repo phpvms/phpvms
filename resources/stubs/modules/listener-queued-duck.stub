@@ -2,9 +2,11 @@
 
 namespace $NAMESPACE$;
 
+use App\Contracts\Addons\Attributes\AddonListener;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+#[AddonListener]
 class $CLASS$ implements ShouldQueue
 {
     use InteractsWithQueue;

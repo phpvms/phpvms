@@ -237,7 +237,7 @@ class ProfileController extends Controller
             'user'                     => $user,
             'airlines'                 => $airlines,
             'airports'                 => $airports,
-            'hubs_only'                => setting('pilots.home_hubs_only'),
+            'hubs_only'                => setting('operations.home_hubs_only'),
             'countries'                => Countries::getSelectList(),
             'timezones'                => Timezonelist::toArray(),
             'userFields'               => $userFields,

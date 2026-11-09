@@ -34,15 +34,12 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
+use Illuminate\View\FileViewFinder;
 use Modules\AddonManager\Providers\AddonManagerServiceProvider;
-use OtherAddon\Models\Foreign;
 use PhpvmsAddonFixture\Providers\AcmeServiceProvider;
 use PhpvmsBadBaseFixture\Providers\LaravelBaseProvider;
 use PhpvmsBadBaseFixture\Providers\RemovedBaseProvider;
-use ProbeAddon\Models\ProbeThing;
-use ProbeAddon\Models\Unprefixed;
-
-require_once __DIR__.'/../../fixtures/Addons/probe-models.php';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Probe providers. Each records the calls it receives, and throws from the
@@ -96,13 +93,6 @@ class ProbeOrderProvider extends AddonServiceProvider
     protected function onBoot(): void
     {
         $this->step('onBoot');
-    }
-
-    public function registerModels(): array
-    {
-        $this->step('registerModels');
-
-        return [];
     }
 
     public function registerAppComponents(): void
@@ -196,23 +186,6 @@ class ProbeThemeProvider extends AddonServiceProvider
     }
 }
 
-class ProbeModelsProvider extends AddonServiceProvider
-{
-    use ProbesAddonCalls;
-
-    /**
-     * @var list<class-string>
-     */
-    public static array $models = [];
-
-    public function registerModels(): array
-    {
-        $this->step('registerModels');
-
-        return self::$models;
-    }
-}
-
 class ProbePanelProvider extends AddonServiceProvider
 {
     use ProbesAddonCalls;
@@ -220,6 +193,17 @@ class ProbePanelProvider extends AddonServiceProvider
     public function registerAdminFilamentPanel(Panel $panel): Panel
     {
         return $panel->brandName('Probe panel');
+    }
+}
+
+/**
+ * No helper overrides: resolves its addon root the way a real provider does.
+ */
+class ProbeRootProvider extends AddonServiceProvider
+{
+    public function root(): string
+    {
+        return $this->addonBasePath();
     }
 }
 
@@ -299,7 +283,7 @@ beforeEach(function (): void {
     Config::set('probe.base_path', $this->probeDir);
     Config::set('addons.paths.boot_cache', $this->probeDir.'/addons.php');
 
-    foreach ([ProbeOrderProvider::class, ProbeLazyProvider::class, ProbeThemeProvider::class, ProbeModelsProvider::class, ProbeTypedProvider::class, ProbeSettingsProvider::class] as $class) {
+    foreach ([ProbeOrderProvider::class, ProbeLazyProvider::class, ProbeThemeProvider::class, ProbeTypedProvider::class, ProbeSettingsProvider::class] as $class) {
         $class::$calls = [];
         $class::$throwIn = null;
     }
@@ -308,7 +292,6 @@ beforeEach(function (): void {
     ProbeTypedProvider::$metrics = [];
     ProbeTypedProvider::$scopes = [];
     ProbeSettingsProvider::$settings = [];
-    ProbeModelsProvider::$models = [];
     ProbeThemeProvider::$themes = [];
     Addon::query()->delete();
 });
@@ -328,7 +311,6 @@ it('calls the addon code in the documented order', function (): void {
 
     expect(ProbeOrderProvider::$calls)->toBe([
         'onRegister',
-        'registerModels',
         'registerAppComponents',
         'registerPolicies',
         'registerEventListeners',
@@ -358,6 +340,111 @@ it('lets an addon route override a core route', function (): void {
     registerProbe(ProbeOrderProvider::class);
 
     $this->get('/asp-overridable')->assertSeeText('addon');
+});
+
+it('takes the addon root from the boot cache entry, whatever the layout', function (): void {
+    probeBootCache(ProbeRootProvider::class, ['layout' => 'root']);
+
+    expect(new ProbeRootProvider(app())->root())->toBe($this->probeDir);
+});
+
+it('finds the addon root from the provider file when there is no boot cache entry', function (string $autoload, string $providerDirectory, string $namespaceSuffix): void {
+    $namespace = 'ProbeRoot'.bin2hex(random_bytes(4));
+    $directory = $this->probeDir.'/'.$providerDirectory;
+
+    File::ensureDirectoryExists($directory);
+    File::put($this->probeDir.'/module.json', json_encode(['name' => 'Probe', 'registry_id' => 'acme/probe']));
+    File::put($this->probeDir.'/composer.json', json_encode(['autoload' => ['psr-4' => [$namespace.'\\' => $autoload]]]));
+    File::put($directory.'/Rooted.php', '<?php
+namespace '.$namespace.'\\'.$namespaceSuffix.';
+
+class Rooted extends \\'.ProbeRootProvider::class.' {}
+');
+    require $directory.'/Rooted.php';
+
+    $class = $namespace.'\\'.$namespaceSuffix.'\\Rooted';
+
+    expect(new $class(app())->root())->toBe(realpath($this->probeDir));
+})->with([
+    'root layout'           => ['.', 'Providers', 'Providers'],
+    'app layout'            => ['app/', 'app/Providers', 'Providers'],
+    'nested panel provider' => ['app/', 'app/Providers/Filament', 'Providers\\Filament'],
+]);
+
+it('wires the resources of an addon once when it lists two providers', function (): void {
+    File::ensureDirectoryExists($this->probeDir.'/resources/views');
+    probeBootCache(ProbeOrderProvider::class, ['providers' => [ProbeOrderProvider::class, ProbePanelProvider::class]]);
+
+    registerProbe(ProbeOrderProvider::class);
+    registerProbe(ProbePanelProvider::class);
+
+    $finder = View::getFinder();
+
+    expect($finder)->toBeInstanceOf(FileViewFinder::class)
+        ->and($finder instanceof FileViewFinder ? $finder->getHints()['probe'] : null)->toBe([$this->probeDir.'/resources/views']);
+});
+
+/**
+ * Write a PHP class file under the probe directory and return its FQCN.
+ */
+function probeClass(string $directory, string $namespace, string $class, string $body): string
+{
+    File::ensureDirectoryExists($directory);
+    File::put($directory.'/'.$class.'.php', "<?php\nnamespace ".$namespace.";\n".$body);
+
+    return $namespace.'\\'.$class;
+}
+
+it('registers the listeners of an addon once when the first-listed provider sits outside Providers', function (): void {
+    $namespace = 'ProbeWire'.bin2hex(random_bytes(4));
+    $loader = new ClassLoader();
+    $loader->addPsr4($namespace.'\\', $this->probeDir.'/app');
+    $loader->register();
+
+    try {
+        $event = probeClass($this->probeDir.'/app/Events', $namespace.'\Events', 'Ping', 'class Ping {}');
+        probeClass($this->probeDir.'/app/Listeners', $namespace.'\Listeners', 'PingListener', '
+#[\App\Contracts\Addons\Attributes\AddonListener]
+class PingListener { public static int $handled = 0; public function handle(\\'.$event.' $event): void { self::$handled++; } }');
+        $first = probeClass($this->probeDir.'/app/Admin', $namespace.'\Admin', 'PanelProvider', 'class PanelProvider extends \\'.AddonServiceProvider::class.' {}');
+        $second = probeClass($this->probeDir.'/app/Providers', $namespace.'\Providers', 'MainProvider', 'class MainProvider extends \\'.AddonServiceProvider::class.' {}');
+
+        probeBootCache($first, ['namespace' => $namespace, 'providers' => [$first, $second], 'autoload_path' => $this->probeDir.'/app']);
+        registerProbe($first);
+        registerProbe($second);
+
+        event(new $event());
+
+        expect(($namespace.'\Listeners\PingListener')::$handled)->toBe(1);
+    } finally {
+        $loader->unregister();
+    }
+});
+
+it('never includes a template, route or helper file while looking for the models of a root-layout addon', function (): void {
+    $namespace = 'ProbeOwn'.bin2hex(random_bytes(4));
+    $loader = new ClassLoader();
+    $loader->addPsr4($namespace.'\\', $this->probeDir);
+    $loader->register();
+
+    try {
+        $trap = '<?php throw new \RuntimeException(\'a non-class file was included\');';
+        File::ensureDirectoryExists($this->probeDir.'/resources/views');
+        File::ensureDirectoryExists($this->probeDir.'/routes');
+        File::put($this->probeDir.'/resources/views/boom.blade.php', $trap);
+        File::put($this->probeDir.'/routes/Web.php', $trap);
+        File::put($this->probeDir.'/helpers.php', $trap);
+        $model = probeClass($this->probeDir.'/Models', $namespace.'\Models', 'Widget', '
+#[\App\Contracts\Addons\Attributes\AddonModel]
+class Widget extends \Illuminate\Database\Eloquent\Model { protected $table = \'probe_widgets\'; }');
+        $provider = probeClass($this->probeDir.'/Providers', $namespace.'\Providers', 'Owner', 'class Owner extends \\'.AddonServiceProvider::class.' {}');
+
+        probeBootCache($provider, ['namespace' => $namespace, 'layout' => 'root', 'autoload_path' => $this->probeDir]);
+
+        expect(new $provider(app())->ownedModels())->toBe([$model]);
+    } finally {
+        $loader->unregister();
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -626,54 +713,6 @@ it('skips the theme methods without throwing when the boot cache has no entry', 
     registerProbe(ProbeThemeProvider::class);
 
     expect(ProbeThemeProvider::$calls)->toBe([]);
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Models
-// ─────────────────────────────────────────────────────────────────────────────
-
-it('accepts models inside the addon namespace', function (): void {
-    Notification::fake();
-    probeBootCache(ProbeModelsProvider::class);
-    ProbeModelsProvider::$models = [ProbeThing::class, Unprefixed::class];
-    $addon = Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'enabled' => true]);
-
-    registerProbe(ProbeModelsProvider::class);
-
-    expect($addon->refresh()->enabled)->toBeTrue();
-    Notification::assertNothingSent();
-});
-
-it('quarantines the addon for a model it must not declare', function (string $model, string $named): void {
-    Notification::fake();
-    probeBootCache(ProbeModelsProvider::class);
-    ProbeModelsProvider::$models = [$model];
-    $addon = Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'enabled' => true]);
-    $admin = superAdmin();
-
-    registerProbe(ProbeModelsProvider::class);
-
-    expect($addon->refresh()->enabled)->toBeFalse();
-    Notification::assertSentTo($admin, DatabaseNotification::class, fn (DatabaseNotification $notification): bool => str_contains((string) $notification->toDatabase($admin)['body'], $named));
-})->with([
-    'a core model'             => [User::class, User::class],
-    "another addon's model"    => [Foreign::class, Foreign::class],
-    'a class that is no model' => [stdClass::class, stdClass::class],
-]);
-
-it('checks the namespace from the provider when the boot cache has no entry', function (): void {
-    Notification::fake();
-    ProbeModelsProvider::$models = [Unprefixed::class];
-    $addon = Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'enabled' => true]);
-
-    registerProbe(ProbeModelsProvider::class);
-    expect($addon->refresh()->enabled)->toBeTrue();
-
-    ProbeModelsProvider::$models = [User::class];
-    app()->forgetInstance(ProbeModelsProvider::class);
-    new ProbeModelsProvider(app())->boot();
-
-    expect($addon->refresh()->enabled)->toBeFalse();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

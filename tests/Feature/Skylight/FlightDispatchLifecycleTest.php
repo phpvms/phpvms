@@ -37,8 +37,8 @@ beforeEach(function (): void {
     Theme::set('skylight');
     updateSetting('units.distance', 'nmi');
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_show_flights_from_current', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_show_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
     updateSetting('operations.restrict_aircraft_to_rank', false);
     updateSetting('operations.restrict_aircraft_to_typerating', false);
     updateSetting('operations.only_aircraft_at_dpt_airport', false);
@@ -110,8 +110,8 @@ it('keeps configured zero-result subfleets visible and loads aircraft only by su
 
 it('returns every authoritative dispatch policy setting', function (): void {
     updateSetting('pilots.restrict_to_company', true);
-    updateSetting('pilots.only_show_flights_from_current', true);
-    updateSetting('pilots.only_flights_from_current', true);
+    updateSetting('operations.only_show_flights_from_current', true);
+    updateSetting('operations.only_flights_from_current', true);
     updateSetting('operations.restrict_aircraft_to_rank', true);
     updateSetting('operations.restrict_aircraft_to_typerating', true);
     updateSetting('operations.only_aircraft_at_dpt_airport', true);
@@ -528,13 +528,13 @@ it('filters aircraft by active parked airport reservation and SimBrief rules', f
 
 it('rechecks company and operational current-airport rules at mutation time', function (): void {
     $fixture = makeDispatchFixture();
-    updateSetting('pilots.only_flights_from_current', true);
+    updateSetting('operations.only_flights_from_current', true);
     $fixture['user']->update(['curr_airport_id' => Airport::factory()->create()->id]);
 
     expect(fn () => app(BidService::class)->addBid($fixture['flight'], $fixture['user']))
         ->toThrow(ValidationException::class);
 
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
     updateSetting('pilots.restrict_to_company', true);
     $fixture['flight']->update(['airline_id' => Airline::factory()->create()->id]);
 

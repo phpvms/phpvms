@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Contracts\Addons;
 
 use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonPanelBuilder;
 use App\Addons\Support\AddonQuarantine;
+use App\Addons\Support\AdminPanelBuilder;
 use App\Addons\Support\BootCache;
+use App\Addons\Support\ManifestParser;
 use App\Addons\Support\ThemeAddonRegistrar;
+use App\Contracts\Addons\Attributes\AddonListener;
+use App\Contracts\Addons\Attributes\AddonModel;
 use App\Features\AddonSettings\Setting;
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Hook;
@@ -24,6 +27,7 @@ use Closure;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Schemas\Components\Component;
+use FilesystemIterator;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +38,8 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use LogicException;
 use Override;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -72,8 +78,7 @@ use Throwable;
  * Call order in `register()`: merge config, the admin panel (when
  * `registerAdminFilamentPanel()` is overridden), `onRegister()`.
  *
- * Call order in `boot()`: the auto-wiring, `registerModels()` and its checks,
- * `registerAppComponents()`, `registerPolicies()`, `registerEventListeners()`,
+ * Call order in `boot()`: the auto-wiring, `registerAppComponents()`, `registerPolicies()`, `registerEventListeners()`,
  * `registerAppHooks()`, the lazy declarations, the theme methods (theme addons
  * only), `onBoot()`. Routes load after every provider has booted so addon
  * routes can override core routes; `onBoot()` therefore cannot call `route()`
@@ -99,6 +104,19 @@ abstract class AddonServiceProvider extends ServiceProvider
      * is not part of every branch of core.
      */
     private const string TILES_REGISTRY = Tiles::class;
+
+    /**
+     * Container key of the addon roots whose resources are already wired.
+     */
+    private const string WIRED_ROOTS = self::class.'.wired';
+
+    /**
+     * Directories under an addon root that never hold a model class. The model
+     * scan skips them so no template, config or route file is ever autoloaded.
+     *
+     * @var list<string>
+     */
+    private const array NON_CLASS_DIRECTORIES = ['vendor', 'tests', 'config', 'database', 'lang', 'public', 'resources', 'routes', 'node_modules'];
 
     private ?AddonBootCache $bootEntry = null;
 
@@ -141,14 +159,15 @@ abstract class AddonServiceProvider extends ServiceProvider
      */
     final public function boot(): void
     {
-        $this->registerRoutes();
-        $this->registerViews();
-        $this->registerTranslations();
-        $this->registerMigrations();
-        $this->registerCommands();
-        $this->registerListeners();
-
-        $this->declareModels();
+        // An addon may list several providers; its resources are wired once.
+        if ($this->claimsAutoWiring()) {
+            $this->registerRoutes();
+            $this->registerViews();
+            $this->registerTranslations();
+            $this->registerMigrations();
+            $this->registerCommands();
+            $this->registerListeners();
+        }
 
         foreach (['registerAppComponents', 'registerPolicies', 'registerEventListeners', 'registerAppHooks'] as $method) {
             if ($this->overrides($method)) {
@@ -312,19 +331,6 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
-     * The addon's Eloquent models. Each must extend `Model` and live inside the
-     * addon's own namespace. On uninstall
-     * with "Also remove its data", core drops these tables. Called once at
-     * boot, and once on uninstall. A model constructor must stay pure.
-     *
-     * @return list<class-string<Model>>
-     */
-    public function registerModels(): array
-    {
-        return [];
-    }
-
-    /**
      * Called after the addon is installed.
      */
     public function onInstall(): void {}
@@ -346,18 +352,38 @@ abstract class AddonServiceProvider extends ServiceProvider
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Resolve the addon root directory.
+     * Resolve the addon root directory, where config, routes, resources, lang
+     * and database/migrations live.
      *
-     * Default: 3 levels up from the provider file, which lives at
-     * `{root}/app/Providers/XxxServiceProvider.php` (PSR-4 maps
-     * `Modules\Name\` → `{root}/app`). Resources (config, routes, views, lang,
-     * database/migrations) live at `{root}`.
+     * Default: the `path` of the addon's boot cache entry, which discovery set
+     * from the manifest's location, so both the `app/` and the root layout
+     * resolve to the addon directory. Without an entry (a unit test, or a
+     * provider the manifest does not list) it is the nearest directory above
+     * the provider file that holds a manifest, and failing that 3 levels up,
+     * where `{root}/app/Providers/XxxServiceProvider.php` puts it.
      *
      * Override for non-standard layouts or tests.
      */
     protected function addonBasePath(): string
     {
-        return dirname(new ReflectionClass(static::class)->getFileName(), 3);
+        $path = $this->bootEntry()?->path;
+
+        if ($path !== null && $path !== '') {
+            return $path;
+        }
+
+        $file = (string) new ReflectionClass(static::class)->getFileName();
+        $directory = dirname($file);
+
+        for ($level = 1; $level <= 4; $level++) {
+            if (ManifestParser::manifestPath($directory) !== null) {
+                return $directory;
+            }
+
+            $directory = dirname($directory);
+        }
+
+        return dirname($file, 3);
     }
 
     /**
@@ -377,6 +403,18 @@ abstract class AddonServiceProvider extends ServiceProvider
         }
 
         return Str::beforeLast(static::class, '\\Providers\\');
+    }
+
+    /**
+     * The namespace that listener, command and model discovery derive class
+     * names from: the boot cache entry's, else the one inferred from this
+     * provider's class name. The entry wins, so a provider that sits outside
+     * `\Providers\` (an admin panel provider listed first) still finds the
+     * addon's classes.
+     */
+    private function discoveryNamespace(): ?string
+    {
+        return $this->bootEntry()->namespace ?? $this->addonRootNamespace();
     }
 
     /**
@@ -468,6 +506,29 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
+     * Whether this provider is the first of its addon to boot in this process.
+     * An addon may list more than one provider (its panel provider, say); its
+     * routes, views, translations, migrations, commands and listeners are
+     * wired by the first one only, so a listener is not registered twice.
+     * The roots already wired are held on the container, so each application
+     * instance (each test) starts over.
+     */
+    private function claimsAutoWiring(): bool
+    {
+        $root = $this->addonBasePath();
+        $wired = $this->app->bound(self::WIRED_ROOTS) ? (array) $this->app->make(self::WIRED_ROOTS) : [];
+
+        if (in_array($root, $wired, true)) {
+            return false;
+        }
+
+        $wired[] = $root;
+        $this->app->instance(self::WIRED_ROOTS, $wired);
+
+        return true;
+    }
+
+    /**
      * The boot cache entry of the addon this provider belongs to, or null when
      * the cache is cold or the provider is not listed in it (unit tests).
      *
@@ -492,29 +553,62 @@ abstract class AddonServiceProvider extends ServiceProvider
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Check the models the addon declares: each is an Eloquent model, inside the
-     * addon's namespace.
+     * The addon's models: the classes in its own PSR-4 tree that extend
+     * `Model`, are not abstract and carry {@see AddonModel}. Core reads the
+     * tables to drop on uninstall from here. The tree is scanned on demand
+     * (uninstall only, never at boot), skipping `vendor/` and `tests/`; a model
+     * without the attribute is not the addon's and its table is left alone.
+     *
+     * @return list<class-string<Model>>
      */
-    private function declareModels(): void
+    final public function ownedModels(): array
     {
-        if (!$this->overrides('registerModels')) {
-            return;
+        $entry = $this->bootEntry();
+        $namespace = rtrim($this->discoveryNamespace() ?? '', '\\');
+        $root = $entry->autoloadPath ?? null;
+
+        if ($root === null || $root === '') {
+            $root = new ManifestParser()->parse($this->addonBasePath())->autoloadPath ?? $this->addonBasePath();
         }
 
-        $this->guard('registerModels', function (): void {
-            $entry = $this->bootEntry();
-            $namespace = rtrim($entry->namespace ?? $this->addonRootNamespace() ?? '', '\\');
+        if ($namespace === '' || !is_dir($root)) {
+            return [];
+        }
 
-            foreach ($this->registerModels() as $model) {
-                if (!class_exists($model) || !is_subclass_of($model, Model::class)) {
-                    throw new InvalidArgumentException(sprintf('%s is not an Eloquent model.', $model));
-                }
+        $models = [];
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
+        // Composer includes whatever file a made-up class name maps to, so only
+        // files that can hold a class are tried: a class-like basename, outside
+        // the directories that hold templates, config, routes and migrations.
+        $skipped = array_map(fn (string $dir): string => DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR, self::NON_CLASS_DIRECTORIES);
 
-                if ($namespace !== '' && !str_starts_with($model, $namespace.'\\')) {
-                    throw new InvalidArgumentException(sprintf('Model %s is outside the addon namespace %s\\.', $model, $namespace));
-                }
+        foreach ($files as $file) {
+            if (preg_match('/^[A-Z][A-Za-z0-9_]*\\.php$/', $file->getFilename()) !== 1) {
+                continue;
             }
-        });
+
+            $relative = substr($file->getPathname(), strlen(rtrim($root, '/\\')));
+
+            if (array_filter($skipped, fn (string $dir): bool => str_starts_with($relative, $dir)) !== []) {
+                continue;
+            }
+
+            $fqcn = $namespace.str_replace('/', '\\', substr($relative, 0, -4));
+
+            if (!str_starts_with($fqcn, $namespace.'\\') || !class_exists($fqcn) || !is_subclass_of($fqcn, Model::class)) {
+                continue;
+            }
+
+            $class = new ReflectionClass($fqcn);
+
+            if (!$class->isAbstract() && $class->getAttributes(AddonModel::class) !== []) {
+                $models[] = $fqcn;
+            }
+        }
+
+        sort($models);
+
+        return $models;
     }
 
     /**
@@ -666,7 +760,7 @@ abstract class AddonServiceProvider extends ServiceProvider
     private function registerAdminPanel(): void
     {
         Filament::registerPanel(function (): Panel {
-            $builder = new AddonPanelBuilder(
+            $builder = new AdminPanelBuilder(
                 $this->app,
                 $this->adminPanelKey(),
                 $this->panelSourcePath(),
@@ -817,7 +911,7 @@ abstract class AddonServiceProvider extends ServiceProvider
             return;
         }
 
-        $rootNamespace = $this->addonRootNamespace();
+        $rootNamespace = $this->discoveryNamespace();
 
         if ($rootNamespace === null) {
             return;
@@ -840,31 +934,50 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
-     * Auto-discover and register event and hook listeners from app/Listeners/*.php.
-     *
-     * Convention: the listener's `handle` method (or `__invoke` when no
-     * `handle` exists) must type-hint a single named event class as its
-     * first parameter. Listeners that don't follow this convention are skipped.
+     * Auto-discover the event and hook listeners in `app/Listeners`, the
+     * `Listeners` namespace of the addon.
      */
     private function registerListeners(): void
     {
-        $listenersDir = $this->addonBasePath().'/app/Listeners';
-
-        if (!is_dir($listenersDir)) {
-            return;
-        }
-
-        $rootNamespace = $this->addonRootNamespace();
+        $rootNamespace = $this->discoveryNamespace();
 
         if ($rootNamespace === null) {
             return;
         }
 
-        foreach (glob($listenersDir.'/*.php') ?: [] as $file) {
-            $stem = basename($file, '.php');
-            $fqcn = $rootNamespace.'\\Listeners\\'.$stem;
+        $this->loadListenersFromDirectory($this->addonBasePath().'/app/Listeners', $rootNamespace.'\\Listeners');
+    }
+
+    /**
+     * Register every event and hook listener in a directory: each `*.php` file
+     * there holds one class named after the file, in `$namespace`. The class
+     * must type-hint a single named event or hook point class as the first
+     * parameter of its public `handle()` method, or of `__invoke()` when it
+     * has no `handle()`. A file that does not follow this is skipped. A
+     * listener that targets a hook point that does not exist, or a class that
+     * is not a hook point, quarantines the addon.
+     *
+     * Override it to look somewhere else, or call it from
+     * {@see registerEventListeners()} for a second directory.
+     *
+     * @param string $namespace namespace of the classes in the directory, without a trailing backslash
+     */
+    public function loadListenersFromDirectory(string $directory, string $namespace): void
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        foreach (glob($directory.'/*.php') ?: [] as $file) {
+            $fqcn = rtrim($namespace, '\\').'\\'.basename($file, '.php');
 
             if (!class_exists($fqcn)) {
+                continue;
+            }
+
+            if (new ReflectionClass($fqcn)->getAttributes(AddonListener::class) === []) {
+                Log::warning(sprintf('Addon "%s": listener %s lacks #[AddonListener], so it is not registered.', $this->addonNamespace(), $fqcn));
+
                 continue;
             }
 
@@ -879,7 +992,8 @@ abstract class AddonServiceProvider extends ServiceProvider
             } catch (LogicException|InvalidArgumentException $failure) {
                 // One broken listener must not stop every boot (the admin panel
                 // included): quarantine the addon and skip the rest of its listeners.
-                $this->app->make(AddonQuarantine::class)->handle($rootNamespace, $this->addonNamespace(), 'listener '.$fqcn, $failure);
+                $addonNamespace = $this->bootEntry()->namespace ?? $this->addonRootNamespace() ?? '';
+                $this->app->make(AddonQuarantine::class)->handle($addonNamespace, $this->addonNamespace(), 'listener '.$fqcn, $failure);
 
                 return;
             }
