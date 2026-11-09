@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support\Metrics;
 
-use App\Support\Extensions\WidgetRegistry;
 use Closure;
 use InvalidArgumentException;
 
@@ -17,8 +16,8 @@ use InvalidArgumentException;
  * and a DISABLED addon's provider never boots, a disabled addon's metrics
  * simply never appear here -- no catalog edit, no runtime change, no dead
  * entry. Disable-safety is a property of the registration mechanism, not a
- * runtime `enabled` check. Mirrors {@see WidgetRegistry}
- * on purpose -- see design.md D1 in the page-metrics OpenSpec change.
+ * runtime `enabled` check. See design.md D1 in the
+ * page-metrics OpenSpec change.
  *
  * The resolver is a PHP closure, never caller-supplied query input. That is
  * the entire security model (design.md D2): a consumer supplies a string id

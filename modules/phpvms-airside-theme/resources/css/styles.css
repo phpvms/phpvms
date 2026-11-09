@@ -12,4 +12,4 @@
 @source "../views";
 @source "../../app/Providers/*.php";
 @source "../../../../vendor/tallstackui/tallstackui";
-@source "../../../../resources/views/components/slot-outlet.blade.php";
+@source "../../../../resources/views/components/render-hook.blade.php";

@@ -71,7 +71,7 @@
                 @endif
                 <x-ts-button :href="route('frontend.flights.show', $flight->id)" wire:navigate flat>Details</x-ts-button>
                 @if ($detail)
-                    <x-slot-outlet name="flights.detail.actions" :context="['flight' => $detail['flight'], 'policy' => $detail['policy']]" />
+                    <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingFlightActions($detail['flight']->summary, $detail['policy'], auth()->user(), null, null)" />
                 @endif
             </div>
         </div>
@@ -112,11 +112,11 @@
                         <livewire:flights::airport-weather lazy :key="'ready-weather-'.$airport->icao" label="Current weather" :icao="$airport->icao" />
                     </div>
                 @endif
-                <x-slot-outlet name="dashboard.ready.details" :context="['airport' => $airport, 'user' => auth()->user(), 'pirep' => auth()->user()?->last_pirep]" />
+                <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingDashboardReadyDetails($airport, auth()->user(), auth()->user()->last_pirep)" />
             </x-slot:details>
 
             <x-ts-button :href="route('frontend.flights.index')" wire:navigate>{{ __('ui.find_a_flight') }}</x-ts-button>
-            <x-slot-outlet name="dashboard.ready.actions" :context="['airport' => $airport, 'user' => auth()->user()]" />
+            <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingDashboardReadyActions($airport, auth()->user())" />
         </x-vms::location-card>
     </div>
 @endif

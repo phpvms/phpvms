@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Features\Ofp\Livewire;
 
+use App\Features\Hooks\Facades\Hooks;
+use App\Features\Hooks\Fill;
+use App\Features\Hooks\Points\RenderingBriefingActions;
 use App\Http\Data\SimBriefBriefingData;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Services\SkylightSimBriefService;
-use App\Support\Extensions\Facades\Extensions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -25,7 +27,7 @@ use Livewire\Component;
  * the signed-in pilot, so another pilot's briefing id is a 404.
  *
  * @property-read SimBriefBriefingData $briefing
- * @property-read bool                  $hasSlotActions
+ * @property-read list<Fill>           $actionFills
  */
 class BriefingActions extends Component
 {
@@ -52,13 +54,17 @@ class BriefingActions extends Component
     }
 
     /**
-     * Whether any addon registered a Blade entry for the actions slot, so the
-     * card can draw its separator.
+     * The fills addons added to the actions area. Dispatched once per request;
+     * the view renders these and draws its separator only when it has any.
+     *
+     * @return list<Fill>
      */
     #[Computed]
-    public function hasSlotActions(): bool
+    public function actionFills(): array
     {
-        return Extensions::slots()->bladeEntriesFor('flight.briefing.actions') !== [];
+        $briefing = $this->briefing;
+
+        return Hooks::filter(new RenderingBriefingActions($briefing->flight, $briefing->bid, $briefing, $briefing->aircraft));
     }
 
     /**

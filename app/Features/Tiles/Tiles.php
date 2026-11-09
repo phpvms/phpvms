@@ -11,9 +11,10 @@ use InvalidArgumentException;
  * Registry of the tiles that core, themes and addons provide.
  *
  * A service provider calls {@see self::register()} from `boot()`. Each
- * registration is a closure that builds the {@see Tile}; closures run when the
- * registry is first read, never at boot. Core ships no tiles and no page that
- * lays them out; a theme reads this registry and renders tiles with `<x-tile>`.
+ * registration is a closure that builds the {@see Tile}. It runs once at
+ * registration to read the id, then again whenever the registry is read. Core
+ * ships no tiles and no page that lays them out; a theme reads this registry
+ * and renders tiles with `<x-tile>`.
  *
  * The dashboard methods ({@see self::dashboard()}, {@see self::defaultLayout()},
  * {@see self::sanitize()}, {@see self::zone()}, {@see self::available()}) see
@@ -43,10 +44,16 @@ final class Tiles
     private ?string $builtLocale = null;
 
     /**
-     * @param Closure(): Tile $build Returns the tile; its id must equal $id.
+     * Register a tile. The closure runs once now, only to read the tile's id,
+     * and is kept under that id; a tile with the same id is replaced. The tile
+     * is built again from the closure when the registry is read.
+     *
+     * @param Closure(): Tile $build
      */
-    public function register(string $id, Closure $build): void
+    public function register(Closure $build): void
     {
+        $id = $build()->id;
+
         unset($this->registrations[$id]);
         $this->registrations[$id] = $build;
         $this->built = null;

@@ -7,6 +7,7 @@ use App\Providers\AddonServiceProvider;
 use App\Providers\PassportServiceProvider;
 use App\Services\PermissionRegistry;
 use App\Support\ApiScope;
+use App\Support\Permissions\Scope;
 use Laravel\Passport\Passport;
 
 /*
@@ -33,34 +34,43 @@ it('applies the API scopes an addon provider returns from registerScopes()', fun
     {
         public function registerScopes(): array
         {
-            return ['ModuleGroup' => ['x:module-scope']];
+            return [new Scope('x:module-scope', 'ModuleGroup', 'Nice Label'), new Scope('x:default-scope')];
         }
     };
 
     $provider->boot();
 
     $registry = app(PermissionRegistry::class);
-    expect($registry->apiScopes())->toContain('x:module-scope');
-    expect($registry->all())->toContain('x:module-scope');
+    $permissions = collect($registry->grouped())
+        ->flatMap(fn (array $group): array => $group['permissions'])
+        ->keyBy('name');
+
+    expect($registry->apiScopes())->toContain('x:module-scope', 'x:default-scope')
+        ->and($registry->all())->toContain('x:module-scope')
+        ->and($permissions['x:module-scope']['label'])->toBe('Nice Label')
+        ->and(collect($registry->grouped())->pluck('label'))->toContain('ModuleGroup');
 });
 
-it('preserves an explicit label when registerScopes() is given a name => label map', function (): void {
+/**
+ * @return list<mixed>
+ */
+function mixedList(mixed ...$items): array
+{
+    return array_values($items);
+}
+
+it('registers no scope when registerScopes() holds a non-Scope entry', function (): void {
     $provider = new class(app()) extends AddonBaseProvider
     {
         public function registerScopes(): array
         {
-            return ['ModuleGroup' => ['x:labelled' => 'Nice Label']];
+            return mixedList(new Scope('x:valid-scope'), 'x:legacy-scope');
         }
     };
 
     $provider->boot();
 
-    $labels = collect(app(PermissionRegistry::class)->grouped())
-        ->flatMap(fn (array $group): array => $group['permissions'])
-        ->keyBy('name');
-
-    expect($labels->has('x:labelled'))->toBeTrue()
-        ->and($labels['x:labelled']['label'])->toBe('Nice Label');
+    expect(app(PermissionRegistry::class)->apiScopes())->not->toContain('x:valid-scope', 'x:legacy-scope');
 });
 
 it('gives App\\Providers\\AddonServiceProvider a registerApiScopes() helper that forwards to the registry', function (): void {

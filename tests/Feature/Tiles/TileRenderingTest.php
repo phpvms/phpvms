@@ -35,6 +35,7 @@ class MountProbe extends Component
 }
 
 beforeEach(function (): void {
+    app()->instance(Tiles::class, new Tiles());
     View::addNamespace('probe', __DIR__.'/views');
     MountProbe::$mounted = [];
     MountProbe::$forwarded = [];
@@ -130,4 +131,31 @@ it('rejects tile and id together, or neither', function (): void {
 
     expect(fn (): TileComponent => new TileComponent(tile: $tile, id: 'alpha'))->toThrow(InvalidArgumentException::class)
         ->and(fn (): TileComponent => new TileComponent())->toThrow(InvalidArgumentException::class);
+});
+
+it('renders element tiles with one module script however many share it', function (): void {
+    $one = Tile::element('one', 'pv-one', '/build/shared.js', 'One', 'star', ['heading' => 'Hi']);
+    $two = Tile::element('two', 'pv-two', '/build/shared.js', 'Two', 'star');
+
+    $html = Blade::render('<x-tile :tile="$one" /><x-tile :tile="$two" />', ['one' => $one, 'two' => $two]);
+
+    expect(substr_count($html, '<script type="module" src="/build/shared.js"></script>'))->toBe(1)
+        ->and($html)->toContain('<pv-one heading="Hi"></pv-one>')
+        ->and($html)->toContain('<pv-two></pv-two>');
+});
+
+it('escapes element attribute values and writes booleans by presence', function (): void {
+    $tile = Tile::element('one', 'pv-one', '/m.js', 'One', 'star', [
+        'heading' => 'say "hi" <b>',
+        'on'      => true,
+        'off'     => false,
+        'count'   => 3,
+    ]);
+
+    $html = Blade::render('<x-tile :tile="$tile" />', ['tile' => $tile]);
+
+    expect($html)->toContain('heading="say &quot;hi&quot; &lt;b&gt;"')
+        ->and($html)->toContain(' on')
+        ->and($html)->toContain('count="3"')
+        ->and($html)->not->toContain('off');
 });

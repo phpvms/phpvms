@@ -8,6 +8,14 @@ use App\Contracts\Addons\AddonServiceProvider;
  * The base provider auto-wires this addon's config, routes, views, translations,
  * migrations, console commands and listeners. Override the `register*()` and
  * `configure*()` methods you need, and put other code in onRegister() / onBoot().
+ *
+ * Declarations return typed lists, for example:
+ *  - registerAppTiles(): list<Closure(): Tile>, `fn () => Tile::livewire(...)`
+ *  - registerSettings(): list<Setting>, `Setting::text('key', 'Name')`
+ *  - registerScopes(): list<Scope>, `new Scope('name', 'Group', 'Label')`
+ *  - registerMetrics(): list<Metric>, `Metric::integer('id', fn () => 1)`
+ *
+ * To fill a theme outlet, add a listener in `app/Listeners` for a `RenderHook` point.
  */
 class $CLASS$ extends AddonServiceProvider
 {

@@ -88,14 +88,17 @@ class HookDispatcher
                 continue;
             }
 
-            if (!$hook->accepts($result)) {
+            // A render hook listener changes `$hook->value` in place and returns nothing.
+            $candidate = $hook instanceof RenderHook ? $hook->value : $result;
+
+            if (!$hook->accepts($candidate)) {
                 $hook->value = $previous;
-                $this->report('warning', $hook, $entry, 'returned '.get_debug_type($result).', which the hook does not accept');
+                $this->report('warning', $hook, $entry, ($hook instanceof RenderHook ? 'left ' : 'returned ').get_debug_type($candidate).', which the hook does not accept');
 
                 continue;
             }
 
-            $hook->value = $result;
+            $hook->value = $candidate;
         }
 
         return $hook->value;

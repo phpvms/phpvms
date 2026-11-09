@@ -9,11 +9,8 @@
             <x-ts-alert color="red" light shadowless role="alert">{{ $failure }}</x-ts-alert>
         @endif
 
-        <x-slot-outlet
-            name="flight.briefing.actions"
-            :context="['flight' => $briefing->flight, 'bid' => $briefing->bid, 'briefing' => $briefing, 'aircraft' => $briefing->aircraft]"
-        />
-        @if ($this->hasSlotActions)
+        <x-render-hook :fills="$this->actionFills" />
+        @if (\App\View\Components\RenderHook::renderable($this->actionFills) !== [])
             <hr />
         @endif
 

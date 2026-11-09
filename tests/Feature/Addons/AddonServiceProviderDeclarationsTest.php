@@ -7,14 +7,20 @@ use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonServiceProvider;
+use App\Features\AddonSettings\Setting;
 use App\Features\Themes\ThemeOptions;
+use App\Features\Tiles\Tile;
+use App\Features\Tiles\Tiles;
 use App\Filament\Pages\AddonSettings;
 use App\Models\Addon;
 use App\Models\AddonSetting;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\AddonSettingSyncService;
-use App\Support\Extensions\Extensions;
+use App\Services\PermissionRegistry;
+use App\Support\Metrics\Facades\Metrics;
+use App\Support\Metrics\Metric;
+use App\Support\Permissions\Scope;
 use Composer\Autoload\ClassLoader;
 use Filament\Facades\Filament;
 use Filament\Notifications\DatabaseNotification;
@@ -22,8 +28,6 @@ use Filament\Panel;
 use Filament\PanelRegistry;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Container\Container;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -116,23 +120,46 @@ class ProbeLazyProvider extends AddonServiceProvider
 {
     use ProbesAddonCalls;
 
-    /**
-     * @var list<array<string, mixed>>
-     */
-    public static array $slots = [];
-
-    public function registerAppSlots(): array
-    {
-        $this->step('registerAppSlots');
-
-        return self::$slots;
-    }
-
     public function registerSchedule(Schedule $schedule): void
     {
         $schedule->command('probe:declared')->daily();
 
         $this->step('registerSchedule');
+    }
+}
+
+class ProbeTypedProvider extends AddonServiceProvider
+{
+    use ProbesAddonCalls;
+
+    /**
+     * @var list<mixed>
+     */
+    public static array $tiles = [];
+
+    /**
+     * @var list<mixed>
+     */
+    public static array $metrics = [];
+
+    /**
+     * @var list<mixed>
+     */
+    public static array $scopes = [];
+
+    public function registerAppTiles(): array
+    {
+        return self::$tiles;
+    }
+
+    public function registerMetrics(): array
+    {
+        return self::$metrics;
+    }
+
+    public function registerScopes(): array
+    {
+        return self::$scopes;
     }
 }
 
@@ -180,13 +207,28 @@ class ProbeRootProvider extends AddonServiceProvider
     }
 }
 
-class ProbeSettingsProvider extends AddonServiceProvider
+class ProbeGoodSettingsProvider extends AddonServiceProvider
 {
     use ProbesAddonCalls;
 
     public function registerSettings(): array
     {
-        return [['key' => 'api_token', 'default' => 'abc', 'name' => 'API token']];
+        return [Setting::text('fine', 'Fine')];
+    }
+}
+
+class ProbeSettingsProvider extends AddonServiceProvider
+{
+    use ProbesAddonCalls;
+
+    /**
+     * @var list<mixed>
+     */
+    public static array $settings = [];
+
+    public function registerSettings(): array
+    {
+        return self::$settings;
     }
 }
 
@@ -241,12 +283,15 @@ beforeEach(function (): void {
     Config::set('probe.base_path', $this->probeDir);
     Config::set('addons.paths.boot_cache', $this->probeDir.'/addons.php');
 
-    foreach ([ProbeOrderProvider::class, ProbeLazyProvider::class, ProbeThemeProvider::class] as $class) {
+    foreach ([ProbeOrderProvider::class, ProbeLazyProvider::class, ProbeThemeProvider::class, ProbeTypedProvider::class, ProbeSettingsProvider::class] as $class) {
         $class::$calls = [];
         $class::$throwIn = null;
     }
 
-    ProbeLazyProvider::$slots = [];
+    ProbeTypedProvider::$tiles = [];
+    ProbeTypedProvider::$metrics = [];
+    ProbeTypedProvider::$scopes = [];
+    ProbeSettingsProvider::$settings = [];
     ProbeThemeProvider::$themes = [];
     Addon::query()->delete();
 });
@@ -457,51 +502,172 @@ it('only logs when a bundled addon throws, and runs its remaining declarations',
 // Lazy declarations
 // ─────────────────────────────────────────────────────────────────────────────
 
-it('declares slots only when the slot registry is first used', function (): void {
-    // The test application resolves the slot registry while booting, so use a
-    // container where it is still unresolved.
-    $previous = Container::getInstance();
-    $app = new Application($this->probeDir);
-    Container::setInstance($previous);
-    $app->singleton('extensions', fn (): Extensions => new Extensions());
-    ProbeLazyProvider::$slots = [['slot' => 'flight.detail.aside', 'view' => 'probe::aside']];
+function probeTile(string $id): Closure
+{
+    return fn (): Tile => Tile::livewire(id: $id, component: 'probe::tile', title: $id, icon: 'plane');
+}
 
-    $provider = new ProbeLazyProvider($app);
-    $provider->register();
-    $provider->boot();
+it('registers the tiles a provider declares', function (): void {
+    ProbeTypedProvider::$tiles = [probeTile('probe-a'), probeTile('probe-b')];
 
-    expect($app->resolved('extensions'))->toBeFalse()
-        ->and(ProbeLazyProvider::$calls)->not->toContain('registerAppSlots');
+    registerProbe(ProbeTypedProvider::class);
 
-    $entries = $app->make('extensions')->slots()->bladeEntriesFor('flight.detail.aside');
-
-    expect(ProbeLazyProvider::$calls)->toContain('registerAppSlots')
-        ->and(array_column($entries, 'view'))->toBe(['probe::aside']);
+    expect(app(Tiles::class)->has('probe-a'))->toBeTrue()
+        ->and(app(Tiles::class)->has('probe-b'))->toBeTrue();
 });
 
-it('declares slots at once when the slot registry is already in use', function (): void {
-    app('extensions');
-    ProbeLazyProvider::$slots = [['slot' => 'flight.detail.aside', 'view' => 'probe::aside']];
-
-    registerProbe(ProbeLazyProvider::class);
-
-    expect(array_column(app('extensions')->slots()->bladeEntriesFor('flight.detail.aside'), 'view'))->toBe(['probe::aside']);
-});
-
-it('registers none of the slots and quarantines the addon when one entry is invalid', function (): void {
+it('registers none of the tiles when one builder throws', function (): void {
     Notification::fake();
-    probeBootCache(ProbeLazyProvider::class);
-    app('extensions');
-    ProbeLazyProvider::$slots = [
-        ['slot' => 'flight.detail.aside', 'view' => 'probe::aside'],
-        ['slot' => 'flight.detail.aside'],
+    probeBootCache(ProbeTypedProvider::class);
+    ProbeTypedProvider::$tiles = [probeTile('probe-a'), fn (): Tile => throw new RuntimeException('bad tile')];
+    $addon = Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'enabled' => true]);
+    superAdmin();
+
+    registerProbe(ProbeTypedProvider::class);
+
+    expect(app(Tiles::class)->has('probe-a'))->toBeFalse()
+        ->and($addon->refresh()->enabled)->toBeFalse();
+});
+
+it('quarantines the addon naming registerAppTiles when an entry is not a closure', function (): void {
+    Notification::fake();
+    probeBootCache(ProbeTypedProvider::class);
+    ProbeTypedProvider::$tiles = [probeTile('probe-a'), 'probe-b'];
+    $addon = Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'enabled' => true]);
+    $admin = superAdmin();
+
+    registerProbe(ProbeTypedProvider::class);
+
+    expect(app(Tiles::class)->has('probe-a'))->toBeFalse()
+        ->and($addon->refresh()->enabled)->toBeFalse();
+    Notification::assertSentTo($admin, DatabaseNotification::class, fn (DatabaseNotification $notification): bool => str_contains((string) $notification->toDatabase($admin)['body'], 'registerAppTiles'));
+});
+
+it('registers none of the metrics and quarantines the addon when one entry is not a Metric', function (): void {
+    Notification::fake();
+    probeBootCache(ProbeTypedProvider::class);
+    ProbeTypedProvider::$metrics = [
+        Metric::integer('probe.one', fn (): int => 1),
+        ['id' => 'probe.two', 'resolve' => fn (): int => 2],
+        Metric::integer('probe.three', fn (): int => 3),
     ];
     $addon = Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'enabled' => true]);
     superAdmin();
 
-    registerProbe(ProbeLazyProvider::class);
+    registerProbe(ProbeTypedProvider::class);
 
-    expect(app('extensions')->slots()->bladeEntriesFor('flight.detail.aside'))->toBe([])
+    expect(Metrics::has('probe.one'))->toBeFalse()
+        ->and(Metrics::has('probe.three'))->toBeFalse()
+        ->and($addon->refresh()->enabled)->toBeFalse();
+});
+
+it('registers the metrics a provider declares', function (): void {
+    ProbeTypedProvider::$metrics = [Metric::float('probe.hours', fn (): float => 1.5, 'Probe hours', 'probe', 'decimal_1', 60)];
+
+    registerProbe(ProbeTypedProvider::class);
+
+    expect(Metrics::registry()->get('probe.hours'))->toMatchArray(['value_type' => 'float', 'format' => 'decimal_1', 'ttl' => 60])
+        ->and(Metrics::resolve('probe.hours'))->toBe(1.5);
+});
+
+it('syncs the settings an addon returns from registerSettings', function (): void {
+    probeBootCache(ProbeSettingsProvider::class);
+    ProbeSettingsProvider::$settings = [Setting::int('retries', 'Retries', 3, 'Network', 7, 'How often to retry')];
+
+    app(AddonSettingSyncService::class)->sync();
+
+    $row = AddonSetting::query()->where('registry_id', 'acme/probe')->where('key', 'retries')->first();
+
+    expect($row?->alias)->toBe('probe')
+        ->and($row?->type)->toBe('int')
+        ->and($row?->value)->toBe('3')
+        ->and($row?->default)->toBe('3')
+        ->and($row?->group)->toBe('Network')
+        ->and($row?->order)->toBe(7)
+        ->and($row?->description)->toBe('How often to retry');
+});
+
+it('keeps a saved setting value when the schema syncs again', function (): void {
+    probeBootCache(ProbeSettingsProvider::class);
+    ProbeSettingsProvider::$settings = [Setting::int('retries', 'Retries', 3)];
+    app(AddonSettingSyncService::class)->sync();
+    AddonSetting::query()->where('key', 'retries')->update(['value' => '9']);
+
+    app(AddonSettingSyncService::class)->sync();
+
+    expect(AddonSetting::query()->where('key', 'retries')->first()->value)->toBe('9');
+});
+
+it('stores a hidden setting but does not list it on the settings page', function (): void {
+    probeBootCache(ProbeSettingsProvider::class);
+    Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'registry_id' => 'acme/probe', 'enabled' => true]);
+    ProbeSettingsProvider::$settings = [Setting::hidden('cursor', 'abc')];
+    app(AddonSettingSyncService::class)->sync();
+    Filament::setCurrentPanel(Panel::make()->id('acme/probe'));
+
+    expect(AddonSetting::query()->where('key', 'cursor')->first()?->type)->toBe('hidden')
+        ->and(AddonSettings::canAccess())->toBeFalse();
+
+    ProbeSettingsProvider::$settings = [Setting::hidden('cursor', 'abc'), Setting::text('label', 'Label')];
+    app(AddonSettingSyncService::class)->sync();
+
+    expect(AddonSettings::canAccess())->toBeTrue();
+});
+
+it('skips only the addon whose settings list holds a non-Setting entry', function (): void {
+    Log::spy();
+    probeBootCache(ProbeSettingsProvider::class);
+    ProbeSettingsProvider::$settings = [Setting::text('good', 'Good'), ['key' => 'legacy']];
+
+    app(AddonSettingSyncService::class)->sync();
+
+    expect(AddonSetting::query()->where('registry_id', 'acme/probe')->count())->toBe(0);
+    Log::shouldHaveReceived('warning')->withArgs(fn (string $message): bool => str_contains($message, 'ProbeSettingsProvider'))->once();
+});
+
+it('still syncs the next addon when one addon returns a bad settings list', function (): void {
+    app(BootCache::class)->write([
+        AddonBootCache::fromArray([
+            'name'          => 'Probe', 'alias' => 'probe', 'type' => 'module', 'registry_id' => 'acme/probe', 'version' => '1.0.0',
+            'namespace'     => 'ProbeAddon', 'providers' => [ProbeSettingsProvider::class], 'path' => config('probe.base_path'),
+            'autoload_path' => '', 'layout' => 'app', 'enabled' => true,
+        ]),
+        AddonBootCache::fromArray([
+            'name'          => 'Probe Two', 'alias' => 'probe-two', 'type' => 'module', 'registry_id' => 'acme/probe-two', 'version' => '1.0.0',
+            'namespace'     => 'ProbeAddon', 'providers' => [ProbeGoodSettingsProvider::class], 'path' => config('probe.base_path'),
+            'autoload_path' => '', 'layout' => 'app', 'enabled' => true,
+        ]),
+    ]);
+    ProbeSettingsProvider::$settings = [['key' => 'legacy']];
+
+    app(AddonSettingSyncService::class)->sync();
+
+    expect(AddonSetting::query()->where('registry_id', 'acme/probe')->count())->toBe(0)
+        ->and(AddonSetting::query()->where('registry_id', 'acme/probe-two')->pluck('key')->all())->toBe(['fine']);
+});
+
+it('registers the scopes a provider declares with their group and label', function (): void {
+    ProbeTypedProvider::$scopes = [new Scope('x:probe-a', 'ProbeGroup', 'Probe A'), new Scope('x:probe-b')];
+
+    registerProbe(ProbeTypedProvider::class);
+
+    $registry = app(PermissionRegistry::class);
+    $permissions = collect($registry->grouped())->flatMap(fn (array $group): array => $group['permissions'])->keyBy('name');
+
+    expect($registry->apiScopes())->toContain('x:probe-a', 'x:probe-b')
+        ->and($permissions['x:probe-a']['label'])->toBe('Probe A');
+});
+
+it('registers no scope and quarantines the addon when one entry is not a Scope', function (): void {
+    Notification::fake();
+    probeBootCache(ProbeTypedProvider::class);
+    ProbeTypedProvider::$scopes = [new Scope('x:probe-a'), 'x:probe-b'];
+    $addon = Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'enabled' => true]);
+    superAdmin();
+
+    registerProbe(ProbeTypedProvider::class);
+
+    expect(app(PermissionRegistry::class)->apiScopes())->not->toContain('x:probe-a')
         ->and($addon->refresh()->enabled)->toBeFalse();
 });
 
@@ -574,17 +740,6 @@ it('registers no panel when the admin panel method is not overridden', function 
     registerProbe(ProbeOrderProvider::class);
 
     expect(Filament::getPanels())->not->toHaveKey('probe');
-});
-
-it('syncs the settings an addon returns from registerSettings', function (): void {
-    probeBootCache(ProbeSettingsProvider::class);
-
-    app(AddonSettingSyncService::class)->sync();
-
-    $row = AddonSetting::query()->where('registry_id', 'acme/probe')->where('key', 'api_token')->first();
-
-    expect($row?->value)->toBe('abc')
-        ->and($row?->alias)->toBe('probe');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

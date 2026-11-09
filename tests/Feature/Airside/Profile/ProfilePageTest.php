@@ -4,9 +4,19 @@ declare(strict_types=1);
 
 require_once __DIR__.'/../Support.php';
 
-use App\Support\Extensions\Facades\Extensions;
+use App\Features\Hooks\Facades\Hooks;
+use App\Features\Hooks\Fill;
+use App\Features\Hooks\Points\RenderingProfileCards;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
+
+final class ProfileCardProbe
+{
+    public function handle(RenderingProfileCards $hook): void
+    {
+        $hook->add(Fill::view('profileslot::card', ['profile' => $hook->profile]));
+    }
+}
 
 /**
  * 7.10: the airside profile page: addon card outlet context and the edit redirect.
@@ -16,12 +26,12 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('renders addon entries in the profile.cards slot outlet with the profile as context', function (): void {
+it('renders addon fills in the profile.cards hook with the profile as data', function (): void {
     $dir = sys_get_temp_dir().'/airside-profile-slot-'.uniqid('', true);
     File::ensureDirectoryExists($dir);
     File::put($dir.'/card.blade.php', 'ADDON-CARD for {{ $profile->name }} own={{ $profile->isOwnProfile ? "yes" : "no" }}');
     View::addNamespace('profileslot', $dir);
-    Extensions::slots()->register(['slot' => 'profile.cards', 'view' => 'profileslot::card']);
+    Hooks::listen(RenderingProfileCards::class, ProfileCardProbe::class);
 
     $this->pilot->update(['name' => 'Grace Hopper']);
 

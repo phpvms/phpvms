@@ -9,6 +9,7 @@ use App\Enums\AirframeSource;
 use App\Enums\FareType;
 use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
+use App\Features\Hooks\Points\RenderingBriefingActions;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\OFPPlanningSelectionData;
@@ -603,13 +604,25 @@ class SimBriefController
         $user = $request->user();
         $briefing = $this->skylightSimBriefService->briefingFor($user, $id);
 
+        // Built once, on demand: both the page props and the render hook read it.
+        $data = null;
+        $briefingData = function () use (&$data, $briefing, $user): SimBriefBriefingData {
+            return $data ??= SimBriefBriefingData::fromModel(
+                $briefing,
+                $user->bids()->where('flight_id', $briefing->flight_id)->first(),
+            );
+        };
+
         return response()->themed(
             'Ofp/Simbrief/Briefing',
             'ofp.briefing',
-            spa: fn (): array => [
-                'briefing' => SimBriefBriefingData::fromModel(
-                    $briefing,
-                    $user->bids()->where('flight_id', $briefing->flight_id)->first(),
+            spa: fn (): array => ['briefing' => $briefingData()],
+            renderHooks: fn (): array => [
+                new RenderingBriefingActions(
+                    $briefingData()->flight,
+                    $briefingData()->bid,
+                    $briefingData(),
+                    $briefingData()->aircraft,
                 ),
             ],
         );

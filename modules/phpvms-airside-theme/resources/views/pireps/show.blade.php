@@ -14,7 +14,7 @@
                 @include('pireps.show-details', ['pirep' => $pirep])
             </div>
 
-            <x-slot-outlet name="pireps.detail.main" :context="['pirep' => $pirep]" />
+            <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingPirepDetail(\App\Models\Pirep::query()->findOrFail($pirep->id))" />
         </div>
     </x-vms::page>
 @endsection

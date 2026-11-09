@@ -141,7 +141,7 @@
             @endif
 
             {{-- Addon extension point: cards for the profile body. The context carries the profile (with isOwnProfile). --}}
-            <x-slot-outlet name="profile.cards" :context="['profile' => $profile]" />
+            <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingProfileCards($profile)" />
 
             @if ($profile->isOwnProfile && ($profileEdit ?? null))
                 <livewire:profile::profile-edit />
