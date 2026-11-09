@@ -434,6 +434,7 @@ it('never includes a template, route or helper file while looking for the models
         File::put($this->probeDir.'/resources/views/boom.blade.php', $trap);
         File::put($this->probeDir.'/routes/Web.php', $trap);
         File::put($this->probeDir.'/helpers.php', $trap);
+        File::put($this->probeDir.'/Bootstrap.php', $trap);
         $model = probeClass($this->probeDir.'/Models', $namespace.'\Models', 'Widget', '
 #[\App\Contracts\Addons\Attributes\AddonModel]
 class Widget extends \Illuminate\Database\Eloquent\Model { protected $table = \'probe_widgets\'; }');
