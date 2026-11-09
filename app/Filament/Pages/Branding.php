@@ -55,7 +55,7 @@ class Branding extends Page
     use AutosavesFields;
     use ReversePrimaryButtons;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Customize;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Content;
 
     protected static ?int $navigationSort = 0;
 

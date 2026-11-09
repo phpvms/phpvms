@@ -43,9 +43,9 @@ class Theme extends Page
     use AuthorizesAccess;
     use ReversePrimaryButtons;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Customize;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Content;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     protected static string|BackedEnum|null $navigationIcon = Phosphor::PaintBrushLight;
 
