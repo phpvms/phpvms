@@ -22,10 +22,10 @@ use App\Support\Extensions\SlotRegistry;
 use App\Support\Metrics\MetricRegistry;
 use App\Support\Metrics\Metrics;
 use Closure;
+use Composer\ClassMapGenerator\ClassMapGenerator;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Schemas\Components\Component;
-use FilesystemIterator;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
@@ -36,8 +36,6 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use LogicException;
 use Override;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -109,12 +107,12 @@ abstract class AddonServiceProvider extends ServiceProvider
     private const string WIRED_ROOTS = self::class.'.wired';
 
     /**
-     * Directories under an addon root that never hold a model class. The model
-     * scan skips them so no template, config or route file is ever autoloaded.
+     * Directories the model scan never reads: third-party code, test classes
+     * whose parents may not be installed, and front-end packages.
      *
      * @var list<string>
      */
-    private const array NON_CLASS_DIRECTORIES = ['vendor', 'tests', 'config', 'database', 'lang', 'public', 'resources', 'routes', 'node_modules'];
+    private const array SCAN_EXCLUDED_DIRECTORIES = ['vendor', 'tests', 'node_modules'];
 
     private ?AddonBootCache $bootEntry = null;
 
@@ -567,8 +565,9 @@ abstract class AddonServiceProvider extends ServiceProvider
      * The addon's models: the classes in its own PSR-4 tree that extend
      * `Model`, are not abstract and carry {@see AddonModel}. Core reads the
      * tables to drop on uninstall from here. The tree is scanned on demand
-     * (uninstall only, never at boot), skipping `vendor/` and `tests/`; a model
-     * without the attribute is not the addon's and its table is left alone.
+     * (uninstall only, never at boot), skipping `vendor/`, `tests/` and
+     * `node_modules/`; a model without the attribute is not the addon's and its
+     * table is left alone.
      *
      * @return list<class-string<Model>>
      */
@@ -582,30 +581,21 @@ abstract class AddonServiceProvider extends ServiceProvider
             $root = new ManifestParser()->parse($this->addonBasePath())->autoloadPath ?? $this->addonBasePath();
         }
 
-        if ($namespace === '' || !is_dir($root)) {
+        $root = realpath($root);
+
+        if ($namespace === '' || $root === false || !is_dir($root)) {
             return [];
         }
 
+        // Composer's class map generator reads each file's tokens without running
+        // it, so only files that declare a class at its PSR-4 path are loaded.
+        // Templates, routes, config and helpers are never included.
+        $generator = new ClassMapGenerator();
+        $generator->scanPaths($root, null, 'psr-4', $namespace.'\\', self::SCAN_EXCLUDED_DIRECTORIES);
+
         $models = [];
-        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
-        // Composer includes whatever file a made-up class name maps to, so only
-        // files that can hold a class are tried: a class-like basename, outside
-        // the directories that hold templates, config, routes and migrations.
-        $skipped = array_map(fn (string $dir): string => DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR, self::NON_CLASS_DIRECTORIES);
 
-        foreach ($files as $file) {
-            if (preg_match('/^[A-Z][A-Za-z0-9_]*\\.php$/', $file->getFilename()) !== 1) {
-                continue;
-            }
-
-            $relative = substr($file->getPathname(), strlen(rtrim($root, '/\\')));
-
-            if (array_filter($skipped, fn (string $dir): bool => str_starts_with($relative, $dir)) !== []) {
-                continue;
-            }
-
-            $fqcn = $namespace.str_replace('/', '\\', substr($relative, 0, -4));
-
+        foreach (array_keys($generator->getClassMap()->getMap()) as $fqcn) {
             if (!str_starts_with($fqcn, $namespace.'\\') || !class_exists($fqcn) || !is_subclass_of($fqcn, Model::class)) {
                 continue;
             }
