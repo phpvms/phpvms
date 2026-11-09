@@ -147,39 +147,42 @@ targets it.
 ## Tiles
 
 A tile is a self-contained piece of pilot UI, rendered by a Livewire component or a Blade view, that
-a theme can place on any page. Core, a theme or an addon registers tiles from its service provider's
-`boot()`. Each registration is an id and a closure that builds the tile. The closure runs when the
-registry is first read, never at boot, and again for each locale, so `__()` in it is safe. It must
-not read other request state (user, session, request):
+a theme can place on any page. An addon declares its tiles in `registerAppTiles()` on its
+`AddonServiceProvider`: a list of closures that each return a `Tile`. The closures run when the registry is
+first read, never at boot, and again for each locale, so `__()` in them is safe. They must not read
+other request state (user, session, request):
 
 ```php
 use App\Features\Tiles\Tile;
-use App\Features\Tiles\Tiles;
+use Closure;
 
-public function boot(): void
+/** @return list<Closure(): Tile> */
+public function registerAppTiles(): array
 {
-    $tiles = app(Tiles::class);
-
-    $tiles->register('my-addon-stats', fn (): Tile => Tile::livewire(
-        id: 'my-addon-stats',
-        component: 'my-addon::stats',
-        title: __('my-addon::tiles.stats'),
-        icon: 'chart-bar',
-        showInDashboard: true,
-        default: true,
-    ));
-
-    $tiles->register('my-addon-news', fn (): Tile => Tile::view(
-        id: 'my-addon-news',
-        view: 'my-addon::tiles.news',
-        title: 'News',
-        icon: 'newspaper',
-        data: ['limit' => 5],
-        showInDashboard: true,
-        zone: Tile::ZONE_SIDEBAR,
-    ));
+    return [
+        fn (): Tile => Tile::livewire(
+            id: 'my-addon-stats',
+            component: 'my-addon::stats',
+            title: __('my-addon::tiles.stats'),
+            icon: 'chart-bar',
+            showInDashboard: true,
+            default: true,
+        ),
+        fn (): Tile => Tile::view(
+            id: 'my-addon-news',
+            view: 'my-addon::tiles.news',
+            title: 'News',
+            icon: 'newspaper',
+            data: ['limit' => 5],
+            showInDashboard: true,
+            zone: Tile::ZONE_SIDEBAR,
+        ),
+    ];
 }
 ```
+
+Core and theme code that is not an addon provider calls `app(Tiles::class)->register($closure)`
+from `boot()` instead.
 
 | Field                | Notes                                                                                           |
 | -------------------- | ----------------------------------------------------------------------------------------------- |
