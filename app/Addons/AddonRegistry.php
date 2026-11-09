@@ -25,7 +25,6 @@ use App\Models\AddonSetting;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Closure;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -212,30 +211,41 @@ class AddonRegistry
         // its provider can still be loaded: afterwards the manifest and the
         // migrations are gone, and "Also remove its data" would drop nothing.
         $manifest = app(ManifestParser::class)->parse($addon->getPath());
-        $tables = $this->ownedTables($manifest);
+        $tables = $removeTables ? $this->ownedTables($manifest) : [];
 
         $this->callLifecycle($manifest, 'onUninstall', $removeTables);
 
         // Stage the files: one atomic rename takes the addon out of discovery
-        // while its migration files stay on disk for a rollback. Any failure
-        // from here renames them back, so the addon is never left half removed.
+        // while its migration files stay on disk for a rollback. A failure
+        // before the tables are dropped renames them back, so the addon is
+        // never left half removed. Once the tables are gone it cannot be put
+        // back: the staged files then stay where they are, out of discovery,
+        // and the removal finishes without them.
         $original = rtrim(realpath($addon->getPath()) ?: $addon->getPath(), '/');
         $staged = $this->stageAddonFiles($addon);
+        $dataRemoved = false;
 
         try {
             if ($removeTables) {
                 $this->removeAddonTables($addon, $tables, $staged ?? $addon->getPath());
+                $dataRemoved = true;
             }
 
             if ($staged !== null) {
                 $this->deleteStagedFiles($addon, $staged);
             }
         } catch (Throwable $throwable) {
-            if ($staged !== null && File::isDirectory($staged)) {
-                rename($staged, $original);
+            if (!$dataRemoved) {
+                if ($staged !== null && File::isDirectory($staged)) {
+                    rename($staged, $original);
+                }
+
+                throw $throwable;
             }
 
-            throw $throwable;
+            Log::error(sprintf('AddonRegistry: the files of the "%s" addon could not be removed after its data was dropped; they remain at %s.', $addon->getName(), (string) $staged), [
+                'exception' => $throwable,
+            ]);
         }
 
         if ($removeTables) {
@@ -482,9 +492,10 @@ class AddonRegistry
     }
 
     /**
-     * The tables an addon owns: those of the models it declares through
-     * `registerModels()`, then the tables listed in its manifest
-     * `database.tables`.
+     * The tables an addon owns: those of the models carrying `#[AddonModel]`
+     * in its own tree, then the tables listed in its manifest `database.tables`.
+     *
+     * A provider whose scan fails contributes no tables.
      *
      * @return list<string>
      */
@@ -498,13 +509,11 @@ class AddonRegistry
 
         foreach ($this->addonProviders($manifest) as $provider) {
             try {
-                foreach ($provider->registerModels() as $model) {
-                    if (class_exists($model) && is_subclass_of($model, Model::class)) {
-                        $tables[] = new $model()->getTable();
-                    }
+                foreach ($provider->ownedModels() as $model) {
+                    $tables[] = new $model()->getTable();
                 }
             } catch (Throwable $throwable) {
-                Log::warning(sprintf('AddonRegistry: could not read the models of "%s": %s', $manifest->name, $throwable->getMessage()));
+                Log::warning(sprintf('AddonRegistry: not dropping the model tables of "%s": %s', $manifest->name, $throwable->getMessage()));
             }
         }
 
@@ -533,7 +542,13 @@ class AddonRegistry
 
         foreach ($manifest->providers as $class) {
             try {
-                if (!class_exists($class) || !is_a($class, AddonServiceProvider::class, true)) {
+                if (!class_exists($class)) {
+                    Log::warning(sprintf('AddonRegistry: the provider %s of "%s" could not be loaded from %s.', $class, $manifest->name, $manifest->autoloadPath));
+
+                    continue;
+                }
+
+                if (!is_a($class, AddonServiceProvider::class, true)) {
                     continue;
                 }
 
@@ -553,10 +568,15 @@ class AddonRegistry
     /**
      * Call a lifecycle method (`onInstall`, `onUpdate`, `onUninstall`) on each of
      * the addon's providers. A throw is logged and does not stop the operation.
+     *
+     * The manifest must be the one parsed where the addon's files are now: its
+     * autoload path is what makes the providers loadable.
      */
     private function callLifecycle(?AddonManifest $manifest, string $method, mixed ...$arguments): void
     {
         if (!$manifest instanceof AddonManifest) {
+            Log::warning(sprintf('AddonRegistry: %s() was not called: the addon manifest could not be read.', $method));
+
             return;
         }
 
@@ -632,7 +652,9 @@ class AddonRegistry
 
         AddonInstalled::dispatch($addon);
 
-        $this->callLifecycle($manifest, 'onInstall');
+        // Parsed again at $dest: the staging copy the validator read is gone,
+        // and its autoload path with it.
+        $this->callLifecycle(app(ManifestParser::class)->parse($dest), 'onInstall');
 
         return $addon;
     }
@@ -765,7 +787,9 @@ class AddonRegistry
 
         AddonUpdated::dispatch($existing);
 
-        $this->callLifecycle($manifest, 'onUpdate', (string) $prior['version'], (string) $manifest->version);
+        // Parsed again at $dest, as in install(). For an addon that was enabled
+        // the provider class in this process is still the previous version's.
+        $this->callLifecycle(app(ManifestParser::class)->parse($dest), 'onUpdate', (string) $prior['version'], (string) $manifest->version);
 
         return $existing->refresh();
     }

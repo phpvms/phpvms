@@ -6,11 +6,10 @@ namespace PhpvmsOwnershipFixture\Providers;
 
 use App\Contracts\Addons\AddonServiceProvider;
 use Override;
-use PhpvmsOwnershipFixture\Models\OwnWidget;
 use RuntimeException;
 
 /**
- * Fixture addon provider: declares one model and records its lifecycle calls.
+ * Fixture addon provider: records its lifecycle calls.
  */
 class OwnershipServiceProvider extends AddonServiceProvider
 {
@@ -29,16 +28,14 @@ class OwnershipServiceProvider extends AddonServiceProvider
      */
     public static ?string $watchPath = null;
 
-    #[Override]
-    public function registerModels(): array
-    {
-        return [OwnWidget::class];
-    }
-
+    /**
+     * Records the addon root the provider resolves, which must be where the
+     * files were installed to, not where they were staged.
+     */
     #[Override]
     public function onInstall(): void
     {
-        $this->record('onInstall');
+        $this->record('onInstall', realpath($this->addonBasePath()));
     }
 
     #[Override]

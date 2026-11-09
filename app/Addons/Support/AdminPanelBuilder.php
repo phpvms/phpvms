@@ -17,7 +17,7 @@ use Override;
  * paths to the addon instead of to a panel provider's file location. It is
  * never registered as a provider.
  */
-final class AddonPanelBuilder extends PanelProvider
+final class AdminPanelBuilder extends PanelProvider
 {
     /**
      * @param string $key        panel id, path segment and access-permission suffix

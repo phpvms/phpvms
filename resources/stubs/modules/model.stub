@@ -2,10 +2,12 @@
 
 namespace $NAMESPACE$;
 
+use App\Contracts\Addons\Attributes\AddonModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 // use $MODULE_NAMESPACE$\$MODULE$\Database\Factories\$NAME$Factory;
 
+#[AddonModel]
 class $CLASS$ extends Model
 {
     use HasFactory;
