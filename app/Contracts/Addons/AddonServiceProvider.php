@@ -108,6 +108,14 @@ abstract class AddonServiceProvider extends ServiceProvider
      */
     private const string WIRED_ROOTS = self::class.'.wired';
 
+    /**
+     * Directories under an addon root that never hold a model class. The model
+     * scan skips them so no template, config or route file is ever autoloaded.
+     *
+     * @var list<string>
+     */
+    private const array NON_CLASS_DIRECTORIES = ['vendor', 'tests', 'config', 'database', 'lang', 'public', 'resources', 'routes', 'node_modules'];
+
     private ?AddonBootCache $bootEntry = null;
 
     private bool $bootEntryLoaded = false;
@@ -409,6 +417,18 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
+     * The namespace that listener, command and model discovery derive class
+     * names from: the boot cache entry's, else the one inferred from this
+     * provider's class name. The entry wins, so a provider that sits outside
+     * `\Providers\` (an admin panel provider listed first) still finds the
+     * addon's classes.
+     */
+    private function discoveryNamespace(): ?string
+    {
+        return $this->bootEntry()->namespace ?? $this->addonRootNamespace();
+    }
+
+    /**
      * Resolve the short identifier used for view/translation namespaces and
      * config-key prefix derivation.
      *
@@ -555,7 +575,7 @@ abstract class AddonServiceProvider extends ServiceProvider
     final public function ownedModels(): array
     {
         $entry = $this->bootEntry();
-        $namespace = rtrim($entry->namespace ?? $this->addonRootNamespace() ?? '', '\\');
+        $namespace = rtrim($this->discoveryNamespace() ?? '', '\\');
         $root = $entry->autoloadPath ?? null;
 
         if ($root === null || $root === '') {
@@ -568,10 +588,13 @@ abstract class AddonServiceProvider extends ServiceProvider
 
         $models = [];
         $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
-        $skipped = [DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR.'tests'.DIRECTORY_SEPARATOR];
+        // Composer includes whatever file a made-up class name maps to, so only
+        // files that can hold a class are tried: a class-like basename, outside
+        // the directories that hold templates, config, routes and migrations.
+        $skipped = array_map(fn (string $dir): string => DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR, self::NON_CLASS_DIRECTORIES);
 
         foreach ($files as $file) {
-            if ($file->getExtension() !== 'php') {
+            if (preg_match('/^[A-Z][A-Za-z0-9_]*\\.php$/', $file->getFilename()) !== 1) {
                 continue;
             }
 
@@ -903,7 +926,7 @@ abstract class AddonServiceProvider extends ServiceProvider
             return;
         }
 
-        $rootNamespace = $this->addonRootNamespace();
+        $rootNamespace = $this->discoveryNamespace();
 
         if ($rootNamespace === null) {
             return;
@@ -931,7 +954,7 @@ abstract class AddonServiceProvider extends ServiceProvider
      */
     private function registerListeners(): void
     {
-        $rootNamespace = $this->addonRootNamespace();
+        $rootNamespace = $this->discoveryNamespace();
 
         if ($rootNamespace === null) {
             return;
