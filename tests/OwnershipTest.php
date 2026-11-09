@@ -465,4 +465,20 @@ final class OwnershipTest extends TestCase
         $admin = $this->get('/api/users/'.$this->owner->id, [], User::find(1))->assertOk()->json('data');
         $this->assertEquals('123', $admin['discord_id']);
     }
+
+    public function test_another_pilots_profile_has_no_bids_or_fleet(): void
+    {
+        $flight = Flight::factory()->create(['airline_id' => $this->owner->airline_id]);
+        Bid::create(['user_id' => $this->owner->id, 'flight_id' => $flight->id]);
+
+        $other = $this->get('/api/users/'.$this->owner->id, [], $this->attacker)->assertOk()->json('data');
+        $this->assertArrayNotHasKey('bids', $other);
+        $this->assertArrayNotHasKey('subfleets', $other['rank'] ?? []);
+
+        $self = $this->get('/api/users/'.$this->owner->id, [], $this->owner)->assertOk()->json('data');
+        $this->assertCount(1, $self['bids']);
+
+        $admin = $this->get('/api/users/'.$this->owner->id, [], User::find(1))->assertOk()->json('data');
+        $this->assertCount(1, $admin['bids']);
+    }
 }

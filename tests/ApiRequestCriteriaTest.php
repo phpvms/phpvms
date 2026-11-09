@@ -83,4 +83,26 @@ final class ApiRequestCriteriaTest extends TestCase
 
         $this->assertSame($max, (int) $meta['per_page']);
     }
+
+    public function test_search_fields_outside_the_searchable_list_are_ignored(): void
+    {
+        $search = fn (string $key) => collect($this->get('/api/airports/search?search=users.api_key:'.$key.'&searchFields=users.api_key:like&searchJoin=and', [], $this->pilot)
+            ->assertStatus(200)
+            ->json('data'))
+            ->pluck('icao')
+            ->all();
+
+        $this->assertSame($search('no-such-key'), $search(substr($this->pilot->api_key, 0, 4)));
+    }
+
+    public function test_searchable_fields_still_apply(): void
+    {
+        $icaos = collect($this->get('/api/airports/search?search=kj&searchFields=icao:like', [], $this->pilot)
+            ->assertStatus(200)
+            ->json('data'))
+            ->pluck('icao')
+            ->all();
+
+        $this->assertSame(['KJFK'], $icaos);
+    }
 }

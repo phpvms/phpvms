@@ -68,9 +68,16 @@ class UserController extends Controller
      */
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
-        $user = $this->userSvc->getUser($id, $with_subfleets);
+        // Bids and the rank's fleet are only for the user or an admin
+        $private = $id === Auth::id() || Auth::user()->ability('admin', 'users');
+
+        $user = $this->userSvc->getUser($id, $with_subfleets && $private);
         if ($user === null) {
             throw new UserNotFound();
+        }
+
+        if (!$private) {
+            $user->unsetRelation('bids');
         }
 
         return new UserResource($user);

@@ -22,6 +22,27 @@ class RequestCriteria extends BaseRequestCriteria
     }
 
     /**
+     * Upstream accepts searchFields outside the repository's searchable list; drop those
+     */
+    protected function parserFieldsSearch(array $fields = [], ?array $searchFields = null, ?array $dataKeys = null)
+    {
+        if (!empty($searchFields)) {
+            $allowed = array_map(
+                fn (int|string $key, mixed $value) => is_int($key) ? $value : $key,
+                array_keys($fields),
+                $fields,
+            );
+
+            $searchFields = array_values(array_filter(
+                $searchFields,
+                fn (mixed $field): bool => is_string($field) && in_array(explode(':', $field)[0], $allowed, true),
+            ));
+        }
+
+        return parent::parserFieldsSearch($fields, $searchFields ?: null, $dataKeys);
+    }
+
+    /**
      * Request without the unsafe criteria params
      */
     private static function sanitize(Request $request): Request
