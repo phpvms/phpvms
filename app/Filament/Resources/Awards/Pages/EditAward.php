@@ -6,7 +6,7 @@ namespace App\Filament\Resources\Awards\Pages;
 
 use App\Filament\Actions\EditDetailsAction;
 use App\Filament\Concerns\AutosavesFields;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Forms\Components\AssetImagePicker;
 use App\Filament\Resources\Awards\AwardResource;
 use App\Filament\Resources\Awards\Schemas\AwardForm;
@@ -43,7 +43,9 @@ use Override;
 class EditAward extends EditRecord
 {
     use AutosavesFields;
-    use ReversePrimaryButtons;
+    use HasSaveBar {
+        afterSave as saveBarAfterSave;
+    }
 
     protected static string $resource = AwardResource::class;
 
@@ -100,9 +102,6 @@ class EditAward extends EditRecord
             AwardForm::enabledField(),
         ])
             ->modalHeading(__('filament.awards_information'))
-            ->extraModalFooterActions([
-                DeleteAction::make()->cancelParentActions(),
-            ])
             ->mutateRecordDataUsing(fn (array $data): array => AwardForm::injectTypeIntoFillData($data))
             ->mutateDataUsing(fn (array $data): array => AwardForm::mutateTypeFields($data))
             ->after(function (Award $record): void {
@@ -164,6 +163,8 @@ class EditAward extends EditRecord
         $record = $this->getRecord();
 
         if ($record->ref_model_type !== null) {
+            $this->saveBarAfterSave();
+
             return;
         }
 
@@ -173,6 +174,8 @@ class EditAward extends EditRecord
         $tree = $this->data['conditions'] ?? [];
 
         $record->saveConditionsTree($tree === [] ? null : $tree);
+
+        $this->saveBarAfterSave();
     }
 
     /** Legacy awards have no page-level form — everything lives in the drawer. */
@@ -184,6 +187,11 @@ class EditAward extends EditRecord
         }
 
         return $this->reversePrimaryButtons(parent::getFormActions());
+    }
+
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make();
     }
 
     #[Override]
@@ -202,7 +210,6 @@ class EditAward extends EditRecord
                 ->action(fn (Award $record) => $this->runAward($record, grant: true)),
 
             // TODO(rules-based-awards §7): the JRE Export action lived here.
-            // Delete lives in the settings drawer's footer (editAction()).
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];

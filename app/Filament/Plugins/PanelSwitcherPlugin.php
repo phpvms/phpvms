@@ -14,7 +14,8 @@ use Modules\AddonManager\Filament\Pages\Addons;
 use Throwable;
 
 /**
- * Renders a panel-switcher dropdown at the left of the topbar.
+ * Renders a panel-switcher dropdown in the 44px brand band at the top of the
+ * sidebar, which lines up with the topbar so the two read as one bar.
  *
  * Registered on the main admin panel and on every module panel (via the base
  * module panel-provider contract), it lists the main panel plus each module
@@ -41,7 +42,7 @@ final class PanelSwitcherPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $panel->renderHook(
-            PanelsRenderHook::TOPBAR_LOGO_AFTER,
+            PanelsRenderHook::SIDEBAR_START,
             fn (): View => $this->renderSwitcher(),
         );
     }

@@ -71,6 +71,7 @@ class AwardForm
                 Section::make(__('filament.awards_information'))
                     ->description(__('filament.awards_description'))
                     ->schema([...self::infoFields(), self::enabledField()])
+                    ->aside()
                     ->columnSpanFull()
                     ->columns(2)
                     ->hiddenOn('edit'),
@@ -86,6 +87,7 @@ class AwardForm
                     // it, so it belongs with them rather than in the page
                     // header. See ReversePrimaryButtons::getFormContentComponent().
                     ->footerActions([self::runTestAction()])
+                    ->aside()
                     ->columnSpanFull()
                     ->visible(fn (?Award $record, string $operation): bool => $operation === 'edit' && $record?->ref_model_type === null),
             ]);
@@ -420,6 +422,7 @@ class AwardForm
             ->onColor('success')
             ->default(true)
             ->columnSpanFull()
+            ->inlineLabel()
             ->extraFieldWrapperAttributes(['class' => 'field-rule-above']);
     }
 

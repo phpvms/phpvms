@@ -25,7 +25,8 @@ final class SimBriefOfpAirport extends Dto
         public float $pos_long,
         public string $name,
         public float $timezone,
-        public string $plan_rwy,
+        // Only the origin and destination have one; SimBrief omits it from the take-off and en-route alternates
+        public ?string $plan_rwy,
         public int $trans_alt,
         public int $trans_level,
         public string $metar,

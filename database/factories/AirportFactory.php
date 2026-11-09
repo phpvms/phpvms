@@ -21,7 +21,13 @@ class AirportFactory extends Factory
      */
     protected $model = Airport::class;
 
-    protected array $usedIcaos = [];
+    /**
+     * Every id generated in this process. Each `Airport::factory()` call is a
+     * new factory, so the set is static, or a repeat would reach the primary key.
+     *
+     * @var array<string, true>
+     */
+    private static array $usedIcaos = [];
 
     /**
      * Generate a fake ICAO
@@ -65,7 +71,9 @@ class AirportFactory extends Factory
 
                 do {
                     $airport = $this->createFactoryICAO();
-                } while (in_array($airport, $this->usedIcaos, true));
+                } while (isset(self::$usedIcaos[$airport]));
+
+                self::$usedIcaos[$airport] = true;
 
                 return $airport;
             },

@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Models\Setting;
 use App\Services\SettingService;
+use App\Services\YamlDatabaseService;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Tests for the in-request SettingService memo (Tier 1 cache).
@@ -63,7 +66,7 @@ it('reads a setting from the application cache once per request in production', 
     app()->detectEnvironment(fn (): string => 'production');
     $reads = 0;
     Event::listen([CacheHit::class, CacheMissed::class], function ($event) use (&$reads): void {
-        if (str_ends_with($event->key, 'units.weight')) {
+        if (str_ends_with($event->key, 'units_weight')) {
             $reads++;
         }
     });
@@ -78,17 +81,17 @@ it('reads an already cached setting from the application cache once per request 
     // With the value already cached, retrieve() never runs, so only remember()
     // can keep it for the rest of the request.
     app()->detectEnvironment(fn (): string => 'production');
-    Cache::put(config('cache.keys.SETTINGS.key').'units.weight', 'cached-unit', 60);
+    Cache::put(config('cache.keys.SETTINGS.key').'units_weight', 'cached-unit', 60);
     app(SettingService::class)->clearMemo();
     $hits = 0;
     $misses = 0;
     Event::listen(CacheHit::class, function (CacheHit $event) use (&$hits): void {
-        if (str_ends_with($event->key, 'units.weight')) {
+        if (str_ends_with($event->key, 'units_weight')) {
             $hits++;
         }
     });
     Event::listen(CacheMissed::class, function (CacheMissed $event) use (&$misses): void {
-        if (str_ends_with($event->key, 'units.weight')) {
+        if (str_ends_with($event->key, 'units_weight')) {
             $misses++;
         }
     });
@@ -107,4 +110,73 @@ it('observes a write within the same request in production', function (): void {
     setting_save('general.theme', 'test_dark');
 
     expect(setting('general.theme'))->toBe('test_dark');
+});
+
+it('serves a setting from the application cache in any environment but testing, and a save busts it', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+    $key = config('cache.keys.SETTINGS.key').Setting::formatKey('general.theme');
+
+    setting('general.theme');
+    expect(Cache::has($key))->toBeTrue();
+
+    app(SettingService::class)->clearMemo();
+    DB::enableQueryLog();
+    setting('general.theme');
+    $queries = DB::getQueryLog();
+    DB::disableQueryLog();
+
+    expect($queries)->toBeEmpty();
+
+    app(SettingService::class)->save('general.theme', 'test_dark');
+    expect(Cache::has($key))->toBeFalse()
+        ->and(setting('general.theme'))->toBe('test_dark');
+});
+
+it('busts the cached value of a setting a YAML import overwrites', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+
+    expect(setting('general.theme'))->not->toBe('from_yaml');
+
+    app(YamlDatabaseService::class)->seedFromYaml([
+        'settings' => [
+            'data' => [['id' => 'general_theme', 'value' => 'from_yaml']],
+        ],
+    ]);
+
+    expect(setting('general.theme'))->toBe('from_yaml');
+});
+
+it('busts the cached value when the settings row is written through the model', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+    $key = config('cache.keys.SETTINGS.key').'general_theme';
+
+    setting('general.theme');
+    expect(Cache::has($key))->toBeTrue();
+
+    Setting::query()->byKey('general.theme')->firstOrFail()->update(['value' => 'from_model']);
+
+    expect(Cache::has($key))->toBeFalse()
+        ->and(setting('general.theme'))->toBe('from_model');
+});
+
+it('busts the cached value when the settings row is deleted through the model', function (): void {
+    app()->detectEnvironment(fn (): string => 'demo');
+    $key = config('cache.keys.SETTINGS.key').'general_theme';
+
+    setting('general.theme');
+    expect(Cache::has($key))->toBeTrue();
+
+    Setting::query()->byKey('general.theme')->firstOrFail()->delete();
+
+    expect(Cache::has($key))->toBeFalse();
+});
+
+it('flushes the application cache after a migrate-data run', function (): void {
+    // A data migration fetches simbrief data; answer offline so it skips the import.
+    Http::fake(['*' => Http::response(status: 503)]);
+    Cache::put('stale-after-migrate-data', 'yes', 60);
+
+    $this->artisan('migrate-data')->assertSuccessful();
+
+    expect(Cache::has('stale-after-migrate-data'))->toBeFalse();
 });

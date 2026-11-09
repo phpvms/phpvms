@@ -5,12 +5,8 @@ namespace App\Filament\Resources\Users\Pages;
 use App\Enums\UserState;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
-use App\Filament\Actions\EditDetailsAction;
-use App\Filament\Concerns\ReversePrimaryButtons;
-use App\Filament\Concerns\StacksRelationManagers;
-use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
-use App\Filament\Resources\Users\Actions\VerifyEmailAction;
-use App\Filament\Resources\Users\Schemas\UserForm;
+use App\Filament\Concerns\HasRelationManagerTabs;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -18,26 +14,23 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
-use Filament\Forms\Components\Field;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\View;
-use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\HtmlString;
 use Override;
 
 /**
- * Same identity → workspace split as the flight and aircraft edit pages: who
- * the pilot is (ident, name, login, airline) is read in the overview and edited
- * only through the drawer it opens, leaving the page form for their standing,
- * placement and notes.
+ * Who the pilot is (ident, name, login, airline) is read in the overview and
+ * edited in the page form's User Information section.
  */
 class EditUser extends EditRecord
 {
-    use ReversePrimaryButtons;
-    use StacksRelationManagers;
+    use HasRelationManagerTabs;
+    use HasSaveBar {
+        afterSave as saveBarAfterSave;
+    }
 
     private ?UserState $oldState = null;
 
@@ -52,160 +45,76 @@ class EditUser extends EditRecord
         $record = $this->getRecord();
 
         return new HtmlString(sprintf(
-            '%s <span class="id fi-header-heading-route">· %s</span>',
+            '<span class="fi-header-heading-ident">%s</span> <span class="id fi-header-heading-name">· %s</span>%s',
             e($record->ident),
             e($record->name),
+            $record->rank
+                ? sprintf('<span class="fi-header-heading-rank">%s</span>', e($record->rank->name))
+                : '',
         ));
     }
 
-    #[Override]
-    public function getSubheading(): string|Htmlable|null
-    {
-        /** @var User $record */
-        $record = $this->getRecord();
-
-        return view('filament.shared.hero-subheading', [
-            'meta' => implode(' · ', array_filter([
-                $record->airline?->name,
-                $record->rank?->name,
-                $record->email,
-                $record->hasVerifiedEmail()
-                    ? __('filament.user_email_verified')
-                    : __('filament.user_email_not_verified'),
-            ])),
-            'chip'    => ['label' => $record->state->getLabel(), 'color' => $record->state->getColor()],
-            'figures' => [
-                ['value' => number_format($record->flights), 'label' => trans_choice('common.flight', 2)],
-                ['value' => number_format(round(($record->flight_time ?? 0) / 60)), 'label' => __('flights.flighthours')],
-            ],
-        ]);
-    }
-
     /**
-     * The fields, awards, type ratings and PIREPs managers are appended by the
-     * trait.
+     * The identity overview sits at the top of the Details tab.
      *
-     * @return array<string, string>
-     */
-    protected function jumpBarFormSections(): array
-    {
-        return [
-            'user-information'     => __('filament.user_information'),
-            'location-information' => __('filament.location_information'),
-        ];
-    }
-
-    /**
-     * The identity overview sits above the jump bar.
-     *
-     * A closure, not an array: the content schema is built before the mounted
-     * drawer action runs, so an array freezes the cards at their pre-save
-     * values and the save reads as one that did not take. `getViewData()`
-     * evaluates a closure at render instead.
+     * A closure, not an array: the content schema is built before a save
+     * runs, so an array freezes the cards at their pre-save values and the
+     * save reads as one that did not take. `getViewData()` evaluates a closure
+     * at render instead.
      */
     protected function contentHeader(): array
     {
         return [
             View::make('components.admin.overview')
                 ->viewData(fn (): array => [
-                    'cards'      => $this->summaryCards(),
-                    'ariaLabel'  => __('filament.user_information'),
-                    'editAction' => $this->editAction,
+                    'cards'     => $this->summaryCards(),
+                    'ariaLabel' => __('filament.user_information'),
                 ]),
         ];
     }
 
     /**
-     * @return array<int, array{icon: Phosphor, tint: string|null, label: string, value: string, note: string}>
+     * @return array<int, array{icon: Phosphor, image?: string|null, tint: string|null, label: string, value: string, note: string}>
      */
     protected function summaryCards(): array
     {
         /** @var User $record */
         $record = $this->getRecord();
 
-        $verifiedAt = $record->email_verified_at;
+        $airline = $record->airline;
+        $hours = (int) round(($record->flight_time ?? 0) / 60);
 
         return [
             [
-                'icon'  => Phosphor::IdentificationCardLight,
+                'icon'  => Phosphor::BuildingsLight,
                 'tint'  => null,
-                'label' => __('common.pilot_id'),
-                'value' => $record->ident,
-                'note'  => (string) $record->airline?->name,
+                'image' => $airline?->logo_url,
+                'label' => __('common.airline'),
+                'value' => (string) $airline?->name,
+                'note'  => (string) ($airline?->icao ?: $airline?->iata),
             ],
             [
-                'icon'  => Phosphor::UserLight,
+                'icon'  => Phosphor::AirplaneTakeoffLight,
                 'tint'  => 'blue',
-                'label' => __('common.name'),
-                'value' => (string) $record->name,
-                'note'  => (string) $record->rank?->name,
+                'label' => trans_choice('common.flight', 2),
+                'value' => number_format($record->flights),
+                'note'  => '',
             ],
             [
-                'icon'  => Phosphor::BroadcastLight,
+                'icon'  => Phosphor::ClockLight,
                 'tint'  => 'teal',
-                'label' => __('filament.user_atc_callsign'),
-                'value' => $record->atc,
-                'note'  => (string) $record->callsign,
+                'label' => __('flights.flighthours'),
+                'value' => number_format($hours),
+                'note'  => '',
             ],
             [
-                'icon'  => Phosphor::SealCheckLight,
-                'tint'  => $verifiedAt === null ? 'amber' : 'violet',
-                'label' => __('filament.user_email_verified'),
-                'value' => $verifiedAt?->toFormattedDateString() ?? __('filament.user_email_not_verified'),
+                'icon'  => Phosphor::CalendarLight,
+                'tint'  => 'violet',
+                'label' => __('filament.user_joined'),
+                'value' => $record->created_at?->toFormattedDateString() ?? '',
                 'note'  => (string) $record->email,
             ],
         ];
-    }
-
-    /** The Edit trigger rendered inside the overview's last card. */
-    public function editAction(): Action
-    {
-        $identityFields = UserForm::identityFields();
-
-        $keys = array_map(
-            fn (Field $field): string => $field->getName(),
-            $identityFields,
-        );
-
-        return EditDetailsAction::make([
-            UserForm::identityPreview(),
-            ...$identityFields,
-        ])
-            ->modalHeading(__('filament.basic_information'))
-            // name, email and password are in the model's $hidden, so the
-            // record's array form arrives without them and the drawer would
-            // open with two required fields empty. The password box is left
-            // blank on purpose: that is how "leave the password alone" is
-            // expressed, and prefilling the stored hash would hash it again.
-            ->mutateRecordDataUsing(function (array $data) use ($keys): array {
-                /** @var User $record */
-                $record = $this->getRecord();
-
-                return [
-                    ...Arr::only($data, $keys),
-                    'name'  => $record->name,
-                    'email' => $record->email,
-                ];
-            })
-            ->mutateDataUsing(function (array $data): array {
-                if (filled($data['password'] ?? null)) {
-                    $data['password'] = Hash::make($data['password']);
-                } else {
-                    unset($data['password']);
-                }
-
-                return $data;
-            })
-            ->extraModalFooterActions([
-                DeleteAction::make()->icon(Phosphor::TrashLight)->cancelParentActions(),
-            ]);
-    }
-
-    /** The identity fields live in the drawer, not the page form. */
-    #[Override]
-    public function form(Schema $schema): Schema
-    {
-        return UserForm::configure($schema, withIdentity: false);
     }
 
     #[Override]
@@ -214,13 +123,15 @@ class EditUser extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            VerifyEmailAction::make(),
-            RequestEmailVerificationAction::make(),
-            // Delete lives in the settings drawer's footer (editAction()).
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
             RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
@@ -234,6 +145,12 @@ class EditUser extends EditRecord
             // record's array form. Left out, the field renders empty and the
             // next save writes that emptiness over what the pilot's file said.
             $data['notes'] = $this->record->notes;
+            // name and email are $hidden too, and the identity fields are
+            // required. The password stays unset (blank): that is how "leave
+            // the password alone" is expressed, and prefilling the stored
+            // hash would hash it again.
+            $data['name'] = $this->record->name;
+            $data['email'] = $this->record->email;
             $data['transfer_time'] = $this->record->transfer_time / 60;
         }
 
@@ -244,6 +161,12 @@ class EditUser extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['transfer_time'] *= 60;
+
+        if (filled($data['password'] ?? null)) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
 
         return $data;
     }
@@ -265,5 +188,12 @@ class EditUser extends EditRecord
         if ($this->record instanceof User && $this->oldRankId !== $this->record->rank_id) {
             event(new UserStatsChanged($this->record, 'rank', $this->oldRankId));
         }
+
+        // save() does not refill the form, so a typed password would stay in
+        // the state: the save bar would count it as clean and the next save
+        // would hash and write it again. Blank it before the bar snapshots.
+        $this->data['password'] = null;
+
+        $this->saveBarAfterSave();
     }
 }

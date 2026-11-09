@@ -16,10 +16,10 @@ beforeEach(function (): void {
     Theme::set('skylight');
     updateSetting('general.theme', 'skylight');
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_show_flights_from_current', false);
-    updateSetting('pilots.only_flights_from_current', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_show_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
     updateSetting('bids.allow_multiple_bids', true);
     updateSetting('bids.disable_flight_on_bid', false);
 });
@@ -78,8 +78,8 @@ it('keeps discovery visibility separate from operational current-airport availab
         'airline_id'     => $user->airline_id,
         'dpt_airport_id' => $departure->id,
     ]);
-    updateSetting('pilots.only_show_flights_from_current', false);
-    updateSetting('pilots.only_flights_from_current', true);
+    updateSetting('operations.only_show_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', true);
 
     $this->actingAs($user)
         ->get('/flights')
@@ -91,7 +91,7 @@ it('keeps discovery visibility separate from operational current-airport availab
             ->where('policy.discoveryCurrentAirportOnly', false)
             ->where('policy.requireCurrentAirport', true));
 
-    updateSetting('pilots.only_show_flights_from_current', true);
+    updateSetting('operations.only_show_flights_from_current', true);
     $this->actingAs($user)
         ->get('/flights')
         ->assertOk()
@@ -150,11 +150,11 @@ it('does not disclose hidden inactive-airline rank or type-rating inaccessible d
     $this->actingAs($user)->get('/flights/'.$hidden->id)->assertRedirect(route('frontend.dashboard.index'));
     $this->actingAs($user)->get('/flights/'.$inactiveAirlineFlight->id)->assertRedirect(route('frontend.dashboard.index'));
 
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
     $this->actingAs($user)->get('/flights/'.$restricted->id)->assertOk();
 
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', true);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', true);
     $this->actingAs($user)->get('/flights/'.$restricted->id)->assertOk();
 });
 

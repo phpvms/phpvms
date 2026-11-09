@@ -21,10 +21,31 @@ parameters:
     # with and without the scan, and the `Modules\Sample` ignore below was
     # already unmatched either way.
 
+    # Deliberately broken fixture: a provider on the removed addon base class, to
+    # test that the loader quarantines it instead of failing boot. A missing
+    # parent class cannot be ignored by identifier, only excluded.
+    excludePaths:
+        - tests/fixtures/Addons/badbase/app/Providers/RemovedBaseProvider.php
+
     # Level 10 is the highest level
     level: 5
 
     ignoreErrors:
+
+        # Deliberately broken fixture: a hook listener typed to a hook point
+        # that does not exist, to test that discovery refuses it.
+        - identifier: class.notFound
+          path: tests/fixtures/Addons/badhooks/app/Listeners/MissingPointListener.php
+
+        # The legacy Blade-theme controllers name views that only the seven theme
+        # supplies (`flights.simbrief_*`, `profile.*`), and the default theme is now
+        # airside, so no analysed view path contains them and the literal is not a
+        # view-string. The airside tests name theme views too.
+        - identifier: argument.type
+          message: '#Parameter \#1 \$view of function view expects view-string\|null, string given#'
+          paths:
+              - app/Http/Controllers/Frontend/*
+              - tests/Feature/Airside/
 
         # PHPStan is not able to understand the pivot attributes at the moment
         - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot::\$[a-zA-Z_]+#'

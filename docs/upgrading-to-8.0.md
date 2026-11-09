@@ -296,14 +296,16 @@ The `settings` table and the `setting()` helper are unchanged in concept
 - **Renamed (values carried across by data migration):**
   `acars.live_time` → `pireps.tombstone_time` (see the full table in
   `docs/UPGRADING.md`), `acars.center_coords` / `acars.default_zoom` /
-  `acars.update_interval` → `livemap.*`, and the Discord settings
+  `acars.update_interval` → `livemap.*`, the Discord settings
   `notifications.discord_public_webhook_url` /
   `notifications.discord_private_webhook_url` →
   `notifications.discord_public_route` / `notifications.discord_private_route`
   (a route now accepts a webhook URL **or** a channel ID, which requires
-  `DISCORD_BOT_TOKEN`).
+  `DISCORD_BOT_TOKEN`), and `pilots.home_hubs_only` /
+  `pilots.only_flights_from_current` → `operations.*` (the old keys still
+  resolve).
 - **New:** `livemap.live_time` / `livemap.idle_time`,
-  `fares.auto_price` / `fares.low_cost_multiplier`, `pilots.only_show_flights_from_current`,
+  `fares.auto_price` / `fares.low_cost_multiplier`, `operations.only_show_flights_from_current`,
   `registry.public_key` (addon registry), `va_global_id`.
 
 ### 3.9 Themes

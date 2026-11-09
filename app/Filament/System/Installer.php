@@ -2,6 +2,7 @@
 
 namespace App\Filament\System;
 
+use App\Addons\Support\AddonCacheRefresher;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\Role;
 use App\Models\User;
@@ -12,6 +13,7 @@ use App\Services\Installer\RequirementsService;
 use App\Services\Installer\StreamedCommandsService;
 use App\Services\UserService;
 use App\Support\Countries;
+use App\Support\InstallMarker;
 use App\Support\Utils;
 use Database\Seeders\DatabaseSeeder;
 use Exception;
@@ -76,20 +78,45 @@ class Installer extends Page
      * Before that point (a fresh or partially-completed install) the page stays
      * reachable so the operator can finish setup: the `users` table may not
      * exist yet, or exists but holds no rows.
+     *
+     * A trusted install marker closes the installer without asking the
+     * database, so it stays closed during a database outage too. Where the
+     * marker is only advisory (local, demo) the database still decides, but an
+     * outage behind an existing marker is an outage, not a fresh install.
      */
     #[Override]
     public static function canAccess(): bool
     {
+        $marker = app(InstallMarker::class);
+
+        if ($marker->isTrusted()) {
+            return false;
+        }
+
         try {
             if (!Schema::hasTable('users')) {
                 return true;
             }
 
             return !User::query()->withoutGlobalScopes()->exists();
-        } catch (QueryException) {
-            // DB unreachable/not yet migrated — treat as not installed so the
-            // installer can run.
-            return true;
+        } catch (Throwable) {
+            // Unreachable or not yet migrated: only a site that never finished
+            // installing may open the installer.
+            return !$marker->exists();
+        }
+    }
+
+    /**
+     * Filament aborts with 403 when canAccess() is false. An installed site
+     * sends the visitor to the home page instead. Livewire runs this hook
+     * after mount(), which is why mount() bails out early on the same check
+     * instead of redirecting itself.
+     */
+    #[Override]
+    public function mountCanAuthorizeAccess(): void
+    {
+        if (!static::canAccess()) {
+            $this->redirect('/');
         }
     }
 
@@ -98,18 +125,8 @@ class Installer extends Page
      */
     public function mount(): void
     {
-        try {
-            if (Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists()) {
-                Notification::make()
-                    ->title(__('installer.already_installed'))
-                    ->danger()
-                    ->send();
-
-                $this->redirect('/admin');
-
-                return;
-            }
-        } catch (QueryException) {
+        if (!static::canAccess()) {
+            return;
         }
 
         if ($this->requirementsMet()) {
@@ -121,6 +138,43 @@ class Installer extends Page
         }
 
         $this->form->fill();
+    }
+
+    /**
+     * Runs on every request after the first. The migration flags travel in the
+     * Livewire snapshot, so a tab that ran the migrations keeps saying so after
+     * the database was dropped or replaced underneath it. The database is the
+     * truth: when it reports pending migrations, the snapshot is stale, so send
+     * the wizard back to the start with a fresh mount rather than patching it.
+     */
+    public function hydrate(): void
+    {
+        if ($this->autoMigrationStarted && $this->migrationsPending()) {
+            Notification::make()
+                ->title(__('installer.restarted_database_changed'))
+                ->warning()
+                ->send();
+
+            $this->redirect(static::getUrl(panel: 'system'));
+        }
+    }
+
+    private function userExists(): bool
+    {
+        try {
+            return Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists();
+        } catch (QueryException) {
+            return false;
+        }
+    }
+
+    private function migrationsPending(): bool
+    {
+        try {
+            return count(app(MigrationService::class)->migrationsAvailable()) > 0;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     /**
@@ -172,8 +226,10 @@ class Installer extends Page
 
                 $this->getUserAndAirlineSetupStep(),
             ])
+                // The step is derived from the database on every mount, never
+                // from the URL: a `?step=` left in a tab or bookmark would pin a
+                // fresh load to the migration step with nothing to run.
                 ->startOnStep(fn (): int => $this->computeStartStep())
-                ->persistStepInQueryString()
                 ->nextAction(fn (Action $action): Action => $action
                     ->label(new HtmlString(
                         Blade::render(
@@ -338,11 +394,27 @@ class Installer extends Page
             $this->stream(content: $message, to: $this->stream);
         }
 
+        app(AddonCacheRefresher::class)->refresh();
+
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(
             content: __('installer.migrations_completed').PHP_EOL,
             to: $this->stream
         );
+
+        // Seed data can ship users (the demo environment does). Then there is no
+        // first user to create, and the next request would be refused anyway:
+        // canAccess() closes the installer the moment a user exists. Say so and
+        // hand over to the login page instead of a step that can never submit.
+        if ($this->userExists()) {
+            $message = __('installer.user_already_seeded').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+
+            $this->js('setTimeout(() => window.location.href = '.json_encode(route('login')).', '.(self::AUTO_ADVANCE_SECONDS * 1000).')');
+
+            return $this->migrationOutput = $output;
+        }
 
         // Only hand the step over to the countdown once there is genuinely
         // nothing left to run — otherwise it would advance into the step's own
@@ -405,6 +477,7 @@ class Installer extends Page
     {
         $this->validate();
         $this->airlineAndUserSetup();
+        app(InstallMarker::class)->write();
 
         flash()->success(__('installer.install_completed'));
 
@@ -563,7 +636,7 @@ class Installer extends Page
                     ]),
             ])
             ->afterValidation(function (): void {
-                if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
+                if ($this->migrationsPending()) {
                     Notification::make()
                         ->title(
                             __(

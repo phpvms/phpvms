@@ -6,10 +6,13 @@ namespace App\Addons\Services;
 
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Models\AddonManifest;
+use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonVersions;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
+use App\Addons\Support\ThemeAddonRegistrar;
+use App\Addons\Support\ThemeAssetLinker;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -193,7 +196,7 @@ class AddonDiscoveryService
             }
 
             foreach (File::directories($base) as $dir) {
-                foreach (['module.json', 'composer.json'] as $file) {
+                foreach ([...ManifestParser::MANIFEST_FILES, 'composer.json'] as $file) {
                     $path = $dir.'/'.$file;
 
                     if (!File::exists($path)) {
@@ -343,7 +346,7 @@ class AddonDiscoveryService
      * Scan both addon roots and pick which copy of each addon loads.
      *
      * An addon can legitimately exist in both roots: phpVMS ships e.g.
-     * `modules/phpvms-dashboard` in the image, and the operator later updates
+     * `modules/phpvms-widgets` in the image, and the operator later updates
      * it from the registry, which places the new version in the writable root.
      * Something has to decide which one wins, and neither fixed answer works —
      * image-always makes the registry update a silent no-op, installed-always
@@ -487,7 +490,7 @@ class AddonDiscoveryService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof AddonManifest) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json (or module.json) is missing or invalid", $resolved));
 
                 continue;
             }
@@ -551,8 +554,38 @@ class AddonDiscoveryService
             $addon->installed_at = now();
         }
 
+        $wasNew = !$addon->exists;
+
         $addon->save();
 
+        if ($wasNew && $m->isBundled()) {
+            $this->linkBundledAssets($m);
+        }
+
         return $addon;
+    }
+
+    /**
+     * Link the public assets of a bundled addon discovery has just enabled.
+     *
+     * Install and update link assets themselves, but a bundled addon never goes
+     * through them: it is enabled here, by discovery, on a fresh install or when
+     * a release first ships it. Without this its assets (a bundled theme's
+     * `/storage/themes/<name>/build`) are unreachable until `addons:relink`.
+     *
+     * Never throws: discovery runs during boot, and a host that cannot create
+     * symlinks must still serve the site. `addons:relink` repairs it later.
+     */
+    private function linkBundledAssets(AddonManifest $m): void
+    {
+        try {
+            app(AddonAssetLinker::class)->link($m->name, $m->path);
+
+            if ($m->type === 'theme') {
+                app(ThemeAssetLinker::class)->link(ThemeAddonRegistrar::themeName($m->path, $m->name), $m->path);
+            }
+        } catch (Throwable $throwable) {
+            Log::warning(sprintf('AddonDiscoveryService: could not link assets for bundled addon "%s": %s', $m->name, $throwable->getMessage()));
+        }
     }
 }

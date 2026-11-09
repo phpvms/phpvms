@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\GlobalSearch\CommandPaletteSearchProvider;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
+use App\Livewire\Filament\CommandPalette;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\PhosphorIcons;
 use Filament\Enums\UserMenuPosition;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -58,7 +61,7 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 Authenticate::class,
             ])
             ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('14.5rem')
+            ->sidebarWidth('14.75rem')
             // 76px collapsed — the console rail width, wide enough for the
             // module label the theme draws under each icon.
             ->collapsedSidebarWidth('4.75rem')
@@ -125,9 +128,9 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 fn (): string => view('filament.shared.back-to-site')->render(),
             )
             // Workspace navigator: the active module's items as topbar tabs,
-            // so moving inside a module never needs the rail. Hooked after the
-            // logo rather than at TOPBAR_START, which would render it ahead of
-            // the brand.
+            // so moving inside a module never needs the rail. The brand switcher
+            // lives in the sidebar's top band (PanelSwitcherPlugin), so this
+            // is the first thing in the bar.
             ->renderHook(
                 PanelsRenderHook::TOPBAR_LOGO_AFTER,
                 fn (): string => view('filament.shared.workspace-nav')->render(),
@@ -142,6 +145,19 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
                 fn (): string => view('filament.plugins.theme-picker')->render(),
+            )
+            // Command palette (cmd/ctrl+K). Filament's own topbar field is
+            // hidden by theme.css; the palette reads the provider below.
+            ->globalSearch(CommandPaletteSearchProvider::class)
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+                fn (): string => view('filament.shared.command-palette-trigger')->render(),
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => Filament::auth()->check()
+                    ? Blade::render('@livewire($component)', ['component' => CommandPalette::class])
+                    : '',
             )
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))

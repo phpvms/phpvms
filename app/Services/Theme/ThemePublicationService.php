@@ -72,7 +72,7 @@ final readonly class ThemePublicationService
                 $this->assets->write($themeName, $revision, 'custom.css', $customCss);
             }
 
-            return DB::transaction(function () use ($themeName, $document, $customCss, $revision): PublishedThemeRevision {
+            $published = DB::transaction(function () use ($themeName, $document, $customCss, $revision): PublishedThemeRevision {
                 $published = PublishedThemeRevision::query()->firstOrCreate(
                     [
                         'theme_name' => $themeName,
@@ -94,6 +94,10 @@ final readonly class ThemePublicationService
 
                 return $published;
             });
+
+            app(ActiveThemeService::class)->forget($themeName);
+
+            return $published;
         });
     }
 
@@ -122,6 +126,8 @@ final readonly class ThemePublicationService
                 $active->published_theme_revision_id = $revision->id;
                 $active->save();
             });
+
+            app(ActiveThemeService::class)->forget($themeName);
 
             return $revision;
         });

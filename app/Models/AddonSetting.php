@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * Mirrors the typed columns of {@see Setting} but scoped per addon via its
  * `registry_id` — stable across uninstall/reinstall, unlike the addon row id.
  * Settings are declared by an addon's service provider (see
- * App\Contracts\Addons\HasSettings) and synced into this table on boot.
+ * App\Contracts\Addons\AddonServiceProvider::registerSettings()) and synced into this table on boot.
  *
  * @property int         $id
  * @property string      $registry_id

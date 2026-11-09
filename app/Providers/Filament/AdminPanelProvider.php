@@ -5,7 +5,6 @@ namespace App\Providers\Filament;
 use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
-use App\Services\MapConfigService;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Navigation\NavigationGroup;
@@ -24,6 +23,9 @@ class AdminPanelProvider extends BasePanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            // Every banner gets a trail, plain pages included: Filament builds
+            // it from the page's navigation group ("Settings › Theme").
+            ->breadcrumbs(hasNavigationHierarchy: true)
             ->colors(fn (): array => [
                 'primary' => app(Branding::class)->brandPalette(),
             ])
@@ -65,6 +67,9 @@ class AdminPanelProvider extends BasePanelProvider
                 EnumsNavigationGroup::Content->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Content->getLabel())
                     ->icon(Phosphor::ArticleLight),
+                EnumsNavigationGroup::Customize->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Customize->getLabel())
+                    ->icon(Phosphor::PaintBrushLight),
                 EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
                     ->icon(Phosphor::GearLight),
@@ -91,24 +96,7 @@ class AdminPanelProvider extends BasePanelProvider
             ->plugins([
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
-            ])
-            // Map config to JS (window.filamentData.maps): basemap pair +
-            // enabled overlay layers, resolved by MapConfigService and shared
-            // with the Inertia (skylight) side via HandleInertiaRequests — one
-            // resolver, two transports (design.md D7). Tile API keys carried
-            // in this DTO are not secrets; see MapLayer's docblock.
-            //
-            // bootUsing(), not ServiceProvider::boot(): boot() runs once at
-            // app bootstrap (and, under Octane, once per worker), so a value
-            // read from the settings table there goes stale until the next
-            // restart and an admin's basemap change would never reach
-            // clients. bootUsing() runs per request, after every provider has
-            // booted, so it always reads the current settings row.
-            ->bootUsing(function (): void {
-                FilamentAsset::registerScriptData([
-                    'maps' => app(MapConfigService::class)->resolve()->toArray(),
-                ]);
-            });
+            ]);
 
         return $this->discoverModuleComponents($panel);
     }

@@ -29,7 +29,7 @@
             // theme flip tears down and rebuilds rather than mutating in place.
             this.handle?.destroy();
             this.handle = await phpvms.map.render_live_map_from_api(@js($mapElementId), {
-                config: window.filamentData.maps,
+                config: @js(app(\App\Services\MapConfigService::class)->resolve()->toArray()),
                 theme,
             });
         },

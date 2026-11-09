@@ -262,7 +262,7 @@ class PirepController extends Controller
 
         // If aircraft is being changed, see if this user is allowed to fly this aircraft
         if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
+            && setting('operations.restrict_aircraft_to_rank', false)
         ) {
             $can_use_ac = $user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists();
             if (!$can_use_ac) {
@@ -304,7 +304,7 @@ class PirepController extends Controller
 
         // If aircraft is being changed, see if this user is allowed to fly this aircraft
         if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
+            && setting('operations.restrict_aircraft_to_rank', false)
         ) {
             $can_use_ac = $user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists();
             if (!$can_use_ac) {

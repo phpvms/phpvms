@@ -86,6 +86,12 @@ class UserResource extends Resource
     }
 
     #[Override]
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email', 'pilot_id'];
+    }
+
+    #[Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.user', 1);

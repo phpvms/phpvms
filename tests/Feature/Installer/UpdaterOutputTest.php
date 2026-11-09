@@ -7,6 +7,7 @@ use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use App\Services\Installer\StreamedCommandsService;
+use App\Support\InstallMarker;
 use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
 use Mockery\MockInterface;
@@ -110,3 +111,34 @@ it('stops the update when a streamed command fails', function (string $failedCom
 
     expect($component->effects['xjs'] ?? [])->toBeEmpty();
 })->with(['migrate', 'migrate-data', 'optimize:clear', 'optimize']);
+
+it('writes the install marker for a site that pre-dates it', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->actingAs(createAdminUser());
+
+    $this->mock(InstallerService::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('isUpgradePending')->andReturnTrue();
+        $mock->shouldReceive('ensurePassportKeys');
+        $mock->shouldReceive('linkStorage')->andReturnTrue();
+    });
+
+    $this->mock(MigrationService::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('migrationsAvailable')->andReturn([]);
+        $mock->shouldReceive('dataMigrationsAvailable')->andReturn([]);
+    });
+
+    $this->mock(SeederService::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('syncAllSeeds');
+    });
+
+    $this->mock(StreamedCommandsService::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('streamArtisanCommand');
+    });
+
+    $marker = app(InstallMarker::class);
+    expect($marker->exists())->toBeFalse();
+
+    Livewire::test(Updater::class)->call('runUpdate');
+
+    expect($marker->exists())->toBeTrue();
+});

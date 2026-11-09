@@ -8,7 +8,6 @@ use App\Contracts\Metar;
 use App\Support\HttpClient;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Return the raw METAR/TAF string from the NOAA Aviation Weather Service
@@ -36,17 +35,8 @@ class AviationWeather extends Metar
             return '';
         }
 
-        $url = self::METAR_URL.$icao;
-
-        try {
-            $raw_metar = $this->httpClient->get($url);
-
-            return trim($raw_metar);
-        } catch (Exception $exception) {
-            Log::error('Error reading METAR: '.$exception->getMessage());
-
-            return '';
-        }
+        // A failed request throws: Metar::metar() logs it without caching it.
+        return trim($this->httpClient->get(self::METAR_URL.$icao));
     }
 
     /**
@@ -61,17 +51,8 @@ class AviationWeather extends Metar
             return '';
         }
 
-        $url = self::TAF_URL.$icao;
-
-        try {
-            $raw_taf = $this->httpClient->get($url);
-
-            // Remove " \n" to remove new lines from the metar content
-            return trim(str_replace(" \n", '', $raw_taf));
-        } catch (Exception $exception) {
-            Log::error('Error reading TAF: '.$exception->getMessage());
-
-            return '';
-        }
+        // Remove " \n" to remove new lines from the metar content. A failed
+        // request throws: Metar::taf() logs it without caching it.
+        return trim(str_replace(" \n", '', $this->httpClient->get(self::TAF_URL.$icao)));
     }
 }

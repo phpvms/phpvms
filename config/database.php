@@ -7,12 +7,16 @@ use Pdo\Mysql;
 
 return [
 
-    'default'     => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'sqlite'),
+    // Each connection's 'url' reads DB_URL, falling back to DATABASE_URL: the
+    // pre-Laravel-11 name, and what Railway and Heroku set on database services.
+    // `?:` rather than env()'s default, so an empty DB_URL (compose passes
+    // `DB_URL: "${DB_URL}"` when unset) still falls through.
     'connections' => [
 
         'sqlite' => [
             'driver'                  => 'sqlite',
-            'url'                     => env('DB_URL'),
+            'url'                     => env('DB_URL') ?: env('DATABASE_URL'),
             'database'                => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix'                  => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
@@ -24,7 +28,7 @@ return [
 
         'mysql' => [
             'driver'         => 'mysql',
-            'url'            => env('DB_URL'),
+            'url'            => env('DB_URL') ?: env('DATABASE_URL'),
             'host'           => env('DB_HOST', ''),
             'port'           => env('DB_PORT', '3306'),
             'database'       => env('DB_DATABASE', ''),
@@ -45,7 +49,7 @@ return [
 
         'mariadb' => [
             'driver'         => 'mariadb',
-            'url'            => env('DB_URL'),
+            'url'            => env('DB_URL') ?: env('DATABASE_URL'),
             'host'           => env('DB_HOST', ''),
             'port'           => env('DB_PORT', ''),
             'database'       => env('DB_DATABASE', ''),
@@ -66,7 +70,7 @@ return [
 
         'pgsql' => [
             'driver'         => 'pgsql',
-            'url'            => env('DB_URL'),
+            'url'            => env('DB_URL') ?: env('DATABASE_URL'),
             'host'           => env('DB_HOST', '127.0.0.1'),
             'port'           => env('DB_PORT', '5432'),
             'database'       => env('DB_DATABASE', 'laravel'),
@@ -81,7 +85,7 @@ return [
 
         'sqlsrv' => [
             'driver'         => 'sqlsrv',
-            'url'            => env('DB_URL'),
+            'url'            => env('DB_URL') ?: env('DATABASE_URL'),
             'host'           => env('DB_HOST', 'localhost'),
             'port'           => env('DB_PORT', '1433'),
             'database'       => env('DB_DATABASE', 'laravel'),

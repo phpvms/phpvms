@@ -1,0 +1,1023 @@
+/*
+ * airside's own styles and tokens. The stylesheet entry is styles.css, which
+ * imports this file after the fonts and TallStackUI.
+ */
+
+/*
+ * airside's build-time colours: the phpvms scheme, used until a saved colour
+ * scheme replaces them at runtime (config/presets.php lists the schemes).
+ */
+@theme {
+    --font-sans: "Manrope Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-serif: "Noto Serif Variable", ui-serif, Georgia, serif;
+    --color-primary-50: #f1f9fe;
+    --color-primary-100: #c9e0f3;
+    --color-primary-200: #a1c8e8;
+    --color-primary-300: #78afdb;
+    --color-primary-400: #4c97ce;
+    --color-primary-500: #067ec1;
+    --color-primary-600: #0d6da7;
+    --color-primary-700: #105d8d;
+    --color-primary-800: #114d75;
+    --color-primary-900: #113e5d;
+    --color-primary-950: #0f2f46;
+    --color-secondary-50: oklch(0.977 0.013 236.62);
+    --color-secondary-100: oklch(0.951 0.026 236.824);
+    --color-secondary-200: oklch(0.901 0.058 230.902);
+    --color-secondary-300: oklch(0.828 0.111 230.318);
+    --color-secondary-400: oklch(0.746 0.16 232.661);
+    --color-secondary-500: oklch(0.685 0.169 237.323);
+    --color-secondary-600: oklch(0.588 0.158 241.966);
+    --color-secondary-700: oklch(0.5 0.134 242.749);
+    --color-secondary-800: oklch(0.443 0.11 240.79);
+    --color-secondary-900: oklch(0.391 0.09 240.876);
+    --color-secondary-950: oklch(0.293 0.066 243.157);
+    --color-dark-50: oklch(0.985 0 0);
+    --color-dark-100: oklch(0.97 0 0);
+    --color-dark-200: oklch(0.922 0 0);
+    --color-dark-300: oklch(0.87 0 0);
+    --color-dark-400: oklch(0.708 0 0);
+    --color-dark-500: oklch(0.556 0 0);
+    --color-dark-600: oklch(0.439 0 0);
+    --color-dark-700: oklch(0.371 0 0);
+    --color-dark-800: oklch(0.269 0 0);
+    --color-dark-900: oklch(0.205 0 0);
+    --color-dark-950: oklch(0.145 0 0);
+}
+
+@layer base {
+    /* Tokens. Custom CSS overrides these. */
+    :root {
+        --vms-brand: var(--color-primary-600);
+        --vms-brand-soft: color-mix(in oklab, var(--color-primary-600) 12%, white);
+        --vms-radius-xl: 28px;
+        --vms-radius-lg: 22px;
+        --vms-radius-md: 12px;
+        --vms-gutter: 20px;
+    }
+
+    .dark {
+        --vms-brand: var(--color-primary-400);
+        --vms-brand-soft: var(--color-primary-950);
+    }
+
+    /* Form controls: TallStackUI's field classes carry no horizontal padding
+       (its stylesheet loads @tailwindcss/forms in class strategy, which does
+       not style bare controls). Utilities such as px-* still override this. */
+    input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"])),
+    select,
+    textarea {
+        padding-inline: 0.75rem;
+    }
+}
+
+@layer components {
+    .vms-landing {
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+        @apply bg-white text-dark-900 dark:bg-dark-950 dark:text-dark-50;
+    }
+
+    /* The signed-in shell: a white page, bordered surfaces on it, a grey sidebar panel. */
+    .vms-shell {
+        @apply bg-white text-dark-900 dark:bg-dark-950 dark:text-dark-50;
+    }
+
+    .vms-shell-sidebar {
+        @apply bg-gray-100 dark:bg-dark-900;
+    }
+
+    /* The dispatch strip. */
+    .vms-shell-header {
+        @apply border border-gray-200 bg-white text-dark-900 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-50;
+    }
+
+    .vms-shell-brand {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    .vms-shell-icon {
+        @apply text-dark-600 dark:text-dark-300;
+    }
+
+    .vms-shell-icon-muted {
+        @apply text-dark-400;
+    }
+
+    /* Sidebar group buttons and items; the current item is a white pill. */
+    .vms-shell-item {
+        @apply text-dark-600 hover:bg-white/60 hover:text-dark-900 dark:text-dark-300 dark:hover:bg-dark-800/60 dark:hover:text-dark-50;
+    }
+
+    .vms-shell-item-current {
+        @apply bg-white text-dark-900 dark:bg-dark-800 dark:text-dark-50;
+    }
+
+    /* Card-like surfaces: dashboard widgets (card scope airside.widget) and metric tiles. */
+    .vms-widget-card,
+    .vms-metric {
+        @apply border border-gray-200 bg-white text-dark-900 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-50;
+    }
+
+    /* Dashboard drag and drop (wire:sort / SortableJS): the drop preview and the lifted item. */
+    .vms-widget.sortable-ghost {
+        @apply bg-primary-600/5 outline-2 -outline-offset-2 outline-dashed outline-primary-600 dark:bg-primary-400/5 dark:outline-primary-400;
+    }
+
+    .vms-widget.sortable-ghost > * {
+        @apply opacity-40;
+    }
+
+    .vms-widget.sortable-chosen {
+        @apply cursor-grabbing shadow-xl;
+    }
+
+    .vms-widget-card-title {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    .vms-dispatch-sep {
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    /* Top bar layout: menu links and the dropdown trigger share one pill look. */
+    .vms-shell-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        font-size: 14.5px;
+        font-weight: 500;
+        cursor: pointer;
+        @apply text-dark-600 hover:bg-gray-100/60 hover:text-dark-900 dark:text-dark-300 dark:hover:bg-dark-900/60 dark:hover:text-dark-50;
+    }
+
+    .vms-shell-link[aria-current="page"] {
+        font-weight: 600;
+        @apply bg-gray-100 text-dark-900 dark:bg-dark-900 dark:text-dark-50;
+    }
+
+    /* Text on the sky: the dashboard hero. Literal colours, dark ink by day, light ink by night. */
+    .vms-pilot-eyebrow,
+    .vms-pilot-chips {
+        color: #3e5470;
+    }
+
+    .vms-pilot-greeting,
+    .vms-pilot-chips .vms-pilot-chip,
+    .vms-rank {
+        color: #14213a;
+    }
+
+    .vms-rank-label {
+        color: #3e5470;
+    }
+
+    .dark .vms-pilot-eyebrow,
+    .dark .vms-pilot-chips,
+    .dark .vms-rank-label {
+        color: #b6c6dd;
+    }
+
+    .dark .vms-pilot-greeting,
+    .dark .vms-pilot-chips .vms-pilot-chip,
+    .dark .vms-rank {
+        color: #eef4fc;
+    }
+
+    /* The serif second line of a greeting, same treatment as the landing title. */
+    .vms-pilot-greeting span {
+        color: #5d7ea3;
+        font-family: var(--font-serif);
+        font-weight: 200;
+        letter-spacing: -0.03em;
+    }
+
+    /* Page header (x-vms::page.header). A <span> in the title is the thin serif accent word, as in the greeting. */
+    .vms-page-title span {
+        font-family: var(--font-serif);
+        font-weight: 200;
+        letter-spacing: -0.03em;
+        color: var(--vms-brand);
+    }
+
+    .vms-page-description,
+    .vms-page-links {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    /* Flights list: filters. */
+    .vms-flight-filters {
+        border-radius: var(--vms-radius-lg);
+        @apply border border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-800;
+    }
+
+    .vms-flight-filters-form {
+        @apply border-t border-gray-200 pt-3.5 dark:border-dark-700;
+    }
+
+    .vms-field > span {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-field input,
+    .vms-field select {
+        width: 100%;
+        height: 36px;
+        padding: 0 11px;
+        border-radius: var(--vms-radius-md);
+        font-size: 13px;
+        font-weight: 500;
+        @apply border border-gray-200 bg-gray-50 text-dark-900 dark:border-dark-700 dark:bg-dark-900 dark:text-dark-50;
+    }
+
+    .vms-field input:focus,
+    .vms-field select:focus {
+        outline: 2px solid var(--vms-brand);
+        outline-offset: -1px;
+    }
+
+    .vms-flight-chip {
+        border-radius: 999px;
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    /* Flights list: cards. */
+    .vms-flight-card {
+        border-radius: var(--vms-radius-lg);
+        transition: border-color 0.15s;
+        @apply border border-gray-200 bg-white text-dark-900 hover:border-primary-600/45 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-50 dark:hover:border-primary-400/45;
+    }
+
+    .vms-flight-card[aria-current="true"] {
+        box-shadow: 0 0 0 1px var(--vms-brand);
+        @apply border-primary-600 dark:border-primary-400;
+    }
+
+    .vms-flight-stop small,
+    .vms-flight-summary-text p {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-flight-summary-logo {
+        @apply bg-gray-100 text-dark-600 dark:bg-dark-900 dark:text-dark-300;
+    }
+
+    .vms-flight-summary a,
+    .vms-flight-summary button {
+        @apply focus-visible:outline-primary-600 dark:focus-visible:outline-primary-400;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-summary,
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-route {
+        @apply opacity-70;
+    }
+
+    .vms-flight-line {
+        @apply bg-gray-300 dark:bg-dark-600;
+    }
+
+    .vms-flight-plane {
+        @apply bg-white text-primary-600 dark:bg-dark-800 dark:text-primary-400;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-stop b {
+        @apply text-dark-400 dark:text-dark-500;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-line {
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-flight-card[data-availability="unavailable"] .vms-flight-plane {
+        @apply text-dark-400 dark:text-dark-500;
+    }
+
+    /* Small grey data pills; the status variants follow. */
+    .vms-flight-pill,
+    .vms-flight-leg-pill {
+        border-radius: 999px;
+        @apply bg-gray-100 text-dark-600 dark:bg-dark-900 dark:text-dark-300;
+    }
+
+    .vms-flight-pill--bid {
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    .vms-flight-pill--off {
+        @apply bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300;
+    }
+
+    /*
+     * Location card: the map colours. The map component sets its fallback look
+     * with SVG presentation attributes, so these rules replace it directly. The
+     * dotted variant draws all land as grey dots, the focus country a shade
+     * darker; only the location pin is brand blue. Each set of dots is one
+     * stroked path (round caps on zero-length segments), so its colour is the stroke.
+     */
+    .vms-location-card--outline .land {
+        @apply fill-gray-100 stroke-gray-300 dark:fill-dark-800 dark:stroke-dark-600;
+        fill-opacity: 1;
+        stroke-opacity: 1;
+    }
+
+    .vms-location-card--outline .land--focus {
+        fill: var(--vms-brand-soft);
+        stroke-width: 1;
+        @apply stroke-primary-600 dark:stroke-primary-400;
+    }
+
+    .vms-location-card .map-dot,
+    .vms-detail-map .map-dot {
+        @apply stroke-gray-300 dark:stroke-dark-600;
+        stroke-opacity: 1;
+    }
+
+    .vms-location-card .map-dot--focus,
+    .vms-detail-map .map-dot--focus {
+        @apply stroke-gray-400 dark:stroke-dark-500;
+    }
+
+    .vms-location-card .map-pin,
+    .vms-detail-map .map-pin {
+        fill: var(--vms-brand);
+        stroke: var(--vms-brand);
+        stroke-opacity: .25;
+        stroke-width: calc(14 * var(--map-scale, 1));
+        paint-order: stroke;
+    }
+
+    /* Location card: the last flight block under the airport name. */
+    .vms-last-flight {
+        @apply border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-900;
+        border-radius: var(--vms-radius-md);
+    }
+
+    .vms-last-flight-arrow {
+        @apply text-gray-400 dark:text-dark-500;
+    }
+
+    /* Next flight widget: the arrow between the airports is muted. */
+    .vms-next-flight-arrow {
+        @apply text-dark-400 dark:text-dark-500;
+    }
+
+        .vms-flight-reason {
+        border-radius: var(--vms-radius-md);
+        @apply bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300;
+    }
+
+    /* Flights list: pager and empty state. */
+    .vms-flight-pager {
+        border-radius: 999px;
+        @apply border border-gray-200 bg-white text-dark-600 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-300;
+    }
+
+    .vms-flights-empty {
+        border-radius: var(--vms-radius-xl);
+        @apply border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-800;
+    }
+
+    /* Assignment drawer, details step: the route map, drawn like the location card's dotted map. */
+    .vms-detail-map {
+        @apply border border-gray-200 dark:border-dark-700;
+    }
+
+    /* Route card (x-vms::flights.route-card): the overlay fades in over the bottom of the map, so the dots run under it. */
+    .vms-route-card-overlay {
+        @apply bg-linear-to-t from-white/95 from-35% via-white/75 via-60% to-transparent dark:from-dark-800/95 dark:via-dark-800/75;
+    }
+
+    .vms-detail-map .map-route {
+        stroke: var(--vms-brand);
+        stroke-dasharray: 6 5;
+    }
+
+    .vms-detail-route h4,
+    .vms-detail-leg p {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    /* Select menu (x-vms::ui.select-menu): the trigger, the in-place panel and its options. */
+    .vms-select-menu-button,
+    .vms-select-menu-panel input {
+        @apply border border-gray-300 bg-white dark:border-dark-600 dark:bg-dark-800;
+    }
+
+    .vms-select-menu-panel {
+        @apply border border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-800;
+    }
+
+    .vms-select-menu-button > span,
+    .vms-select-menu-option span {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    .vms-select-menu-option[data-active],
+    .vms-select-menu-option:hover {
+        @apply bg-gray-100 dark:bg-dark-700;
+    }
+
+    .vms-select-menu-option > span:last-child:not(:first-child) {
+        @apply text-dark-700 dark:text-dark-200;
+    }
+
+    .vms-landing > main {
+        flex: 1 0 auto;
+    }
+
+    .vms-landing-nav {
+        grid-template-columns: 1fr auto 1fr;
+    }
+
+    .vms-landing-brand {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .vms-landing-brand img {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        object-fit: contain;
+    }
+
+    .vms-landing-links {
+        font-size: 15px;
+        font-weight: 500;
+        @apply text-dark-600 dark:text-dark-300;
+    }
+
+    .vms-landing-links a:hover,
+    .vms-landing-links a[aria-current="page"] {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    .vms-landing-account {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .vms-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 12px 22px;
+        font-size: 15px;
+        font-weight: 600;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .vms-pill:hover {
+        transform: translateY(-1px);
+    }
+
+    .vms-pill--dark {
+        background: var(--color-primary-600);
+        color: var(--color-white);
+    }
+
+    .vms-pill--dark:hover {
+        background: var(--color-primary-700);
+    }
+
+    .vms-pill--light {
+        @apply bg-white/85 text-dark-900 dark:bg-dark-800/85 dark:text-dark-50;
+    }
+
+    .vms-pill--lg {
+        padding: 15px 28px;
+    }
+
+    .vms-landing-hero {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        min-height: 640px;
+        margin: 0 var(--vms-gutter);
+        border-radius: var(--vms-radius-xl);
+        overflow: hidden;
+    }
+
+    .vms-landing-hero > svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .vms-landing-hero-body {
+        position: relative;
+        max-width: 900px;
+        padding: 56px;
+    }
+
+    .vms-landing-eyebrow {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #3e5470;
+    }
+
+    .vms-landing-title {
+        margin-top: 20px;
+        font-size: clamp(52px, 8vw, 104px);
+        line-height: 0.94;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        color: #14213a;
+    }
+
+    .vms-landing-title span {
+        color: #5d7ea3;
+        font-family: var(--font-serif);
+        font-weight: 200;
+        letter-spacing: -0.03em;
+    }
+
+    .vms-landing-lead {
+        max-width: 560px;
+        margin-top: 26px;
+        font-size: 20px;
+        line-height: 1.55;
+        color: #3e5470;
+    }
+
+    .dark .vms-landing-eyebrow,
+    .dark .vms-landing-lead {
+        color: #b6c6dd;
+    }
+
+    .dark .vms-landing-title {
+        color: #eef4fc;
+    }
+
+    .dark .vms-landing-title span,
+    .dark .vms-pilot-greeting span {
+        color: #9db8dc;
+    }
+
+    .vms-landing-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 34px;
+    }
+
+    .vms-landing-stories {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        padding: 20px var(--vms-gutter) 0;
+    }
+
+    .vms-story {
+        padding: 30px 28px 32px;
+        border-radius: var(--vms-radius-lg);
+        @apply bg-white dark:bg-dark-800;
+    }
+
+    .vms-story-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--vms-brand);
+    }
+
+    .vms-story h3 {
+        margin: 16px 0 10px;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .vms-story p:not(.vms-story-label) {
+        font-size: 16px;
+        line-height: 1.6;
+        @apply text-dark-600 dark:text-dark-300;
+    }
+
+    .vms-landing-news {
+        padding: 110px 64px 0;
+    }
+
+    .vms-section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+    }
+
+    .vms-section-eyebrow {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--vms-brand);
+    }
+
+    .vms-section-title {
+        margin-top: 12px;
+        font-size: 48px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .vms-news-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 30px;
+    }
+
+    .vms-news {
+        padding: 26px 28px;
+        border-radius: var(--vms-radius-lg);
+        @apply bg-white dark:bg-dark-800;
+    }
+
+    .vms-news time {
+        font-size: 13px;
+        @apply text-dark-400;
+    }
+
+    .vms-news h4 {
+        margin: 8px 0;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+    }
+
+    .vms-news p {
+        font-size: 15px;
+        line-height: 1.6;
+        @apply text-dark-600 dark:text-dark-300;
+    }
+
+    .vms-landing-footer {
+        margin: 110px var(--vms-gutter) var(--vms-gutter);
+        border-radius: var(--vms-radius-lg);
+        font-size: 14px;
+        @apply bg-white text-dark-600 dark:bg-dark-800 dark:text-dark-300;
+    }
+
+    .vms-landing-footer a:hover {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    /*
+     * The live map (x-vms::livemap): the map fills the block, the list and the
+     * selected flight float on it as frosted panels.
+     */
+    .vms-live {
+        border-radius: var(--vms-radius-xl);
+        @apply border border-gray-200 bg-gray-100 dark:border-dark-700 dark:bg-dark-900;
+    }
+
+    .vms-live-panel,
+    .vms-live-detail {
+        border-radius: var(--vms-radius-lg);
+        @apply border border-gray-200 bg-white/85 text-dark-900 shadow-lg backdrop-blur-md backdrop-saturate-150 dark:border-dark-700 dark:bg-dark-800/85 dark:text-dark-50;
+    }
+
+    .vms-live-header,
+    .vms-live-pilot {
+        @apply border-gray-200 dark:border-dark-700;
+    }
+
+    .vms-live-header {
+        @apply border-b;
+    }
+
+    .vms-live-pilot {
+        @apply border-t;
+    }
+
+    .vms-live-eyebrow,
+    .vms-live-facts dt,
+    .vms-live-stages li {
+        @apply text-dark-400;
+    }
+
+    .vms-live-muted,
+    .vms-live-stat dt,
+    .vms-live-pulse {
+        @apply text-dark-500 dark:text-dark-400;
+    }
+
+    /* The live indicator: a green dot, pulsing. */
+    .vms-live-pulse::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        @apply animate-pulse bg-green-500 dark:bg-green-400;
+    }
+
+    .vms-live-title span {
+        font-family: var(--font-serif);
+        font-weight: 200;
+        letter-spacing: -0.03em;
+        color: var(--vms-brand);
+    }
+
+    .vms-live-stat,
+    .vms-live-route {
+        border-radius: var(--vms-radius-md);
+        @apply border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-900;
+    }
+
+    .vms-live-filter {
+        @apply border border-gray-200 bg-white text-dark-600 hover:text-dark-900 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-300 dark:hover:text-dark-50;
+    }
+
+    .vms-live-filter[aria-pressed="true"] {
+        @apply border-primary-600 bg-primary-600 text-white hover:text-white dark:border-primary-400 dark:bg-primary-400 dark:text-dark-950 dark:hover:text-dark-950;
+    }
+
+    /* Flight rows; the selected row takes the brand tint. */
+    .vms-live-row {
+        border-radius: var(--vms-radius-md);
+        cursor: pointer;
+        @apply border border-transparent hover:bg-gray-50 dark:hover:bg-dark-900/60;
+    }
+
+    .vms-live-row[aria-selected="true"] {
+        background: var(--vms-brand-soft);
+        border-color: color-mix(in oklab, var(--vms-brand) 40%, transparent);
+    }
+
+    .vms-live-row-route {
+        @apply text-dark-600 dark:text-dark-300;
+    }
+
+    /* The phase pill: neutral on the ground, brand once airborne. */
+    .vms-live-phase {
+        @apply bg-gray-100 text-dark-600 dark:bg-dark-700 dark:text-dark-200;
+    }
+
+    .vms-live-row:is([data-stage="departing"], [data-stage="enroute"], [data-stage="arriving"]) .vms-live-phase {
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    /* Progress: a thin track with the flown part in the brand colour. */
+    .vms-live-progress {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        overflow: hidden;
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-live-progress::-webkit-progress-bar {
+        background: transparent;
+    }
+
+    .vms-live-progress::-webkit-progress-value {
+        border-radius: 999px;
+        background: var(--vms-brand);
+    }
+
+    .vms-live-progress::-moz-progress-bar {
+        border-radius: 999px;
+        background: var(--vms-brand);
+    }
+
+    .vms-live-close {
+        @apply text-dark-500 hover:bg-gray-100 hover:text-dark-900 dark:text-dark-400 dark:hover:bg-dark-700 dark:hover:text-dark-50;
+    }
+
+    .vms-live-error {
+        @apply text-red-600 dark:text-red-400;
+    }
+
+    .vms-live-logo {
+        @apply bg-dark-900 text-white dark:bg-dark-100 dark:text-dark-900;
+    }
+
+    .vms-live-avatar,
+    .vms-live-open {
+        background: var(--vms-brand-soft);
+        color: var(--vms-brand);
+    }
+
+    /* Stage bar: done and current stages in the brand colour, the current label too. */
+    .vms-live-stage-bar {
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-live-stages li:is([data-state="done"], [data-state="current"]) .vms-live-stage-bar {
+        background: var(--vms-brand);
+    }
+
+    .vms-live-stages li[data-state="current"] {
+        font-weight: 600;
+        color: var(--vms-brand);
+    }
+
+    .vms-live-facts dd {
+        @apply text-dark-900 dark:text-dark-50;
+    }
+
+    /*
+     * The generated sky (x-vms::sky): gradient, glow, cloud lighting and the
+     * opacity of the cloud and wisp layers. Day by default, night under .dark.
+     */
+    .clouds-bg .clouds-bg-top {
+        stop-color: #9ccaf3;
+    }
+
+    .clouds-bg .clouds-bg-mid {
+        stop-color: #cde4fa;
+    }
+
+    .clouds-bg .clouds-bg-bottom {
+        stop-color: #eef5fd;
+    }
+
+    .clouds-bg .clouds-bg-light {
+        lighting-color: #ffffff;
+    }
+
+    .clouds-bg .clouds-bg-glow {
+        stop-color: #ffffff;
+        stop-opacity: 0.6;
+    }
+
+    .clouds-bg .clouds-bg-glow-end {
+        stop-opacity: 0;
+    }
+
+    .clouds-bg .clouds-bg-wisps {
+        opacity: 0.5;
+    }
+
+    .clouds-bg .clouds-bg-clouds {
+        opacity: 1;
+    }
+
+    .dark .clouds-bg .clouds-bg-top {
+        stop-color: #08122b;
+    }
+
+    .dark .clouds-bg .clouds-bg-mid {
+        stop-color: #12234a;
+    }
+
+    .dark .clouds-bg .clouds-bg-bottom {
+        stop-color: #1c3361;
+    }
+
+    .dark .clouds-bg .clouds-bg-light {
+        lighting-color: #8fa6cc;
+    }
+
+    .dark .clouds-bg .clouds-bg-glow {
+        stop-color: #4c6fb0;
+        stop-opacity: 0.22;
+    }
+
+    .dark .clouds-bg .clouds-bg-glow-end {
+        stop-opacity: 0;
+    }
+
+    .dark .clouds-bg .clouds-bg-wisps {
+        opacity: 0.12;
+    }
+
+    .dark .clouds-bg .clouds-bg-clouds {
+        opacity: 0.3;
+    }
+
+    @media (max-width: 960px) {
+        .vms-landing-nav {
+            grid-template-columns: 1fr auto;
+        }
+
+        .vms-landing-links {
+            grid-row: 2;
+            grid-column: 1 / -1;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .vms-landing-hero {
+            min-height: 560px;
+        }
+
+        .vms-landing-hero-body {
+            padding: 32px;
+        }
+
+        .vms-landing-stories,
+        .vms-news-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .vms-landing-news {
+            padding: 72px 24px 0;
+        }
+
+        .vms-section-title {
+            font-size: 36px;
+        }
+    }
+}
+
+/* The flight briefing: the timeline spine, its nodes, and the rail's current step. */
+@layer components {
+    .vms-timeline-spine::before {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        width: 2px;
+        @apply bg-gray-200 dark:bg-dark-700;
+    }
+
+    .vms-timeline-item:first-child .vms-timeline-spine::before {
+        top: 28px;
+    }
+
+    .vms-timeline-item:last-child .vms-timeline-spine::before {
+        bottom: auto;
+        height: 28px;
+    }
+
+    .vms-timeline-node {
+        position: relative;
+        margin-top: 20px;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 3px solid var(--vms-brand);
+        @apply bg-white dark:bg-dark-800;
+    }
+
+    .vms-timeline-node--fix {
+        margin-top: 15px;
+        width: 10px;
+        height: 10px;
+        border-width: 2px;
+    }
+
+    .vms-timeline-node--phase {
+        margin-top: 14px;
+        width: 12px;
+        height: 12px;
+        border: 0;
+        border-radius: 3px;
+        rotate: 45deg;
+        background: var(--vms-brand);
+    }
+
+    .vms-timeline-node--alt {
+        border-style: dashed;
+        @apply border-gray-300 dark:border-dark-600;
+    }
+
+    .vms-timeline-item + .vms-timeline-item .vms-timeline-body {
+        @apply border-t border-gray-200 dark:border-dark-700;
+    }
+
+    .vms-timeline-item--compact .vms-timeline-body,
+    .vms-timeline-item--compact + .vms-timeline-item .vms-timeline-body {
+        padding-block: 8px 10px;
+    }
+
+    .vms-timeline-item--compact + .vms-timeline-item--compact .vms-timeline-body {
+        border-top-style: dashed;
+    }
+
+    .vms-briefing-step--now {
+        background: var(--vms-brand-soft);
+    }
+
+    .vms-meteocon {
+        display: block;
+        object-fit: contain;
+    }
+}
+
+/* The route map island without its EFIS overlay (the flight briefing): a rounded 16:8 map. */
+@layer components {
+    .vms-route-map--bare .vms-route-map__map {
+        aspect-ratio: 16 / 8;
+        border-radius: var(--vms-radius-md);
+        overflow: hidden;
+    }
+
+    @media (max-width: 640px) {
+        .vms-route-map--bare .vms-route-map__map {
+            aspect-ratio: 4 / 3;
+        }
+    }
+}

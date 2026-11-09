@@ -44,10 +44,10 @@ function seedPagedFlights(int $count): array
 }
 
 it('runs O(1) queries when eager-loading accessible subfleets across many flights', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', false);
 
     ['user' => $user] = seedPagedFlights(25);
 
@@ -74,10 +74,10 @@ it('runs O(1) queries when eager-loading accessible subfleets across many flight
 });
 
 it('runs O(1) queries for findBidsForUser-equivalent flow', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', false);
 
     ['user' => $user, 'flights' => $flights, 'subfleet' => $subfleet] = seedPagedFlights(20);
 

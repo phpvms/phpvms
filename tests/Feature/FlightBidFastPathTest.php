@@ -13,8 +13,8 @@ use App\Services\FareService;
 // ---------------------------------------------------------------------------
 
 test('get with bid token returns only bid subfleet and reconciled fares', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $fareSvc = app(FareService::class);
 
@@ -50,7 +50,7 @@ test('get with bid token returns only bid subfleet and reconciled fares', functi
 });
 
 test('get with bid token returns empty subfleets when pilot has no bid', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -64,8 +64,8 @@ test('get with bid token returns empty subfleets when pilot has no bid', functio
 });
 
 test('get with bid token only shows the authenticated pilots own bid subfleet', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $pilotA = User::factory()->create();
     $pilotB = User::factory()->create();
@@ -92,8 +92,8 @@ test('get with bid token only shows the authenticated pilots own bid subfleet', 
 });
 
 test('get without bid token performs full accessible fleet expansion', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -112,8 +112,8 @@ test('get without bid token performs full accessible fleet expansion', function 
 });
 
 test('get with bid token skips accessible fleet expansion (behavioral proof)', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -143,10 +143,10 @@ test('get with bid token skips accessible fleet expansion (behavioral proof)', f
 // ---------------------------------------------------------------------------
 
 test('search with bid token decorates bid flights with subfleet and empty for non-bid flights', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -180,7 +180,7 @@ test('search with bid token decorates bid flights with subfleet and empty for no
 // ---------------------------------------------------------------------------
 
 test('search with flight_id returns invisible flight', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -199,9 +199,9 @@ test('search with flight_id returns invisible flight', function (): void {
 });
 
 test('browse search without flight_id hides invisible flights', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -218,8 +218,8 @@ test('browse search without flight_id hides invisible flights', function (): voi
 });
 
 test('search by flight_id with bid token returns invisible flight with bid subfleets', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
 
     $user = User::factory()->create();
     apiAs($user);

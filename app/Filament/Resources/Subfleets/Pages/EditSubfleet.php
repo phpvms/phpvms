@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Subfleets\Pages;
 
 use App\Filament\Actions\EditDetailsAction;
-use App\Filament\Concerns\ReversePrimaryButtons;
-use App\Filament\Concerns\StacksRelationManagers;
+use App\Filament\Concerns\HasRelationManagerTabs;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
 use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\File;
@@ -29,8 +29,8 @@ use Override;
  */
 class EditSubfleet extends EditRecord
 {
-    use ReversePrimaryButtons;
-    use StacksRelationManagers;
+    use HasRelationManagerTabs;
+    use HasSaveBar;
 
     protected static string $resource = SubfleetResource::class;
 
@@ -42,7 +42,7 @@ class EditSubfleet extends EditRecord
         $record = $this->getRecord();
 
         return new HtmlString(sprintf(
-            '%s <span class="id fi-header-heading-route">%s</span>',
+            '<span class="fi-header-heading-ident">%s</span> <span class="id fi-header-heading-route">%s</span>',
             e($record->type),
             e($record->name),
         ));
@@ -83,6 +83,7 @@ class EditSubfleet extends EditRecord
         $record = $this->getRecord();
 
         return [
+            ...$this->getNavigationBreadcrumbs(SubfleetResource::class, SubfleetResource::getNavigationUrl(...)) ?? [],
             SubfleetResource::getUrl() => SubfleetResource::getBreadcrumb(),
             self::subfleetCrumb($record),
         ];
@@ -94,22 +95,7 @@ class EditSubfleet extends EditRecord
         return $subfleet->type.' - '.$subfleet->name;
     }
 
-    /**
-     * The six relation managers (aircraft, ranks, typeratings, fares,
-     * expenses, files) are appended by the trait.
-     *
-     * @return array<string, string>
-     */
-    protected function jumpBarFormSections(): array
-    {
-        return [
-            'subfleet-information'   => __('filament.subfleet_information'),
-            'costs'                  => __('filament.subfleets.sections.costs'),
-            'operational-capability' => __('filament.subfleets.sections.operational_capability'),
-        ];
-    }
-
-    /** The identity overview sits above the jump bar. */
+    /** The identity overview sits at the top of the Details tab. */
     protected function contentHeader(): array
     {
         return [
@@ -169,10 +155,7 @@ class EditSubfleet extends EditRecord
     {
         return EditDetailsAction::make(SubfleetForm::editDrawerFields())
             ->modalHeading(__('filament.subfleet_information'))
-            ->modalDescription(__('filament.subfleet_description'))
-            ->extraModalFooterActions([
-                DeleteAction::make()->icon(Phosphor::TrashLight)->cancelParentActions(),
-            ]);
+            ->modalDescription(__('filament.subfleet_description'));
     }
 
     /** The identity fields live in the drawer, not the page form. */
@@ -188,11 +171,15 @@ class EditSubfleet extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            // Delete lives in the settings drawer's footer (editAction()).
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight)->before(function (Subfleet $record): void {
                 $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);

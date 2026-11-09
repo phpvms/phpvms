@@ -40,7 +40,6 @@ return [
     'save_and_exit'              => 'Save and exit',
     'airports_saved'             => 'Airports saved',
     'airport_already_exists'     => ':icao already exists',
-    'id_description'             => 'ID: :id',
     'find_missing'               => 'Find Missing Airports',
     'find_missing_description'   => 'Airports that flights, PIREPs, aircraft, subfleets or pilots reference, but which are not in the airports table.',
     'missing_airports'           => 'Missing airports',
@@ -52,4 +51,7 @@ return [
     'missing_populated'          => 'Added :count missing airport|Added :count missing airports',
     'missing_added'              => 'Added: :ids.',
     'missing_not_found'          => 'Not found by the lookup: :ids.',
+    'update'                     => 'Update',
+    'runways'                    => 'Runways',
+    'runways_placeholder'        => 'Runway data is not available yet.',
 ];

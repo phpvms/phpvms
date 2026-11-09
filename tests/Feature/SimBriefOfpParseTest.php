@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Support\Dto\SimBriefOfp\SimBriefOfp;
+use Illuminate\Support\Arr;
 
 /*
  * SimBrief omits keys it has no value for. A missing optional field must
@@ -56,4 +57,48 @@ it('parses an ATIS that SimBrief sends without a letter', function (): void {
         ->and($parsed->phonetic)->toBe('')
         ->and($parsed->type)->toBe('')
         ->and($parsed->message)->toBe('');
+});
+
+it('parses a take-off and an en-route alternate SimBrief sends on their own, not in a list', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['takeoff_altn'] = $ofp['origin'];
+    $ofp['enroute_altn'] = $ofp['destination'];
+
+    $parsed = SimBriefOfp::from($ofp);
+
+    expect($parsed->takeoff_altn)->toHaveCount(1)
+        ->and($parsed->takeoff_altn[0]->icao_code)->toBe($ofp['origin']['icao_code'])
+        ->and($parsed->enroute_altn)->toHaveCount(1)
+        ->and($parsed->enroute_altn[0]->icao_code)->toBe($ofp['destination']['icao_code']);
+});
+
+it('parses a lone alternate SimBrief sends on its own, not in a list', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['alternate'] = $ofp['alternate'][0];
+
+    $parsed = SimBriefOfp::from($ofp);
+
+    expect($parsed->alternate)->toHaveCount(1)
+        ->and($parsed->alternate[0]->icao_code)->toBe($ofp['alternate']['icao_code']);
+});
+
+it('parses a list of take-off alternates', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['takeoff_altn'] = [$ofp['origin'], $ofp['destination']];
+
+    expect(SimBriefOfp::from($ofp)->takeoff_altn)->toHaveCount(2);
+});
+
+it('parses a take-off and an en-route alternate that have no planned runway', function (): void {
+    // Only the origin and destination have a planned runway; SimBrief leaves
+    // plan_rwy out of the take-off and en-route alternates.
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['takeoff_altn'] = Arr::except($ofp['origin'], 'plan_rwy');
+    $ofp['enroute_altn'] = Arr::except($ofp['destination'], 'plan_rwy');
+
+    $parsed = SimBriefOfp::from($ofp);
+
+    expect($parsed->takeoff_altn[0]->plan_rwy)->toBeNull()
+        ->and($parsed->enroute_altn[0]->plan_rwy)->toBeNull()
+        ->and($parsed->origin->plan_rwy)->toBe($ofp['origin']['plan_rwy']);
 });

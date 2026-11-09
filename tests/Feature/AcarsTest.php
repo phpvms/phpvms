@@ -89,9 +89,9 @@ it('should return a prefile error', function (): void {
 });
 
 it('should not start pirep if the aircraft is not at the departure airport', function (): void {
-    updateSetting('pilots.only_flights_from_current', false);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', true);
+    updateSetting('operations.only_flights_from_current', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', true);
 
     $user = User::factory()->create();
     apiAs($user);
@@ -150,8 +150,8 @@ it('should not start pirep without airports', function (): void {
 });
 
 it('should not start pirep if the pilot is not at the departure airport', function (): void {
-    updateSetting('pilots.only_flights_from_current', true);
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.only_flights_from_current', true);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $user = User::factory()->create([
         'curr_airport_id' => 'KJFK',
@@ -688,7 +688,7 @@ it('can file a pirep via api', function (): void {
 });
 
 it('should check if the aircraft is allowed for flight', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
 
     $airport = Airport::factory()->create();
     $airline = Airline::factory()->create();
@@ -731,7 +731,7 @@ it('should check if the aircraft is allowed for flight', function (): void {
 });
 
 it('should ignore aircraft allowed', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
 
     $airport = Airport::factory()->create();
     $airline = Airline::factory()->create();

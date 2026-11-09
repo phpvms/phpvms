@@ -18,6 +18,8 @@ class FareForm
         return $schema
             ->components([
                 Section::make(__('filament.fare_information'))
+                    ->id('fare-information')
+                    ->aside()
                     ->description(__('filament.fare_description'))
                     ->schema([
                         TextInput::make('code')
@@ -35,6 +37,27 @@ class FareForm
                             ->required()
                             ->native(false),
 
+                        Textarea::make('notes')
+                            ->label(__('common.notes'))
+                            ->columnSpanFull(),
+
+                        Toggle::make('active')
+                            ->label(__('common.active'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
+                    ])
+                    ->columnSpanFull()
+                    ->columns(columns: 2),
+
+                Section::make(__('filament.fare_pricing'))
+                    ->id('fare-pricing')
+                    ->aside()
+                    ->description(__('filament.fare_pricing_description'))
+                    ->schema([
                         TextInput::make('price')
                             ->label(__('common.price'))
                             ->helperText(__('filament.fare_price_hint'))
@@ -72,17 +95,6 @@ class FareForm
                             ->label(__('common.capacity'))
                             ->helperText(__('filament.fare_capacity_hint'))
                             ->numeric(),
-
-                        Textarea::make('notes')
-                            ->label(__('common.notes'))
-                            ->columnSpanFull(),
-
-                        Toggle::make('active')
-                            ->label(__('common.active'))
-                            ->offIcon(Phosphor::XLight)
-                            ->offColor('danger')
-                            ->onIcon(Phosphor::CheckLight)
-                            ->onColor('success'),
                     ])
                     ->columnSpanFull()
                     ->columns(columns: 3),

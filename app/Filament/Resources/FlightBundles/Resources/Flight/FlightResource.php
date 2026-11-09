@@ -87,6 +87,31 @@ class FlightResource extends Resource
         return ['flight_number', 'route_code'];
     }
 
+    #[Override]
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with('airline');
+    }
+
+    /**
+     * Nested resource: vendor returns null because the parent record is missing
+     * from the URL parameters, which would drop every result.
+     *
+     * @param Flight $record
+     */
+    #[Override]
+    public static function getGlobalSearchResultUrl(Model $record): ?string
+    {
+        if ($record->bundle_id === null || !static::canEdit($record)) {
+            return null;
+        }
+
+        return static::getUrl('edit', [
+            'bundle' => $record->bundle_id,
+            'record' => $record,
+        ]);
+    }
+
     /**
      * @param Flight $record
      */

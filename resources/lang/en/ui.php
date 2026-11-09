@@ -13,7 +13,6 @@ declare(strict_types=1);
 return [
     // Nav rail
     'brand_tagline' => 'Fleet Ops',
-    'nav_section'   => 'Workspace',
     'nav_flights'   => 'Flights',
     'nav_bids'      => 'My Bids',
     'nav_tours'     => 'Tours',
@@ -28,6 +27,7 @@ return [
     'notifications'      => 'Notifications',
 
     // Sidebar account menu
+    'go_to_admin' => 'Go to Admin',
     'sign_in'     => 'Sign in',
     'sign_out'    => 'Sign out',
     'theme'       => 'Theme',
@@ -49,4 +49,17 @@ return [
     'loading_activity' => 'Loading activity…',
     'activity_error'   => "Couldn't load the activity feed.",
     'no_activity'      => 'No activity yet',
+
+    // Latest news widget
+    'latest_news' => 'Latest news',
+    'no_news'     => 'No news yet',
+
+    // Next flight widget
+    'next_flight'           => 'Next flight',
+    'ready_to_fly'          => 'Ready to fly',
+    'last_flight_title'     => 'Last flight',
+    'find_a_flight'         => 'Find a flight',
+    'start_flight_planning' => 'Start flight planning',
+    'ofp_ready'             => 'OFP ready',
+    'ofp_not_planned'       => 'Not planned',
 ];

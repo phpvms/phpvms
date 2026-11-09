@@ -10,10 +10,12 @@ use App\Addons\Sources\AddonSource;
 use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonValidator;
+use App\Addons\Support\CoreTables;
 use App\Addons\Support\ManifestParser;
 use App\Addons\Support\OctaneReloader;
 use App\Addons\Support\ThemeAddonRegistrar;
 use App\Addons\Support\ThemeAssetLinker;
+use App\Contracts\Addons\AddonServiceProvider;
 use App\Events\AddonInstalled;
 use App\Events\AddonUpdated;
 use App\Exceptions\AddonInstallException;
@@ -113,9 +115,12 @@ class AddonRegistry
      * telling an operator an addon was deleted when it was only switched off is
      * the misreport this return exists to prevent. Unknown addon: false.
      *
-     * When $removeTables is true, the addon's schema migrations are rolled back
-     * (dropping its tables), its seed markers are cleared, and its saved
-     * settings are deleted, so a later reinstall starts clean and re-seeds.
+     * When $removeTables is true, the tables the addon owns are dropped (its
+     * declared models' tables and the manifest `database.tables`, never a core
+     * table), or its migrations are rolled back when it declares none. Its seed
+     * markers are cleared and its saved settings are deleted, so a later
+     * reinstall starts clean and re-seeds. What the addon owns is read before its
+     * files are staged and deleted.
      *
      * When it is false the settings rows are deliberately left behind: they are
      * keyed on registry_id, not the addon row id, so reinstalling the addon
@@ -202,13 +207,48 @@ class AddonRegistry
         // Read before the files go: theme.json names the theme link.
         $themeName = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
 
-        // Files first, and it throws on failure. Dropping the tables before
-        // knowing the files are gone would leave a discoverable addon whose
-        // schema has been deleted under it.
-        $this->removeAddonFilesOrFail($addon);
+        // Snapshot what the addon owns while its files are still in place and
+        // its provider can still be loaded: afterwards the manifest and the
+        // migrations are gone, and "Also remove its data" would drop nothing.
+        $manifest = app(ManifestParser::class)->parse($addon->getPath());
+        $tables = $removeTables ? $this->ownedTables($manifest) : [];
+
+        $this->callLifecycle($manifest, 'onUninstall', $removeTables);
+
+        // Stage the files: one atomic rename takes the addon out of discovery
+        // while its migration files stay on disk for a rollback. A failure
+        // before the tables are dropped renames them back, so the addon is
+        // never left half removed. Once the tables are gone it cannot be put
+        // back: the staged files then stay where they are, out of discovery,
+        // and the removal finishes without them.
+        $original = rtrim(realpath($addon->getPath()) ?: $addon->getPath(), '/');
+        $staged = $this->stageAddonFiles($addon);
+        $dataRemoved = false;
+
+        try {
+            if ($removeTables) {
+                $this->removeAddonTables($addon, $tables, $staged ?? $addon->getPath());
+                $dataRemoved = true;
+            }
+
+            if ($staged !== null) {
+                $this->deleteStagedFiles($addon, $staged);
+            }
+        } catch (Throwable $throwable) {
+            if (!$dataRemoved) {
+                if ($staged !== null && File::isDirectory($staged)) {
+                    rename($staged, $original);
+                }
+
+                throw $throwable;
+            }
+
+            Log::error(sprintf('AddonRegistry: the files of the "%s" addon could not be removed after its data was dropped; they remain at %s.', $addon->getName(), (string) $staged), [
+                'exception' => $throwable,
+            ]);
+        }
 
         if ($removeTables) {
-            $this->removeAddonTables($addon);
             app(SeederService::class)->clearAddonSeedMarkers($addon);
             AddonSetting::query()->where('registry_id', $addon->registry_id)->delete();
         }
@@ -352,43 +392,203 @@ class AddonRegistry
     }
 
     /**
+     * Rename the addon's directory to a hidden staging name inside its own
+     * writable root, so the rename is atomic and on one filesystem. Discovery
+     * ignores dot-directories, so a staged addon is not found again.
+     *
+     * Same containment guard as {@see removeAddonFilesOrFail()}: only a
+     * directory inside a writable root is touched.
+     *
+     * @return string|null the staged path, or null when there is nothing to stage
+     */
+    private function stageAddonFiles(Addon $addon): ?string
+    {
+        $path = rtrim($addon->getPath(), '/');
+        $path = realpath($path) ?: $path;
+
+        if (!$this->inWritableRoot($path)) {
+            Log::warning(sprintf(
+                'AddonRegistry: not removing files for "%s" — path %s is outside the writable addon roots %s',
+                $addon->getName(),
+                $path === '' ? '(empty)' : $path,
+                implode(', ', AddonRoots::writable()),
+            ));
+
+            return null;
+        }
+
+        if (!File::isDirectory($path)) {
+            return null;
+        }
+
+        $staged = dirname($path).'/.'.basename($path).'.removing-'.uniqid('', true);
+
+        if (!rename($path, $staged)) {
+            throw new RuntimeException(sprintf('Failed to stage the files for the "%s" addon at %s. Nothing was changed; the addon is still installed.', $addon->getName(), $path));
+        }
+
+        return $staged;
+    }
+
+    /**
+     * Delete a staged addon directory, or throw. Verified by re-checking the
+     * directory, for the same reason as {@see removeAddonFilesOrFail()}.
+     *
+     * @throws RuntimeException when the directory is still present afterwards
+     */
+    private function deleteStagedFiles(Addon $addon, string $staged): void
+    {
+        File::deleteDirectory($staged);
+
+        clearstatcache(true, $staged);
+
+        if (file_exists($staged)) {
+            throw new RuntimeException(sprintf(
+                'Failed to remove the files for the "%s" addon at %s. The addon is still installed.',
+                $addon->getName(),
+                $addon->getPath(),
+            ));
+        }
+    }
+
+    /**
      * Remove an addon's database tables on uninstall.
      *
-     * Prefers the addon's declared `database.tables` contract from module.json:
+     * Prefers the tables the addon owns, as snapshotted by {@see ownedTables()}:
      * those tables are dropped explicitly and the addon's migration records are
      * purged, so removal does not depend on the migrations having correct down()
-     * methods. When no contract is declared, falls back to rolling back the
-     * addon's migrations (running their down() methods).
+     * methods. A table that core owns is skipped with a warning, whatever the
+     * addon declares. When the addon owns no tables, falls back to rolling back
+     * its migrations (running their down() methods).
+     *
+     * @param list<string> $tables    the addon's owned tables, read before its files moved
+     * @param string       $addonPath where the addon's files are now
      */
-    private function removeAddonTables(Addon $addon): void
+    private function removeAddonTables(Addon $addon, array $tables, string $addonPath): void
     {
         $migrationSvc = app(MigrationService::class);
-        $tables = $this->declaredTables($addon);
 
         if ($tables !== []) {
-            $migrationSvc->dropAddonTables($tables);
-            $migrationSvc->purgeAddonMigrationRecords($addon);
+            $core = CoreTables::all();
+            $droppable = [];
+
+            foreach ($tables as $table) {
+                if (in_array($table, $core, true)) {
+                    Log::warning(sprintf('AddonRegistry: not dropping table "%s" for addon "%s": it is a core table.', $table, $addon->getName()));
+
+                    continue;
+                }
+
+                $droppable[] = $table;
+            }
+
+            $migrationSvc->dropAddonTables($droppable);
+            $migrationSvc->purgeAddonMigrationRecords($addon, $addonPath);
 
             return;
         }
 
-        $migrationSvc->rollbackAddonMigrations($addon);
+        $migrationSvc->rollbackAddonMigrations($addon, $addonPath);
     }
 
     /**
-     * Resolve the tables an addon declares it owns via module.json.
+     * The tables an addon owns: those of the models carrying `#[AddonModel]`
+     * in its own tree, then the tables listed in its manifest `database.tables`.
+     *
+     * A provider whose scan fails contributes no tables.
      *
      * @return list<string>
      */
-    private function declaredTables(Addon $addon): array
+    private function ownedTables(?AddonManifest $manifest): array
     {
-        $manifest = app(ManifestParser::class)->parse($addon->getPath());
-
         if (!$manifest instanceof AddonManifest) {
             return [];
         }
 
-        return $manifest->tables;
+        $tables = [];
+
+        foreach ($this->addonProviders($manifest) as $provider) {
+            try {
+                foreach ($provider->ownedModels() as $model) {
+                    $tables[] = new $model()->getTable();
+                }
+            } catch (Throwable $throwable) {
+                Log::warning(sprintf('AddonRegistry: not dropping the model tables of "%s": %s', $manifest->name, $throwable->getMessage()));
+            }
+        }
+
+        return array_values(array_unique([...$tables, ...$manifest->tables]));
+    }
+
+    /**
+     * The addon's providers that are on the addon base, as instances: the one
+     * Laravel already registered, else a fresh one (as the settings sync does).
+     * Its classes are made loadable first, since an addon that is disabled or
+     * just installed is not in the autoloader yet.
+     *
+     * @return list<AddonServiceProvider>
+     */
+    private function addonProviders(AddonManifest $manifest): array
+    {
+        $providers = [];
+
+        try {
+            app(AddonAutoLoader::class)->registerClasses($manifest);
+        } catch (Throwable $throwable) {
+            Log::warning(sprintf('AddonRegistry: could not load the classes of "%s": %s', $manifest->name, $throwable->getMessage()));
+
+            return [];
+        }
+
+        foreach ($manifest->providers as $class) {
+            try {
+                if (!class_exists($class)) {
+                    Log::warning(sprintf('AddonRegistry: the provider %s of "%s" could not be loaded from %s.', $class, $manifest->name, $manifest->autoloadPath));
+
+                    continue;
+                }
+
+                if (!is_a($class, AddonServiceProvider::class, true)) {
+                    continue;
+                }
+
+                $provider = app()->getProvider($class) ?? new $class(app());
+
+                if ($provider instanceof AddonServiceProvider) {
+                    $providers[] = $provider;
+                }
+            } catch (Throwable $throwable) {
+                Log::warning(sprintf('AddonRegistry: could not load the provider %s of "%s": %s', $class, $manifest->name, $throwable->getMessage()));
+            }
+        }
+
+        return $providers;
+    }
+
+    /**
+     * Call a lifecycle method (`onInstall`, `onUpdate`, `onUninstall`) on each of
+     * the addon's providers. A throw is logged and does not stop the operation.
+     *
+     * The manifest must be the one parsed where the addon's files are now: its
+     * autoload path is what makes the providers loadable.
+     */
+    private function callLifecycle(?AddonManifest $manifest, string $method, mixed ...$arguments): void
+    {
+        if (!$manifest instanceof AddonManifest) {
+            Log::warning(sprintf('AddonRegistry: %s() was not called: the addon manifest could not be read.', $method));
+
+            return;
+        }
+
+        foreach ($this->addonProviders($manifest) as $provider) {
+            try {
+                $provider->{$method}(...$arguments);
+            } catch (Throwable $throwable) {
+                Log::error(sprintf('AddonRegistry: %s() of the "%s" addon failed: %s', $method, $manifest->name, $throwable->getMessage()), [
+                    'exception' => $throwable,
+                ]);
+            }
+        }
     }
 
     /**
@@ -451,6 +651,10 @@ class AddonRegistry
         $this->octane->reload();
 
         AddonInstalled::dispatch($addon);
+
+        // Parsed again at $dest: the staging copy the validator read is gone,
+        // and its autoload path with it.
+        $this->callLifecycle(app(ManifestParser::class)->parse($dest), 'onInstall');
 
         return $addon;
     }
@@ -582,6 +786,10 @@ class AddonRegistry
         $this->octane->reload();
 
         AddonUpdated::dispatch($existing);
+
+        // Parsed again at $dest, as in install(). For an addon that was enabled
+        // the provider class in this process is still the previous version's.
+        $this->callLifecycle(app(ManifestParser::class)->parse($dest), 'onUpdate', (string) $prior['version'], (string) $manifest->version);
 
         return $existing->refresh();
     }

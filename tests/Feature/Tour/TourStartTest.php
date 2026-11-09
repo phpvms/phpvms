@@ -131,7 +131,7 @@ it('refuses the tour when another pilot already holds leg 1', function (): void 
 });
 
 it('creates downstream legs even though the aircraft is only at leg 1', function (): void {
-    updateSetting('pireps.only_aircraft_at_dpt_airport', true);
+    updateSetting('operations.only_aircraft_at_dpt_airport', true);
     ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(4);
 
     app(BidService::class)->addBid($flights[0], $user, $aircraft);
@@ -141,7 +141,7 @@ it('creates downstream legs even though the aircraft is only at leg 1', function
 });
 
 it('rejects a tour with no aircraft when block_aircraft is on', function (): void {
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.block_aircraft', true);
     ['user' => $user, 'flights' => $flights] = makeTour(3);
 
     expect(fn () => app(BidService::class)->addBid($flights[0], $user))

@@ -12,7 +12,6 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -26,25 +25,20 @@ class PageForm
             ->components([
                 Section::make(__('filament.page_information'))
                     ->schema([
-                        Grid::make()
-                            ->schema([
-                                TextInput::make('name')
-                                    ->label(__('common.name'))
-                                    ->required()
-                                    ->string(),
+                        TextInput::make('name')
+                            ->label(__('common.name'))
+                            ->required()
+                            ->string(),
 
-                                TextInput::make('icon')
-                                    ->label(__('common.icon'))
-                                    ->string(),
+                        TextInput::make('icon')
+                            ->label(__('common.icon'))
+                            ->string(),
 
-                                Select::make('type')
-                                    ->label(__('common.type'))
-                                    ->options(PageType::class)
-                                    ->native(false)
-                                    ->required(),
-                            ])
-                            ->columnSpanFull()
-                            ->columns(3),
+                        Select::make('type')
+                            ->label(__('common.type'))
+                            ->options(PageType::class)
+                            ->native(false)
+                            ->required(),
 
                         TextInput::make('path')
                             ->label(__('filament.system_pages.path'))
@@ -58,59 +52,70 @@ class PageForm
                             ->visibleJs(<<<'JS'
                                     $get('type') == '0'
                                 JS), // Hardcoded PageType::PAGE
-
-                        Grid::make()
-                            ->schema([
-                                Toggle::make('public')
-                                    ->label(__('common.public'))
-                                    ->offIcon(Phosphor::XLight)
-                                    ->offColor('danger')
-                                    ->onIcon(Phosphor::CheckLight)
-                                    ->onColor('success'),
-
-                                Toggle::make('enabled')
-                                    ->label(__('common.enabled'))
-                                    ->offIcon(Phosphor::XLight)
-                                    ->offColor('danger')
-                                    ->onIcon(Phosphor::CheckLight)
-                                    ->onColor('success'),
-                            ])
-                            ->columnSpanFull()
-                            ->columns(),
-
-                        // Create-only and not stored on the page: CreatePage reads
-                        // these once the page exists and builds the menu item.
-                        Grid::make()
-                            ->schema([
-                                Toggle::make('add_to_menu')
-                                    ->label(__('filament.navigation_items.add_to_menu'))
-                                    ->helperText(__('filament.navigation_items.add_to_menu_helper'))
-                                    ->default(true)
-                                    ->live()
-                                    ->dehydrated(false)
-                                    ->offIcon(Phosphor::XLight)
-                                    ->offColor('danger')
-                                    ->onIcon(Phosphor::CheckLight)
-                                    ->onColor('success'),
-
-                                TextInput::make('menu_label')
-                                    ->label(__('filament.navigation_items.menu_label'))
-                                    ->helperText(__('filament.navigation_items.menu_label_helper'))
-                                    ->string()
-                                    ->dehydrated(false)
-                                    ->visible(fn (Get $get): bool => (bool) $get('add_to_menu')),
-                            ])
-                            ->columnSpanFull()
-                            ->columns()
-                            ->hiddenOn('edit')
-                            // Menu items have their own permission; page editors
-                            // without it do not get a back door to the menu.
-                            ->visible(fn (): bool => auth()->user()?->can('create', NavigationItem::class) ?? false)
-                            ->visibleJs(<<<'JS'
-                                    $get('type') == '0'
-                                JS), // Hardcoded PageType::PAGE
                     ])
+                    ->aside()
+                    ->description(__('filament.page_information_description'))
+                    ->columnSpanFull()
+                    ->columns(3),
+
+                Section::make(__('filament.page_visibility'))
+                    ->schema([
+                        Toggle::make('public')
+                            ->label(__('common.public'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
+
+                        Toggle::make('enabled')
+                            ->label(__('common.enabled'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
+                    ])
+                    ->aside()
+                    ->description(__('filament.page_visibility_description'))
                     ->columnSpanFull(),
+
+                // Create-only and not stored on the page: CreatePage reads
+                // these once the page exists and builds the menu item.
+                Section::make(__('filament.page_menu_item'))
+                    ->schema([
+                        TextInput::make('menu_label')
+                            ->label(__('filament.navigation_items.menu_label'))
+                            ->helperText(__('filament.navigation_items.menu_label_helper'))
+                            ->string()
+                            ->dehydrated(false)
+                            ->visible(fn (Get $get): bool => (bool) $get('add_to_menu')),
+
+                        Toggle::make('add_to_menu')
+                            ->label(__('filament.navigation_items.add_to_menu'))
+                            ->belowLabel(__('filament.navigation_items.add_to_menu_helper'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->default(true)
+                            ->live()
+                            ->dehydrated(false)
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success'),
+                    ])
+                    ->aside()
+                    ->description(__('filament.page_menu_item_description'))
+                    ->columnSpanFull()
+                    ->hiddenOn('edit')
+                    // Menu items have their own permission; page editors
+                    // without it do not get a back door to the menu.
+                    ->visible(fn (): bool => auth()->user()?->can('create', NavigationItem::class) ?? false)
+                    ->visibleJs(<<<'JS'
+                            $get('type') == '0'
+                        JS), // Hardcoded PageType::PAGE
 
                 Section::make(__('common.content'))
                     ->schema([
@@ -132,6 +137,8 @@ class PageForm
 
                         Toggle::make('new_window')
                             ->label(__('filament.should_open_in_new_tab'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
                             ->offIcon(Phosphor::XLight)
                             ->offColor('danger')
                             ->onIcon(Phosphor::CheckLight)
@@ -140,6 +147,8 @@ class PageForm
                                     $get('type') == '1'
                                 JS), // Hardcoded PageType::LINK
                     ])
+                    ->aside()
+                    ->description(__('filament.page_content_description'))
                     ->columnSpanFull(),
             ]);
     }

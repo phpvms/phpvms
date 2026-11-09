@@ -189,7 +189,7 @@ class AirportService extends Service
      *
      * Public because the paths that only want to *validate* that an airport is
      * already here -- `PirepService::prefile()` with
-     * `general.allow_unadded_airports` off -- need the same id-or-ICAO
+     * `airports.allow_unadded_airports` off -- need the same id-or-ICAO
      * resolution as the paths that are allowed to add one.
      */
     public function findAirport(string $value): ?Airport
@@ -311,7 +311,7 @@ class AirportService extends Service
         }
 
         // Don't lookup the airport, so just add in something generic
-        if (!setting('general.auto_airport_lookup')) {
+        if (!setting('airports.auto_airport_lookup')) {
             // The generic row names itself after the value, and `icao` is
             // varchar(8) while an id now holds 16. A value too wide to be an
             // ICAO is a generated id we know nothing about, and there is no

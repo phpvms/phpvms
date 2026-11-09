@@ -13,6 +13,8 @@ use App\Enums\PirepState;
 use App\Enums\UserState;
 use App\Features\Assets\AssetService;
 use App\Features\Assets\AssetTypes;
+use App\Features\Hooks\Facades\Hooks;
+use App\Features\Hooks\RenderHook;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Http\Composers\PageLinksComposer;
@@ -39,8 +41,12 @@ use App\Services\RouteForge\Rules\L7SubfleetsHaveNoFares;
 use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
 use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Services\SettingService;
+use App\Services\Theme\ActiveThemeService;
 use App\Support\Branding;
+use App\Support\Extensions\Facades\Extensions;
+use App\Support\InstallMarker;
 use App\Support\PirepView\PirepViewTabRegistry;
+use App\Support\Themes;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
@@ -51,6 +57,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
@@ -61,6 +68,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -72,12 +80,12 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Intervention\Image\ImageManager as InterventionImageManager;
 use Laracasts\Flash\Flash;
 use Override;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature;
-use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\Yaml\Yaml;
 
@@ -87,7 +95,7 @@ class AppServiceProvider extends ServiceProvider
      * @throws UnknownUnitOfMeasure
      * @throws NonStringUnitName
      */
-    public function boot(OAuthConnectionService $oauthConnections): void
+    public function boot(): void
     {
         Schema::defaultStringLength(191);
 
@@ -109,12 +117,15 @@ class AppServiceProvider extends ServiceProvider
         DateTimePicker::configureUsing(static fn (DateTimePicker $picker): DateTimePicker => $picker
             ->suffixIcon(static fn (DateTimePicker $component): ?Phosphor => $component->hasDate() ? Phosphor::CalendarLight : null));
 
-        // The SettingService memo is request-scoped via config/octane.php 'flush',
+        // The SettingService and AddonSettingService memos are request-scoped via config/octane.php 'flush',
         // but a long-running queue worker is not flushed per job. Reset the memo
         // before each job so a worker observes settings changed by other
         // processes — otherwise a stale memoized value could be written back into
         // the shared cache on the next Cache::remember() miss.
-        Queue::before(static fn () => app(SettingService::class)->clearMemo());
+        Queue::before(static function (): void {
+            app(SettingService::class)->clearMemo();
+            app(AddonSettingService::class)->clearMemo();
+        });
 
         // The cron_daily channel (storage/logs/cron.log) is reserved for the
         // scheduler and the queue worker. Switch the default log channel only
@@ -129,6 +140,16 @@ class AppServiceProvider extends ServiceProvider
 
             if (in_array($event->command, $cronCommands, true)) {
                 Log::setDefaultDriver('cron_daily');
+            }
+        });
+
+        // Data migrations rewrite settings rows through the query builder,
+        // which fires no model events, so nothing busts the values the
+        // `setting()` helper has cached. The web Updater runs optimize:clear
+        // after migrating; a CLI `migrate-data` run gets the same cache flush.
+        Event::listen(CommandFinished::class, static function (CommandFinished $event): void {
+            if ($event->command === 'migrate-data' && $event->exitCode === 0) {
+                Cache::flush();
             }
         });
 
@@ -169,9 +190,13 @@ class AppServiceProvider extends ServiceProvider
          * legacy model-rich shape; toInertiaArray() returns a flat JSON-
          * serializable DTO. See spec: spa-theme-render-switch/spec.md.
          *
-         * @param string $inertiaPage Inertia component name (e.g. 'Dashboard')
-         * @param string $bladeView   Blade view name (e.g. 'dashboard.index')
-         * @param object $presenter   Object with toInertiaArray() and toBladeArray()
+         * @param string                                                   $inertiaPage Inertia component name (e.g. 'Dashboard')
+         * @param string                                                   $bladeView   Blade view name (e.g. 'dashboard.index')
+         * @param object                                                   $presenter   Object with toInertiaArray() and toBladeArray()
+         * @param array<int, RenderHook>|Closure(): array<int, RenderHook> $renderHooks
+         *                                                                              Render hooks for the page. Dispatched, and their
+         *                                                                              `vue` fills stored as slot entries, on the SPA path
+         *                                                                              only; a Blade page dispatches nothing.
          */
         ResponseFacade::macro('themed', function (
             string $inertiaPage,
@@ -179,13 +204,24 @@ class AppServiceProvider extends ServiceProvider
             ?object $presenter = null,
             Closure|array|Arrayable $bladeData = [],
             Closure|array|Arrayable|null $spa = null,
+            array|Closure $renderHooks = [],
         ) {
+            $dispatchRenderHooks = static function () use ($renderHooks): void {
+                foreach ($renderHooks instanceof Closure ? $renderHooks() : $renderHooks as $hook) {
+                    Extensions::slots()->addAll($hook::name(), Hooks::filter($hook));
+                }
+            };
+
             // Legacy presenter path (one object exposing BOTH projections). Kept
             // for controllers not yet migrated.
             if ($presenter !== null && method_exists($presenter, 'toInertiaArray')) {
-                return theme_kind() === 'spa'
-                    ? Inertia::render($inertiaPage, $presenter->toInertiaArray())
-                    : view($bladeView, $presenter->toBladeArray());
+                if (theme_kind() === 'spa') {
+                    $dispatchRenderHooks();
+
+                    return Inertia::render($inertiaPage, $presenter->toInertiaArray());
+                }
+
+                return view($bladeView, theme_uses_spa_data() ? $presenter->toInertiaArray() : $presenter->toBladeArray());
             }
 
             // Direct path (no presenter): the controller supplies the Blade data and
@@ -193,7 +229,15 @@ class AppServiceProvider extends ServiceProvider
             // theme's payload is realised, so a Closure defers the other's cost
             // (e.g. the SPA DTO isn't built on the Blade path, and vice-versa).
             if (theme_kind() === 'spa') {
+                $dispatchRenderHooks();
+
                 return Inertia::render($inertiaPage, $spa instanceof Closure ? $spa() : ($spa ?? []));
+            }
+
+            // A Blade theme that opts in (theme.json "data": "spa") gets the
+            // same page props as an SPA theme, as view variables.
+            if (theme_uses_spa_data()) {
+                return view($bladeView, $spa instanceof Closure ? $spa() : ($spa ?? []));
             }
 
             return view($bladeView, $bladeData instanceof Closure ? $bladeData() : $bladeData);
@@ -278,14 +322,6 @@ class AppServiceProvider extends ServiceProvider
             Metar::class,
             config('phpvms.metar_lookup')
         );
-
-        $oauthConnections->loadRuntimeConfiguration();
-
-        Event::listen(function (SocialiteWasCalled $event) use ($oauthConnections): void {
-            foreach ($oauthConnections->providerClasses() as $driver => $providerClass) {
-                $event->extendSocialite($driver, $providerClass);
-            }
-        });
     }
 
     /**
@@ -294,12 +330,22 @@ class AppServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        $this->app->singleton('igaster.themes', fn (): Themes => new Themes());
+
         $this->app->singleton('view.finder', fn (Application $app): ThemeViewFinder => new ThemeViewFinder(
             $app['files'],
             $app['config']['view.paths']
         ));
 
         $this->app->singleton(ModuleService::class);
+
+        // Intervention registers `image` and aliases its manager class to that key,
+        // but Laravel 13 binds `image` to its own Illuminate\Image\ImageManager, so
+        // the alias hands out the wrong class. Bind the Intervention manager by
+        // class so avatar resizing gets the one with canvas()/make().
+        $this->app->bind(InterventionImageManager::class, fn (Application $app): InterventionImageManager => new InterventionImageManager([
+            'driver' => $app->make(ImageUploadService::class)->rasterDriver() ?? 'gd',
+        ]));
         $this->app->singleton(SocialiteProviderRegistry::class);
         $this->app->singleton(OAuthConnectionService::class);
 
@@ -313,6 +359,10 @@ class AppServiceProvider extends ServiceProvider
             'command.migrate-data.install',
             fn (Application $app): DataMigrationInstallCommand => new DataMigrationInstallCommand($app['migration.data.repository'])
         );
+
+        // The "this site is installed" marker file. Stateless/Octane-safe;
+        // bound as a singleton so tests can swap the path.
+        $this->app->singleton(InstallMarker::class, fn (): InstallMarker => new InstallMarker(InstallMarker::defaultPath()));
 
         // Core settings read/write. Bound as a singleton so the per-request
         // Tier-1 memo ($memo array) is shared across all setting() calls within
@@ -349,6 +399,11 @@ class AppServiceProvider extends ServiceProvider
         // starts every request with an empty memo instead of one worker's
         // lookups leaking into the next request it serves.
         $this->app->scoped(AssetService::class);
+
+        // Memoises the active theme revision per request (see
+        // ActiveThemeService::$revisions). Scoped for the same reason as
+        // AssetService above: Octane starts each request with an empty memo.
+        $this->app->scoped(ActiveThemeService::class);
 
         $this->app->singleton(PirepViewTabRegistry::class);
 

@@ -16,6 +16,12 @@ function settingValue(string $key): ?string
     return DB::table('settings')->where('id', Setting::formatKey($key))->value('value');
 }
 
+// A symlinked addon migration may already have set the id during RefreshDatabase.
+beforeEach(function (): void {
+    DB::table('kvp')->where('key', 'va_global_id')->delete();
+    DB::table('settings')->where('id', Setting::formatKey('va_global_id'))->update(['value' => '']);
+});
+
 it('migrates an existing kvp va_global_id and is idempotent', function (): void {
     DB::table('kvp')->insert(['key' => 'va_global_id', 'value' => 'EXISTINGID']);
 

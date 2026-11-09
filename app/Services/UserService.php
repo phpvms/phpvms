@@ -94,6 +94,7 @@ class UserService extends Service
         }
 
         $fields = $fields->get();
+        $user->loadMissing('fields.field');
 
         return $fields->map(function (UserField $field, $_) use ($user): UserField {
             foreach ($user->fields as $userFieldValue) {

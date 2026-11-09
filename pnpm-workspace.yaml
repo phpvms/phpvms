@@ -7,6 +7,10 @@
 #     package. Builds itself via its own vite.config.ts → public/build/skylight.
 #   - resources/js/packages/* — shared packages consumed by both the root pipeline
 #     and fe-vue (e.g. @phpvms/simbrief, @phpvms/map).
+#   - modules/phpvms-airside-theme — the bundled airside theme (Blade + Livewire +
+#     TallStackUI). Listed by explicit path, never `modules/*`: modules/ also holds
+#     dev symlinks (e.g. phpvms-acars) that pnpm must not walk. Builds into the
+#     module's own public/build via `pnpm run build:themes`.
 #
 # admin/ and seven/ under resources/js/apps have no package.json, so they are NOT
 # workspace packages — just source built by the root pipeline.
@@ -14,6 +18,7 @@ packages:
   - "resources/js/apps/fe-vue"
   - "resources/js/apps/fe-vue/tests"
   - "resources/js/packages/*"
+  - "modules/phpvms-airside-theme"
 
 # Allow these deps to run install scripts.
 allowBuilds:

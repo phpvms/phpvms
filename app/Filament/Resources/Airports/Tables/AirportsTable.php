@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Airports\Tables;
 
+use App\Filament\Resources\Airports\AirportResource;
 use App\Models\Airport;
 use App\Models\File;
 use App\Services\FileService;
@@ -72,6 +73,7 @@ class AirportsTable
                     ->label(__('airports.fuel_mogas_cost'))
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->recordUrl(fn (Airport $record): string => AirportResource::getUrl('edit', ['record' => $record]))
             ->filters([
                 Filter::make('only_hubs')
                     ->label(__('airports.only_hubs'))
@@ -88,9 +90,7 @@ class AirportsTable
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make()
-                        // The form has no id field (it keys on the ICAO), and the
-                        // id need not match the ICAO, so show which row this is.
-                        ->modalDescription(fn (Airport $record): string => __('airports.id_description', ['id' => $record->id])),
+                        ->url(fn (Airport $record): string => AirportResource::getUrl('edit', ['record' => $record])),
                     DeleteAction::make(),
                     ForceDeleteAction::make()->before(callback: function (Airport $record): void {
                         $record->files()->each(function (File $file): void {

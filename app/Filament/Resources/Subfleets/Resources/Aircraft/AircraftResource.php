@@ -84,4 +84,23 @@ class AircraftResource extends Resource
     {
         return $record->name.' - '.$record->registration;
     }
+
+    /**
+     * Nested resource: vendor returns null because the parent record is missing
+     * from the URL parameters, which would drop every result.
+     *
+     * @param Aircraft $record
+     */
+    #[Override]
+    public static function getGlobalSearchResultUrl(Model $record): ?string
+    {
+        if (!static::canEdit($record)) {
+            return null;
+        }
+
+        return static::getUrl('edit', [
+            'subfleet' => $record->subfleet_id,
+            'record'   => $record,
+        ]);
+    }
 }

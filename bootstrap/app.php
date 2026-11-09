@@ -5,6 +5,7 @@ use App\Exceptions\AssetNotFound;
 use App\Exceptions\Converters\GenericExceptionAbstract;
 use App\Exceptions\Converters\SymfonyException;
 use App\Exceptions\Converters\ValidationException;
+use App\Exceptions\SiteUnavailable;
 use App\Exceptions\Unauthenticated;
 use App\Http\Middleware\ApiAuth;
 use App\Http\Middleware\CheckApiScope;
@@ -117,6 +118,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
 
                 return new GenericExceptionAbstract($exception)->getResponse();
+            }
+
+            // A database outage must show the site-down page; this runs before the
+            // theme is set because that can query the database too.
+            if (SiteUnavailable::causedBy($exception)) {
+                return SiteUnavailable::response();
             }
 
             // Handle Web Errors (Theme & Auth)

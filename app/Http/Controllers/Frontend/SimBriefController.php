@@ -9,6 +9,7 @@ use App\Enums\AirframeSource;
 use App\Enums\FareType;
 use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
+use App\Features\Hooks\Points\RenderingBriefingActions;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\OFPPlanningSelectionData;
@@ -60,9 +61,16 @@ class SimBriefController
      *
      *
      * @throws Exception
+     *
+     * @deprecated Blade-theme (seven) flow, removed with seven in the next release.
+     *             Themes that opt in to the SPA data (airside) use `ofp.planning`.
      */
     public function generate(Request $request): RedirectResponse|View
     {
+        if (theme_uses_spa_data()) {
+            return redirect()->route('frontend.ofp.planning', $request->only(['flight_id', 'aircraft_id']));
+        }
+
         /** @var User $user */
         $user = Auth::user();
 
@@ -116,7 +124,7 @@ class SimBriefController
                     'simbriefs' => fn ($q) => $q->whereNull('pirep_id'),
                 ])
                 ->when(
-                    setting('simbrief.block_aircraft'),
+                    setting('operations.block_aircraft'),
                     fn ($q) => $q->having('simbriefs_count', 0),
                 )
                 ->orderBy('icao')
@@ -311,9 +319,16 @@ class SimBriefController
      * Show the briefing
      *
      * @param string $id The OFP ID
+     *
+     * @deprecated Blade-theme (seven) flow, removed with seven in the next release.
+     *             Themes that opt in to the SPA data (airside) use `ofp.briefing`.
      */
     public function briefing(string $id): RedirectResponse|View
     {
+        if (theme_uses_spa_data()) {
+            return redirect()->route('frontend.ofp.briefing', $id);
+        }
+
         /** @var User $user */
         $user = Auth::user();
 
@@ -489,7 +504,7 @@ class SimBriefController
         ]);
     }
 
-    public function skylightPlanning(Request $request): InertiaResponse|RedirectResponse
+    public function skylightPlanning(Request $request): InertiaResponse|View|RedirectResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -512,10 +527,14 @@ class SimBriefController
         }
 
         if ($aircraftId === null) {
-            return inertia('Ofp/Simbrief/Planning', [
-                'planning'          => null,
-                'aircraftSelection' => $this->ofpAircraftSelection($flight, $user, $bid?->id),
-            ]);
+            return response()->themed(
+                'Ofp/Simbrief/Planning',
+                'ofp.planning',
+                spa: fn (): array => [
+                    'planning'          => null,
+                    'aircraftSelection' => $this->ofpAircraftSelection($flight, $user, $bid?->id),
+                ],
+            );
         }
 
         $result = $this->skylightSimBriefService->begin(
@@ -529,16 +548,20 @@ class SimBriefController
 
         $result->load(['aircraft.airport', 'aircraft.subfleet', 'flight.airline', 'flight.arr_airport', 'flight.dpt_airport', 'flight.alt_airport']);
 
-        return inertia('Ofp/Simbrief/Planning', [
-            'planning' => SimBriefPlanningData::fromModels(
-                $result,
-                $flight,
-                $result->aircraft,
-                $user,
-                $this->simBriefEmbedCapability->allowed(),
-            ),
-            'aircraftSelection' => $this->ofpAircraftSelection($flight, $user, $bid?->id),
-        ]);
+        return response()->themed(
+            'Ofp/Simbrief/Planning',
+            'ofp.planning',
+            spa: fn (): array => [
+                'planning' => SimBriefPlanningData::fromModels(
+                    $result,
+                    $flight,
+                    $result->aircraft,
+                    $user,
+                    $this->simBriefEmbedCapability->allowed(),
+                ),
+                'aircraftSelection' => $this->ofpAircraftSelection($flight, $user, $bid?->id),
+            ],
+        );
     }
 
     public function skylightApiCode(Request $request, string $staticId): JsonResponse
@@ -575,18 +598,34 @@ class SimBriefController
         ]);
     }
 
-    public function skylightBriefing(Request $request, string $id): InertiaResponse
+    public function skylightBriefing(Request $request, string $id): InertiaResponse|View
     {
         /** @var User $user */
         $user = $request->user();
         $briefing = $this->skylightSimBriefService->briefingFor($user, $id);
 
-        return inertia('Ofp/Simbrief/Briefing', [
-            'briefing' => SimBriefBriefingData::fromModel(
+        // Built once, on demand: both the page props and the render hook read it.
+        $data = null;
+        $briefingData = function () use (&$data, $briefing, $user): SimBriefBriefingData {
+            return $data ??= SimBriefBriefingData::fromModel(
                 $briefing,
                 $user->bids()->where('flight_id', $briefing->flight_id)->first(),
-            ),
-        ]);
+            );
+        };
+
+        return response()->themed(
+            'Ofp/Simbrief/Briefing',
+            'ofp.briefing',
+            spa: fn (): array => ['briefing' => $briefingData()],
+            renderHooks: fn (): array => [
+                new RenderingBriefingActions(
+                    $briefingData()->flight,
+                    $briefingData()->bid,
+                    $briefingData(),
+                    $briefingData()->aircraft,
+                ),
+            ],
+        );
     }
 
     public function skylightCancel(Request $request, string $id): JsonResponse

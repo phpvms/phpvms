@@ -42,7 +42,9 @@ class InviteForm
 
                 Toggle::make('email_link')
                     ->label(__('invites.email_link'))
-                    ->helperText(__('filament.invite_email_link_hint'))
+                    ->belowLabel(__('filament.invite_email_link_hint'))
+                    ->columnSpanFull()
+                    ->inlineLabel()
                     ->disabled(fn (Get $get): bool => $get('email') === null || $get('email') === '')
                     ->offIcon(Phosphor::XLight)
                     ->offColor('danger')

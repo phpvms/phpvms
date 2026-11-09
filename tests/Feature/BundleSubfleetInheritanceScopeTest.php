@@ -36,11 +36,11 @@ use Illuminate\Support\Facades\Log;
  * every test below creates its own bundle to keep inheritance isolated.
  */
 beforeEach(function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', false);
+    updateSetting('operations.only_company_aircraft', false);
 });
 
 /**

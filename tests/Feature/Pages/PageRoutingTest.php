@@ -12,9 +12,9 @@ use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 
 /**
- * `InstalledCheck` redirects every request to the installer while the user
- * table is empty, so a site has to have someone in it before any of this is
- * reachable at all.
+ * `InstalledCheck` answers every request with the "not set up" page while
+ * the user table is empty, so a site has to have someone in it before any of
+ * this is reachable at all.
  */
 function anInstalledSite(): User
 {
@@ -34,11 +34,11 @@ it('serves a page that claims the root', function (): void {
     $this->get('/')->assertOk()->assertViewIs('pages.index');
 });
 
-it('lets the installer redirect win over a page claiming the root', function (): void {
+it('lets the not-set-up page win over a page claiming the root', function (): void {
     Page::factory()->published()->claiming('/')->create();
 
     // No users at all: the site is not set up, and that outranks any content.
-    $this->get('/')->assertRedirect('system/install');
+    $this->get('/')->assertStatus(503)->assertHeaderMissing('Location');
 });
 
 it('falls through to the stock home page when the root page is not public', function (): void {
@@ -147,11 +147,11 @@ it('lets a real route beat a page that claims the same path', function (): void 
     // Saving is blocked by validation, but a row that got there another way must
     // still not shadow a registered route.
     Page::factory()->published()->create([
-        'path' => '/livemap',
+        'path' => '/live',
         'body' => 'CLAIMED-BY-A-PAGE',
     ]);
 
-    $this->get('/livemap')->assertOk()->assertDontSee('CLAIMED-BY-A-PAGE');
+    $this->get('/live')->assertOk()->assertDontSee('CLAIMED-BY-A-PAGE');
 });
 
 it('registers both fallbacks as serialisable controller routes', function (): void {

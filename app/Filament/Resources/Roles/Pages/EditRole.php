@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Roles\Pages;
 
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\Roles\RoleResource;
 use App\Models\Role;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Override;
 
 class EditRole extends EditRecord
 {
-    use ReversePrimaryButtons;
+    use HasSaveBar {
+        afterSave as saveBarAfterSave;
+    }
 
     protected static string $resource = RoleResource::class;
 
@@ -30,13 +33,10 @@ class EditRole extends EditRecord
      */
     protected array $selectedPermissions = [];
 
-    #[Override]
-    protected function getHeaderActions(): array
+    protected function saveBarDeleteAction(): ?Action
     {
-        return [
-            DeleteAction::make()
-                ->hidden(fn (Role $record): bool => RoleResource::isSuperAdmin($record)),
-        ];
+        return DeleteAction::make()
+            ->hidden(fn (Role $record): bool => RoleResource::isSuperAdmin($record));
     }
 
     /**
@@ -77,10 +77,10 @@ class EditRole extends EditRecord
         $role = $this->record;
 
         // The super-admin role's matrix is hidden; never wipe its grants.
-        if (!$role instanceof Role || RoleResource::isSuperAdmin($role)) {
-            return;
+        if ($role instanceof Role && !RoleResource::isSuperAdmin($role)) {
+            RoleResource::syncRolePermissions($role, $this->selectedPermissions);
         }
 
-        RoleResource::syncRolePermissions($role, $this->selectedPermissions);
+        $this->saveBarAfterSave();
     }
 }

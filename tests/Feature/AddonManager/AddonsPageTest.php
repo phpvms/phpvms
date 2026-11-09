@@ -7,6 +7,7 @@ use App\Addons\Support\BootCache;
 use App\Models\Addon;
 use App\Services\CronService;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -119,27 +120,25 @@ afterEach(function (): void {
     app(BootCache::class)->delete();
 });
 
-it('renders for an authorized admin and lists the catalog', function (): void {
+it('lists the catalog and local addons on the All tab', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
-        // The page lands on Installed; the catalog lives on the registry tab.
-        ->set('activeTab', 'browse')
+        ->set('activeTab', 'all')
         ->assertSuccessful()
-        ->assertSee('vmsACARS')
-        ->assertSee('SkyBank Finance')
-        ->assertSee('WeatherDeck');
+        ->assertCanSeeTableRecords(['phpvms/acars', 'skyops/skybank', 'weather/deck']);
 });
 
-it('counts browse, updates and installed tabs', function (): void {
+it('counts the all, installed, updates and not installed tabs', function (): void {
     fakeDefaultCatalog();
 
     $counts = addonsPageInstance(Livewire::test(AddonsPage::class))->tabCounts();
 
     expect($counts)->toBe([
-        'browse'    => 3,
-        'updates'   => 1,
+        'all'       => 3,
         'installed' => 1,
+        'updates'   => 1,
+        'available' => 2,
     ]);
 });
 
@@ -148,46 +147,81 @@ it('filters the Updates tab to addons with a newer catalog version', function ()
 
     Livewire::test(AddonsPage::class)
         ->set('activeTab', 'updates')
-        ->assertSee('vmsACARS')
-        ->assertDontSee('SkyBank Finance')
-        ->assertDontSee('WeatherDeck');
+        ->assertCanSeeTableRecords(['phpvms/acars'])
+        ->assertCanNotSeeTableRecords(['skyops/skybank', 'weather/deck']);
 });
 
-it('searches the listing by name', function (): void {
+it('lists only catalog addons that are not installed on the Not installed tab', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
-        ->set('activeTab', 'browse')
-        ->set('search', 'skybank')
-        ->assertSee('SkyBank Finance')
-        ->assertDontSee('WeatherDeck');
+        ->set('activeTab', 'available')
+        ->assertCanSeeTableRecords(['skyops/skybank', 'weather/deck'])
+        ->assertCanNotSeeTableRecords(['phpvms/acars']);
+});
+
+it('searches the listing by name and publisher', function (): void {
+    fakeDefaultCatalog();
+
+    Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'all')
+        ->searchTable('skybank')
+        ->assertCanSeeTableRecords(['skyops/skybank'])
+        ->assertCanNotSeeTableRecords(['weather/deck', 'phpvms/acars'])
+        ->searchTable('weather')
+        ->assertCanSeeTableRecords(['weather/deck'])
+        ->assertCanNotSeeTableRecords(['skyops/skybank']);
 });
 
 it('filters the listing by category', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
-        ->set('activeTab', 'browse')
-        ->set('category', 'Finance')
-        ->assertSee('SkyBank Finance')
-        ->assertDontSee('vmsACARS');
+        ->set('activeTab', 'all')
+        ->filterTable('category', 'Finance')
+        ->assertCanSeeTableRecords(['skyops/skybank'])
+        ->assertCanNotSeeTableRecords(['phpvms/acars']);
+});
+
+it('drives the table filters from the filter bar', function (): void {
+    fakeDefaultCatalog();
+
+    Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'all')
+        ->call('setCategoryFilter', 'Finance')
+        ->assertCanSeeTableRecords(['skyops/skybank'])
+        ->assertCanNotSeeTableRecords(['phpvms/acars'])
+        ->call('setCategoryFilter', 'Not a category')
+        ->assertCanSeeTableRecords(['phpvms/acars', 'skyops/skybank'])
+        ->call('toggleFilterFlag', 'hide_untested')
+        ->assertCanNotSeeTableRecords(['weather/deck'])
+        ->call('toggleFilterFlag', 'hide_untested')
+        ->assertCanSeeTableRecords(['weather/deck']);
+});
+
+it('hides untested addons that are not installed', function (): void {
+    fakeDefaultCatalog();
+
+    Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'all')
+        ->filterTable('hide_untested', true)
+        ->assertCanSeeTableRecords(['phpvms/acars', 'skyops/skybank'])
+        ->assertCanNotSeeTableRecords(['weather/deck']);
 });
 
 it('disables the install action for an incompatible addon', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
-        ->set('activeTab', 'browse')
-        ->call('select', 'weather/deck')
-        ->assertActionDisabled('install');
+        ->set('activeTab', 'available')
+        ->assertActionDisabled(TestAction::make('install')->table('weather/deck'));
 });
 
 it('labels the primary action "Update to vX" for an installed addon with a newer version', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
-        ->call('select', 'phpvms/acars')
-        ->assertSee('Update to v2.2.0');
+        ->assertActionHasLabel(TestAction::make('install')->table('phpvms/acars'), 'Update to v2.2.0');
 });
 
 it('disables install for a catalog entry that carries no installable version', function (): void {
@@ -199,29 +233,40 @@ it('disables install for a catalog entry that carries no installable version', f
     ]]], 200)]);
 
     Livewire::test(AddonsPage::class)
-        ->set('activeTab', 'browse')
-        ->call('select', 'empty/pkg')
-        ->assertActionDisabled('install');
+        ->set('activeTab', 'available')
+        ->assertActionDisabled(TestAction::make('install')->table('empty/pkg'));
 });
 
 it('disables an addon reactively without a page redirect', function (): void {
     fakeDefaultCatalog();
+    // Up to date, so Disable is the card's primary action rather than a menu item.
+    Addon::query()->where('registry_id', 'phpvms/acars')->update(['version' => '2.2.0']);
 
     Livewire::test(AddonsPage::class)
-        ->call('disable', 'vmsacars')
+        ->callAction(TestAction::make('disable')->table('phpvms/acars'))
         ->assertNoRedirect();
 
     expect(Addon::query()->where('registry_id', 'phpvms/acars')->value('enabled'))->toBeFalsy();
 });
 
-it('hides disable and delete for a bundled installed addon', function (): void {
+it('keeps enable and disable in the menu while an update is the primary action', function (): void {
+    fakeDefaultCatalog();
+
+    Livewire::test(AddonsPage::class)
+        ->assertActionHidden(TestAction::make('disable')->table('phpvms/acars'))
+        ->callAction(TestAction::make('disableFromMenu')->table('phpvms/acars'));
+
+    expect(Addon::query()->where('registry_id', 'phpvms/acars')->value('enabled'))->toBeFalsy();
+});
+
+it('cannot disable or delete a bundled installed addon', function (): void {
     fakeDefaultCatalog();
     Addon::query()->where('registry_id', 'phpvms/acars')->update(['bundled' => true]);
 
     Livewire::test(AddonsPage::class)
-        ->call('select', 'phpvms/acars')
-        ->assertSee('bundled with phpVMS')
-        ->assertDontSee('>Disable<');
+        ->assertActionHidden(TestAction::make('delete')->table('phpvms/acars'))
+        ->assertActionHidden(TestAction::make('disable')->table('phpvms/acars'))
+        ->assertActionHidden(TestAction::make('disableFromMenu')->table('phpvms/acars'));
 });
 
 it('scrubs a non-http repository url from an untrusted catalog entry', function (): void {
@@ -233,9 +278,9 @@ it('scrubs a non-http repository url from an untrusted catalog entry', function 
         'version'       => '1.0.0',
     ]]], 200)]);
 
-    $row = addonsPageInstance(
-        Livewire::test(AddonsPage::class)->call('select', 'evil/pkg')
-    )->selected();
+    $row = addonsPageInstance(Livewire::test(AddonsPage::class))
+        ->allEntries()
+        ->firstWhere('id', 'evil/pkg');
 
     expect($row['repository_url'])->toBe('');
 });
@@ -251,9 +296,8 @@ it('dispatches the install job when a queue worker will process it', function ()
     Bus::fake();
 
     Livewire::test(AddonsPage::class)
-        ->set('activeTab', 'browse')
-        ->call('select', 'skyops/skybank')
-        ->callAction('install', ['run_migrations' => true]);
+        ->set('activeTab', 'available')
+        ->callAction(TestAction::make('install')->table('skyops/skybank'), ['run_migrations' => true]);
 
     Bus::assertDispatched(
         InstallAddonJob::class,
@@ -263,80 +307,18 @@ it('dispatches the install job when a queue worker will process it', function ()
     );
 });
 
-/**
- * Official add-ons lead the shelf. The flag is provenance only — it never
- * changes what can be installed, just what a browsing operator meets first.
- */
-it('sorts official addons above the rest while browsing', function (): void {
-    // skybank sorts first alphabetically; the official flag has to beat that.
+it('orders the cards A to Z by name, ignoring case and the official flag', function (): void {
     Http::fake(['*' => Http::response(['data' => [
-        ['registryId' => 'skyops/skybank', 'name' => 'SkyBank Finance', 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '1.0.3'],
         ['registryId' => 'phpvms/acars', 'name' => 'vmsACARS', 'official' => true, 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '2.2.0'],
+        ['registryId' => 'b/upper', 'name' => 'SkyBank Finance', 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '1.0.3'],
+        ['registryId' => 'c/lower', 'name' => 'bank', 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '1.0.0'],
+        ['registryId' => 'd/incompatible', 'name' => 'Alpha', 'versions' => ['php' => '8.0', 'phpvms' => '999.0'], 'version' => '1.0.0'],
     ]], 200)]);
 
-    $page = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse'));
+    $page = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'all'));
 
-    expect($page->listing()->pluck('name')->all())->toBe(['vmsACARS', 'SkyBank Finance']);
-});
-
-it('drops the official weighting once a search is typed', function (): void {
-    // Both match "a"; with the shelf weighting gone they fall back to name order,
-    // so the community package leads. A lookup ranks by match, not by publisher.
-    Http::fake(['*' => Http::response(['data' => [
-        ['registryId' => 'skyops/skybank', 'name' => 'Bank', 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '1.0.3'],
-        ['registryId' => 'phpvms/acars', 'name' => 'Charts', 'official' => true, 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '2.2.0'],
-    ]], 200)]);
-
-    $page = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse')->set('search', 'a'));
-
-    expect($page->listing()->pluck('name')->all())->toBe(['Bank', 'Charts']);
-});
-
-it('pages the listing ten at a time', function (): void {
-    Http::fake(['*' => Http::response(['data' => collect(range(1, 14))
-        ->map(fn (int $n): array => [
-            'registryId' => 'vendor/pkg'.str_pad((string) $n, 2, '0', STR_PAD_LEFT),
-            'name'       => 'Package '.str_pad((string) $n, 2, '0', STR_PAD_LEFT),
-            'versions'   => ['php' => '8.0', 'phpvms' => '1.0'],
-            'version'    => '1.0.0',
-        ])->all()], 200)]);
-
-    $component = Livewire::test(AddonsPage::class)->set('activeTab', 'browse');
-    $page = addonsPageInstance($component);
-
-    expect($page->listing())->toHaveCount(14)
-        ->and($page->paginator()->count())->toBe(10)
-        ->and($page->paginator()->firstItem())->toBe(1);
-
-    $component->set('page', 2);
-
-    expect(addonsPageInstance($component)->paginator()->count())->toBe(4);
-});
-
-it('returns to the first page when a filter narrows the listing', function (): void {
-    fakeDefaultCatalog();
-
-    $component = Livewire::test(AddonsPage::class)
-        ->set('page', 3)
-        ->set('search', 'skybank');
-
-    expect(addonsPageInstance($component)->page)->toBe(1);
-});
-
-it('splits installed addons by enable state', function (): void {
-    fakeDefaultCatalog();
-    Addon::query()->where('registry_id', 'phpvms/acars')->update(['enabled' => false]);
-
-    $component = Livewire::test(AddonsPage::class)->set('activeTab', 'installed');
-
-    expect(addonsPageInstance($component)->stateCounts())
-        ->toMatchArray(['all' => 1, 'enabled' => 0, 'disabled' => 1]);
-
-    $component->set('state', 'enabled');
-    expect(addonsPageInstance($component)->listing())->toHaveCount(0);
-
-    $component->set('state', 'disabled');
-    expect(addonsPageInstance($component)->listing()->pluck('name')->all())->toBe(['vmsACARS']);
+    expect($page->listing()->pluck('name')->values()->all())
+        ->toBe(['Alpha', 'bank', 'SkyBank Finance', 'vmsACARS']);
 });
 
 /**
@@ -363,7 +345,7 @@ it('warns on the page when the catalog it is showing is stale', function (): voi
 
     $component
         ->assertSee(__('addon-manager::addons.showing_cached_catalog'))
-        ->assertSee('vmsACARS');
+        ->assertCanSeeTableRecords(['phpvms/acars']);
 });
 
 /**
@@ -374,14 +356,14 @@ it('warns on the page when the catalog it is showing is stale', function (): voi
 it('tints every monogram plate, by category or by id', function (): void {
     fakeDefaultCatalog();
 
-    $rows = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse'))
+    $rows = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'all'))
         ->allEntries()
         ->keyBy('id');
 
     expect($rows->pluck('tint')->filter())->toHaveCount($rows->count());
 
     // Same id, same hue, every render — the plate must not flicker between pages.
-    $again = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse'))
+    $again = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'all'))
         ->allEntries()
         ->keyBy('id');
 

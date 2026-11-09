@@ -1,6 +1,6 @@
 @section('scripts')
     @parent
-    @if (setting('bids.block_aircraft', false))
+    @if (setting('operations.block_aircraft', false))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const bidModal = new bootstrap.Modal(document.getElementById('bidModal'));

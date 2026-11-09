@@ -3,13 +3,15 @@
 namespace App\Filament\Resources\Airlines\Pages;
 
 use App\Filament\Concerns\AutosavesFields;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\HasRelationManagerTabs;
+use App\Filament\Concerns\HasSaveBar;
 use App\Filament\Resources\Airlines\AirlineResource;
 use App\Filament\Resources\Airlines\Schemas\AirlineForm;
 use App\Models\Airline;
 use App\Models\File;
 use App\Services\FileService;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -19,7 +21,8 @@ use Override;
 class EditAirline extends EditRecord
 {
     use AutosavesFields;
-    use ReversePrimaryButtons;
+    use HasRelationManagerTabs;
+    use HasSaveBar;
 
     protected static string $resource = AirlineResource::class;
 
@@ -53,11 +56,15 @@ class EditAirline extends EditRecord
         return $this->reversePrimaryButtons(parent::getFormActions());
     }
 
+    protected function saveBarDeleteAction(): ?Action
+    {
+        return DeleteAction::make()->icon(Phosphor::TrashLight);
+    }
+
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()->icon(Phosphor::TrashLight),
             ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight)->before(function (Airline $record): void {
                 $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);

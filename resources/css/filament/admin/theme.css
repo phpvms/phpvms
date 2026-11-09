@@ -110,8 +110,8 @@
   /* Type scale. --text-sm is the workhorse: table cells, buttons, inputs. */
   --text-xs: 11px;
   --text-xs--line-height: 15px;
-  --text-sm: 12.5px;
-  --text-sm--line-height: 17px;
+  --text-sm: 13.5px;
+  --text-sm--line-height: 18px;
   --text-3xl: 21px;
   --text-3xl--line-height: 26px;
 
@@ -298,7 +298,7 @@
  * sizes most components via the text tokens above; this catches everything
  * that just inherits. */
 .fi-body {
-  @apply text-[13px] leading-[1.45];
+  @apply text-[14px] leading-[1.45];
 }
 
 /* Inconsolata sets a smaller x-height than IBM Plex Sans, so mono runs read
@@ -322,7 +322,9 @@
 /* The end padding leaves room for the notification badge, which Filament
  * hangs half outside the bell's right edge. */
 .fi-topbar {
-  @apply h-11 min-h-11 bg-[#22272e] border-b-2 border-b-(--primary-600) gap-3.5 items-stretch;
+  @apply h-11 min-h-11 border-b-2 gap-3.5 items-stretch;
+  background: var(--chrome-top);
+  border-bottom-color: color-mix(in srgb, var(--primary-600) 55%, var(--chrome-top));
   padding-inline: 0 20px;
 }
 
@@ -406,7 +408,7 @@
 }
 
 .fi-section-header-heading {
-  @apply text-xs font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
   /* Vendor sets its own line-height on the h3, which survives `text-xs` and
    * makes the band 9px taller than the .panel__head it has to match. */
   line-height: var(--text-xs--line-height);
@@ -489,7 +491,7 @@
  * painting text outside the ink scale.
  * ------------------------------------------------------------------------- */
 .fi-fo-field-label {
-  @apply text-[11.5px] text-(--ink-2);
+  @apply text-[12.5px] text-(--ink-2);
   font-weight: 550;
 }
 
@@ -593,7 +595,7 @@
 }
 
 .fi-section-header-description {
-  @apply text-[12px] text-(--ink-3);
+  @apply text-[13px] text-(--ink-3);
   text-transform: none;
 }
 
@@ -610,13 +612,20 @@
  * the global table skin already covers.
  * ------------------------------------------------------------------------- */
 .fi-tabs {
-  @apply gap-1 rounded-none border-b border-b-(--line) p-0 shadow-none;
+  @apply gap-1 rounded-none border-b-0 p-0 shadow-none;
   background: transparent;
   --tw-ring-shadow: 0 0 #0000;
+  /* The items' -1px margin pokes 1px past the strip, which made the
+   * overflow-x:auto strip grow a vertical scrollbar. The hairline is an inset
+   * shadow in a 1px bottom padding instead of a border, so the items sit
+   * inside the scrollable box and the underline still overlays the rule. */
+  padding-bottom: 1px;
+  box-shadow: inset 0 -1px 0 var(--line);
+  overflow-y: hidden;
 }
 
 .fi-tabs .fi-tabs-item {
-  @apply rounded-none bg-transparent py-1.75 px-2.5 text-[12.5px] font-medium text-(--ink-3);
+  @apply rounded-none bg-transparent py-1.75 px-2.5 text-[13.5px] font-medium text-(--ink-3);
   /* Sits on the nav's 1px rule; the active underline replaces it. */
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
@@ -650,6 +659,161 @@
 }
 
 /* ---------------------------------------------------------------------------
+ * Folder tabs on the banner's bottom edge (direction E's .e-tabs). A tab
+ * strip that is the first thing under the page header (resource list tabs,
+ * uncontained schema tabs) is lifted over the banner's reserved 34px strip:
+ * 30px tabs with 7px top radii, the active one 34px tall in the page canvas
+ * with 8px inverse-radius flares, so it and the content below read as one
+ * sheet. Contained tabs (inside a card) keep the underline skin above.
+ * ------------------------------------------------------------------------- */
+.fi-page-header-main-ctn:has(
+  .fi-page-content
+    > .fi-sc:first-child
+    > .fi-grid-col:first-child
+    > .fi-sc-component:first-child
+    > .fi-sc-tabs:not(.fi-contained)
+) {
+  gap: 0;
+}
+
+.fi-page-header-main-ctn:has(
+    .fi-page-content
+      > .fi-sc:first-child
+      > .fi-grid-col:first-child
+      > .fi-sc-component:first-child
+      > .fi-sc-tabs:not(.fi-contained)
+  )
+  > .fi-header {
+  /* 18px under the title row, then the 34px tab strip. */
+  padding-bottom: 52px;
+}
+
+.fi-page-content
+  > .fi-sc:first-child
+  > .fi-grid-col:first-child
+  > .fi-sc-component:first-child
+  > .fi-sc-tabs:not(.fi-contained) {
+  position: relative;
+  z-index: 3;
+  margin: -34px calc(-1 * var(--page-pad)) 0;
+}
+
+/* The 34px height and the 10px strip inset sit on the strip itself, not on
+ * .fi-sc-tabs: that box also holds the tab panels, which must grow the sheet. */
+.fi-sc-tabs:not(.fi-contained) > .fi-tabs {
+  @apply mx-0 h-8.5 flex-none w-full items-end gap-1 border-b-0 p-0;
+  padding-inline: 10px;
+  overflow: visible;
+}
+
+/* <x-admin.banner-tabs>: the same strip for custom pages that cannot use
+ * Filament's tabs. Everything below that lists both selectors is one
+ * definition shared by the two. */
+.banner-tabs {
+  @apply relative z-3 flex flex-none items-end gap-1 overflow-visible;
+  height: 34px;
+  margin-top: -34px;
+  padding-inline: 10px;
+}
+
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item,
+.banner-tab {
+  @apply relative inline-flex h-[30px] items-center gap-1.5 whitespace-nowrap rounded-t-[7px] rounded-b-none px-3.5 py-0 text-[14px] leading-[1.45] font-medium;
+  margin-bottom: 0;
+  border-bottom: 0;
+  /* AA (4.5:1) on every banner gradient stop, light and dark: >=5.0 measured. */
+  color: rgb(255 255 255 / 0.88);
+}
+
+/* Vendor colours the label and icon span themselves (gray-500, primary-700 when
+ * active), which would override the tab's own colour; take it from the tab. */
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item
+  .fi-tabs-item-label,
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item > .fi-icon {
+  color: inherit;
+}
+
+.banner-tab svg {
+  @apply size-3.5;
+}
+
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item:hover,
+.banner-tab:hover {
+  background-color: rgb(255 255 255 / 0.13);
+  color: #fff;
+}
+
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active,
+.banner-tab[aria-selected="true"] {
+  @apply h-[34px] font-semibold;
+  z-index: 1;
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item.fi-active::before,
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::after,
+.banner-tab[aria-selected="true"]::before,
+.banner-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+}
+
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item.fi-active::before,
+.banner-tab[aria-selected="true"]::before {
+  left: -8px;
+  background: radial-gradient(circle at 0 0, transparent 7.5px, var(--surface) 8px);
+}
+
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item.fi-active::after,
+.banner-tab[aria-selected="true"]::after {
+  right: -8px;
+  background: radial-gradient(circle at 100% 0, transparent 7.5px, var(--surface) 8px);
+}
+
+/* Counts: translucent white on the fill (>=4.8:1 on the lightest stop; the
+ * mockup's .72 gives 3.9), accent on the active tab. */
+.fi-page-content > .fi-sc:first-child .fi-sc-tabs:not(.fi-contained) .fi-tabs-item .fi-badge,
+.banner-tab em {
+  @apply border-transparent bg-transparent p-0 font-mono text-[12px] leading-[1.45] font-normal tracking-normal;
+  color: rgb(255 255 255 / 0.85);
+}
+
+.banner-tab em {
+  @apply font-mono text-[12px] not-italic;
+}
+
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item
+  .fi-badge::before {
+  display: none;
+}
+
+.fi-page-content
+  > .fi-sc:first-child
+  .fi-sc-tabs:not(.fi-contained)
+  .fi-tabs-item.fi-active
+  .fi-badge,
+.banner-tab[aria-selected="true"] em {
+  color: var(--primary-600);
+}
+
+/* ---------------------------------------------------------------------------
  * Workspace & page header. 16px padding around the page, a 14px gap between
  * the header and whatever comes below it. Filament splits its own 32px
  * padding across .fi-main (inline) and .fi-page-header-main-ctn (block) —
@@ -658,11 +822,14 @@
  * is a separate pass (see the console tokens comment).
  * ------------------------------------------------------------------------- */
 .fi-main {
-  @apply p-4;
+  /* Edge to edge: the banner and the page sheet touch the window edges.
+   * --page-pad stays as the banner's bleed, now nil. */
+  @apply flex flex-col p-0;
+  --page-pad: 0px;
 }
 
 .fi-page {
-  @apply flex flex-col gap-3.5;
+  @apply flex flex-1 flex-col gap-3.5;
 }
 
 .fi-page-header-main-ctn {
@@ -687,11 +854,15 @@
    * (x-float .flip, no teleport), so a clipping ancestor here both flips the
    * panel upward and cuts it off. The dot-grid ::after clips itself to the
    * radius instead. */
-  @apply relative items-start rounded-xl min-h-27;
-  padding: 14px 18px 17px 22px;
-  border: 1px solid color-mix(in oklab, var(--primary-600) 55%, black);
+  /* Compact full-bleed banner (direction E's .e-banner): square, edge to
+   * edge through .fi-main's padding, crumbs row over a title row. The strip
+   * for folder tabs (below) is reserved when the page has one. */
+  @apply relative items-start rounded-none;
+  margin: calc(-1 * var(--page-pad)) calc(-1 * var(--page-pad)) 0;
+  padding: 12px 20px 14px;
+  border: 0;
   background-color: color-mix(in oklab, var(--primary-600) 78%, var(--ink));
-  box-shadow: inset 0 1px 0 color-mix(in oklab, white 22%, transparent);
+  box-shadow: none;
 }
 
 /* Flux's hue travel (+30 → -25 around the accent) with lightness clamped so
@@ -717,9 +888,7 @@
  * rather than the light gradient's mid-tones; darker background only helps
  * the white/84%-white text's contrast, never hurts it. */
 .dark .fi-header {
-  border-color: color-mix(in oklab, var(--primary-600) 40%, black);
   background-color: color-mix(in oklab, var(--primary-600) 58%, #0a0e13);
-  box-shadow: inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
 }
 
 @supports (color: oklch(from red l c h)) {
@@ -735,28 +904,38 @@
 
 /* Flux's dot-grid overlay, verbatim: 1px white dots, 20px grid, 10% layer. */
 .fi-header::after {
-  @apply absolute inset-0 pointer-events-none opacity-10;
+  @apply absolute inset-0 pointer-events-none opacity-13;
   content: "";
   border-radius: inherit;
   background-image: radial-gradient(rgb(255 255 255 / 0.8) 1px, transparent 1px);
   background-size: 20px 20px;
+  /* Fades out downward so the tab strip sits on a calm fill. */
+  mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
+}
+
+/* The banner's children sit above the dot grid. */
+.fi-header > * {
+  @apply relative z-[1];
 }
 
 .fi-header-heading {
-  @apply text-[21px] font-semibold tracking-[-0.02em] leading-[1.2] text-white;
+  /* Banner standard: 34px/1. Word titles are sans; identifiers (below) are mono. */
+  @apply font-sans text-[34px] font-semibold tracking-[-0.01em] leading-none text-white;
 }
 
 /* Breadcrumbs -> eyebrow (mockup .page-head__eyebrow, theme.css:1064-1078).
  * Re-enabled panel-wide; the band reveals it above the h1. These are
  * unlayered, so they beat the vendor's layered `hidden sm:block` outright. */
 .fi-header .fi-breadcrumbs {
-  @apply block mb-0.75;
+  @apply flex items-center;
+  grid-column: 1 / -1;
+  min-height: 26px;
 }
 
 /* Pages without breadcrumbs (Dashboard) reserve the eyebrow's 20px
  * (17px row + 3px gap) so the heading sits at the same y on every page. */
 .fi-header:not(:has(.fi-breadcrumbs)) .fi-header-heading {
-  @apply mt-5;
+  margin-top: 26px;
 }
 
 .fi-breadcrumbs-list {
@@ -770,8 +949,8 @@
 /* Inverted onto the hero fill (mockup solid: secondary text is white mixed
  * back toward the accent, never gray — theme.css:565-578). */
 .fi-breadcrumbs-item-label {
-  @apply text-[10.5px] font-semibold tracking-[0.13em] uppercase;
-  color: color-mix(in oklab, white 84%, var(--primary-600));
+  @apply text-[10.5px] font-semibold tracking-[0.1em] uppercase;
+  color: rgb(255 255 255 / 0.7);
 }
 
 .fi-breadcrumbs-item-separator {
@@ -784,6 +963,46 @@
  * the figures in the bottom-right corner, beside the actions slot. */
 .fi-header > :first-child {
   @apply min-w-0 flex-1;
+  /* Crumbs row on top; title and its stat links share a baseline below. */
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 28px;
+  align-items: baseline;
+}
+
+.fi-header-heading-ident {
+  @apply font-mono font-medium;
+}
+
+.fi-header-heading {
+  grid-column: 1;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.12);
+}
+
+.fi-header-subheading {
+  grid-column: 2;
+}
+
+/* Banners with no folder-tab strip under them: the subheading drops to its
+ * own row under the title, and the band gets more bottom padding so the
+ * title does not sit on the sheet's edge. */
+.fi-page:not(.fi-pirep-record)
+  .fi-page-header-main-ctn:not(
+    :has(
+      .fi-page-content
+        > .fi-sc:first-child
+        > .fi-grid-col:first-child
+        > .fi-sc-component:first-child
+        > .fi-sc-tabs:not(.fi-contained)
+    )
+  )
+  > .fi-header {
+  padding-bottom: 22px;
+
+  & .fi-header-subheading {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+  }
 }
 
 /* Vendor caps the subline at a 672px prose measure, which keeps the figures
@@ -807,11 +1026,11 @@
  * inside .fi-header-subheading's <p> as <span class="head-metrics"> — the
  * inline counts replacing the PIREP stat cards. */
 .fi-header-subheading .head-metrics {
-  @apply flex items-baseline flex-wrap mt-1.5;
+  @apply flex items-baseline flex-wrap;
 }
 
 .head-metrics > span {
-  @apply flex items-baseline gap-1.5 px-3.5 border-l border-l-(--line);
+  @apply flex items-baseline gap-1.5 px-3 border-l border-l-(--line);
 }
 
 .head-metrics > span:first-child {
@@ -819,7 +1038,7 @@
 }
 
 .head-metrics b {
-  @apply font-mono text-[16px] font-semibold tabular-nums;
+  @apply text-[15px] font-semibold tabular-nums;
 }
 
 .head-metrics em {
@@ -850,7 +1069,7 @@
 }
 
 .fi-header-subheading .hero-sub__figures b {
-  @apply font-mono text-[16px] font-semibold tabular-nums text-white;
+  @apply text-[15px] font-semibold tabular-nums text-white;
 }
 
 .fi-header-subheading .hero-sub__figures em {
@@ -858,8 +1077,290 @@
   color: color-mix(in oklab, white 84%, var(--primary-600));
 }
 
+/* ---------------------------------------------------------------------------
+ * PIREP record banner (direction E's .e-rbanner/.e-rtitle). Filament's header
+ * still renders it; ViewPirep feeds the heading (ident, route, chip) and the
+ * subheading (back button, filed line, route arc) from partials, and the page
+ * carries .fi-pirep-record. Title and filed line stack instead of sharing a
+ * baseline row.
+ * ------------------------------------------------------------------------- */
+.fi-pirep-record .fi-header > :first-child {
+  grid-template-columns: minmax(0, 1fr);
+  /* Back button and arc position against the banner, not this column. */
+  position: static;
+}
+
+.fi-pirep-record .fi-header-subheading {
+  /* Not a containing block: the back button and arc position against the
+   * banner itself. */
+  position: static;
+  grid-column: 1;
+  display: block;
+  margin-top: 8px;
+}
+
+.fi-pirep-record .fi-header-heading {
+  @apply flex items-center gap-3.5 normal-case;
+  margin-top: 8px;
+  line-height: 1;
+}
+
+.fi-pirep-record .rec-ident {
+  @apply font-mono text-[34px] font-medium;
+  letter-spacing: -0.01em;
+}
+
+.fi-pirep-record .rec-route {
+  @apply inline-flex items-center gap-1.5 font-mono text-[22px];
+  font-weight: 450;
+  letter-spacing: normal;
+  color: rgb(255 255 255 / 0.9);
+}
+
+.fi-pirep-record .rec-route__arrow {
+  @apply size-5;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.fi-pirep-record .fi-header-heading .chip {
+  @apply text-[11px] normal-case tracking-normal;
+}
+
+.fi-pirep-record .rec-filed {
+  color: rgb(255 255 255 / 0.82);
+}
+
+/* "Back to list" sits in the crumbs row; the crumbs make room for it. */
+.fi-pirep-record .rec-back {
+  @apply absolute inline-flex items-center gap-1.5 h-[26px] rounded-md px-2.5 text-[12.5px] font-medium whitespace-nowrap;
+  border-width: 1px;
+  left: 20px;
+  top: 12px;
+  color: #fff;
+  background-color: rgb(255 255 255 / 0.12);
+  border-color: rgb(255 255 255 / 0.34);
+}
+
+.fi-pirep-record .rec-back svg {
+  @apply size-3.5;
+}
+
+.fi-pirep-record .rec-back:hover {
+  background-color: rgb(255 255 255 / 0.2);
+  border-color: rgb(255 255 255 / 0.55);
+}
+
+.fi-pirep-record .fi-header .fi-breadcrumbs {
+  padding-left: 124px;
+}
+
+.fi-pirep-record .rec-arc {
+  @apply absolute z-[1];
+  right: 20px;
+  top: 40px;
+  width: min(36%, 420px);
+  height: 96px;
+  color: rgb(255 255 255 / 0.78);
+  pointer-events: none;
+}
+
+.fi-pirep-record .rec-arc svg {
+  @apply absolute inset-x-0 top-0 w-full overflow-visible;
+  height: 54px;
+}
+
+.fi-pirep-record .rec-arc__ap {
+  @apply absolute font-mono text-[15px] font-medium leading-[1.1] text-white;
+  top: 60px;
+}
+
+.fi-pirep-record .rec-arc__ap small {
+  @apply block mt-0.5 font-sans text-[11px] font-normal tracking-normal;
+  color: rgb(255 255 255 / 0.7);
+}
+
+.fi-pirep-record .rec-arc__ap--l {
+  left: 0;
+}
+
+.fi-pirep-record .rec-arc__ap--r {
+  right: 0;
+  text-align: right;
+}
+
+.fi-pirep-record .rec-arc__mid {
+  @apply absolute whitespace-nowrap font-mono text-[12px];
+  left: 50%;
+  top: 62px;
+  transform: translateX(-50%);
+  color: rgb(255 255 255 / 0.85);
+}
+
+/* Room for the arc (top 40 + 96 tall) under the filed line. */
+@media (min-width: 1101px) {
+  .fi-pirep-record .fi-header {
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .fi-pirep-record .rec-arc {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP record body (direction E's .e-rec): folder tabs on the banner's
+ * bottom edge, then a full-bleed sheet of a main pane and a 320px properties
+ * rail. No cards: regions are ruled, with 10.5px uppercase head bands.
+ * ------------------------------------------------------------------------- */
+.fi-pirep-record .fi-page-header-main-ctn {
+  gap: 0;
+}
+
+/* Reserve the 34px tab strip under the title row (list pages do the same). */
+.fi-pirep-record .fi-header {
+  padding-bottom: 52px;
+}
+
+.fi-pirep-record .fi-page-main {
+  padding: 0 var(--page-gutter);
+  background-color: var(--surface);
+}
+
+.fi-pirep-record .fi-page-content {
+  @apply gap-0;
+}
+
+.fi-pirep-record .rec {
+  @apply flex flex-1 flex-col;
+}
+
+.rec-sheet {
+  @apply grid flex-1 bg-(--surface);
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+@media (max-width: 1100px) {
+  .rec-sheet {
+    grid-template-columns: minmax(0, 1fr) 270px;
+  }
+}
+
+.rec-main {
+  @apply min-w-0;
+}
+
+/* The figures strip is a ruled row, not a bordered card. */
+.rec-main .overview {
+  @apply rounded-none border-0 border-b border-b-(--line);
+}
+
+.rec-main .overview__icon {
+  @apply hidden;
+}
+
+.rec-main .overview__cell {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 16px 20px 15px;
+}
+
+.rec-main .route-bar {
+  padding-inline: 20px;
+}
+
+.rec-main .route-string {
+  padding-inline: 20px;
+}
+
+.rec-rail {
+  @apply min-w-0 border-l border-l-(--line) bg-(--surface);
+}
+
+.rec-acts {
+  @apply flex gap-2 border-b border-b-(--line);
+  padding: 14px 16px;
+}
+
+.rec-acts .fi-btn {
+  @apply h-8 flex-1 justify-center;
+}
+
+.rec-rail__sec + .rec-rail__sec {
+  @apply border-t border-t-(--line);
+}
+
+.rec-rail__head {
+  @apply border-b border-b-(--line) bg-(--surface-2) px-4 py-2 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
+}
+
+.rec-props {
+  padding: 6px 10px 12px;
+}
+
+.rec-props > div {
+  @apply grid items-center gap-2 rounded-md px-1.5 py-1;
+  grid-template-columns: 92px minmax(0, 1fr);
+  min-height: 30px;
+}
+
+.rec-props dt {
+  @apply text-[12.5px] text-(--ink-3);
+}
+
+.rec-props dd {
+  @apply flex min-w-0 items-center gap-2 text-[13px] text-(--ink);
+}
+
+.rec-props__stack {
+  @apply grid min-w-0 leading-[1.25];
+}
+
+.rec-props__stack small {
+  @apply text-[11.5px] text-(--ink-3);
+}
+
+.rec-avatar {
+  @apply block size-8 flex-none rounded-lg border border-(--line) bg-(--sunken) object-cover;
+}
+
+.rec-avatar--sm {
+  @apply size-5 rounded-md;
+}
+
+.rec-who {
+  @apply flex items-center gap-2.5;
+  padding: 12px 16px 6px;
+}
+
+.rec-who b {
+  @apply block font-semibold;
+}
+
+.rec-who span {
+  @apply text-[12px] text-(--ink-3);
+}
+
+.rec-mini {
+  @apply grid grid-cols-2 gap-x-2 gap-y-3;
+  padding: 8px 16px 18px;
+}
+
+.rec-mini span {
+  @apply block text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
+}
+
+.rec-mini b {
+  @apply font-medium tabular-nums;
+}
+
+.rec-mini .chip {
+  @apply inline-flex w-fit;
+}
+
 .fi-header-actions-ctn {
-  @apply self-end;
+  /* Top-right, level with the crumbs row (E). */
+  @apply self-start;
 }
 
 .fi-header-actions-ctn .fi-ac {
@@ -976,7 +1477,7 @@
 }
 
 .fi-ta-header-heading {
-  @apply text-[11px] font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 .fi-ta-header-description {
@@ -1139,7 +1640,7 @@
  * Block padding only: a select's inline-end padding clears its chevron. */
 .fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-input,
 .fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-select-input {
-  @apply h-full py-0 text-[12.5px] leading-none;
+  @apply h-full py-0 text-[13.5px] leading-none;
 }
 
 /* A searchable select is not a form control at all: .fi-select-input is a div
@@ -1190,7 +1691,7 @@
  * Pagination footer (mockup .panel__foot, theme.css:1280-1282).
  * ------------------------------------------------------------------------- */
 .fi-pagination {
-  @apply py-1.75 px-3 border-t border-t-(--line-soft) text-[12px] text-(--ink-3);
+  @apply py-1.75 px-3 border-t border-t-(--line-soft) text-[13px] text-(--ink-3);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1294,29 +1795,86 @@
 }
 
 /* ---------------------------------------------------------------------------
+ * Chrome tokens (mockups/admin-hybrid hybrid.css:58-66, e.css). The sidebar
+ * and topbar stay graphite in both themes; only the topbar goes a step darker
+ * in dark mode. The accent is never hardcoded here -- it comes from the
+ * panel's --primary-600 at the point of use.
+ * ------------------------------------------------------------------------- */
+:root {
+  --chrome-rail: #1b1f24;
+  --chrome-top: #22272e;
+  --chrome-well: color-mix(in srgb, var(--chrome-rail) 55%, #000);
+  --chrome-hi: #2c333c;
+  --chrome-line: #333b45;
+  --chrome-ink: #e8edf3;
+  --chrome-dim: #8f9daf;
+  --chrome-faint: #6c7a8b;
+  --chrome-icon: #7e8b9b;
+  --chrome-accent-lit: color-mix(in oklab, var(--primary-600) 58%, white);
+}
+
+.dark {
+  --chrome-top: #1b1f24;
+}
+
+/* ---------------------------------------------------------------------------
  * Rail clock (resources/views/filament/shared/rail-clock.blade.php).
  *
- * Ticked by resources/js/apps/admin/utc-clock.js. Sits at the head of the rail,
- * the same 44px height as the topbar so the two chrome bands align — no rule
- * under it, the rail reads as one column top to bottom.
+ * Ticked by resources/js/apps/admin/utc-clock.js. Expanded it is E's
+ * .e-clockblock (e.css:29-34): a darker well, 27px mono time with faint
+ * seconds and a small UTC label. In the icon rail it drops to HH:MM at 15px
+ * on the same 44px band as the topbar.
  * ------------------------------------------------------------------------- */
 .fi-rail-clock {
-  @apply flex flex-col items-center justify-center h-11;
+  @apply relative flex flex-col items-start justify-center shrink-0 px-4 pt-3 pb-3.25;
+  background: var(--chrome-well);
+  border-bottom: 1px solid var(--chrome-line);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
+}
+
+.fi-rail-clock-face {
+  @apply flex flex-col items-start;
 }
 
 .fi-rail-clock time {
-  @apply font-mono text-[13px] leading-none tracking-[-0.01em];
-  font-weight: 550;
-  color: #e8edf3;
+  @apply font-mono text-[27px] leading-none tracking-[-0.02em];
+  font-weight: 500;
+  color: var(--chrome-ink);
 }
 
 .fi-rail-clock-sec {
-  color: #8f9daf;
+  color: var(--chrome-faint);
 }
 
 .fi-rail-clock-zone {
-  @apply mt-0.75 text-[8.5px] font-semibold uppercase tracking-[0.14em];
-  color: #8f9daf;
+  @apply mt-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] cursor-pointer bg-transparent border-0 p-0;
+  color: var(--chrome-faint);
+}
+
+.fi-rail-clock-zone:hover {
+  color: var(--chrome-ink);
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock {
+  @apply items-stretch p-0;
+  box-shadow: none;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock-face {
+  @apply items-center justify-center h-11;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock time {
+  @apply text-[15px] tracking-[-0.01em];
+  font-weight: 600;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock-sec {
+  @apply hidden;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-rail-clock-zone {
+  @apply mt-0.75 text-[8.5px];
 }
 
 /* ---------------------------------------------------------------------------
@@ -1391,30 +1949,163 @@
 
 /* Group labels read as section rules in the expanded state. */
 .fi-sidebar .fi-sidebar-group-label {
-  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em];
+  @apply text-[11.5px] font-semibold uppercase tracking-[0.07em];
   color: #8f9daf;
+}
+
+/* ---------------------------------------------------------------------------
+ * Expanded sidebar (mockups/admin-hybrid e.css:37-79): 30px icon + label
+ * rows, uppercase section headers with a rotating chevron, the active row on
+ * the hi chrome tone with an accent icon and a 2px accent bar on the edge.
+ * Only the group holding the active page starts open on a first visit; after
+ * that the saved open/closed state wins (resources/js/apps/admin/sidebar-shell.js).
+ * ------------------------------------------------------------------------- */
+.fi-sidebar.fi-sidebar-open .fi-sidebar-nav {
+  @apply gap-y-0 px-2 pt-2.5 pb-1.5;
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-nav::-webkit-scrollbar {
+  @apply hidden;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-nav-groups {
+  @apply mx-0 gap-y-0;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group {
+  @apply gap-y-0.5 mt-3;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group:first-child,
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group[data-group-label=""] {
+  @apply mt-0;
+}
+
+/* Section header: chevron leads, label follows, no module glyph. */
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-btn {
+  @apply h-6 gap-x-1 py-0 pe-2 ps-1 rounded-[4px];
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-btn:hover {
+  background: rgb(255 255 255 / 4%);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-btn > .fi-icon {
+  @apply hidden;
+}
+
+/* #aab6c4 on the graphite rail is ~7.8:1; --chrome-faint was ~3.7:1. */
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-label {
+  @apply text-[11.5px] font-semibold uppercase tracking-[0.1em];
+  color: #aab6c4;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-btn:hover .fi-sidebar-group-label {
+  color: var(--chrome-ink);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-collapse-btn {
+  @apply order-first m-0 w-4 h-4 p-0 shrink-0 bg-transparent;
+  rotate: 180deg;
+  transition: rotate 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group.fi-collapsed .fi-sidebar-group-collapse-btn {
+  rotate: 90deg;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-collapse-btn .fi-icon {
+  @apply w-3 h-3;
+  color: #aab6c4;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-group-items {
+  @apply gap-y-0.5 pt-0.5;
+}
+
+/* Item rows. */
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-btn {
+  @apply h-7.5 gap-x-2.5 px-2 py-0 justify-start rounded-[5px];
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-btn .fi-icon {
+  @apply w-4 h-4;
+  stroke-width: 1.5;
+  color: var(--chrome-icon);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-btn:hover,
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-btn:focus-visible {
+  background: rgb(255 255 255 / 6%);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-btn:hover .fi-sidebar-item-label,
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-btn:focus-visible .fi-sidebar-item-label {
+  color: var(--chrome-ink);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-btn:hover .fi-icon {
+  color: var(--chrome-icon);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-label {
+  @apply text-[14px];
+  font-weight: 450;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+  background: var(--chrome-hi);
+}
+
+.fi-sidebar.fi-sidebar-open
+  .fi-sidebar-item.fi-active
+  > .fi-sidebar-item-btn
+  .fi-sidebar-item-label {
+  @apply bg-transparent text-white;
+  font-weight: 600;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon {
+  color: var(--chrome-accent-lit);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item.fi-active > .fi-sidebar-item-btn::before {
+  @apply absolute w-0.5 rounded-r-[2px] content-[''];
+  inset-inline-start: -0.5rem;
+  top: 6px;
+  bottom: 6px;
+  background: var(--primary-600);
+}
+
+/* The counted badge reads as quiet text, like E's .hx-count. */
+.fi-sidebar.fi-sidebar-open .fi-sidebar-item-badge-ctn .fi-badge {
+  @apply bg-transparent ring-0 px-0 font-mono text-[11.5px];
+  color: var(--chrome-dim);
 }
 
 /* ---------------------------------------------------------------------------
  * Workspace navigator (resources/views/filament/shared/workspace-nav.blade.php).
  * ------------------------------------------------------------------------- */
 .fi-workspace-nav {
-  @apply flex items-stretch gap-3.5 min-w-0 flex-1;
+  @apply flex items-stretch gap-0 min-w-0 flex-1;
 }
 
 .fi-workspace-nav-module {
-  @apply flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.06em];
+  @apply flex items-center gap-2.25 text-[12.5px] font-semibold uppercase tracking-[0.1em];
   flex: none;
-  padding-inline: 2px 16px;
-  border-inline-end: 1px solid #333b45;
-  color: #e8edf3;
+  padding-inline: 14px 16px;
+  background: var(--chrome-hi);
+  border-inline-end: 1px solid var(--chrome-line);
+  color: var(--chrome-ink);
 }
 
 /* The module icon is the accent's lit variant — legible on graphite. */
 .fi-workspace-nav-module svg {
   @apply w-4 h-4;
   stroke-width: 1.75;
-  color: color-mix(in oklab, var(--primary-600) 58%, white);
+  color: var(--chrome-dim);
 }
 
 .fi-workspace-nav-tabs {
@@ -1427,9 +2118,9 @@
 }
 
 .fi-workspace-nav-tab {
-  @apply flex items-center gap-1.75 px-3.5 text-[12.5px] whitespace-nowrap border-b-2 border-b-transparent;
+  @apply relative flex items-center gap-2 px-3.5 text-[12.5px] font-medium whitespace-nowrap;
   flex: none;
-  color: #8f9daf;
+  color: var(--chrome-dim);
   transition:
     background-color 100ms,
     color 100ms;
@@ -1441,22 +2132,26 @@
 }
 
 .fi-workspace-nav-tab:hover {
-  @apply bg-[#2c333c];
-  color: #e8edf3;
+  background: rgb(255 255 255 / 4%);
+  color: var(--chrome-ink);
 }
 
-/* Selection is the only thing that takes the accent. */
+/* Selection is the only thing that takes the accent: a 2px underline that
+ * lands on the bar's own border (hybrid.css:195-196). */
 .fi-workspace-nav-tab[aria-current="page"] {
-  @apply text-white bg-[#2c333c] border-b-(--primary-600);
+  @apply text-white;
+  background: var(--chrome-hi);
 }
 
+.fi-workspace-nav-tab[aria-current="page"]::after {
+  @apply absolute inset-x-0 -bottom-0.5 h-0.5 content-[''];
+  background: var(--primary-600);
+}
+
+/* Count badge: accent fill, 3px radius (.hx-badge). */
 .fi-workspace-nav-tab-badge {
-  @apply font-mono text-[11.5px] px-1 rounded-[2px] bg-[#333b45];
-  color: #e8edf3;
-}
-
-.fi-workspace-nav-tab[aria-current="page"] .fi-workspace-nav-tab-badge {
-  @apply bg-(--primary-600) text-white;
+  @apply inline-grid place-items-center min-w-4 h-4 px-1 rounded-[3px] bg-(--primary-600) text-[10.5px] font-semibold text-white;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1527,6 +2222,69 @@
   @apply w-3.5 h-3.5;
   color: #8f9daf;
   flex: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Brand band (mockup e.css:20-26 .e-top). The switcher lives in a 44px band
+ * at the top of the sidebar: same height, background and 2px accent rule as
+ * the topbar, so the two read as one full-width bar. The band shows the
+ * brand mark alone in the icon rail.
+ * ------------------------------------------------------------------------- */
+.fi-topbar-start > .fi-sidebar-top {
+  display: contents;
+}
+
+/* The vendor's mobile drawer header repeats the logo the band now carries. */
+.fi-sidebar-header-ctn {
+  @apply hidden;
+}
+
+.fi-sidebar > .fi-sidebar-top {
+  @apply flex items-center shrink-0 h-11 min-h-11 px-2;
+  background: var(--chrome-top);
+  border-bottom: 2px solid color-mix(in srgb, var(--primary-600) 55%, var(--chrome-top));
+}
+
+.fi-sidebar-top .fi-brand-switcher {
+  @apply flex-1 min-w-0;
+  order: 0;
+}
+
+.fi-sidebar-top .fi-brand-switcher .fi-dropdown-trigger {
+  @apply w-full;
+}
+
+.fi-sidebar-top .fi-brandbtn {
+  @apply flex-1 min-w-0 h-8 px-1.5 rounded-[5px] border-0;
+}
+
+.fi-sidebar-top .fi-brandbtn-text {
+  @apply flex-1 min-w-0;
+}
+
+.fi-sidebar-top .fi-brandbtn-name,
+.fi-sidebar-top .fi-brandbtn-panel {
+  @apply truncate;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) > .fi-sidebar-top {
+  @apply justify-center px-0;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top .fi-brand-switcher {
+  @apply flex-none;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top .fi-brand-switcher .fi-dropdown-trigger {
+  @apply w-auto;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top .fi-brandbtn {
+  @apply flex-none px-1.5;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-top :is(.fi-brandbtn-text, .fi-brandbtn-chev) {
+  @apply hidden;
 }
 
 .fi-brand-switcher .fi-dropdown-panel {
@@ -1641,6 +2399,12 @@
   color: #e8edf3;
 }
 
+/* Filament's own search field is replaced by the command palette trigger
+ * (.cmdk-trigger, see the command palette block at the end of this file). */
+.fi-topbar .fi-global-search-ctn {
+  display: none;
+}
+
 /* Global search: slim dark box, matching the icon buttons either side. */
 .fi-topbar .fi-global-search-field {
   @apply w-52.5;
@@ -1677,7 +2441,7 @@
  * theme picker ahead of search, so `order` corrects it. The refresh button's
  * livewire root div carries no class of its own — `:has()` reaches it via
  * the icon-button's fi-clear-caches-btn class instead. */
-.fi-topbar-end > .fi-global-search-ctn {
+.fi-topbar-end > .cmdk-trigger {
   order: 1;
 }
 
@@ -1705,9 +2469,8 @@
  * measured in the live rail, it's what makes the collapsed state read as
  * loosely stacked icons instead of one rhythm. Zeroed here so item padding
  * (below) is the only spacing. The list also reserves scrollbar-gutter space
- * on its right, which shifts every icon ~8px left of the rail's centerline;
- * collapsed content is well under the viewport height, so nothing scrolls
- * and the reservation is pure misalignment. */
+ * on its right, which shifts every icon ~8px left of the rail's centerline
+ * even when nothing scrolls — see the nav rule below. */
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
   /* Full rail width so the row hit targets span edge to edge. The vendor
    * pairs a -8px inline margin with the nav padding zeroed above — reset
@@ -1718,33 +2481,56 @@
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
   /* Vendor 24px side padding shrinks the rows to 27px — zeroed so the
    * full-row hit targets and hover paint span the rail edge to edge. */
-  /* The full-row hit target makes the group <li> position:relative, which
-   * moves the flyout panel's containing block INSIDE this scroll container —
-   * so the vendor's overflow clipped every flyout at the rail edge (they
-   * escaped before only because their containing block was the fixed
-   * .fi-sidebar, an ancestor of the clipper). Both axes must be visible:
-   * one non-visible axis forces the other to compute auto.
-   * ponytail: rail loses its own scrollbar — fine until a viewport shorter
-   * than ~8 groups; revisit with a flyout teleport if that ever matters. */
-  @apply px-0 overflow-visible;
+  @apply px-0;
+  /* The vendor's overflow-y: auto stays: the full rail (clock, ten modules,
+   * back-to-site, account) is ~820px tall, so any laptop-height viewport
+   * needs it to scroll. Flyouts are not clipped by it because their
+   * containing block is .fi-sidebar, an ancestor of this scroller — which
+   * holds only while nothing between them is positioned (see the group rules
+   * below). No reserved gutter, and the bar itself is hidden like the open
+   * sidebar's: wheel, trackpad and touch still scroll it. */
   scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar {
+  @apply hidden;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group {
-  @apply flex flex-col items-center gap-1 pt-2.25 pb-2;
+  @apply flex flex-col items-center gap-1.25 h-14 pt-2.25 pb-0;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group::after {
   /* Wrap rather than ellipsis — "Operations" does not fit a 76px rail on one
    * line, and a truncated module name is worse than a two-line one. */
-  @apply block text-[10px] leading-[1.2] tracking-[0.02em] text-center max-w-full px-0.5;
+  @apply block text-[10.5px] leading-3 text-center max-w-full px-0.5;
   content: attr(data-group-label);
-  color: #8f9daf;
+  color: var(--chrome-dim);
   word-break: keep-all;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group.fi-active::after {
-  color: #e8edf3;
+  color: var(--chrome-ink);
+}
+
+/* Active module: hi tone, accent icon, 2px accent bar on the rail edge
+ * (e.css:95-98). */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group.fi-active:not([data-group-label=""]) {
+  background: var(--chrome-hi);
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group.fi-active:not([data-group-label=""])::before,
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item.fi-active > .fi-sidebar-item-btn::before {
+  @apply absolute w-0.5 rounded-r-[2px] content-[''];
+  inset-inline-start: 0;
+  top: 8px;
+  bottom: 8px;
+  background: var(--primary-600);
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+  background: var(--chrome-hi);
 }
 
 /* Filament also wraps ungrouped items (Dashboard) in a `.fi-sidebar-group`
@@ -1768,24 +2554,54 @@
 
 /* Full-row hit target. The trigger button (which carries rail-nav.js's
  * click-to-navigate and the hover flyout) was icon-sized (18px), so only a
- * precise click on the glyph worked. The li keeps a fixed 18px spacer (the
- * .fi-dropdown wrapper) so the flex column doesn't collapse, and the button
- * overlays the whole row absolutely — icon area AND label are clickable.
- * The button's own padding re-creates the icon's resting position. */
-.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group {
+ * precise click on the glyph worked. The row is a one-cell grid: the
+ * .fi-dropdown wrapper and the ::after label share that cell, so the
+ * stretched trigger covers icon area AND label, and the label (which takes
+ * no pointer events) is drawn over it, padded down to clear the icon.
+ * The button's own padding re-creates the icon's resting position.
+ *
+ * Deliberately not an absolute overlay: that needs a positioned <li>, which
+ * becomes the flyout panel's containing block and puts it INSIDE the nav's
+ * scroll container — every flyout then clips at the rail edge. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown) {
+  /* items-stretch undoes the flex column's items-center, which in a grid
+   * would centre the label's box in the row instead of starting it at the top. */
+  @apply grid p-0 gap-0 items-stretch;
+}
+
+/* Rows without a flyout have nothing to clip, so they stay the containing
+ * block for the active-module accent bar. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:not(:has(> .fi-dropdown)) {
   @apply relative;
 }
 
-.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown {
-  /* The spacer that reserves the glyph's row. Must track the trigger icon's
-   * size below, or the absolutely-positioned button overhangs a slot cut for
-   * a smaller icon. */
-  @apply w-7 h-7;
-  stroke-width: 1.4;
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown) > .fi-dropdown,
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown)::after {
+  grid-area: 1 / 1;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group:has(> .fi-dropdown)::after {
+  /* Where the flex column put it: pt-2.25 + the h-5.5 glyph slot + gap-1.25,
+   * in spacing units like the rules above (the theme's rem is not 16px). */
+  @apply pointer-events-none pt-9 pb-0;
+}
+
+/* The active-module accent bar, as a grid item pinned to the row's start
+ * edge instead of an absolute box: the same 8px inset top and bottom, with
+ * no positioned <li> for it to need. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group.fi-active:has(> .fi-dropdown)::before {
+  @apply static self-stretch justify-self-start;
+  grid-area: 1 / 1;
+  margin-block: 8px;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown,
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown > .fi-dropdown-trigger {
+  @apply h-full;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn {
-  @apply absolute inset-0 z-1 w-full items-start justify-center bg-transparent rounded-[0px];
+  @apply w-full h-full items-start justify-center bg-transparent rounded-[0px];
   padding: 9px 0 0;
 }
 
@@ -1794,8 +2610,8 @@
    * display:none for any group that owns a flyout (line ~52), so editing the
    * .fi-sidebar-group-btn rule alone changes nothing in the rail. Keep this
    * in step with it; the two are the same glyph in the two rail states. */
-  @apply w-7 h-7;
-  stroke-width: 1.4;
+  @apply w-5.5 h-5.5;
+  stroke-width: 1.2;
 }
 
 /* Hover paints the row (the li, behind the ::after label) instead of the
@@ -1826,7 +2642,7 @@
   /* Module panels list UNGROUPED pages as rail items; long labels otherwise
    * grow the button past the rail (97px buttons in a 75px rail — "wide when
    * active" highlight). Clamp to the rail and let labels wrap. */
-  @apply flex-col gap-1 pt-2.25 pb-2 w-full max-w-full overflow-hidden;
+  @apply flex-col gap-1.25 h-14 pt-2.25 pb-0 w-full max-w-full overflow-hidden justify-start rounded-none;
 }
 
 /* The per-group items list is content-sized and overflows the rail when
@@ -1836,11 +2652,11 @@
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn .fi-icon {
-  @apply w-6 h-6;
+  @apply w-5.5 h-5.5;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-label {
-  @apply text-[10px] leading-[1.2] tracking-[0.02em] text-center;
+  @apply text-[10.5px] leading-3 text-center;
   display: block !important;
   word-break: keep-all;
 }
@@ -1857,37 +2673,72 @@
   /* Since 5.10 the float reference is the trigger button, which spans the
    * whole rail row, so right-start already tops the panel out with the row.
    * The vendor offset lands it 7px off the 76px rail; -3px leaves the
-   * mockup's 4px gap. */
-  @apply border border-(--line-strong) rounded-xl p-0 overflow-hidden -ms-0.75;
+   * mockup's 4px gap. E's flyout (e.css:104-112) is graphite like the rail. */
+  @apply rounded-md p-1 overflow-hidden -ms-0.75;
+  min-width: 214px;
+  background: var(--chrome-top);
+  border: 1px solid var(--chrome-line);
+  color: var(--chrome-dim);
   box-shadow:
-    0 12px 30px -12px rgb(14 18 24 / 38%),
-    0 3px 8px -3px rgb(14 18 24 / 20%);
+    0 12px 34px rgb(0 0 0 / 38%),
+    0 2px 6px rgb(0 0 0 / 20%);
 }
 
 .fi-sidebar-group .fi-dropdown-header {
-  @apply bg-(--surface-2) border-b border-b-(--line) py-1.75 px-2.75 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3) rounded-[0px];
+  @apply h-7.5 gap-2 px-2 mb-0.5 py-0 text-[11.5px] font-semibold uppercase tracking-[0.1em] rounded-[0px];
+  background: transparent;
+  border-bottom: 1px solid var(--chrome-line);
+  color: var(--chrome-ink);
 }
 
-/* The mockup's flyout rows carry no icons — label and count only. */
-.fi-sidebar-group .fi-dropdown-list-item .fi-icon {
-  @apply hidden;
+.fi-sidebar-group .fi-dropdown-header > span {
+  color: inherit;
 }
 
 .fi-sidebar-group .fi-dropdown-list {
-  @apply p-0;
+  @apply p-0 gap-0.5;
 }
 
 .fi-sidebar-group .fi-dropdown-list-item {
-  @apply py-1.5 px-2.75 text-[12.5px] rounded-[0px] border-b border-b-(--line-soft);
+  @apply relative h-7.5 gap-2.5 px-2 py-0 text-[14px] rounded-[5px];
+  font-weight: 450;
+  color: var(--chrome-dim);
 }
 
-.fi-sidebar-group .fi-dropdown-list > .fi-dropdown-list-item:last-child {
-  @apply border-b-0;
+.fi-sidebar-group .fi-dropdown-list-item .fi-icon {
+  @apply w-4 h-4;
+  stroke-width: 1.5;
+  color: var(--chrome-icon);
+}
+
+.fi-sidebar-group .fi-dropdown-list-item .fi-dropdown-list-item-label,
+.fi-sidebar-group .fi-dropdown-list-item:hover .fi-dropdown-list-item-label {
+  color: inherit;
+}
+
+.fi-sidebar-group .fi-dropdown-list-item:hover,
+.fi-sidebar-group .fi-dropdown-list-item:focus-visible {
+  background: rgb(255 255 255 / 6%);
+  color: var(--chrome-ink);
 }
 
 /* Selection is the only thing that takes the accent. */
 .fi-sidebar-group .fi-dropdown-list-item.fi-color-primary {
-  box-shadow: inset 2px 0 0 var(--primary-600);
+  background: var(--chrome-hi);
+  color: #fff;
+  font-weight: 600;
+}
+
+.fi-sidebar-group .fi-dropdown-list-item.fi-color-primary .fi-icon {
+  color: var(--chrome-accent-lit);
+}
+
+.fi-sidebar-group .fi-dropdown-list-item.fi-color-primary::before {
+  @apply absolute w-0.5 rounded-r-[2px] content-[''];
+  inset-inline-start: -4px;
+  top: 6px;
+  bottom: 6px;
+  background: var(--primary-600);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1906,6 +2757,66 @@
 
 .fi-sidebar .fi-user-menu-trigger .fi-avatar {
   @apply w-6.5 h-6.5 rounded-lg;
+}
+
+/* Expanded foot (e.css:62-71): avatar + name in a 34px row. The collapse
+ * toggle lives in the clock well (rail-clock.blade.php), not here. */
+.fi-sidebar.fi-sidebar-open .fi-sidebar-footer {
+  @apply px-2 pt-1.5 pb-2;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-user-menu-trigger {
+  @apply w-full h-8.5 gap-2 px-1.5 rounded-[5px] justify-start;
+}
+
+.fi-sidebar.fi-sidebar-open .fi-user-menu-trigger:hover {
+  background: rgb(255 255 255 / 6%);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-user-menu-trigger .fi-avatar {
+  @apply w-5.5 h-5.5 rounded-[5px];
+  background: var(--chrome-well);
+  border: 1px solid var(--chrome-line);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-user-menu-trigger-text {
+  @apply text-[14px] font-medium truncate;
+  color: var(--chrome-ink);
+}
+
+.fi-sidebar.fi-sidebar-open .fi-user-menu-trigger .fi-icon {
+  @apply hidden;
+}
+
+.fi-sidebar-collapse-toggle {
+  @apply flex items-center justify-center;
+}
+
+.fi-sidebar-collapse-toggle .fi-icon-btn {
+  @apply w-7 h-7 rounded-[5px];
+  color: var(--chrome-dim);
+}
+
+.fi-sidebar-collapse-toggle .fi-icon-btn .fi-icon {
+  @apply w-4.5 h-4.5;
+  color: inherit;
+}
+
+.fi-sidebar-collapse-toggle .fi-icon-btn:hover {
+  background: var(--chrome-hi);
+  color: var(--chrome-ink);
+}
+
+/* Open: top-right corner of the clock well, level with the time. */
+.fi-sidebar.fi-sidebar-open .fi-sidebar-collapse-toggle {
+  @apply absolute top-1/2 -translate-y-1/2;
+  inset-inline-end: 0.75rem;
+}
+
+/* Rail: its own row under the clock, directly above the first nav item. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-collapse-toggle {
+  @apply h-10 w-full;
+  border-top: 1px solid var(--chrome-line);
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-user-menu-trigger-text,
@@ -2025,7 +2936,7 @@ html[data-density="comfortable"]
 }
 
 html[data-density="comfortable"] .fi-body {
-  @apply text-[13.5px];
+  @apply text-[14.5px];
 }
 
 /* Comfortable reaches the console surfaces too, not just table rows —
@@ -2174,6 +3085,14 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   place-items: center;
 }
 
+.overview__icon--image {
+  @apply overflow-hidden p-1 bg-(--surface);
+}
+
+.overview__icon--image img {
+  @apply w-full h-full object-contain;
+}
+
 .overview__icon svg {
   @apply w-4.25 h-4.25;
 }
@@ -2230,7 +3149,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .overview__label {
-  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 .overview__value {
@@ -2578,11 +3497,175 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * 32px — tightened for page-level content only; grids INSIDE sections
  * (form layouts) keep vendor spacing. */
 .fi-page-content {
-  @apply gap-3.5;
+  @apply gap-0;
 }
 
-.fi-page-content .fi-grid:not(.fi-section *) {
-  @apply gap-3.5;
+.fi-page-content .fi-grid:not(.fi-section *, .fi-modal *) {
+  @apply gap-0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Page body fill (direction E).
+ *
+ * The body under the banner spans the full width and runs to the window
+ * bottom as one flush sheet on every page: lists, edit/create/view pages,
+ * dashboard, settings and addon pages alike.
+ * ------------------------------------------------------------------------- */
+.fi-page-header-main-ctn {
+  @apply flex-1;
+}
+
+/* Every page is the sheet: surface-filled to the window bottom under the
+ * banner. Regions inside it are separated by rules (see "Sheet regions"
+ * below); the sheet itself keeps a side gutter so content never touches the
+ * rail or the window edge. The gutter follows the density picker. */
+.fi-page-main {
+  --page-gutter: 24px;
+
+  @apply flex flex-1 flex-col;
+  padding: 0 var(--page-gutter);
+  background-color: var(--surface);
+}
+
+html[data-density="comfortable"] .fi-page-main {
+  --page-gutter: 32px;
+}
+
+/* Breathing room under the last row, so form actions never sit on the
+ * window's bottom edge. */
+.fi-page-main > .fi-page-content {
+  @apply flex-1 content-start pb-6;
+}
+
+.fi-page,
+.fi-page-header-main-ctn {
+  @apply gap-0;
+}
+
+/* The main table is the sheet: no card box, no outer radius, no side rules. */
+
+.fi-resource-list-records-page .fi-ta-ctn,
+.fi-resource-relation-manager .fi-ta-ctn {
+  @apply rounded-none border-0 bg-transparent;
+}
+
+.fi-resource-list-records-page .fi-ta-header-ctn,
+.fi-resource-relation-manager .fi-ta-header-ctn {
+  @apply rounded-none;
+}
+
+.fi-resource-list-records-page .fi-ta-header-toolbar,
+.fi-resource-relation-manager .fi-ta-header-toolbar,
+.fi-resource-list-records-page .filters {
+  @apply rounded-none;
+}
+
+/* A custom filter bar (PIREPs) and the table's own toolbar share one row:
+ * filters left, count, then Filter/Display controls right. */
+.fi-resource-list-records-page .fi-ta-header-ctn:has(> .filters) {
+  @apply grid items-stretch;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.fi-resource-list-records-page .fi-ta-header-ctn > .filters {
+  @apply border-b border-b-(--line);
+}
+
+.fi-resource-list-records-page .fi-ta-header-ctn:has(> .filters) > .fi-ta-header-toolbar {
+  @apply items-center border-b border-b-(--line) bg-(--surface-2);
+}
+
+/* Filters panel opens from the toolbar's right edge; keep it above the rows. */
+.fi-resource-list-records-page .fi-ta-header-ctn {
+  position: relative;
+  z-index: 5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Sheet regions (direction E). A top-level Section is a ruled region of the
+ * page sheet, not a card: no radius, no outer border, no fill of its own, a
+ * 1px rule under it. Its head stays the 10.5px uppercase band. Nested sections
+ * are untouched here — "Sequent inner section" above already makes them head
+ * bands. Scoped to page content so modals and slide-overs keep their cards.
+ * ------------------------------------------------------------------------- */
+.fi-page-content .fi-section:not(.fi-section-content *, .fi-modal *, .fi-section-not-contained) {
+  @apply rounded-none border-0 border-b border-b-(--line) bg-transparent;
+}
+
+.fi-page-content
+  .fi-section:not(.fi-section-content *, .fi-modal *, .fi-section-not-contained)
+  > .fi-section-header {
+  @apply rounded-none;
+}
+
+/* Side-by-side sections are ruled columns: a vertical hairline between
+ * sibling grid cells that hold a region, not a gap between cards. */
+.fi-page-content .fi-grid:not(.fi-section *) > .fi-grid-col:has(> .fi-sc-section) {
+  @apply border-r border-r-(--line);
+}
+
+.fi-page-content .fi-grid:not(.fi-section *) > .fi-grid-col:has(> .fi-sc-section):last-child {
+  @apply border-r-0;
+}
+
+/* Page-level strips and tab panels sit in the sheet, not on it. */
+.fi-page-content .overview:not(.fi-section-content *, .fi-pirep-record *) {
+  @apply rounded-none border-x-0 border-t-0;
+}
+
+.fi-page-content .fi-sc-tabs.fi-contained {
+  @apply rounded-none border-0 bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+/* Content that is not inside a Section still keeps the section inset, taken
+ * from the same --section-pad the density picker drives: a bare form's action
+ * row and a contained tab panel's fields. */
+.fi-page-content {
+  --section-pad: 12px;
+}
+
+html[data-density="comfortable"] .fi-page-content {
+  --section-pad: 16px;
+}
+
+.fi-page-content .fi-sc-actions:not(.fi-section *, .fi-modal *) {
+  padding: var(--section-pad);
+}
+
+.fi-page-content .fi-sc-tabs.fi-contained > .fi-sc-tabs-tab {
+  padding: var(--section-pad);
+}
+
+/* Stats overview widgets: one ruled strip, rules between the cells. */
+.fi-wi-stats-overview-stats-ctn {
+  @apply gap-0;
+}
+
+.fi-wi-stats-overview-stat {
+  @apply rounded-none border-r border-r-(--line-soft) bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-wi-stats-overview-stat:last-child {
+  @apply border-r-0;
+}
+
+/* Property rows: an infolist entry is a key/value row on a hairline (mockup
+ * .hx-prop: 13px --ink-3 key, value beside it, 34px dense row). */
+.fi-page-content .fi-in-entry {
+  @apply grid min-h-8.5 items-center gap-x-2 border-b border-b-(--line-soft);
+  grid-template-columns: 7rem minmax(0, 1fr);
+}
+
+.fi-page-content .fi-in-entry-label {
+  @apply text-[13px] font-normal text-(--ink-3);
+}
+
+/* The identity preview is a stacked read-out (label over value over note),
+ * not a property row: undo the key/value grid and hairline above. */
+.fi-page-content .ident-preview .fi-in-entry {
+  @apply block min-h-0 border-b-0;
 }
 
 /* The package owns GridStack. phpVMS adds only the explicit edit-state grid. */
@@ -2646,7 +3729,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 
 .dashboard-widget-body {
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: none;
 }
 
@@ -2782,12 +3865,12 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .queue__text > strong {
-  @apply block overflow-hidden text-ellipsis text-[12.5px] text-(--ink);
+  @apply block overflow-hidden text-ellipsis text-[13.5px] text-(--ink);
   font-weight: 550;
 }
 
 .queue__text > span {
-  @apply block overflow-hidden text-ellipsis text-[11.5px] text-(--ink-3);
+  @apply block overflow-hidden text-ellipsis text-[12.5px] text-(--ink-3);
 }
 
 .queue__when {
@@ -2863,6 +3946,12 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 
 .subtab em {
   @apply not-italic font-mono text-[12px] text-(--ink-4);
+}
+
+/* Filament Sections inside a subtabs tabpanel sit flush like the PIREP blocks,
+ * so drop the global rounded-xl section corners there. */
+.panel > [role="tabpanel"] .fi-section:not(.fi-section-not-contained) {
+  @apply rounded-none;
 }
 
 /* ---------------------------------------------------------------------------
@@ -3134,12 +4223,12 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 
 .dl dt,
 .dl dd {
-  @apply flex items-center min-h-7.25 m-0 py-1.5 px-3 border-b border-b-(--line-soft) text-[12.5px];
+  @apply flex items-center min-h-7.25 m-0 py-1.5 px-3 border-b border-b-(--line-soft) text-[13.5px];
   gap: 0.34em;
 }
 
 .dl dt {
-  @apply bg-(--surface-2) border-r border-r-(--line-soft) text-(--ink-3) text-[11.5px];
+  @apply bg-(--surface-2) border-r border-r-(--line-soft) text-(--ink-3) text-[12.5px];
 }
 
 .dl dd {
@@ -3177,7 +4266,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .context__eyebrow {
-  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 .context__title {
@@ -3304,7 +4393,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .panel__title {
-  @apply flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  @apply flex items-baseline gap-2 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-(--ink-3);
 }
 
 /* Header glyph (one Tabler icon per panel head). self-center because the
@@ -3402,7 +4491,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .tbl {
-  @apply w-full border-collapse text-[12.5px];
+  @apply w-full border-collapse text-[13.5px];
 }
 
 .tbl thead th {
@@ -3445,10 +4534,10 @@ html[data-density="comfortable"] .tbl tbody td {
 }
 
 /* ---------------------------------------------------------------------------
- * Flight edit — heading detail + section jump bar (mockup admin-console-v2/
+ * Flight edit — heading detail + record switcher bar (mockup admin-console-v2/
  * flight-edit.html .page-head/.secnav). The ident/route and figures ride in
- * the shared hero band (.fi-header); only the jump bar lives in the page body,
- * because the band scrolls away and the jump bar must not.
+ * the shared hero band (.fi-header); only the switcher bar lives in the page body,
+ * because the band scrolls away and the bar must not.
  *
  * top: 58px matches the PIREP view's .context rail — 44px topbar plus the
  * 14px section gap.
@@ -3458,31 +4547,197 @@ html[data-density="comfortable"] .tbl tbody td {
   color: color-mix(in oklab, white 56%, var(--primary-600));
 }
 
+.fi-header-heading-name {
+  color: color-mix(in oklab, white 88%, var(--primary-600));
+}
+
+.fi-header-heading-rank {
+  @apply mt-0.5 block font-sans text-[12.5px] font-normal;
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+  text-shadow: none;
+}
+
 .fi-header-heading-route {
   @apply text-[0.8em];
   color: color-mix(in oklab, white 88%, var(--primary-600));
 }
 
-/* z-10, not z-20: the rail and its hover flyout are z-20, and the jump bar sits
+/* z-10, not z-20: the rail and its hover flyout are z-20, and the switcher bar sits
  * later in the DOM — at equal z-index it paints over the flyout. It only has to
  * beat the page content it scrolls across, which is z-auto. */
 .secnav {
-  @apply sticky z-10 flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-2) pr-2;
+  @apply sticky z-10 flex items-center justify-end gap-2 rounded-md border border-(--line) bg-(--surface-2) pr-2;
   top: 58px;
-}
-
-.secnav__links {
-  @apply flex min-w-0 flex-1 items-stretch overflow-x-auto;
-}
-
-/* The jump bar reuses .subtab, but sits in a rounded bar rather than a card
- * edge, so the trailing divider on the last link would float. */
-.secnav__links .subtab:last-child {
-  @apply border-r-0;
 }
 
 .secnav__switch {
   @apply h-6.5 max-w-56 shrink-0 rounded border border-(--line) bg-(--surface) py-0 pl-2 pr-6 text-[12px] text-(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Settings page — one scrolling sheet: a sticky category nav beside every
+ * category stacked in order. Each setting is a row, label and description on
+ * the left, control on the right. Scoped to .settings-page so the inline
+ * labels of other forms keep Filament's three-column grid.
+ *
+ * The nav's top matches .secnav (44px topbar plus the 14px section gap). It
+ * stays sticky only while no ancestor clips overflow, so none is set here.
+ * Below lg the nav is a scrolling strip above the content instead of a column.
+ * ------------------------------------------------------------------------- */
+.fi-page-content .settings-page > .fi-sc {
+  @apply lg:grid-cols-[14rem_minmax(0,1fr)];
+  align-items: start;
+}
+
+/* A jumped-to category lands below the sticky topbar, not under it. */
+.settings-page .fi-section-content .fi-sc-section {
+  scroll-margin-top: 58px;
+}
+
+/* Sticky goes on the grid column, not the nav: the column is only as tall as
+ * the nav, so a sticky nav inside it has no room to travel. */
+.fi-page-content .settings-page > .fi-sc > .fi-grid-col:first-child {
+  @apply sticky z-10;
+  top: 58px;
+}
+
+.settings-nav {
+  @apply flex flex-col gap-1.5 border-b border-b-(--line) bg-(--surface) p-1.5 lg:border-b-0 lg:bg-transparent lg:p-0;
+}
+
+.settings-nav__list {
+  @apply flex gap-1 overflow-x-auto lg:flex-col lg:overflow-x-visible;
+}
+
+.settings-nav__search {
+  @apply relative block;
+}
+
+.settings-nav__search .fi-icon {
+  @apply pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-(--ink-3);
+}
+
+.settings-nav__search input {
+  @apply h-8 w-full rounded-md border border-(--line) bg-(--surface) py-0 pl-7 pr-2 text-[13px] text-(--ink) outline-none placeholder:text-(--ink-3);
+}
+
+.settings-nav__search input:focus {
+  @apply border-(--primary-600);
+}
+
+.settings-empty {
+  @apply px-(--section-pad) py-6 text-[13px] text-(--ink-3);
+}
+
+/* The search box and the first heading start one page gutter below the
+ * banner, level with each other. The outer section adds no top padding of its
+ * own, and the hidden "no match" message must not leave an empty grid row
+ * (and its row gap) above the first category. */
+.fi-page-content .settings-page {
+  padding-top: var(--page-gutter);
+}
+
+.settings-page .fi-section-content:has(> .fi-grid-col .settings-empty) {
+  @apply pt-0;
+}
+
+.settings-page .fi-section-content > .fi-grid-col:has(.settings-empty.is-filtered-out) {
+  display: none;
+}
+
+.settings-page
+  .fi-section-content
+  > .fi-grid-col:has(.settings-empty)
+  + .fi-grid-col
+  .fi-sc-section
+  > .fi-section
+  > .fi-section-header {
+  padding-top: 0;
+}
+
+/* Set by the settings search (nav.blade.php); the class survives where the
+ * [hidden] attribute would lose to display rules on grid columns. */
+.settings-page .is-filtered-out,
+.settings-empty.is-filtered-out {
+  display: none;
+}
+
+.settings-nav__item {
+  @apply whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] text-(--ink-3);
+  transition:
+    color 100ms,
+    background-color 100ms;
+}
+
+.settings-nav__item:hover {
+  @apply bg-(--sunken) text-(--ink);
+}
+
+.settings-nav__item[aria-current="true"] {
+  @apply bg-(--sunken) text-(--primary-600);
+  font-weight: 550;
+}
+
+/* Category heads are plain page headings, not the house head band: no fill,
+ * no caps, a rule under the title only. The top rule goes too; the gap above
+ * separates one category from the last. */
+.settings-page .fi-section-content .fi-sc-section > .fi-section > .fi-section-header {
+  @apply border-t-0 bg-transparent;
+  padding: calc(var(--section-pad) * 2) var(--section-pad) calc(var(--section-pad) * 0.75);
+}
+
+.settings-page .fi-section-content .fi-sc-section .fi-section-header-heading {
+  @apply text-lg font-semibold normal-case tracking-normal text-(--ink);
+  line-height: var(--text-lg--line-height);
+}
+
+/* The category sections are head bands in one outer section; rows inside
+ * them carry their own padding, so the grid gap goes. */
+.settings-page .fi-section-content .fi-section-content {
+  @apply gap-y-0;
+}
+
+/* Inline-label rows are shared with aside sections (e.g. toggles on the
+ * airline form); .fi-aside has the same single-class specificity. Every
+ * inline-label toggle on a page or in a modal / slide-over gets the same row
+ * (house rule: a toggle is a full-width row, never a grid cell). */
+:is(.settings-page, .fi-aside) .fi-fo-field-has-inline-label,
+:is(.fi-page-content, .fi-modal) .fi-fo-field-has-inline-label:has(.fi-toggle) {
+  @apply items-center gap-x-6 gap-y-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,20rem)];
+  padding-block: calc(var(--section-pad) * 1.25);
+}
+
+/* Vendor spans the control over two of three columns; here it is the second
+ * of two, bounded and pushed right. */
+:is(.settings-page, .fi-aside) .fi-fo-field-has-inline-label .fi-fo-field-content-col,
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-content-col {
+  @apply w-full justify-self-end sm:col-span-1;
+}
+
+:is(.settings-page, .fi-aside) .fi-fo-field-label-content,
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-label-content {
+  @apply text-[13px] text-(--ink);
+  font-weight: 550;
+}
+
+:is(.settings-page, .fi-aside) .fi-fo-field-label-col .fi-sc-text,
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-label-col
+  .fi-sc-text {
+  @apply text-[12px] font-normal leading-snug text-(--ink-3);
+}
+
+:is(.settings-page, .fi-aside) .fi-fo-field-content-col > .fi-toggle,
+:is(.fi-page-content, .fi-modal)
+  .fi-fo-field-has-inline-label:has(.fi-toggle)
+  .fi-fo-field-content-col
+  > .fi-toggle {
+  @apply justify-self-end;
 }
 
 /* ---------------------------------------------------------------------------
@@ -3531,6 +4786,8 @@ html[data-density="comfortable"] .tbl tbody td {
   @apply grid items-center gap-3 rounded-xl border px-3 py-2.5;
   @apply border-(--warn-line) bg-(--warn-soft) text-(--warn);
   grid-template-columns: auto minmax(0, 1fr) auto;
+  /* Sits under the filter bar, lined up with the card grid's 14px padding. */
+  margin: 14px 14px 0;
 }
 
 .notice svg {
@@ -3538,130 +4795,298 @@ html[data-density="comfortable"] .tbl tbody td {
 }
 
 .notice__text > strong {
-  @apply block text-[12.5px];
+  @apply block text-[13.5px];
   font-weight: 550;
 }
 
 .notice__text > span {
-  @apply block text-[11.5px] opacity-85;
+  @apply block text-[12.5px] opacity-85;
 }
 
-/* List left, detail right. 430px and "whatever is left" is not a ratio the
- * 12-column grid can express, so the Grid is declared with one column and the
- * real template lands here. Declared after the vendor grid utilities, so it
- * wins on order at equal specificity. */
-/* extraAttributes() lands on the Grid component's WRAPPER, not on the grid
- * element itself, so the template has to reach one level in. */
-.catalog > .fi-grid {
-  align-items: start;
-  grid-template-columns: minmax(0, 430px) minmax(0, 1fr);
+/* Add-on card (table card grid) and slide-over. Modules are not a Tailwind
+ * @source root, so the card views lean on these hooks instead of utilities. */
+/* Card grid (C1): each record is its own bordered, rounded surface with a 14px gap. Scoped to `.addon-cards` (the table's extra attribute)
+ * and written to out-rank the page-level `.fi-grid { gap-0 }` rule above rather
+ * than change it. */
+.addon-cards .fi-ta-ctn {
+  /* The cards are the surfaces; no outer box around the grid and pager. */
+  @apply rounded-none border-0 bg-transparent;
+  box-shadow: none;
 }
 
-/* The detail is the shorter half, so it stays put while a long list runs past. */
-.catalog__detail {
-  @apply sticky top-[58px];
+.addon-cards .fi-pagination {
+  @apply border-t border-(--line-soft) px-3.5;
 }
 
-/* Full-bleed through the section's own padding, same trick as .route-bar--bleed
- * above: derived from --section-pad so it stays exact when the density picker
- * moves it, never a hardcoded 12px. */
-.addon-list {
-  @apply flex flex-col;
-  margin-inline: calc(var(--section-pad) * -1);
+.fi-page-content .addon-cards .fi-ta-content-grid.fi-grid:not(.fi-section *, .fi-modal *) {
+  gap: 14px;
+  padding: 18px 14px 40px;
 }
 
-/* The pagination bar closes the list card, so it takes the bottom bleed the
- * list would otherwise need. */
-.addon-list + .panel__foot {
-  margin: 0 calc(var(--section-pad) * -1) calc(var(--section-pad) * -1);
+.addon-cards .fi-ta-record {
+  @apply relative overflow-hidden rounded-[9px] border border-(--line) bg-(--surface);
+  min-height: 190px;
+  /* Filament adds a 1px ring and shadow-sm to records; the 1px border is the edge. */
+  box-shadow: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
-.addon-row {
-  @apply grid w-full items-start gap-2.5 px-3 py-2.5 text-left;
-  @apply border-b border-b-(--line-soft) transition-colors duration-100;
-  grid-template-columns: auto minmax(0, 1fr);
+.addon-cards .fi-ta-record:hover {
+  @apply border-(--line-strong);
+  box-shadow: 0 6px 20px rgb(20 30 45 / 0.08);
 }
 
-.addon-row:last-child {
-  @apply border-b-0;
+.addon-cards .fi-ta-record-content-ctn {
+  @apply flex flex-1 flex-col p-0;
 }
 
-.addon-row:hover {
-  @apply bg-(--surface-2);
+.addon-cards .fi-ta-record-content-ctn > div:not(.fi-ta-actions) {
+  @apply flex flex-1 flex-col;
 }
 
-.addon-row[aria-current="true"] {
-  background-color: color-mix(in oklab, var(--primary-600) 9%, var(--surface));
-  box-shadow: inset 2px 0 0 var(--primary-600);
+/* The body button and the layout wrappers inside it stretch, so every card in a
+ * row is the same height and the footer pins to the bottom. */
+.addon-cards .fi-ta-record-content {
+  @apply flex flex-1 flex-col justify-start p-0 text-start;
 }
 
-/* Disabled add-ons stay listed and stay actionable — dimmed, not hidden, so
- * "why is that not running" has an answer on this screen. */
-.addon-row--dim .addon-tile,
-.addon-row--dim .addon-row__name {
+.addon-cards .fi-ta-record-content :is(.fi-grid-col, .fi-ta-stack, .fi-ta-col) {
+  @apply flex flex-1 flex-col;
+}
+
+/* Record actions render in their own container; lay them over the card instead
+ * of as a footer band: the "more" menu top-right of the head, the primary
+ * action at the right of the footer line. */
+.addon-cards .fi-ta-record .fi-ta-actions {
+  display: contents;
+}
+
+.addon-cards .fi-ta-actions > .fi-dropdown {
+  @apply absolute top-3 right-2.5 z-[1];
+}
+
+.addon-cards .fi-ta-actions > :is(button, a) {
+  @apply absolute right-3.5 bottom-3 z-[1];
+}
+
+/* Filter bar (C1 .ao-filters--bar): one sticky 46px row above the cards, padded
+ * to line up with the card grid. It drives the table's own search/filter state. */
+.fi-grid-col:has(> .fi-sc-component > .addon-bar),
+.fi-sc-component:has(> .addon-bar) {
+  /* Sticky is bounded by the parent; lift the bar out of its own one-row cell
+   * so it travels the whole page grid. */
+  display: contents;
+}
+
+.addon-bar {
+  @apply sticky top-[42px] z-[6] flex h-[46px] items-center gap-2 border-b border-(--line) bg-(--surface) px-[14px];
+}
+
+.addon-bar__search {
+  @apply w-56 flex-none;
+}
+
+.addon-bar__search .fi-input {
+  @apply py-1 text-[13px];
+}
+
+.addon-bar__pill {
+  @apply inline-flex h-[26px] items-center gap-1.5 rounded-full border border-(--line) px-2.5 text-[13px] whitespace-nowrap text-(--ink-2);
+}
+
+.addon-bar__pill:hover {
+  @apply border-(--ink-4);
+}
+
+.addon-bar__pill[aria-pressed="true"] {
+  @apply border-primary-500 bg-primary-500/10 text-primary-600;
+}
+
+.addon-bar__pill .fi-icon {
+  @apply size-3.5;
+}
+
+.addon-bar__sort {
+  @apply ms-auto inline-flex items-center gap-1 text-[12px] text-(--ink-3);
+}
+
+.addon-bar__sort .fi-icon {
+  @apply size-3.5;
+}
+
+.addon-card {
+  @apply flex flex-1 flex-col gap-2.5 px-3.5 pt-3.5 pb-3;
+}
+
+.addon-card__head {
+  @apply flex items-start gap-[11px] pe-7;
+}
+
+.addon-card__title {
+  @apply flex min-w-0 flex-col;
+}
+
+.addon-card__name {
+  @apply flex items-center gap-1 text-[14px] text-(--ink);
+  font-weight: 600;
+}
+
+.addon-card__name-text,
+.addon-card__meta {
+  @apply truncate;
+}
+
+.addon-card__official {
+  @apply size-3.5 flex-none text-primary-600;
+}
+
+.addon-card__meta {
+  @apply text-[12px] text-(--ink-3);
+}
+
+.addon-card__desc {
+  @apply line-clamp-3 text-[13px] text-(--ink-2);
+}
+
+.addon-card__badges {
+  @apply mt-auto flex flex-wrap gap-1;
+}
+
+/* Footer line inside the card padding: version, installs, then the primary
+ * action (positioned over the right end by the rules above). */
+.addon-card__facts {
+  @apply flex min-h-[40px] items-center gap-2 border-t border-(--line-soft) pt-2.5 text-[12px] text-(--ink-3);
+}
+
+.addon-card__badges + .addon-card__facts,
+.addon-card__desc + .addon-card__facts,
+.addon-card__head + .addon-card__facts {
+  @apply mt-auto;
+}
+
+.addon-card__version {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.addon-card__version b {
+  @apply text-(--warn);
+  font-weight: 600;
+}
+
+.addon-card__progress {
+  @apply flex flex-col gap-1 text-[12px] text-(--ink-2);
+}
+
+/* Monogram plate: solid gradient, white letters (C1 .ao-mono--lg + .ao-t-*).
+ * Scoped to add-ons so the shared .overview__icon--* tints stay as they are. */
+.addon-plate {
+  @apply grid size-10 flex-none place-items-center rounded-lg text-[14px] text-white uppercase;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.addon-plate img {
+  @apply size-full rounded-lg object-cover;
+}
+
+.addon-plate--blue {
+  background: linear-gradient(140deg, #2f8fd6, #1660a8);
+}
+
+.addon-plate--teal {
+  background: linear-gradient(140deg, #23a58f, #0f7366);
+}
+
+.addon-plate--violet {
+  background: linear-gradient(140deg, #8a6be0, #5a3fb3);
+}
+
+.addon-plate--rose {
+  background: linear-gradient(140deg, #e0627d, #a83552);
+}
+
+.addon-plate--amber {
+  background: linear-gradient(140deg, #e4a43a, #b8701a);
+}
+
+/* Disabled add-ons stay listed, dimmed. */
+.addon-card--dim .addon-plate,
+.addon-card--dim .addon-card__name {
   @apply opacity-60;
 }
 
-/* Monogram plate. Its tint comes from the shared .overview__icon--* classes and
- * marks the add-on's CATEGORY — which holds still — never its state. An add-on
- * with no category keeps the neutral plate. */
-.addon-tile {
-  @apply grid size-7.5 flex-none place-items-center rounded-lg border;
-  @apply font-mono text-[13px] tracking-tight uppercase;
-  font-weight: 550;
+/* Add-on peek: the demo's .c1-panel width, scoped so the PIREP and airport
+ * panels keep theirs. Doubled class to out-rank .fi-modal-window.pirep-panel. */
+.fi-modal-window.pirep-panel.addon-panel {
+  width: min(46vw, 640px);
 }
 
-/* Zero specificity, so a tint class alongside wins regardless of which of the
- * two this stylesheet happens to declare last. */
-:where(.addon-tile) {
-  @apply border-(--line-soft) bg-(--sunken) text-(--ink-2);
+.addon-peek {
+  @apply flex flex-col;
+  min-height: 100dvh;
 }
 
-.addon-tile img {
-  @apply size-full rounded-[3px] object-cover;
+.addon-peek .pp-body {
+  @apply flex flex-1 flex-col gap-4;
 }
 
-.addon-tile--lg {
-  @apply size-10.5 rounded-xl text-[16px];
+/* The shared panel hides the eyebrow below 860px; the add-on panel is always
+ * narrower than that and the eyebrow is its publisher line. */
+.addon-peek .pp-eyebrow {
+  @apply block;
 }
 
-.addon-row__body {
-  @apply min-w-0;
+/* The shared .pp-* sections each carry a top rule and margin for stacking;
+ * the body here is a gap column, so only keep the rule between sections. */
+.addon-peek .pp-stats,
+.addon-peek .pp-props,
+.addon-peek .pp-section {
+  @apply mt-0;
 }
 
-.addon-row__top {
-  @apply flex items-center justify-between gap-2;
+.addon-peek .pp-stats {
+  @apply border-t-0 pt-0;
 }
 
-.addon-row__title {
-  @apply flex min-w-0 items-center gap-1.5;
+.addon-peek__text {
+  @apply truncate text-[14px];
+  font-family: inherit;
 }
 
-.addon-row__name {
-  @apply truncate text-[13px] text-(--ink);
-  font-weight: 550;
+.addon-peek__lede {
+  @apply text-[13px] text-(--ink-2);
+}
+
+.addon-peek__callout {
+  @apply flex items-start gap-2 rounded-lg border px-3 py-2 text-[13px];
+}
+
+.addon-peek__callout .fi-icon {
+  @apply mt-0.5 size-4 flex-none;
+}
+
+.addon-peek__callout--ok {
+  @apply border-(--ok-line) bg-(--ok-soft) text-(--ok);
+}
+
+.addon-peek__callout--warn {
+  @apply border-(--warn-line) bg-(--warn-soft) text-(--warn);
+}
+
+.addon-peek__verify {
+  @apply text-[12px] text-(--ink-3);
+}
+
+.addon-peek__foot {
+  @apply sticky bottom-0 mt-auto flex flex-wrap items-center gap-2 border-t border-(--line) bg-(--surface) px-5 py-3;
 }
 
 /* Provenance, not state — so it stays in ink and lets the sort order carry most
  * of the signal. The chips keep colour for what is actually happening. */
 .official {
   @apply size-3 flex-none text-(--ink-3);
-}
-
-.addon-hero__name .official {
-  @apply mr-1 inline-block size-3.5 align-baseline;
-}
-
-.addon-row__desc {
-  @apply mt-px block truncate text-[11.5px] text-(--ink-3);
-}
-
-.addon-row__meta {
-  @apply mt-[3px] flex items-center gap-1 truncate text-[11px] text-(--ink-4);
-}
-
-.addon-row__progress {
-  @apply mt-1.5 grid gap-1;
 }
 
 /* Install progress. The bar replaces the row's meta line rather than opening a
@@ -3673,32 +5098,6 @@ html[data-density="comfortable"] .tbl tbody td {
 .dist__fill {
   @apply h-full rounded-[1px] transition-[width] duration-300;
   background-color: var(--primary-600);
-}
-
-/* A band flush at the top of the detail section's body — the section supplies
- * the card, so this only draws the band and its closing rule. */
-.addon-hero {
-  @apply grid items-start gap-3 px-3.5 pt-3.5 pb-3;
-  @apply border-b border-b-(--line) bg-(--surface-2);
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  margin: calc(var(--section-pad) * -1) calc(var(--section-pad) * -1) 0;
-}
-
-.addon-hero__name {
-  @apply text-[17px] leading-tight font-semibold tracking-tight text-(--ink);
-}
-
-.addon-hero__id {
-  @apply mt-1 flex flex-wrap items-center gap-1 text-[11.5px] text-(--ink-3);
-}
-
-.addon-hero__actions {
-  @apply flex flex-wrap items-center justify-end gap-1.5;
-}
-
-.addon-lede {
-  @apply border-b border-b-(--line-soft) px-3.5 py-3 text-[12.5px] text-(--ink-2);
-  max-width: 72ch;
 }
 
 .dl__link {
@@ -3746,11 +5145,6 @@ html[data-density="comfortable"] .tbl tbody td {
   box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-600) 20%, transparent);
 }
 
-/* Tab row + search row, flush at the top of the list section's body. */
-.addon-toolbar {
-  margin: calc(var(--section-pad) * -1) calc(var(--section-pad) * -1) 0;
-}
-
 /* A control parked at the far end of a tab row — a scope filter belongs with
  * the tabs, not stealing width from the search box on the row below. */
 .subtabs__aside {
@@ -3777,36 +5171,6 @@ html[data-density="comfortable"] .tbl tbody td {
 
 .empty span {
   @apply max-w-[34ch] text-xs text-(--ink-3);
-}
-
-@media (max-width: 1400px) {
-  /* The column is too narrow for tabs and a filter on one line. Wrapping drops
-   * the filter to its own row; scrolling would just half-hide it. */
-  .addon-toolbar .subtabs {
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-
-  .addon-toolbar .subtabs__aside {
-    width: 100%;
-    justify-content: flex-end;
-    padding: 6px 8px;
-    border-top: 1px solid var(--line-soft);
-  }
-}
-
-/* Below the Grid's own stacking breakpoint the detail follows the list rather
- * than sticking to a viewport it no longer shares. */
-/* One column, and the detail follows the row it belongs to rather than sticking
- * to a viewport it no longer shares. */
-@media (max-width: 1279px) {
-  .catalog > .fi-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .catalog__detail {
-    position: static;
-  }
 }
 
 @media (max-width: 640px) {
@@ -3871,4 +5235,787 @@ html[data-density="comfortable"] .tbl tbody td {
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-back-to-site .fi-sidebar-item-btn {
   @apply flex-col gap-0.5;
+}
+
+/* ---- PIREP slide-over panel ---- */
+/* PeekAction (app/Filament/Resources/Pireps/Actions/PeekAction.php): E's
+ * read-only record panel. Filament's own header and footer are replaced by the
+ * .pp-strip banner inside the modal content (buttons, nav and the nested
+ * Accept/Reject live there), so both are taken out of the layout. */
+.pirep-panel-overlay {
+  background-color: rgb(15 20 28 / 0.2);
+}
+
+.dark .pirep-panel-overlay {
+  background-color: rgb(0 0 0 / 0.36);
+}
+
+.fi-modal-window.pirep-panel {
+  width: min(62vw, 980px);
+  max-width: calc(100% - 40px);
+  border-radius: 0;
+}
+
+.pirep-panel .fi-modal-header,
+.pirep-panel .fi-modal-footer {
+  /* Visually hidden, not display:none: the heading still names the dialog. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  padding: 0;
+  border: 0;
+}
+
+.pirep-panel .fi-modal-content {
+  padding: 0;
+  gap: 0;
+}
+
+.pp-strip {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 64px;
+  min-height: 64px;
+  padding: 0 12px 0 22px;
+  color: #fff;
+  overflow: hidden;
+  background-color: color-mix(in oklab, var(--primary-600) 78%, var(--ink));
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 22%, transparent);
+}
+
+.dark .pp-strip {
+  background-color: color-mix(in oklab, var(--primary-600) 58%, #0a0e13);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .pp-strip {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.5 0.17 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.47 0.15 h) 50%,
+      oklch(from var(--primary-600) 0.46 0.12 calc(h - 25)) 100%
+    );
+  }
+
+  .dark .pp-strip {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.34 0.14 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.3 0.12 h) 50%,
+      oklch(from var(--primary-600) 0.27 0.1 calc(h - 25)) 100%
+    );
+  }
+}
+
+.pp-strip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.1;
+  background-image: radial-gradient(rgb(255 255 255 / 0.8) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.pp-strip > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pp-strip-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-eyebrow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+}
+
+.pp-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 3px 0 0;
+  font-size: 20px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.pp-ident {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.pp-route {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 17px;
+  font-weight: 450;
+  opacity: 0.88;
+}
+
+.pp-heading .chip {
+  flex: none;
+  font-size: 12px;
+}
+
+.pp-route {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-position {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: color-mix(in oklab, white 78%, var(--primary-600));
+}
+
+.pp-iconbtn,
+.pp-btn,
+.pp-strip .fi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  border-radius: 4px;
+  color: rgb(255 255 255 / 0.85);
+  cursor: pointer;
+}
+
+.pp-iconbtn {
+  width: 30px;
+}
+
+.pp-iconbtn svg,
+.pp-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pp-iconbtn:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.16);
+  color: #fff;
+}
+
+.pp-iconbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pp-sep {
+  flex: none;
+  width: 1px;
+  height: 24px;
+  margin: 0 6px;
+  background: rgb(255 255 255 / 0.3);
+}
+
+.pp-btn,
+.pp-strip .fi-btn {
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.45);
+  color: #fff;
+}
+
+.pp-btn:hover,
+.pp-strip .fi-btn:hover {
+  background: rgb(255 255 255 / 0.22);
+  box-shadow: inset 0 0 0 1px #fff;
+}
+
+.pp-strip .fi-btn .fi-icon {
+  color: inherit;
+}
+
+.pp-strip [data-pirep-decide="accept"] {
+  background: #fff;
+  box-shadow: none;
+  color: var(--ok);
+}
+
+.pp-btn kbd {
+  font: inherit;
+  font-size: 11px;
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  opacity: 0.65;
+}
+
+.pp-body {
+  padding: 20px 22px 60px;
+  color: var(--ink);
+}
+
+.pp-flightstrip {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto;
+  align-items: start;
+  gap: 22px;
+}
+
+.pp-ap b {
+  display: block;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.pp-ap > span {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-2);
+}
+
+.pp-ap small {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.pp-ap-end {
+  text-align: right;
+}
+
+.pp-arc {
+  position: relative;
+  height: 56px;
+  margin-top: 6px;
+  align-self: center;
+  color: var(--ink-4);
+}
+
+.pp-arc svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pp-arc-mid {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  transform: translateX(-50%);
+  padding: 0 8px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.pp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.pp-stats dt,
+.pp-props dt {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.pp-stats dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.pp-stats dd small {
+  margin-left: 3px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.pp-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.pp-section h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.pp-routestring {
+  margin-top: 6px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: break-word;
+  color: var(--ink-2);
+}
+
+.pp-props {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 28px;
+  margin-top: 18px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.pp-props > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pp-props dt {
+  flex: none;
+  width: 110px;
+}
+
+.pp-props dd {
+  min-width: 0;
+  font-size: 13px;
+}
+
+.pp {
+  container-type: inline-size;
+}
+
+.pp-strip-title {
+  overflow: hidden;
+}
+
+@container (max-width: 860px) {
+  .pp-open-label,
+  .pp-btn kbd,
+  .pp-eyebrow {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Command palette (cmd/ctrl+K).
+ *
+ * .cmdk-trigger is the topbar stand-in for Filament's search field;
+ * .cmdk is the overlay (App\Livewire\Filament\CommandPalette). Colours come
+ * from the console tokens, so light and dark follow the theme picker.
+ * ------------------------------------------------------------------------- */
+.cmdk-trigger {
+  @apply flex h-7 w-52.5 items-center gap-2 rounded-lg px-2 text-[12px] leading-none;
+  background-color: color-mix(in oklab, #1b1f24 75%, black);
+  border: 1px solid #333b45;
+  color: color-mix(in oklab, #8f9daf 88%, white);
+}
+
+.cmdk-trigger:hover {
+  border-color: #46505c;
+}
+
+.cmdk-trigger-icon {
+  @apply h-3.5 w-3.5 shrink-0;
+  color: #8f9daf;
+}
+
+.cmdk-trigger-text {
+  @apply flex-1 text-left;
+}
+
+.cmdk-kbd {
+  @apply shrink-0 rounded px-1 py-0.5 font-mono text-[10px] leading-none;
+  border: 1px solid #333b45;
+  color: #8f9daf;
+}
+
+.cmdk {
+  @apply fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh];
+}
+
+.cmdk-backdrop {
+  @apply absolute inset-0;
+  background-color: color-mix(in oklab, black 55%, transparent);
+}
+
+.cmdk-panel {
+  @apply relative flex max-h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-xl;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 60px -12px color-mix(in oklab, black 45%, transparent);
+  color: var(--ink);
+}
+
+.cmdk-field {
+  @apply flex items-center gap-2.5 px-3.5 py-3;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.cmdk-field-icon {
+  @apply h-4 w-4 shrink-0;
+  color: var(--ink-3);
+}
+
+.cmdk-input {
+  @apply min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] outline-none;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.cmdk-input:focus {
+  @apply outline-none;
+  box-shadow: none;
+}
+
+.cmdk-input::placeholder {
+  color: var(--ink-4);
+}
+
+.cmdk-panel .cmdk-kbd {
+  border-color: var(--line);
+  color: var(--ink-3);
+}
+
+.cmdk-results {
+  @apply overflow-y-auto p-1.5;
+}
+
+.cmdk-group-label {
+  @apply px-2.5 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider;
+  color: var(--ink-3);
+}
+
+.cmdk-item {
+  @apply flex items-baseline justify-between gap-3 rounded-md px-2.5 py-1.5 text-[13px];
+  color: var(--ink-2);
+}
+
+.cmdk-item.is-active {
+  background-color: var(--sunken);
+  color: var(--ink);
+}
+
+.cmdk-item-title {
+  @apply min-w-0 truncate;
+}
+
+.cmdk-item-details {
+  @apply shrink-0 truncate text-[12px];
+  color: var(--ink-4);
+}
+
+.cmdk-empty {
+  @apply px-2.5 py-6 text-center text-[13px];
+  color: var(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+ * Aside sections (long-form variant E, "relaxed aside"). A Section built with
+ * `->aside()` puts its title and one-line description in a 200px left column
+ * and the fields in a column capped at 760px, 40px apart, a hairline between
+ * consecutive sections. Flat: the content container loses Filament's card
+ * chrome, and the head loses the band the other sections get.
+ *
+ * The DOM chain is .fi-grid-col > .fi-sc-component > .fi-sc-section >
+ * section.fi-section.fi-aside. The fold is a container query on the grid
+ * column, not on .fi-page-main: container-type applies layout containment,
+ * which would make a large ancestor the containing block for fixed modals and
+ * drawers. Below 1060px of available width the head sits above its fields.
+ * ------------------------------------------------------------------------- */
+.fi-grid-col:has(> .fi-sc-component > .fi-sc-section > .fi-section.fi-aside) {
+  container-type: inline-size;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside {
+  @apply rounded-none border-0 bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+  grid-template-columns: 200px minmax(0, 760px);
+  column-gap: 40px;
+  row-gap: 16px;
+  padding-block: 32px;
+}
+
+/* A rule between consecutive aside sections: each is alone in its own grid
+ * column, so the rule goes on top of every one that follows another. */
+.fi-page-content
+  .fi-grid-col:has(.fi-section.fi-aside)
+  + .fi-grid-col:has(.fi-section.fi-aside)
+  .fi-sc-section
+  > .fi-section.fi-aside {
+  @apply border-t border-t-(--line-soft);
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-header {
+  @apply items-start rounded-none border-0 bg-transparent;
+  padding: 0;
+}
+
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-header
+  .fi-section-header-heading {
+  @apply text-[15px] font-semibold normal-case tracking-normal text-(--ink);
+  line-height: 1.35;
+}
+
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-header
+  .fi-section-header-description {
+  @apply mt-1 text-[13px] text-(--ink-3);
+  line-height: 1.5;
+}
+
+/* Vendor spans the card over two of three columns and pads the fields inside
+ * it; here it is the second of two, flat and unpadded. */
+.fi-page-content .fi-sc-section > .fi-section.fi-aside > .fi-section-content-ctn {
+  @apply col-span-1 rounded-none bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-content-ctn
+  > .fi-section-content {
+  padding: 0;
+}
+
+/* The footer (Cancel/Save) sits under the fields column, aligned to their
+ * left edge rather than inset by the footer padding. */
+.fi-page-content
+  .fi-sc-section
+  > .fi-section.fi-aside
+  > .fi-section-content-ctn
+  > .fi-section-footer {
+  @apply mt-6 px-0;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside .fi-section-footer .fi-grid > * + * {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+@container (max-width: 1060px) {
+  .fi-page-content .fi-sc-section > .fi-section.fi-aside {
+    grid-template-columns: minmax(0, 760px);
+    row-gap: 16px;
+    column-gap: 16px;
+  }
+}
+
+/* Editing focus: while focus is inside an aside section, a wash sits behind
+ * it (mockups/admin-edit-sections/long-forms.html `.ps.editing::before`). The
+ * wash is a pseudo-element, so nothing reflows. It spans the title + fields
+ * grid (200 + 40 + 760), not the page, and breathes 14px past the content on
+ * every side; the block inset (32px padding - 14px) keeps it clear of the
+ * hairline on the section's top border. `isolation` keeps the z-index: -1
+ * wash inside the section instead of dropping behind the page background.
+ * Mixed toward transparent, not white, so it reads in light and dark. */
+.fi-page-content .fi-sc-section > .fi-section.fi-aside {
+  position: relative;
+  isolation: isolate;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside::before {
+  content: "";
+  position: absolute;
+  inset-block: 18px;
+  inset-inline-start: -14px;
+  width: calc(min(100%, 1000px) + 28px);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 140ms ease;
+}
+
+.fi-page-content .fi-sc-section > .fi-section.fi-aside:focus-within::before {
+  opacity: 1;
+  background: color-mix(in oklab, var(--primary-600) 8%, transparent);
+  border-color: color-mix(in oklab, var(--primary-600) 22%, transparent);
+}
+
+/* Each aside section is its own stacking context (isolation above), and its
+ * grid column is one too (container-type applies layout containment). A
+ * dropdown opened inside is trapped there and the next section paints over it,
+ * so the column holding the focused section is lifted above its siblings. */
+.fi-grid-col:has(> .fi-sc-component > .fi-sc-section > .fi-section.fi-aside:focus-within) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fi-page-content .fi-sc-section > .fi-section.fi-aside::before {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Save bar (HasSaveBar). Pinned to the bottom of the viewport, as the last
+ * thing on the page (after the relation managers). It spans the page edge to
+ * edge; the padding puts the content on the page gutter. State line on the
+ * left, [Delete] | [Cancel] [Save changes] on the right.
+ * ------------------------------------------------------------------------- */
+/* The bar is the page footer (HasSaveBar::getFooter): the last child of
+ * .fi-page, so its containing block is the whole page. `mt-auto` pushes it to
+ * the bottom of a page shorter than the window. */
+.save-bar-ctn {
+  /* The footer sits outside .fi-page-main, which is where the gutter is
+   * defined; same values, same density switch. */
+  --page-gutter: 24px;
+
+  @apply sticky bottom-0 z-30 mt-auto;
+}
+
+html[data-density="comfortable"] .save-bar-ctn {
+  --page-gutter: 32px;
+}
+
+.fi-sc-flex.save-bar {
+  @apply items-center border-t border-t-(--line);
+  padding: 12px var(--page-gutter);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(8px);
+}
+
+.save-bar .save-bar-state {
+  @apply flex items-center gap-2 text-[12.5px];
+  color: var(--ink-3);
+}
+
+.save-bar .save-bar-dot {
+  @apply hidden size-[7px] rounded-full;
+  background: var(--warn);
+}
+
+.save-bar .save-bar-state[data-dirty="true"] .save-bar-dot {
+  @apply block;
+}
+
+/* Delete sits left of Cancel, split from the pair by a hairline. The divider
+ * hangs off the button's right edge into the row gap (gap-3 = 12px, so -6.5px
+ * centres a 1px line). */
+.save-bar .save-bar-delete {
+  @apply relative;
+}
+
+.save-bar .save-bar-delete::after {
+  content: "";
+  @apply absolute top-1/2 -right-[6.5px] h-5 w-px -translate-y-1/2 bg-(--line-strong);
+}
+
+/* The ⌘S keycap on the submit button; the binding itself is the action's
+ * `mod+s`. */
+.save-bar button[type="submit"]::after {
+  content: "⌘S";
+  @apply ml-1.5 rounded-[3px] border border-current px-1 font-mono text-[11px] opacity-80;
+}
+
+/* ---------------------------------------------------------------------------
+ * Relation manager under aside sections. On a page built from aside sections
+ * the relation-manager table heading reads as the next section: no grey band,
+ * a --line-soft rule and 32px of space above, the title and description set
+ * like an aside section head, and the table below at full content width.
+ * Other pages keep the band header (.fi-ta-header, ~line 1470).
+ * ------------------------------------------------------------------------- */
+.fi-page:has(.fi-section.fi-aside) .fi-resource-relation-manager .fi-ta-header {
+  @apply items-start border-t border-b-0 border-t-(--line-soft) bg-transparent;
+  border-radius: 0;
+  padding: 32px 0 16px;
+}
+
+.fi-page:has(.fi-section.fi-aside) .fi-resource-relation-manager .fi-ta-header-heading {
+  @apply text-[15px] font-semibold normal-case tracking-normal text-(--ink);
+  line-height: 1.35;
+}
+
+.fi-page:has(.fi-section.fi-aside) .fi-resource-relation-manager .fi-ta-header-description {
+  @apply mt-1 text-[13px] text-(--ink-3);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Expandable code editor (App\Filament\Support\ExpandableEditor): its hint
+ * action toggles .fi-editor-expanded on the field wrapper, which then covers
+ * the content area (below the topbar, right of the rail). Same DOM node, so
+ * the editor keeps its value. The label/hint row stays on top for the
+ * Collapse button. z-index sits under Filament modals/notifications (z-40+).
+ * ------------------------------------------------------------------------- */
+html.fi-editor-expanded-lock {
+  overflow: hidden;
+}
+
+.fi-fo-field.fi-editor-expanded {
+  position: fixed;
+  z-index: 20;
+  top: calc(var(--topbar-height) + 0.5rem);
+  inset-inline-end: 0.5rem;
+  bottom: 0.5rem;
+  inset-inline-start: calc(var(--rail-w, 0px) + 0.5rem);
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+}
+
+/* height: auto undoes the vendor's full-height label column. */
+.fi-fo-field.fi-editor-expanded > .fi-fo-field-label-col {
+  flex: none;
+  height: auto;
+}
+
+.fi-fo-field.fi-editor-expanded > .fi-fo-field-content-col,
+.fi-fo-field.fi-editor-expanded .fi-fo-field-content-ctn,
+.fi-fo-field.fi-editor-expanded .fi-fo-field-content,
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor,
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor > .fi-input-wrp-content-ctn {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor > .fi-input-wrp-content-ctn > div,
+.fi-fo-field.fi-editor-expanded .fi-fo-code-editor > .fi-input-wrp-content-ctn > div > div {
+  height: 100%;
+  min-height: 0;
+}
+
+.fi-fo-field.fi-editor-expanded .cm-scroller {
+  overflow: auto;
+}
+
+/* Beats the Theme page's #customize .cm-editor { max-height: 60vh }. */
+.fi-fo-field.fi-editor-expanded .cm-editor,
+#customize .fi-fo-field.fi-editor-expanded .cm-editor {
+  height: 100%;
+  max-height: none;
 }

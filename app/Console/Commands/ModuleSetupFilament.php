@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Addons\AddonRegistry;
+use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -73,10 +74,10 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
             return self::FAILURE;
         }
 
-        // Step 2: Register in module.json
-        $this->components->task('Registering provider in module.json', function () use ($addon, $providerClass): void {
+        // Step 2: Register in the addon manifest (addon.json, or an existing module.json)
+        $this->components->task('Registering provider in addon.json', function () use ($addon, $providerClass): void {
             $this->updateJsonArray(
-                $addon->getExtraPath('module.json'),
+                ManifestParser::manifestPath($addon->getPath()) ?? $addon->getExtraPath('addon.json'),
                 'providers',
                 $providerClass
             );

@@ -99,12 +99,12 @@ class FlightController extends Controller
                 $query->where('airline_id', $user->airline_id);
             }
 
-            if (setting('pilots.only_flights_from_current')) {
+            if (setting('operations.only_flights_from_current')) {
                 $query->where('dpt_airport_id', $user->curr_airport_id);
             }
         }
 
-        $filterByUser = setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false);
+        $filterByUser = setting('operations.restrict_aircraft_to_rank', false) || setting('operations.restrict_aircraft_to_typerating', false);
         if ($filterByUser) {
             $query->whereIn('id', $this->flightSvc->getAccessibleFlightIds($user));
         }
@@ -252,7 +252,7 @@ class FlightController extends Controller
                 'simbriefs' => fn ($q) => $q->whereNull('pirep_id'),
             ])
             ->when(
-                setting('simbrief.block_aircraft'),
+                setting('operations.block_aircraft'),
                 fn ($q) => $q->having('simbriefs_count', 0),
             )
             ->orderBy('icao')

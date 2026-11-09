@@ -1,0 +1,8 @@
+{
+    "name": "acme/ownership",
+    "autoload": {
+        "psr-4": {
+            "PhpvmsOwnershipFixture\\": "app/"
+        }
+    }
+}

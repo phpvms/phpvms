@@ -47,21 +47,6 @@ class FlightForm
         return $schema
             ->components([
                 Section::make(__('filament.flight_information'))
-                    ->id('flight-information')
-                    ->icon(Phosphor::FileTextLight)
-                    ->collapsible()
-                    ->persistCollapsed()
-                    ->footer([
-                        Toggle::make('enabled')
-                            ->inline()
-                            ->label(__('common.enabled'))
-                            ->helperText(__('filament.flight_enabled_hint'))
-                            ->offIcon(Phosphor::XLight)
-                            ->offColor('danger')
-                            ->onIcon(Phosphor::CheckLight)
-                            ->onColor('success')
-                            ->default(true),
-                    ])
                     ->schema([
                         // On the edit page these live in the overview's
                         // drawer instead; the create page still needs them
@@ -78,166 +63,171 @@ class FlightForm
                             ->numeric()
                             ->helperText(__('filament.flight_pilot_pay_hint')),
 
-                        // Nested Sections render as sequent head bands inside
-                        // the same card, like the PIREP view's stacked
-                        // .panel__head sections -- not a second card.
-                        Section::make(__('flights.route'))
-                            ->id('route')
-                            ->icon(Phosphor::MapTrifoldLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->schema([
-                                View::make('filament.resources.flight.route-bar')
-                                    ->viewData(fn (Get $get): array => self::routeBarData($get))
-                                    ->visible(fn (?Flight $record): bool => $record instanceof Flight)
-                                    ->columnSpanFull(),
+                        Toggle::make('enabled')
+                            ->label(__('common.enabled'))
+                            ->belowLabel(__('filament.flight_enabled_hint'))
+                            ->columnSpanFull()
+                            ->inlineLabel()
+                            ->inline()
+                            ->offIcon(Phosphor::XLight)
+                            ->offColor('danger')
+                            ->onIcon(Phosphor::CheckLight)
+                            ->onColor('success')
+                            ->default(true),
+                    ])
+                    ->aside()
+                    ->description(__('filament.flight_information_description'))
+                    ->columnSpanFull()
+                    ->columns(3),
 
-                                Grid::make()->schema([
-                                    AirportSelect::make('dpt_airport_id')
-                                        ->label(__('airports.departure'))
-                                        ->airportRelationship('dpt_airport')
-                                        ->required()
-                                        ->afterStateUpdated(self::recalculateRoute(...)),
-
-                                    AirportSelect::make('arr_airport_id')
-                                        ->label(__('airports.arrival'))
-                                        ->airportRelationship('arr_airport')
-                                        ->required()
-                                        ->afterStateUpdated(self::recalculateRoute(...)),
-                                ])
-                                    ->columnSpanFull()
-                                    ->columns(2),
-
-                                Textarea::make('route')
-                                    ->label(__('flights.route')),
-
-                                Grid::make()->schema([
-                                    AirportSelect::make('alt_airport_id')
-                                        ->label(__('flights.alternateairport'))
-                                        ->airportRelationship('alt_airport'),
-
-                                    TextInput::make('level')
-                                        ->label(__('flights.level'))
-                                        ->integer()
-                                        ->live(onBlur: true)
-                                        ->suffix(__('common.feet_short')),
-
-                                    TextInput::make('distance')
-                                        ->integer()
-                                        ->live(onBlur: true)
-                                        ->suffix(__('common.nautical_miles_short')),
-                                ])
-                                    ->columnSpanFull()
-                                    ->columns(3),
-                            ])
+                Section::make(__('flights.route'))
+                    ->schema([
+                        View::make('filament.resources.flight.route-bar')
+                            ->viewData(fn (Get $get): array => self::routeBarData($get))
+                            ->visible(fn (?Flight $record): bool => $record instanceof Flight)
                             ->columnSpanFull(),
 
-                        Section::make(__('filament.scheduling'))
-                            ->id('scheduling')
-                            ->icon(Phosphor::CalendarLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->columns(2)
-                            ->schema([
-                                TimePicker::make('departure_time')
-                                    ->seconds(false)
-                                    ->label(__('flights.departuretime'))
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(self::recalculateBlockTime(...)),
+                        Grid::make()->schema([
+                            AirportSelect::make('dpt_airport_id')
+                                ->label(__('airports.departure'))
+                                ->airportRelationship('dpt_airport')
+                                ->required()
+                                ->afterStateUpdated(self::recalculateRoute(...)),
 
-                                TimePicker::make('arrival_time')
-                                    ->seconds(false)
-                                    ->label(__('flights.arrivaltime'))
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(self::recalculateBlockTime(...)),
+                            AirportSelect::make('arr_airport_id')
+                                ->label(__('airports.arrival'))
+                                ->airportRelationship('arr_airport')
+                                ->required()
+                                ->afterStateUpdated(self::recalculateRoute(...)),
+                        ])
+                            ->columnSpanFull()
+                            ->columns(2),
 
-                                DatePicker::make('start_date')
-                                    ->label(__('common.start_date'))
-                                    ->live()
-                                    ->native(false)
-                                    ->minDate(fn (?Flight $record): ?Carbon => $record instanceof Flight ? null : now())
-                                    ->visible(fn (?Flight $record): bool => !self::parentBundleOwnsDates($record)),
+                        Textarea::make('route')
+                            ->label(__('flights.route')),
 
-                                DatePicker::make('end_date')
-                                    ->label(__('common.end_date'))
-                                    ->native(false)
-                                    ->minDate(function (Get $get, ?Flight $record): Carbon|string|null {
-                                        if ($record instanceof Flight) {
-                                            return $get('start_date');
-                                        }
+                        Grid::make()->schema([
+                            AirportSelect::make('alt_airport_id')
+                                ->label(__('flights.alternateairport'))
+                                ->airportRelationship('alt_airport'),
 
-                                        return $get('start_date') ?? now();
-                                    })
-                                    ->visible(fn (?Flight $record): bool => !self::parentBundleOwnsDates($record)),
+                            TextInput::make('level')
+                                ->label(__('flights.level'))
+                                ->integer()
+                                ->live(onBlur: true)
+                                ->suffix(__('common.feet_short')),
 
-                                TextEntry::make('bundle_dates_message')
-                                    ->visible(fn (?Flight $record): bool => self::parentBundleOwnsDates($record))
-                                    ->state(fn (?Flight $record): HtmlString => new HtmlString(self::parentBundleOwnedDatesMessage($record)))
-                                    ->html()
-                                    ->label('')
-                                    ->columnSpanFull(),
+                            TextInput::make('distance')
+                                ->integer()
+                                ->live(onBlur: true)
+                                ->suffix(__('common.nautical_miles_short')),
+                        ])
+                            ->columnSpanFull()
+                            ->columns(3),
+                    ])
+                    ->aside()
+                    ->description(__('filament.flight_route_description'))
+                    ->columnSpanFull()
+                    ->columns(1),
 
-                                TimePicker::make('flight_time')
-                                    ->seconds(false)
-                                    ->label(__('flights.flight_time'))
-                                    ->native(false)
-                                    ->required()
-                                    ->helperText(__('filament.flight_block_time_hint')),
+                Section::make(__('filament.scheduling'))
+                    ->schema([
+                        TimePicker::make('departure_time')
+                            ->seconds(false)
+                            ->label(__('flights.departuretime'))
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(self::recalculateBlockTime(...)),
 
-                                ToggleButtons::make('days')
-                                    ->label(__('common.days_text'))
-                                    ->helperText(__('filament.flight_days_hint'))
-                                    ->options(self::dayOptions())
-                                    ->multiple()
-                                    ->inline()
-                                    ->grouped()
-                                    ->extraAttributes(['class' => 'daypick'])
-                                    ->stateCast(new DaysMaskStateCast())
-                                    ->columnSpanFull(),
-                            ])
+                        TimePicker::make('arrival_time')
+                            ->seconds(false)
+                            ->label(__('flights.arrivaltime'))
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(self::recalculateBlockTime(...)),
+
+                        DatePicker::make('start_date')
+                            ->label(__('common.start_date'))
+                            ->live()
+                            ->native(false)
+                            ->minDate(fn (?Flight $record): ?Carbon => $record instanceof Flight ? null : now())
+                            ->visible(fn (?Flight $record): bool => !self::parentBundleOwnsDates($record)),
+
+                        DatePicker::make('end_date')
+                            ->label(__('common.end_date'))
+                            ->native(false)
+                            ->minDate(function (Get $get, ?Flight $record): Carbon|string|null {
+                                if ($record instanceof Flight) {
+                                    return $get('start_date');
+                                }
+
+                                return $get('start_date') ?? now();
+                            })
+                            ->visible(fn (?Flight $record): bool => !self::parentBundleOwnsDates($record)),
+
+                        TextEntry::make('bundle_dates_message')
+                            ->visible(fn (?Flight $record): bool => self::parentBundleOwnsDates($record))
+                            ->state(fn (?Flight $record): HtmlString => new HtmlString(self::parentBundleOwnedDatesMessage($record)))
+                            ->html()
+                            ->label('')
                             ->columnSpanFull(),
 
-                        Section::make(__('filament.flights.sections.loadsheet'))
-                            ->id('loadsheet')
-                            ->icon(Phosphor::ScalesLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->columns(2)
-                            ->schema([
-                                TextInput::make('load_factor')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->suffix('%')
-                                    ->stripCharacters('%')
-                                    ->helperText(__('filament.flight_load_factor_hint')),
+                        TimePicker::make('flight_time')
+                            ->seconds(false)
+                            ->label(__('flights.flight_time'))
+                            ->native(false)
+                            ->required()
+                            ->helperText(__('filament.flight_block_time_hint')),
 
-                                TextInput::make('load_factor_variance')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->suffix('±%')
-                                    ->stripCharacters('%')
-                                    ->helperText(__('filament.flight_load_factor_variance_hint')),
-                            ])
-                            ->columnSpanFull(),
-
-                        Section::make(__('common.notes'))
-                            ->icon(Phosphor::NoteLight)
-                            ->collapsible()
-                            ->persistCollapsed()
-                            ->schema([
-                                Textarea::make('notes')
-                                    ->hiddenLabel()
-                                    ->rows(3)
-                                    ->placeholder(__('filament.flight_notes_placeholder'))
-                                    ->columnSpanFull(),
-                            ])
+                        ToggleButtons::make('days')
+                            ->label(__('common.days_text'))
+                            ->helperText(__('filament.flight_days_hint'))
+                            ->options(self::dayOptions())
+                            ->multiple()
+                            ->inline()
+                            ->grouped()
+                            ->extraAttributes(['class' => 'daypick'])
+                            ->stateCast(new DaysMaskStateCast())
                             ->columnSpanFull(),
                     ])
-                    ->columns(3)
-                    ->columnSpanFull(),
+                    ->aside()
+                    ->description(__('filament.flight_scheduling_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
 
+                Section::make(__('filament.flights.sections.loadsheet'))
+                    ->schema([
+                        TextInput::make('load_factor')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->suffix('%')
+                            ->stripCharacters('%')
+                            ->helperText(__('filament.flight_load_factor_hint')),
+
+                        TextInput::make('load_factor_variance')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->suffix('±%')
+                            ->stripCharacters('%')
+                            ->helperText(__('filament.flight_load_factor_variance_hint')),
+                    ])
+                    ->aside()
+                    ->description(__('filament.flight_loadsheet_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
+
+                Section::make(__('common.notes'))
+                    ->schema([
+                        Textarea::make('notes')
+                            ->hiddenLabel()
+                            ->rows(3)
+                            ->placeholder(__('filament.flight_notes_placeholder'))
+                            ->columnSpanFull(),
+                    ])
+                    ->aside()
+                    ->description(__('filament.flight_notes_description'))
+                    ->columnSpanFull()
+                    ->columns(1),
             ]);
     }
 

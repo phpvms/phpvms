@@ -14,20 +14,33 @@ use App\Models\Addon;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
-use Filament\Navigation\NavigationItem;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\Size;
+use Filament\Support\Enums\Width;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\ViewColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Url;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -39,20 +52,20 @@ use Override;
 use Throwable;
 use UnitEnum;
 
-use function Filament\Support\original_request;
-
 /**
- * Split-catalog addon manager: browse the registry, install/update from it, and
- * manage installed addons — replacing the core Addons page. Discovered into the
- * main admin panel by AdminPanelProvider's module-page discovery.
+ * Addon manager: browse the registry, install/update from it, and manage
+ * installed addons as a card grid (a Filament table over custom data) with a
+ * slide-over detail. Discovered into the main admin panel by AdminPanelProvider's
+ * module-page discovery.
  *
- * The list/detail data is assembled in-memory each render by merging the cached
- * registry catalog (RegistryClient) with the installed addon rows; search,
- * category filter, tab, and selection are Livewire state.
+ * The rows are assembled in-memory each render by merging the cached registry
+ * catalog (RegistryClient) with the installed addon rows; the banner tab,
+ * search and filters are applied to them inside the table's records() closure.
  */
-class Addons extends Page
+class Addons extends Page implements HasTable
 {
     use AuthorizesAccess;
+    use InteractsWithTable;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::AddOns;
 
@@ -60,39 +73,26 @@ class Addons extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Phosphor::PuzzlePieceLight;
 
-    /** Rows per page. Ten fills the column without making it the whole screen. */
-    private const int PER_PAGE = 10;
-
     /**
      * The tab a bare /admin/addons lands on. It has to agree with the first
-     * workspace tab, or arriving at the page highlights a tab you did not pick.
+     * banner tab, or arriving at the page highlights a tab you did not pick.
      * Installed leads because "why is that add-on not running" is the question
      * people come here with; browsing the registry is a deliberate second step.
      */
     private const string DEFAULT_TAB = 'installed';
 
     /**
-     * Which population is listed. Bound to `?tab=` so the topbar's workspace
-     * tabs can link straight to it; still a plain property, so `set()` works.
+     * Which population is listed. Bound to `?tab=` so a tab can be linked
+     * straight to; still a plain property, so `set()` works.
      */
     #[Url(as: 'tab')]
     public string $activeTab = self::DEFAULT_TAB;
 
-    /** Enable state within the active tab: `all`, `enabled` or `disabled`. */
-    public string $state = 'all';
-
-    public string $search = '';
-
-    public ?string $category = null;
-
-    public ?string $selectedId = null;
-
-    public int $page = 1;
-
     /**
-     * Per-request memo for the assembled listing — allEntries() runs disk
-     * discovery + a catalog read + a DB read and is consulted several times per
-     * render (listing, counts, categories, selection). Fresh each request.
+     * Per-request memo for the assembled listing — allEntries() runs a catalog
+     * read + a DB read and is consulted several times per render (records, counts,
+     * categories, subheading). Fresh each request, and dropped after any state
+     * change (see refreshEntries()).
      *
      * @var Collection<int, array<string, mixed>>|null
      */
@@ -108,53 +108,25 @@ class Addons extends Page
         return 'modules';
     }
 
+    /**
+     * One nav entry under the Add-ons group; All / Installed / Updates / Not
+     * installed are the page's own banner tabs (see content()).
+     */
     #[Override]
     public static function getNavigationLabel(): string
     {
-        return (string) Str::of(__('common.addons'))->plural();
+        return __('addon-manager::addons.view');
     }
 
-    /**
-     * Three workspace tabs rather than one nav entry. The topbar navigator is
-     * built from the active group's NavigationItems, so this is what puts
-     * Installed / Updates / Registry up there instead of stacking a second tab
-     * row inside the page.
-     *
-     * Every badge here renders on EVERY admin page, so all three stay cheap: one
-     * count query, one cached-catalog read, and the existing cache-only update
-     * count. None of them may reach the network or scan the disk.
-     *
-     * @return array<int, NavigationItem>
-     */
+    /** The update count is the badge, so it reads as a warning. */
     #[Override]
-    public static function getNavigationItems(): array
+    public static function getNavigationBadgeColor(): string|array|null
     {
-        $tabs = [
-            'installed' => [__('addon-manager::addons.installed_tab'), Phosphor::PuzzlePieceLight, fn (): ?string => self::badge(Addon::query()->count())],
-            'updates'   => [__('addon-manager::addons.updates'), Phosphor::DownloadSimpleLight, fn (): ?string => self::badge(app(static::class)->updateCount())],
-            'browse'    => [__('addon-manager::addons.registry_tab'), Phosphor::MagnifyingGlassLight, fn (): ?string => self::badge(count(app(RegistryClient::class)->cachedCatalog()['entries']))],
-        ];
-
-        $sort = static::getNavigationSort() ?? 0;
-        $items = [];
-
-        foreach ($tabs as $tab => [$label, $icon, $badge]) {
-            $items[] = NavigationItem::make($label)
-                ->key(static::class.':'.$tab)
-                ->group(static::getNavigationGroup())
-                ->icon($icon)
-                ->badge($badge, color: $tab === 'updates' ? 'warning' : null)
-                ->sort($sort++)
-                ->isActiveWhen(fn (): bool => original_request()->routeIs(static::getRouteName())
-                    && original_request()->query('tab', self::DEFAULT_TAB) === $tab)
-                ->url(static::getUrl(['tab' => $tab]));
-        }
-
-        return $items;
+        return 'warning';
     }
 
     /** A zero count is not news; leave the tab unbadged. */
-    private static function badge(int $count): ?string
+    private function badge(int $count): ?string
     {
         return $count > 0 ? (string) $count : null;
     }
@@ -185,7 +157,7 @@ class Addons extends Page
         $rows = $this->allEntries();
 
         return view('addon-manager::filament.addons.head-metrics', [
-            'listed'   => $this->tabCounts()[$this->activeTab],
+            'listed'   => $this->tabCounts()[$this->activeTab] ?? $rows->count(),
             'updates'  => $rows->where('update_available', true)->count(),
             'disabled' => $rows->where('installed', true)->where('enabled', false)->count(),
         ]);
@@ -208,71 +180,44 @@ class Addons extends Page
     }
 
     /**
-     * List left, detail right. Both halves are Sections so they inherit the
-     * panel's card, header band and density; the split is the schema Grid's own
-     * column spans rather than a hand-rolled two-column CSS grid.
+     * Banner tabs, then the stale-catalog notice, then the card grid.
      */
     #[Override]
     public function content(Schema $schema): Schema
     {
         return $schema->components([
+            // First in the content, so the theme lifts it onto the banner's
+            // bottom edge as folder tabs. The tabs only switch `activeTab`;
+            // the table below reads it.
+            Tabs::make()
+                ->key('addonTabs')
+                ->livewireProperty('activeTab')
+                ->contained(false)
+                ->tabs([
+                    'all' => Tab::make(__('addon-manager::addons.all_tab'))
+                        ->icon(Phosphor::SquaresFourLight)
+                        ->badge(fn (): ?string => $this->badge($this->tabCounts()['all'])),
+                    'installed' => Tab::make(__('addon-manager::addons.installed_tab'))
+                        ->icon(Phosphor::PuzzlePieceLight)
+                        ->badge(fn (): ?string => $this->badge($this->tabCounts()['installed'])),
+                    'updates' => Tab::make(__('addon-manager::addons.updates'))
+                        ->icon(Phosphor::DownloadSimpleLight)
+                        ->badge(fn (): ?string => $this->badge($this->tabCounts()['updates']))
+                        ->badgeColor('warning'),
+                    'available' => Tab::make(__('addon-manager::addons.not_installed_tab'))
+                        ->icon(Phosphor::MagnifyingGlassLight)
+                        ->badge(fn (): ?string => $this->badge($this->tabCounts()['available'])),
+                ]),
+
+            // The search box, category menu and toggles drive the table's own
+            // search/filter state; the native controls are hidden.
+            View::make('addon-manager::filament.addons.filter-bar'),
+
             View::make('addon-manager::filament.addons.notice')
                 ->visible(fn (): bool => $this->catalogState()['stale'] || filled($this->catalogState()['error'])),
 
-            // One column of 430px and one of whatever is left is not a ratio the
-            // 12-column grid can express, so `.catalog` supplies the template and
-            // the Grid just holds the two cards.
-            Grid::make()
-                ->columns(1)
-                ->extraAttributes(['class' => 'catalog'])
-                ->schema([
-                    Section::make()
-                        ->schema([
-                            View::make('addon-manager::filament.addons.toolbar'),
-                            View::make('addon-manager::filament.addons.list'),
-                        ]),
-
-                    Section::make()
-                        ->extraAttributes(['class' => 'catalog__detail'])
-                        ->schema([
-                            View::make('addon-manager::filament.addons.empty')
-                                ->visible(fn (): bool => $this->selected() === null),
-
-                            View::make('addon-manager::filament.addons.hero')
-                                ->visible(fn (): bool => $this->selected() !== null),
-
-                            View::make('addon-manager::filament.addons.register')
-                                ->visible(fn (): bool => $this->selected() !== null),
-
-                            // Nested Section: renders as a sequent head band
-                            // inside the same card, not a second card.
-                            Section::make(__('addon-manager::addons.releases'))
-                                ->icon(Phosphor::ClockCounterClockwiseLight)
-                                ->collapsible()
-                                ->persistCollapsed()
-                                ->visible(fn (): bool => $this->releases() !== [])
-                                ->schema([
-                                    View::make('addon-manager::filament.addons.releases'),
-                                ]),
-
-                            View::make('addon-manager::filament.addons.verify')
-                                ->visible(fn (): bool => $this->selected() !== null),
-                        ]),
-                ]),
+            EmbeddedTable::make(),
         ]);
-    }
-
-    /**
-     * Release history for the selection, newest first. Best-effort: the registry
-     * call behind it is allowed to fail, and an empty list hides the section.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public function releases(): array
-    {
-        $releases = $this->selected()['release']['releases'] ?? null;
-
-        return is_array($releases) ? $releases : [];
     }
 
     // ── Data assembly ──────────────────────────────────────────────────────
@@ -368,8 +313,8 @@ class Addons extends Page
             'category'    => (string) ($entry['category'] ?? ''),
             'license'     => (string) ($entry['license'] ?? ''),
             'publisher'   => (string) ($entry['publisher'] ?? ''),
-            // Published by the phpVMS project rather than a third party. Sorts
-            // first and earns a star; never affects whether it can be installed.
+            // Published by the phpVMS project rather than a third party. Earns a
+            // star; never affects whether it can be installed.
             'official' => (bool) ($entry['official'] ?? false),
             // Registry-supplied URLs are rendered as hrefs; drop any non-http(s)
             // scheme (e.g. javascript:) so a hostile registry can't inject one.
@@ -431,96 +376,51 @@ class Addons extends Page
     }
 
     /**
-     * The current tab's rows: filtered by search + category and sorted with
-     * incompatible entries greyed and pushed last.
+     * The active tab's rows, narrowed by the search box and the filters, sorted
+     * A–Z by name (case-insensitive) and keyed by add-on id.
      *
-     * @return Collection<int, array<string, mixed>>
+     * Official and incompatible add-ons carry no sort weight: a plain
+     * alphabetical shelf is predictable, and the badges already say the rest.
+     *
+     * @param  array<string, mixed>                     $filters the table's filter state
+     * @return Collection<string, array<string, mixed>>
      */
-    public function listing(): Collection
+    public function listing(?string $search = null, array $filters = []): Collection
     {
         $rows = $this->allEntries();
 
         $rows = match ($this->activeTab) {
-            'updates'   => $rows->where('update_available', true),
             'installed' => $rows->where('installed', true),
-            default     => $rows->where('in_catalog', true),
+            'updates'   => $rows->where('update_available', true),
+            'available' => $rows->where('in_catalog', true)->where('installed', false),
+            default     => $rows,
         };
 
-        $rows = match ($this->state) {
-            'enabled'  => $rows->where('installed', true)->where('enabled', true),
-            'disabled' => $rows->where('installed', true)->where('enabled', false),
-            default    => $rows,
-        };
-
-        if (filled($this->category)) {
-            $rows = $rows->where('category', $this->category);
+        $category = $filters['category']['value'] ?? null;
+        if (filled($category)) {
+            $rows = $rows->where('category', $category);
         }
 
-        $searching = filled($this->search);
+        if ($filters['official']['isActive'] ?? false) {
+            $rows = $rows->where('official', true);
+        }
 
-        if ($searching) {
-            $needle = Str::lower($this->search);
+        // "Untested" is an add-on this install cannot run and has not got.
+        if ($filters['hide_untested']['isActive'] ?? false) {
+            $rows = $rows->reject(fn (array $row): bool => !$row['compatible'] && !$row['installed']);
+        }
+
+        if (filled($search)) {
+            $needle = Str::lower($search);
             $rows = $rows->filter(fn (array $row): bool => str_contains(Str::lower($row['name']), $needle)
                 || str_contains(Str::lower($row['description']), $needle)
-                || str_contains(Str::lower($row['id']), $needle));
+                || str_contains(Str::lower($row['id']), $needle)
+                || str_contains(Str::lower($row['publisher']), $needle));
         }
 
         return $rows
-            ->sortBy([
-                fn (array $a, array $b): int => ($a['compatible'] ? 0 : 1) <=> ($b['compatible'] ? 0 : 1),
-                // Official add-ons lead the shelf. Not while searching: someone
-                // who typed a name wants the best match first, and demoting a
-                // community add-on that matched better would be a lookup bug.
-                fn (array $a, array $b): int => $searching
-                    ? 0
-                    : (($a['official'] ? 0 : 1) <=> ($b['official'] ? 0 : 1)),
-                fn (array $a, array $b): int => strcasecmp((string) $a['name'], (string) $b['name']),
-            ])
-            ->values();
-    }
-
-    /**
-     * Rows on the current page, plus what the footer needs to describe them.
-     * Named `paginator` because `$page` is already the page-number property.
-     */
-    public function paginator(): LengthAwarePaginator
-    {
-        $rows = $this->listing();
-
-        return new LengthAwarePaginator(
-            $rows->forPage($this->page, self::PER_PAGE)->values(),
-            $rows->count(),
-            self::PER_PAGE,
-            $this->page,
-        );
-    }
-
-    /**
-     * The selected detail row (falls back to the first listed), enriched with
-     * lazily-fetched release metadata. Null when the listing is empty.
-     *
-     * @return array<string, mixed>|null
-     */
-    public function selected(): ?array
-    {
-        $listing = $this->listing();
-
-        $row = $listing->firstWhere('id', $this->selectedId) ?? $listing->first();
-
-        if ($row === null) {
-            return null;
-        }
-
-        // Release history is a best-effort registry call, only meaningful for
-        // catalog packages. Skip it for local/installed-only addons and when the
-        // catalog is stale (registry unreachable) so selecting a row stays instant
-        // instead of blocking on a request that returns nothing.
-        $row['release'] = ($row['in_catalog'] && !$this->catalogState()['stale'])
-            ? app(RegistryClient::class)->releaseMetadata($row['id'])
-            : null;
-        $row['progress'] = InstallProgress::get($row['id']);
-
-        return $row;
+            ->sortBy(fn (array $row): string => Str::lower($row['name']), SORT_NATURAL)
+            ->keyBy('id');
     }
 
     /**
@@ -540,49 +440,151 @@ class Addons extends Page
     }
 
     /**
-     * Any narrowing of the list invalidates the page number — page 3 of a
-     * five-row result is an empty column with no way back.
+     * Switching tab swaps the whole population, so page 3 of the old one is an
+     * empty grid in the new one. Search and filters are left as typed.
      */
-    public function updated(string $property): void
+    public function updatedActiveTab(): void
     {
-        if (in_array($property, ['activeTab', 'state', 'search', 'category'], true)) {
-            $this->page = 1;
-        }
+        $this->resetPage();
     }
 
     /**
-     * Counts for the enable-state tabs, scoped to the active tab so the numbers
-     * describe the list actually on screen.
-     *
-     * @return array{all: int, enabled: int, disabled: int}
-     */
-    public function stateCounts(): array
-    {
-        $rows = match ($this->activeTab) {
-            'updates'   => $this->allEntries()->where('update_available', true),
-            'installed' => $this->allEntries()->where('installed', true),
-            default     => $this->allEntries()->where('in_catalog', true),
-        };
-
-        return [
-            'all'      => $rows->count(),
-            'enabled'  => $rows->where('installed', true)->where('enabled', true)->count(),
-            'disabled' => $rows->where('installed', true)->where('enabled', false)->count(),
-        ];
-    }
-
-    /**
-     * @return array{browse: int, updates: int, installed: int}
+     * @return array{all: int, installed: int, updates: int, available: int}
      */
     public function tabCounts(): array
     {
         $all = $this->allEntries();
 
         return [
-            'browse'    => $all->where('in_catalog', true)->count(),
-            'updates'   => $all->where('update_available', true)->count(),
+            'all'       => $all->count(),
             'installed' => $all->where('installed', true)->count(),
+            'updates'   => $all->where('update_available', true)->count(),
+            'available' => $all->where('in_catalog', true)->where('installed', false)->count(),
         ];
+    }
+
+    // ── Table ─────────────────────────────────────────────────────────────
+
+    /**
+     * Cards: one Stack per add-on in a two/three column content grid. Search,
+     * filters and paging are applied by hand in records() (custom data), and
+     * clicking a card opens the slide-over peek.
+     */
+    public function table(Table $table): Table
+    {
+        return $table
+            ->records(fn (?string $search, array $filters, int $page, int $recordsPerPage): LengthAwarePaginator => $this->paginateRows($search, $filters, $page, $recordsPerPage))
+            ->columns([
+                // A layout component is what makes the table render as cards.
+                Stack::make([
+                    ViewColumn::make('card')
+                        ->view('addon-manager::filament.addons.card')
+                        ->state(fn (array $record): array => $this->cardData($record)),
+                ]),
+            ])
+            ->contentGrid(['md' => 2, 'xl' => 3])
+            ->paginationPageOptions([12, 24, 48])
+            ->defaultPaginationPageOption(12)
+            ->filters([
+                SelectFilter::make('category')
+                    ->label(__('addon-manager::addons.category'))
+                    ->placeholder(__('addon-manager::addons.all_categories'))
+                    ->options(fn (): array => array_combine($this->categories(), $this->categories())),
+                Filter::make('official')
+                    ->label(__('addon-manager::addons.official_only'))
+                    ->toggle(),
+                Filter::make('hide_untested')
+                    ->label(__('addon-manager::addons.hide_untested'))
+                    ->toggle(),
+            ], layout: FiltersLayout::Hidden)
+            ->deferFilters(false)
+            ->extraAttributes(['class' => 'addon-cards'])
+            ->recordUrl(null)
+            ->recordAction('peek')
+            ->recordActions([
+                $this->installRecordAction(),
+                $this->toggleRecordAction(enable: true, inMenu: false),
+                $this->toggleRecordAction(enable: false, inMenu: false),
+                ActionGroup::make([
+                    $this->peekRecordAction(),
+                    $this->toggleRecordAction(enable: true, inMenu: true),
+                    $this->toggleRecordAction(enable: false, inMenu: true),
+                    $this->deleteRecordAction(),
+                    $this->repositoryRecordAction(),
+                ])->icon(Phosphor::DotsThreeLight)->color('gray'),
+            ])
+            ->emptyStateIcon(Phosphor::PuzzlePieceLight)
+            ->emptyStateHeading(__('addon-manager::addons.no_results_title'))
+            ->emptyStateDescription(__('addon-manager::addons.no_results_hint'));
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     */
+    private function paginateRows(?string $search, array $filters, int $page, int $recordsPerPage): LengthAwarePaginator
+    {
+        $rows = $this->listing($search, $filters);
+
+        return new LengthAwarePaginator(
+            $rows->forPage($page, $recordsPerPage),
+            $rows->count(),
+            $recordsPerPage,
+            $page,
+        );
+    }
+
+    /**
+     * What the card view needs beyond the row itself.
+     *
+     * @param  array<string, mixed>                                                                                                                               $row
+     * @return array{badges: array<int, array{label: string, color: string}>, installs: ?string, progress: array{status: string, pct: int, message: string}|null}
+     */
+    private function cardData(array $row): array
+    {
+        return [
+            'badges'   => $this->badgeData($row),
+            'installs' => $row['installs'] > 0 ? Number::abbreviate($row['installs']) : null,
+            'progress' => InstallProgress::isActive($row['id']) ? InstallProgress::get($row['id']) : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>                            $row
+     * @return array<int, array{label: string, color: string}>
+     */
+    private function badgeData(array $row): array
+    {
+        return array_map(
+            fn (string $label): array => ['label' => $label, 'color' => $this->badgeColor($label)],
+            $this->badgesFor($row),
+        );
+    }
+
+    /**
+     * Status badges for a card, in reading order.
+     *
+     * @param  array<string, mixed> $row
+     * @return array<int, string>
+     */
+    private function badgesFor(array $row): array
+    {
+        return array_values(array_filter([
+            $row['update_available'] ? __('addon-manager::addons.badge_update') : null,
+            $row['installed'] && $row['enabled'] ? __('addon-manager::addons.state_enabled') : null,
+            $row['installed'] && !$row['enabled'] ? __('addon-manager::addons.state_disabled') : null,
+            !$row['compatible'] ? __('addon-manager::addons.untested') : null,
+            $row['bundled'] ? __('addon-manager::addons.bundled_short') : null,
+        ]));
+    }
+
+    private function badgeColor(string $label): string
+    {
+        return match ($label) {
+            __('addon-manager::addons.badge_update')  => 'warning',
+            __('addon-manager::addons.state_enabled') => 'success',
+            __('addon-manager::addons.untested')      => 'danger',
+            default                                   => 'gray',
+        };
     }
 
     /**
@@ -614,12 +616,44 @@ class Addons extends Page
             ->count();
     }
 
-    // ── Row interactions ──────────────────────────────────────────────────
+    // ── Filter bar ────────────────────────────────────────────────────────
 
-    public function select(string $id): void
+    /**
+     * Distinct categories with how many add-ons carry each, for the bar's menu.
+     *
+     * @return array<string, int>
+     */
+    public function categoryCounts(): array
     {
-        $this->selectedId = $id;
+        return $this->allEntries()
+            ->pluck('category')
+            ->filter()
+            ->countBy()
+            ->sortKeys()
+            ->all();
     }
+
+    /** `null` clears the category filter. */
+    public function setCategoryFilter(?string $category): void
+    {
+        $this->tableFilters ??= [];
+        $this->tableFilters['category']['value'] = in_array($category, $this->categories(), true) ? $category : null;
+        $this->updatedTableFilters();
+    }
+
+    /** Flip one of the bar's pill toggles (`official` or `hide_untested`). */
+    public function toggleFilterFlag(string $flag): void
+    {
+        if (!in_array($flag, ['official', 'hide_untested'], true)) {
+            return;
+        }
+
+        $this->tableFilters ??= [];
+        $this->tableFilters[$flag]['isActive'] = !($this->tableFilters[$flag]['isActive'] ?? false);
+        $this->updatedTableFilters();
+    }
+
+    // ── Row interactions ──────────────────────────────────────────────────
 
     public function refreshCatalog(): void
     {
@@ -638,52 +672,86 @@ class Addons extends Page
         Notification::make()->title(__('addon-manager::addons.catalog_refreshed'))->success()->send();
     }
 
-    public function enable(string $key): void
+    /**
+     * Custom-data tables do not refresh after an action, and allEntries() is
+     * memoised for the request — drop both so the cards show the new state.
+     */
+    private function refreshEntries(): void
     {
-        app(AddonRegistry::class)->enable($key);
-        // No redirect: the component re-renders reactively and the list reflects
-        // the new state. A full redirect is what made this feel like a page load.
-    }
-
-    public function disable(string $key): void
-    {
-        app(AddonRegistry::class)->disable($key);
+        $this->entriesMemo = null;
+        $this->flushCachedTableRecords();
     }
 
     // ── Actions ───────────────────────────────────────────────────────────
 
+    /** @param array<string, mixed> $row */
+    private function canInstall(array $row): bool
+    {
+        return !$row['installed'] || $row['update_available'];
+    }
+
+    /** Enable/disable and delete are for installed add-ons that are not bundled. */
+    private function canManage(array $row): bool
+    {
+        return $row['installed'] && !$row['bundled'];
+    }
+
+    /** @param array<string, mixed> $row */
+    private function installLabel(array $row): string
+    {
+        return $row['update_available']
+            ? __('addon-manager::addons.update_to', ['version' => $row['latest_version']])
+            : __('addon-manager::addons.install');
+    }
+
     /**
-     * Install / update the selected addon. The trigger label is contextual
-     * ("Install" vs "Update to vX.Y.Z"); the modal shows publisher, requirements
-     * with the compatibility result, package size and a verification note above a
-     * migrations toggle. Disabled (with a reason) when incompatible or when the
-     * catalog carries no installable version.
+     * Why install is unavailable for a row, or null when it is available.
+     *
+     * @param array<string, mixed> $row
      */
-    public function installAction(): Action
+    private function installBlockedReason(array $row): ?string
+    {
+        if (!$row['compatible']) {
+            return $row['incompatible_reason'];
+        }
+
+        return ($row['latest_version'] ?? '') === '' ? __('addon-manager::addons.no_installable_version') : null;
+    }
+
+    /**
+     * Install / update the clicked add-on. The modal shows publisher,
+     * requirements with the compatibility result, package size and a
+     * verification note above a migrations toggle. Disabled (with the reason as
+     * tooltip) when incompatible or when the catalog carries no installable
+     * version.
+     */
+    private function installRecordAction(): Action
     {
         return Action::make('install')
-            ->label(fn (): string => ($this->selected()['update_available'] ?? false)
-                ? __('addon-manager::addons.update_to', ['version' => $this->selected()['latest_version'] ?? ''])
-                : __('addon-manager::addons.install'))
-            ->modalHeading(fn (): string => __('addon-manager::addons.install_name', ['name' => $this->selected()['name'] ?? '']))
-            ->modalDescription(fn (): ?string => $this->installModalDescription())
+            ->label(fn (array $record): string => $this->installLabel($record))
+            ->icon(fn (array $record): Phosphor => $record['update_available'] ? Phosphor::ArrowsClockwiseLight : Phosphor::DownloadSimpleLight)
+            ->button()
+            ->size(Size::Small)
+            ->modalHeading(fn (array $record): string => __('addon-manager::addons.install_name', ['name' => $record['name']]))
+            ->modalDescription(fn (array $record): ?string => $this->installModalDescription($record))
             ->modalSubmitActionLabel(__('addon-manager::addons.install'))
             ->schema([
                 Toggle::make('run_migrations')
                     ->label(__('addon-manager::addons.run_migrations'))
                     ->default(true),
             ])
-            ->disabled(fn (): bool => !$this->isInstallable($this->selected()))
-            ->action(function (array $data): void {
-                $row = $this->selected();
-
-                if (!$this->isInstallable($row)) {
+            ->authorize(fn (): bool => static::canEdit())
+            ->visible(fn (array $record): bool => $this->canInstall($record))
+            ->disabled(fn (array $record): bool => $this->installBlockedReason($record) !== null)
+            ->tooltip(fn (array $record): ?string => $this->installBlockedReason($record))
+            ->action(function (array $data, array $record): void {
+                if ($this->installBlockedReason($record) !== null) {
                     return;
                 }
 
                 $ranSync = InstallAddonJob::dispatchFor(
-                    $row['id'],
-                    $row['latest_version'],
+                    $record['id'],
+                    $record['latest_version'],
                     (bool) ($data['run_migrations'] ?? true),
                     (int) Auth::id(),
                 );
@@ -701,40 +769,206 @@ class Addons extends Page
                     return;
                 }
 
-                InstallProgress::set($row['id'], 'queued', 5, __('addon-manager::addons.queued'));
+                InstallProgress::set($record['id'], 'queued', 5, __('addon-manager::addons.queued'));
 
                 Notification::make()
                     ->title(__('addon-manager::addons.install_queued'))
                     ->body(__('addon-manager::addons.install_running_bg'))
                     ->success()
                     ->send();
+
+                $this->refreshEntries();
             });
     }
 
     /**
-     * True when the selected/target row can be installed: present, compatible,
-     * and the catalog carries a non-empty version to mint.
-     *
-     * @param array<string, mixed>|null $row
+     * Enable or disable an installed add-on. The primary slot carries it only
+     * when there is no Install/Update to show; otherwise it lives in the menu.
      */
-    private function isInstallable(?array $row): bool
+    private function toggleRecordAction(bool $enable, bool $inMenu): Action
     {
-        return $row !== null && $row['compatible'] && ($row['latest_version'] ?? '') !== '';
+        $action = Action::make(($enable ? 'enable' : 'disable').($inMenu ? 'FromMenu' : ''))
+            ->label($enable ? __('addon-manager::addons.enable') : __('addon-manager::addons.disable'))
+            ->icon(Phosphor::PowerLight)
+            ->color('gray')
+            ->authorize(fn (): bool => static::canEdit())
+            ->visible(fn (array $record): bool => $this->canManage($record)
+                && $record['enabled'] !== $enable
+                && $this->canInstall($record) === $inMenu)
+            ->action(function (array $record) use ($enable): void {
+                $registry = app(AddonRegistry::class);
+                $enable ? $registry->enable($record['installed_key']) : $registry->disable($record['installed_key']);
+
+                // No redirect: the cards re-render reactively.
+                $this->refreshEntries();
+            });
+
+        return $inMenu ? $action : $action->button()->size(Size::Small);
+    }
+
+    /**
+     * Delete an installed add-on, optionally dropping its tables.
+     */
+    private function deleteRecordAction(): Action
+    {
+        return Action::make('delete')
+            ->label(__('filament-actions::delete.single.label'))
+            ->icon(Phosphor::TrashLight)
+            ->color('danger')
+            ->requiresConfirmation()
+            ->schema([
+                Checkbox::make('remove_tables')
+                    ->label(__('filament.addon_remove_tables'))
+                    ->helperText(__('filament.addon_remove_tables_help'))
+                    ->default(false),
+            ])
+            ->authorize(fn (): bool => static::canEdit())
+            ->visible(fn (array $record): bool => $this->canManage($record))
+            ->action(function (array $record, array $data): void {
+                $outcome = app(AddonRegistry::class)->delete(
+                    (string) $record['installed_key'],
+                    (bool) ($data['remove_tables'] ?? false),
+                );
+
+                // Three outcomes, and they are genuinely different things: an
+                // uninstall, a disable (image files cannot be removed at
+                // runtime), and a revert to the bundled version. Reporting any
+                // of them as another misdescribes what just happened to the
+                // operator's install.
+                match ($outcome) {
+                    AddonDeleteOutcome::Removed => Notification::make()
+                        ->title(__('addon-manager::addons.addon_deleted'))
+                        ->success()
+                        ->send(),
+                    AddonDeleteOutcome::Reverted => Notification::make()
+                        ->title(__('addon-manager::addons.addon_reverted'))
+                        ->body(__('addon-manager::addons.addon_reverted_body'))
+                        ->success()
+                        ->send(),
+                    AddonDeleteOutcome::Disabled => Notification::make()
+                        ->title(__('addon-manager::addons.addon_disabled_not_removed'))
+                        ->body(__('addon-manager::addons.addon_ships_with_phpvms'))
+                        ->warning()
+                        ->send(),
+                    AddonDeleteOutcome::NotFound => null,
+                };
+
+                $this->refreshEntries();
+            });
+    }
+
+    private function repositoryRecordAction(): Action
+    {
+        return Action::make('repository')
+            ->label(__('addon-manager::addons.repository_link'))
+            ->icon(Phosphor::ArrowSquareOutLight)
+            ->authorize(fn (): bool => static::canAccess())
+            ->visible(fn (array $record): bool => filled($record['repository_url']))
+            ->url(fn (array $record): string => $record['repository_url'])
+            ->openUrlInNewTab();
+    }
+
+    /**
+     * The slide-over detail a card click opens. Read-only; the buttons inside
+     * re-mount the card's own actions (see peekButtons()).
+     */
+    private function peekRecordAction(): Action
+    {
+        return Action::make('peek')
+            ->label(__('addon-manager::addons.details'))
+            ->icon(Phosphor::EyeLight)
+            ->slideOver()
+            // Read-only: nothing to lose by leaving, so skip the leave-page prompt.
+            ->unsavedChangesAlert(false)
+            ->modalWidth(Width::ThreeExtraLarge)
+            ->modalHeading(fn (array $record): string => $record['name'])
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false)
+            ->modalFooterActionsAlignment(Alignment::Start)
+            ->extraModalWindowAttributes(['class' => 'pirep-panel addon-panel'])
+            ->extraModalOverlayAttributes(['class' => 'pirep-panel-overlay'])
+            ->modalFooterActions([])
+            ->authorize(fn (): bool => static::canAccess())
+            ->modalContent(function (array $record): Htmlable {
+                $row = $this->allEntries()->firstWhere('id', $record['id']) ?? $record;
+
+                // Release history is a best-effort registry call, only meaningful
+                // for catalog packages. Skip it for local/installed-only addons and
+                // when the catalog is stale so opening a card stays instant.
+                $releases = ($row['in_catalog'] && !$this->catalogState()['stale'])
+                    ? (app(RegistryClient::class)->releaseMetadata($row['id'])['releases'] ?? [])
+                    : [];
+
+                return view('addon-manager::filament.addons.peek', [
+                    'row'      => $row,
+                    'releases' => is_array($releases) ? $releases : [],
+                    'buttons'  => $this->peekButtons($row),
+                    'badges'   => $this->badgeData($row),
+                    'progress' => InstallProgress::isActive($row['id']) ? InstallProgress::get($row['id']) : null,
+                    'host'     => parse_url((string) config('addon-manager.registry_url'), PHP_URL_HOST) ?: 'the registry',
+                ]);
+            });
+    }
+
+    /**
+     * The card's actions as buttons for the peek header/footer, each re-mounting
+     * the real table action (so authorization, confirmation and modals are the
+     * same ones the card uses). Empty when the user may not edit.
+     *
+     * @param  array<string, mixed>                                                                                            $row
+     * @return array<int, array{name: string, label: string, icon: Phosphor, color: string, disabled: bool, tooltip: ?string}>
+     */
+    private function peekButtons(array $row): array
+    {
+        if (!static::canEdit()) {
+            return [];
+        }
+
+        $buttons = [];
+
+        if ($this->canInstall($row)) {
+            $reason = $this->installBlockedReason($row);
+            $buttons[] = [
+                'name'     => 'install',
+                'label'    => $this->installLabel($row),
+                'icon'     => $row['update_available'] ? Phosphor::ArrowsClockwiseLight : Phosphor::DownloadSimpleLight,
+                'color'    => 'primary',
+                'disabled' => $reason !== null,
+                'tooltip'  => $reason,
+            ];
+        }
+
+        if ($this->canManage($row)) {
+            $buttons[] = [
+                'name'     => ($row['enabled'] ? 'disable' : 'enable').($this->canInstall($row) ? 'FromMenu' : ''),
+                'label'    => $row['enabled'] ? __('addon-manager::addons.disable') : __('addon-manager::addons.enable'),
+                'icon'     => Phosphor::PowerLight,
+                'color'    => 'gray',
+                'disabled' => false,
+                'tooltip'  => null,
+            ];
+            $buttons[] = [
+                'name'     => 'delete',
+                'label'    => __('filament-actions::delete.single.label'),
+                'icon'     => Phosphor::TrashLight,
+                'color'    => 'danger',
+                'disabled' => false,
+                'tooltip'  => null,
+            ];
+        }
+
+        return $buttons;
     }
 
     /**
      * Read-only facts shown in the install modal: publisher, requirements + the
-     * compatibility result, package size (when the registry reports it) and the
-     * verification note. Falls back to the incompatibility reason.
+     * compatibility result and the verification note. Falls back to the
+     * incompatibility reason.
+     *
+     * @param array<string, mixed> $row
      */
-    private function installModalDescription(): ?string
+    private function installModalDescription(array $row): ?string
     {
-        $row = $this->selected();
-
-        if ($row === null) {
-            return null;
-        }
-
         if (!$row['compatible']) {
             return $row['incompatible_reason'];
         }
@@ -753,32 +987,9 @@ class Addons extends Page
             $parts[] = __('addon-manager::addons.requires_ok', ['req' => implode(' · ', $requires)]);
         }
 
-        $size = $row['release']['size'] ?? null;
-        if (is_numeric($size)) {
-            $parts[] = __('addon-manager::addons.size', ['size' => $this->humanBytes((int) $size)]);
-        }
-
         $parts[] = __('addon-manager::addons.verified_download');
 
         return implode(' · ', $parts);
-    }
-
-    private function humanBytes(int $bytes): string
-    {
-        if ($bytes < 1024) {
-            return $bytes.' B';
-        }
-
-        $units = ['KB', 'MB', 'GB'];
-        $value = $bytes / 1024;
-        $unit = 0;
-
-        while ($value >= 1024 && $unit < count($units) - 1) {
-            $value /= 1024;
-            $unit++;
-        }
-
-        return round($value, 1).' '.$units[$unit];
     }
 
     /**
@@ -807,57 +1018,6 @@ class Addons extends Page
                 } catch (Throwable $throwable) {
                     Notification::make()->title(__('addon-manager::addons.install_failed'))->body($throwable->getMessage())->danger()->send();
                 }
-            });
-    }
-
-    /**
-     * Delete an installed addon, optionally dropping its tables.
-     */
-    public function deleteAction(): Action
-    {
-        return Action::make('delete')
-            ->label(__('filament-actions::delete.single.label'))
-            ->icon(Phosphor::TrashLight)
-            ->color('danger')
-            ->requiresConfirmation()
-            ->schema([
-                Checkbox::make('remove_tables')
-                    ->label(__('filament.addon_remove_tables'))
-                    ->helperText(__('filament.addon_remove_tables_help'))
-                    ->default(false),
-            ])
-            ->action(function (array $arguments, array $data): void {
-                $outcome = app(AddonRegistry::class)->delete(
-                    (string) $arguments['key'],
-                    (bool) ($data['remove_tables'] ?? false),
-                );
-
-                // Three outcomes, and they are genuinely different things: an
-                // uninstall, a disable (image files cannot be removed at
-                // runtime), and a revert to the bundled version. Reporting any
-                // of them as another misdescribes what just happened to the
-                // operator's install.
-                match ($outcome) {
-                    AddonDeleteOutcome::Removed => Notification::make()
-                        ->title(__('addon-manager::addons.addon_deleted'))
-                        ->success()
-                        ->send(),
-                    AddonDeleteOutcome::Reverted => Notification::make()
-                        ->title(__('addon-manager::addons.addon_reverted'))
-                        ->body(__('addon-manager::addons.addon_reverted_body'))
-                        ->success()
-                        ->send(),
-                    AddonDeleteOutcome::Disabled => Notification::make()
-                        ->title(__('addon-manager::addons.addon_disabled_not_removed'))
-                        ->body(__('addon-manager::addons.addon_ships_with_phpvms'))
-                        ->warning()
-                        ->send(),
-                    AddonDeleteOutcome::NotFound => null,
-                };
-
-                // Clear the selection so the detail pane falls back to the first
-                // row; the component re-renders reactively (no page reload).
-                $this->selectedId = null;
             });
     }
 

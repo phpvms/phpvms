@@ -86,7 +86,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($record->transactions as $tx)
+                @foreach ($record->transactions->sortByDesc(fn ($tx): bool => $tx->credit > 0) as $tx)
                     <tr>
                         <td class="tbl__primary">{{ $tx->memo ?? '—' }}</td>
                         <td>

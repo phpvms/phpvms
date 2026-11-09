@@ -16,8 +16,8 @@ use InvalidArgumentException;
  * installs against an older core) and calls `register()`. A DISABLED addon's
  * provider never boots, so its tab is simply never registered — disable-safety
  * is a property of the mechanism, not a runtime `enabled` check. Same idea as
- * App\Support\Skylight\SlotRegistry, but the admin page is not the SPA, so this
- * deliberately lives outside the Skylight hub.
+ * App\Support\Extensions\SlotRegistry, but the admin page is not the SPA, so this
+ * deliberately lives outside the Extensions hub.
  *
  * Entries carry CLOSURES (label/badge/visible are evaluated per record at
  * render time). The registry is therefore an in-memory, boot-time singleton and

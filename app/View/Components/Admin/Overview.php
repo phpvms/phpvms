@@ -30,7 +30,7 @@ use Illuminate\View\Component;
 class Overview extends Component
 {
     /**
-     * @param array<int, array{icon: mixed, tint?: string|null, label: string, value: string, note?: string|null}> $cards
+     * @param array<int, array{icon: mixed, image?: string|null, tint?: string|null, label: string, value: string, note?: string|null}> $cards
      */
     public function __construct(
         public array $cards,

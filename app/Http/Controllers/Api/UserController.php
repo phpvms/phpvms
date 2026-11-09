@@ -8,6 +8,7 @@ use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\BidNotFound;
 use App\Exceptions\Unauthorized;
 use App\Exceptions\UserNotFound;
+use App\Features\Bids\Actions\PlaceBid;
 use App\Http\Requests\SearchPirepsRequest;
 use App\Http\Resources\BidResource;
 use App\Http\Resources\PirepResource;
@@ -32,7 +33,8 @@ class UserController extends Controller
 {
     public function __construct(
         private readonly BidService $bidSvc,
-        private readonly UserService $userSvc
+        private readonly UserService $userSvc,
+        private readonly PlaceBid $placeBid,
     ) {}
 
     protected function getUserId(Request $request): mixed
@@ -92,13 +94,13 @@ class UserController extends Controller
         // Add a bid
         if ($request->isMethod('PUT') || $request->isMethod('POST')) {
             $flight_id = $request->input('flight_id');
-            if (setting('bids.block_aircraft')) {
+            if (setting('operations.block_aircraft')) {
                 $aircraft_id = $request->input('aircraft_id');
                 $aircraft = Aircraft::find($aircraft_id);
             }
 
             $flight = Flight::findOrFail($flight_id);
-            $bid = $this->bidSvc->addBid($flight, $user, $aircraft ?? null);
+            $bid = $this->placeBid->handle($flight, $user, $aircraft ?? null);
 
             return new BidResource($bid);
         }

@@ -20,15 +20,15 @@ use Illuminate\Support\Facades\DB;
  * The three rungs, in order, decided by configuration BEFORE access filtering:
  *   1. the flight's own live `flight_subfleet` pins
  *   2. else its bundle's live `bundle_subfleet` defaults
- *   3. else the fallback (airline-scoped when `flights.only_company_aircraft`)
+ *   3. else the fallback (airline-scoped when `operations.only_company_aircraft`)
  *
  * Note the Flight factory shares one "Default" bundle across a test run, so
  * every test below creates its own bundle to keep inheritance isolated.
  */
 beforeEach(function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('flights.only_company_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_company_aircraft', false);
 });
 
 /**
@@ -180,7 +180,7 @@ test('an inherited set that access filters to empty stays empty', function (): v
 });
 
 test('only_company_aircraft does not narrow inherited bundle defaults', function (): void {
-    updateSetting('flights.only_company_aircraft', true);
+    updateSetting('operations.only_company_aircraft', true);
 
     $airline = Airline::factory()->create();
     $foreign = Airline::factory()->create();

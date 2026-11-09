@@ -85,10 +85,10 @@ it('returns the correct allowed subfleets per setting combination', function (
     bool $typeRestrict,
     array $expectedNames,
 ): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', $rankRestrict);
-    updateSetting('pireps.restrict_aircraft_to_typerating', $typeRestrict);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', $rankRestrict);
+    updateSetting('operations.restrict_aircraft_to_typerating', $typeRestrict);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', false);
 
     ['user' => $user] = seedAccessFixture();
 
@@ -98,10 +98,10 @@ it('returns the correct allowed subfleets per setting combination', function (
 })->with('access matrix');
 
 it('applies airport restriction only when a flight context is provided', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', true);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', true);
+    updateSetting('operations.block_aircraft', false);
 
     ['user' => $user, 'flight' => $flight] = seedAccessFixture();
 
@@ -115,10 +115,10 @@ it('applies airport restriction only when a flight context is provided', functio
 });
 
 it('does not apply airport restriction when the setting is off', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', false);
 
     ['user' => $user, 'flight' => $flight] = seedAccessFixture();
 
@@ -126,10 +126,10 @@ it('does not apply airport restriction when the setting is off', function (): vo
 });
 
 it('excludes aircraft bid by another user when bid-block is on', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', true);
 
     ['user' => $user, 'flight' => $flight, 'aircraftA' => $aircraftA] = seedAccessFixture();
 
@@ -146,10 +146,10 @@ it('excludes aircraft bid by another user when bid-block is on', function (): vo
 });
 
 it('includes the requesting user own bid', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', true);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', true);
 
     ['user' => $user, 'flight' => $flight, 'aircraftA' => $aircraftA] = seedAccessFixture();
 
@@ -164,10 +164,10 @@ it('includes the requesting user own bid', function (): void {
 });
 
 it('ignores bid block when the setting is off', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', false);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', false);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', false);
 
     ['user' => $user, 'flight' => $flight, 'aircraftA' => $aircraftA] = seedAccessFixture();
 
@@ -182,10 +182,10 @@ it('ignores bid block when the setting is off', function (): void {
 });
 
 it('combines flight-pinned subfleets via intersection with user access', function (): void {
-    updateSetting('pireps.restrict_aircraft_to_rank', true);
-    updateSetting('pireps.restrict_aircraft_to_typerating', false);
-    updateSetting('pireps.only_aircraft_at_dpt_airport', false);
-    updateSetting('bids.block_aircraft', false);
+    updateSetting('operations.restrict_aircraft_to_rank', true);
+    updateSetting('operations.restrict_aircraft_to_typerating', false);
+    updateSetting('operations.only_aircraft_at_dpt_airport', false);
+    updateSetting('operations.block_aircraft', false);
 
     ['user' => $user, 'flight' => $flight, 'sfA' => $sfA, 'sfC' => $sfC] = seedAccessFixture();
 

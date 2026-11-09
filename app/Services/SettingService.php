@@ -8,6 +8,8 @@ use App\Contracts\Service;
 use App\Exceptions\SettingNotFound;
 use App\Models\Setting;
 use App\Services\Concerns\CastsSettingValue;
+use App\Support\Branding;
+use App\Support\RenamedSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
@@ -23,7 +25,8 @@ use Illuminate\Validation\ValidationException;
  *
  * The 60-second CacheableRepository layer that the old repo inherited is
  * intentionally not preserved — the only path doing many reads is the
- * `setting()` helper, which has its own application cache.
+ * `setting()` helper, which has its own application cache (every environment
+ * except `testing`).
  *
  * Tier-1 memo: $memo caches resolved values for the duration of one request
  * (keyed by the formatted setting id). The service is bound as a singleton
@@ -47,7 +50,7 @@ class SettingService extends Service
      */
     public function retrieve(string $key): mixed
     {
-        $key = Setting::formatKey($key);
+        $key = Setting::formatKey(RenamedSettings::resolve($key));
 
         if (array_key_exists($key, $this->memo)) {
             return $this->memo[$key];
@@ -67,13 +70,13 @@ class SettingService extends Service
      * rest of the request.
      *
      * The `setting()` helper resolves through the application cache in
-     * production. Without this, every call is a cache round trip even after
+     * every environment except `testing`. Without this, every call is a cache round trip even after
      * the first one: an API response that converts the units of thousands of
      * aircraft read `units.weight` from the cache thousands of times.
      */
     public function remember(string $key, callable $resolve): mixed
     {
-        $formattedKey = Setting::formatKey($key);
+        $formattedKey = Setting::formatKey(RenamedSettings::resolve($key));
 
         if (array_key_exists($formattedKey, $this->memo)) {
             return $this->memo[$formattedKey];
@@ -87,15 +90,15 @@ class SettingService extends Service
      * the key does not exist OR when the caller passes a null $value
      * (does not insert new settings — these are seeded by migrations).
      *
-     * Invalidates the per-key application cache slot on success so the
-     * `setting()` global helper observes the new value. The cache slot
-     * is keyed by the ORIGINAL caller-supplied key (not the formatted
-     * one), matching the behavior of the deleted Filament page's inline
-     * Cache::forget — see `app/helpers.php` Cache::remember call which
-     * also caches under the original key.
+     * Saving through the model fires SettingObserver, which drops the
+     * cached value (see {@see forgetCached()}) so the `setting()` helper
+     * observes the new value; the explicit call below keeps that true when
+     * model events are muted.
      */
     public function store(string $key, mixed $value): mixed
     {
+        $key = RenamedSettings::resolve($key);
+
         if ($key === 'bids.expire_time' && $value !== null && (int) $value < 0) {
             throw ValidationException::withMessages([
                 'bids.expire_time' => 'Bid expiry cannot be negative.',
@@ -118,8 +121,7 @@ class SettingService extends Service
             $setting->value = (string) $value;
             $setting->save();
 
-            $this->forgetCache($key);
-            unset($this->memo[$formattedKey]);
+            $this->forgetCached($formattedKey);
         }
 
         return $value;
@@ -143,11 +145,26 @@ class SettingService extends Service
         $this->memo = [];
     }
 
-    private function forgetCache(string $key): void
+    /**
+     * Drop every copy of one setting this request could serve: the request
+     * memo, the shared cache entry the `setting()` helper keeps, and the
+     * branding cache when the key feeds it. Keyed by the formatted key, so
+     * writes that bypass store() (SettingObserver, YAML import) can bust it
+     * by row id.
+     */
+    public function forgetCached(string $key): void
     {
+        $formattedKey = Setting::formatKey($key);
+
+        unset($this->memo[$formattedKey]);
+
         $cache = config('cache.keys.SETTINGS');
         if (is_array($cache) && isset($cache['key'])) {
-            Cache::forget($cache['key'].$key);
+            Cache::forget($cache['key'].$formattedKey);
+        }
+
+        if (in_array($formattedKey, Branding::SETTING_KEYS, true)) {
+            Branding::flush();
         }
     }
 }

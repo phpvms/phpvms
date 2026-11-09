@@ -2,15 +2,27 @@
 
 declare(strict_types=1);
 
+use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Hooks\Facades\Hooks;
+use App\Models\Addon;
+use App\Models\Role;
+use App\Models\User;
 use Composer\Autoload\ClassLoader;
+use Filament\Notifications\DatabaseNotification;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use PhpvmsAddonFixture\Events\AcmeFixtureEvent;
+use PhpvmsAddonFixture\Hooks\AcmeGate;
+use PhpvmsAddonFixture\Listeners\AcmeGateListener;
 use PhpvmsAddonFixture\Listeners\AcmeListener;
 use PhpvmsAddonFixture\Providers\AcmeServiceProvider;
+use PhpvmsBadHooksFixture\Listeners\MissingPointListener;
+use PhpvmsBadHooksFixture\Providers\BadHooksServiceProvider;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Setup: register the fixture namespace and boot the fixture provider once.
@@ -131,4 +143,70 @@ it('auto-discovers AcmeListener for AcmeFixtureEvent and the listener runs on di
     // Dispatch the event and verify the side-effect.
     event(new AcmeFixtureEvent());
     expect(AcmeListener::$handled)->toBeTrue();
+});
+
+it('registers a gate hook listener with the dispatcher, with its priority and addon', function (): void {
+    expect(Hooks::listenersFor(AcmeGate::class))->toBe([[
+        'listener' => AcmeGateListener::class,
+        'addon'    => 'acme',
+        'priority' => 40,
+        'sequence' => 0,
+    ]])
+        ->and(Event::getListeners(AcmeGate::class))->toBe([]);
+
+    expect(fn () => Hooks::gate(new AcmeGate()))->toThrow(HookDenied::class, 'Acme says no');
+});
+
+function registerBadHooksPsr4(): void
+{
+    $loader = collect(spl_autoload_functions())
+        ->first(fn ($entry): bool => is_array($entry) && $entry[0] instanceof ClassLoader)[0];
+    $loader->addPsr4('PhpvmsBadHooksFixture\\', realpath(__DIR__.'/../../fixtures/Addons/badhooks/app'));
+}
+
+it('quarantines an addon whose listener targets a hook point that does not exist', function (): void {
+    registerBadHooksPsr4();
+    Notification::fake();
+    Log::spy();
+    $addon = Addon::factory()->create(['name' => 'BadHooks', 'namespace' => 'PhpvmsBadHooksFixture', 'enabled' => true]);
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::create(['name' => Role::superAdminName(), 'guard_name' => 'web']));
+
+    app()->register(BadHooksServiceProvider::class);
+
+    expect($addon->refresh()->enabled)->toBeFalse();
+    Notification::assertSentTo($admin, DatabaseNotification::class, function (DatabaseNotification $notification) use ($admin): bool {
+        $data = $notification->toDatabase($admin);
+
+        return str_contains((string) $data['title'], 'BadHooks')
+            && str_contains((string) $data['body'], MissingPointListener::class)
+            && $data['status'] === 'danger';
+    });
+    Log::shouldHaveReceived('error')
+        ->withArgs(fn (string $message): bool => str_contains($message, 'Addon "badhooks" quarantined') && str_contains($message, MissingPointListener::class))
+        ->once();
+});
+
+it('boots and only logs when the broken addon has no row to disable', function (): void {
+    registerBadHooksPsr4();
+    Notification::fake();
+    Log::spy();
+
+    app()->register(BadHooksServiceProvider::class);
+
+    Notification::assertNothingSent();
+    Log::shouldHaveReceived('error')->withArgs(fn (string $message): bool => str_contains($message, 'quarantined'))->once();
+});
+
+it('skips the listener and keeps a bundled addon enabled', function (): void {
+    registerBadHooksPsr4();
+    Notification::fake();
+    Log::spy();
+    $addon = Addon::factory()->create(['name' => 'BadHooks', 'namespace' => 'PhpvmsBadHooksFixture', 'enabled' => true, 'bundled' => true]);
+
+    app()->register(BadHooksServiceProvider::class);
+
+    expect($addon->refresh()->enabled)->toBeTrue();
+    Notification::assertNothingSent();
+    Log::shouldHaveReceived('error')->withArgs(fn (string $message): bool => str_contains($message, 'bundled'))->once();
 });

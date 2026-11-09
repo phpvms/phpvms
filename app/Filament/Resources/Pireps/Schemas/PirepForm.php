@@ -11,7 +11,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -45,74 +44,73 @@ class PirepForm
                         ->label(__('pireps.source'))
                         ->state(fn (Pirep $record): string => $record->source->getLabel().(filled($record->source_name) ? '('.$record->source_name.')' : '')),
                 ])
-                    ->columns(5)
+                    ->aside()
+                    ->description(__('filament.pirep_basic_information_description'))
+                    ->columns(3)
                     ->columnSpanFull()
                     ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                Grid::make()->schema([
-                    Section::make(__('filament.pirep_details'))->schema([
-                        Grid::make()->schema([
-                            Select::make('airline_id')
-                                ->label(__('common.airline'))
-                                ->relationship('airline', 'name')
-                                ->native(false)
-                                ->disabled(fn (Pirep $record): bool => $record->read_only),
+                Section::make(__('filament.pirep_details'))
+                    ->schema([
+                        Select::make('airline_id')
+                            ->label(__('common.airline'))
+                            ->relationship('airline', 'name')
+                            ->native(false)
+                            ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                            Select::make('aircraft_id')
-                                ->label(__('common.aircraft'))
-                                ->relationship('aircraft', 'name')
-                                ->native(false)
-                                ->disabled(fn (Pirep $record): bool => $record->read_only),
+                        Select::make('aircraft_id')
+                            ->label(__('common.aircraft'))
+                            ->relationship('aircraft', 'name')
+                            ->native(false)
+                            ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                            TimePicker::make('flight_time')
-                                ->label(__('pireps.flight_time'))
-                                ->seconds(false)
-                                ->native(false),
+                        AirportSelect::make('dpt_airport_id')
+                            ->label(__('airports.departure'))
+                            ->airportRelationship('dpt_airport')
+                            ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                            Grid::make()->schema([
-                                AirportSelect::make('dpt_airport_id')
-                                    ->label(__('airports.departure'))
-                                    ->airportRelationship('dpt_airport')
-                                    ->columnSpan(1)
-                                    ->disabled(fn (Pirep $record): bool => $record->read_only),
+                        AirportSelect::make('arr_airport_id')
+                            ->label(__('airports.arrival'))
+                            ->airportRelationship('arr_airport')
+                            ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                                AirportSelect::make('arr_airport_id')
-                                    ->label(__('airports.arrival'))
-                                    ->airportRelationship('arr_airport')
-                                    ->columnSpan(1)
-                                    ->disabled(fn (Pirep $record): bool => $record->read_only),
-                            ])
-                                ->columns(2)
-                                ->columnSpan(3),
+                        TimePicker::make('flight_time')
+                            ->label(__('pireps.flight_time'))
+                            ->seconds(false)
+                            ->native(false),
 
-                            TextInput::make('block_fuel')
-                                ->numeric()
-                                ->label(__('pireps.block_fuel'))
-                                ->hint(__('common.in_lbs')),
+                        TextInput::make('level')
+                            ->hint('In ft')
+                            ->label('Flight Level'),
 
-                            TextInput::make('fuel_used')
-                                ->numeric()
-                                ->label(__('pireps.fuel_used'))
-                                ->hint(__('common.in_lbs')),
+                        TextInput::make('block_fuel')
+                            ->numeric()
+                            ->label(__('pireps.block_fuel'))
+                            ->hint(__('common.in_lbs')),
 
-                            TextInput::make('level')
-                                ->hint('In ft')
-                                ->label('Flight Level'),
+                        TextInput::make('fuel_used')
+                            ->numeric()
+                            ->label(__('pireps.fuel_used'))
+                            ->hint(__('common.in_lbs')),
 
-                            TextInput::make('distance')
-                                ->numeric()
-                                ->label(__('common.distance'))
-                                ->hint(__('common.in_nautical_miles')),
+                        TextInput::make('distance')
+                            ->numeric()
+                            ->label(__('common.distance'))
+                            ->hint(__('common.in_nautical_miles')),
 
-                            TextInput::make('score')
-                                ->numeric()
-                                ->minValue(0)
-                                ->maxValue(100)
-                                ->label(__('pireps.score')),
-                        ])
-                            ->columnSpanFull()
-                            ->columns(3),
+                        TextInput::make('score')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->label(__('pireps.score')),
+                    ])
+                    ->aside()
+                    ->description(__('filament.pirep_details_description'))
+                    ->columnSpanFull()
+                    ->columns(2),
 
+                Section::make(__('filament.pirep_route_notes'))
+                    ->schema([
                         Textarea::make('route')
                             ->autosize()
                             ->label(__('flights.route')),
@@ -120,10 +118,12 @@ class PirepForm
                         RichEditor::make('notes')
                             ->label(__('common.notes')),
                     ])
-                        ->columnSpanFull()
-                        ->columnSpan(2),
+                    ->aside()
+                    ->description(__('filament.pirep_route_notes_description'))
+                    ->columnSpanFull(),
 
-                    Section::make(__('filament.planned_details'))->schema([
+                Section::make(__('filament.planned_details'))
+                    ->schema([
                         TimePicker::make('planned_flight_time')
                             ->label(__('pireps.planned_flight_time'))
                             ->seconds(false)
@@ -141,11 +141,11 @@ class PirepForm
                             ->label(__('pireps.landing_rate'))
                             ->hint(__('common.in_feet_per_minute')),
                     ])
-                        ->disabled()
-                        ->columnSpan(1),
-                ])
+                    ->aside()
+                    ->description(__('filament.planned_details_description'))
+                    ->disabled()
                     ->columnSpanFull()
-                    ->columns(3),
+                    ->columns(2),
             ]);
     }
 }

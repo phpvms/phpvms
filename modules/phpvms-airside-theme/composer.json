@@ -1,0 +1,13 @@
+{
+    "name": "phpvms/airside-theme",
+    "type": "phpvms-module",
+    "description": "The phpVMS pilot theme: Blade and Livewire with skylight's design, built on TallStackUI.",
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\PhpvmsAirsideTheme\\": "app"
+        }
+    }
+}

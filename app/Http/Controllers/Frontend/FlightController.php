@@ -7,13 +7,19 @@ use App\Contracts\Controller;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
-use App\Features\Tour\Enums\TourStatus;
-use App\Features\Tour\Models\UserTour;
-use App\Features\Tour\TourService;
+use App\Features\Bids\Actions\LoadDispatch;
+use App\Features\Bids\Actions\PlaceBid;
+use App\Features\Bids\Actions\RemoveBid;
+use App\Features\Bids\Queries\EligibleAircraft;
+use App\Features\Flights\Queries\VisibleFlights;
+use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Hooks\Points\RenderingBidDrawerActions;
+use App\Features\Hooks\Points\RenderingBidRowActions;
+use App\Features\Hooks\Points\RenderingFlightActions;
+use App\Features\Hooks\Points\RenderingFlightRowActions;
 use App\Http\Data\BidRowData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
-use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\FlightDispatchPolicyData;
 use App\Http\Data\FlightListItemData;
@@ -27,9 +33,7 @@ use App\Models\Subfleet;
 use App\Models\Typerating;
 use App\Models\User;
 use App\Queries\FlightSearchQuery;
-use App\Services\BidService;
 use App\Services\GeoService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,8 +50,11 @@ class FlightController extends Controller
         private readonly FlightSearchQuery $flightSearchQuery,
         private readonly GeoService $geoSvc,
         private readonly AddonRegistry $addonRegistry,
-        private readonly BidService $bidSvc,
-        private readonly TourService $tourSvc,
+        private readonly VisibleFlights $visibleFlights,
+        private readonly EligibleAircraft $eligibleAircraft,
+        private readonly LoadDispatch $loadDispatch,
+        private readonly PlaceBid $placeBid,
+        private readonly RemoveBid $removeBid,
     ) {}
 
     private function acarsEnabled(): bool
@@ -79,7 +86,7 @@ class FlightController extends Controller
         }
 
         // default restrictions on the flights shown. Handle search differently
-        if (setting('pilots.only_show_flights_from_current')) {
+        if (setting('operations.only_show_flights_from_current')) {
             $where['dpt_airport_id'] = $user->curr_airport_id;
         }
 
@@ -216,6 +223,10 @@ class FlightController extends Controller
                     'icaoTypes' => $viewData['icao_codes'],
                 ],
             ],
+            renderHooks: fn (): array => [
+                RenderingFlightActions::forList($policy, $user),
+                RenderingFlightRowActions::forList($policy),
+            ],
         );
     }
 
@@ -289,6 +300,10 @@ class FlightController extends Controller
                     ->all(),
                 'policy' => $policy,
             ],
+            renderHooks: fn (): array => [
+                RenderingBidRowActions::forList(),
+                RenderingBidDrawerActions::forList(),
+            ],
         );
     }
 
@@ -311,7 +326,7 @@ class FlightController extends Controller
             },
         ];
 
-        $flight = $this->accessibleFlightQuery($user)
+        $flight = $this->visibleFlights->for($user)
             ->with($with_flight)
             ->find($id);
         if (empty($flight)) {
@@ -354,6 +369,7 @@ class FlightController extends Controller
                 ),
                 'policy' => $policy,
             ],
+            renderHooks: fn (): array => [RenderingFlightActions::forList($policy, $user)],
         );
     }
 
@@ -361,52 +377,23 @@ class FlightController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $flight = $this->accessibleFlightQuery($user)
-            ->with(['airline', 'alt_airport', 'arr_airport', 'dpt_airport'])
-            ->findOrFail($id);
-        $bid = Bid::query()
-            ->where('user_id', $user->id)
-            ->where('flight_id', $flight->id)
-            ->first();
-        $pilotAtLimit = !(bool) setting('bids.allow_multiple_bids', false)
-            && Bid::query()->where('user_id', $user->id)->exists();
-        $policy = FlightDispatchPolicyData::fromSettings($pilotAtLimit);
 
-        return response()->json([
-            'flight' => FlightDetailData::fromModel(
-                $flight,
-                $bid ? [$flight->id => $bid->id] : [],
-                $policy,
-                $pilotAtLimit,
-                $policy->requireCurrentAirport && $flight->dpt_airport_id !== $user->curr_airport_id,
-            ),
-            'policy'    => $policy,
-            'subfleets' => $this->bidSvc->configuredSubfleets($flight)
-                ->map(function (Subfleet $subfleet) use ($flight, $user): EligibleSubfleetData {
-                    $eligibleAircraftCount = $this->bidSvc
-                        ->eligibleAircraftQuery($flight, $user, $subfleet->id)
-                        ->count();
-
-                    return EligibleSubfleetData::fromModel($subfleet, $eligibleAircraftCount);
-                })
-                ->values(),
-            'selection' => $bid ? BidSelectionData::fromModel($bid, $policy, $user) : null,
-        ]);
+        return response()->json($this->loadDispatch->handle($user, $id));
     }
 
     public function dispatchAircraft(string $id, int $subfleetId): JsonResponse
     {
         /** @var User $user */
         $user = Auth::user();
-        $flight = $this->accessibleFlightQuery($user)->findOrFail($id);
+        $flight = $this->visibleFlights->for($user)->findOrFail($id);
 
         abort_unless(
-            $this->bidSvc->configuredSubfleets($flight)->contains('id', $subfleetId),
+            $flight->configuredSubfleets(['airline'])->contains('id', $subfleetId),
             404,
         );
 
         return response()->json([
-            'aircraft' => $this->bidSvc->eligibleAircraftQuery($flight, $user, $subfleetId)
+            'aircraft' => $this->eligibleAircraft->for($flight, $user, $subfleetId)
                 ->get()
                 ->map(fn (Aircraft $aircraft): EligibleAircraftData => EligibleAircraftData::fromModel($aircraft))
                 ->values(),
@@ -417,7 +404,7 @@ class FlightController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $flight = $this->accessibleFlightQuery($user)->findOrFail($id);
+        $flight = $this->visibleFlights->for($user)->findOrFail($id);
         $aircraftId = $request->validated('aircraftId');
         $aircraft = $aircraftId === null ? null : Aircraft::query()->find($aircraftId);
         if ($aircraftId !== null && !($aircraft instanceof Aircraft)) {
@@ -429,7 +416,12 @@ class FlightController extends Controller
         }
 
         try {
-            $bid = $this->bidSvc->addBid($flight, $user, $aircraft);
+            $bid = $this->placeBid->handle($flight, $user, $aircraft);
+        } catch (HookDenied $exception) {
+            return response()->json([
+                'type'    => 'hook-denied',
+                'message' => $exception->getMessage(),
+            ], 422);
         } catch (UserBidLimit $exception) {
             return $this->bidConflict('pilot-limit', $exception->getMessage());
         } catch (BidExistsForFlight $exception) {
@@ -456,26 +448,7 @@ class FlightController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        // The pilot's own bid decides this, not the leg's visibility. A run
-        // deliberately outlives its bundle's window, and SetVisibleFlights
-        // turns the remaining legs invisible when that window closes — so
-        // resolving the flight through the visible-only query first would 404
-        // "Cancel tour" in exactly the state the tour is meant to survive.
-        $bid = Bid::query()
-            ->where('user_id', $user->id)
-            ->where('flight_id', $id)
-            ->first();
-
-        // Dropping a tour leg means the pilot is done with the whole chain —
-        // removeBid() itself stays tour-unaware, because filing a leg goes
-        // through it too and must not end the run.
-        $tour = $bid?->userTour;
-
-        if ($tour instanceof UserTour && $tour->status === TourStatus::InProgress) {
-            $this->tourSvc->cancel($tour);
-        } else {
-            $this->bidSvc->removeBid($this->accessibleFlightQuery($user)->findOrFail($id), $user);
-        }
+        $this->removeBid->handle($user, $id);
 
         return response()->json([
             'flightUrl' => route('frontend.flights.show', $id),
@@ -483,10 +456,6 @@ class FlightController extends Controller
         ]);
     }
 
-    /**
-     * Build a [id => "Name | ICAO"] options map for subfleet select boxes.
-     * Ported from the deleted SubfleetRepository::selectBoxList().
-     */
     private function subfleetSelectBoxList(bool $add_blank = false): array
     {
         $retval = [];
@@ -499,23 +468,11 @@ class FlightController extends Controller
         foreach ($items as $i) {
             // airline_id is nullable on Subfleet, so guard against an
             // orphan/soft-deleted airline before reading icao.
-            $icao = $i->airline === null ? '—' : $i->airline->icao;
+            $icao = $i->airline->icao ?? '—';
             $retval[$i->id] = $i->name.' | '.$icao;
         }
 
         return $retval;
-    }
-
-    /** @return Builder<Flight> */
-    private function accessibleFlightQuery(User $user): Builder
-    {
-        $query = Flight::query()->visible()->whereHas('airline', fn ($airline) => $airline->where('active', true));
-
-        if ((bool) setting('pilots.restrict_to_company', false)) {
-            $query->where('airline_id', $user->airline_id);
-        }
-
-        return $query;
     }
 
     private function bidConflict(string $type, string $message): JsonResponse

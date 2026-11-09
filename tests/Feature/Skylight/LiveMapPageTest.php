@@ -17,7 +17,7 @@ it('passes the poll interval and the configured centre as the initial camera', f
     updateSetting('livemap.center_coords', '51.4700,-0.4543');
 
     $this->actingAs(User::factory()->create())
-        ->get('/livemap')
+        ->get('/live')
         ->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page
             ->component('LiveMap/Index', false)
@@ -37,7 +37,7 @@ it('falls back to the first hub airport when the operator has not configured a c
     $hub = Airport::factory()->create(['hub' => true, 'lat' => 40.7128, 'lon' => -74.0060]);
 
     $this->actingAs(User::factory()->create())
-        ->get('/livemap')
+        ->get('/live')
         ->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page
             ->where('initialCenter.lat', $hub->lat)
@@ -48,7 +48,7 @@ it('sends a null centre when neither the setting nor a hub airport resolves', fu
     updateSetting('livemap.center_coords', '');
 
     $this->actingAs(User::factory()->create())
-        ->get('/livemap')
+        ->get('/live')
         ->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page
             ->where('initialCenter', null));
@@ -59,7 +59,7 @@ it('ignores a hub airport with no coordinates and falls through to null', functi
     Airport::factory()->create(['hub' => true, 'lat' => null, 'lon' => null]);
 
     $this->actingAs(User::factory()->create())
-        ->get('/livemap')
+        ->get('/live')
         ->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page
             ->where('initialCenter', null));
@@ -70,7 +70,7 @@ it('renders the Blade live map page on a blade theme, unaffected by the centre r
     updateSetting('general.theme', 'seven');
 
     $this->actingAs(User::factory()->create())
-        ->get('/livemap')
+        ->get('/live')
         ->assertOk()
         ->assertViewIs('livemap.index');
 });

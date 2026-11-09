@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Metrics;
 
-use App\Support\Skylight\Facades\Skylight;
+use App\Support\Extensions\Facades\Extensions;
 use Closure;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +17,7 @@ use Throwable;
  * metrics through one cached, failure-contained path. Addons reach the
  * registry through the {@see Facades\Metrics} facade from their
  * ServiceProvider::boot(), mirroring
- * {@see Skylight}:
+ * {@see Extensions}:
  *
  *   Metrics::registry()->register([...]);
  *   Metrics::resolve('pilots.total');

@@ -2,11 +2,13 @@
 
 namespace App\Filament\System;
 
+use App\Addons\Support\AddonCacheRefresher;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use App\Services\Installer\StreamedCommandsService;
+use App\Support\InstallMarker;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -136,7 +138,10 @@ class Updater extends Page
             $streamCallback(__('installer.update_step_failed'));
         }
 
-        // Sites installed before the installer made the link get it here.
+        // Sites installed before the installer made the link, or wrote the
+        // install marker, get them here.
+        app(InstallMarker::class)->write();
+
         if (!app(InstallerService::class)->linkStorage()) {
             $streamCallback(__('installer.storage_link_failed'));
         }
@@ -162,6 +167,9 @@ class Updater extends Page
 
             return;
         }
+
+        // After `optimize`, so the reload restarts the workers on the final caches.
+        app(AddonCacheRefresher::class)->refresh();
 
         $this->streamOutput(PHP_EOL.__('installer.update_completed').PHP_EOL);
 

@@ -2,10 +2,13 @@
 
 use App\Addons\Support\AddonAssetLinker;
 use App\Exceptions\SettingNotFound;
+use App\Features\Themes\ThemeFields;
 use App\Models\Addon;
+use App\Models\Setting;
 use App\Services\AddonSettingService;
 use App\Services\KvpService;
 use App\Services\SettingService;
+use App\Support\RenamedSettings;
 use Carbon\Carbon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Contracts\View\Factory;
@@ -145,7 +148,10 @@ if (!function_exists('skin_view')) {
  */
 if (!function_exists('setting')) {
     /**
-     * Read a setting from the settings table
+     * Read a setting from the settings table.
+     *
+     * Cached (request memo + application cache) in every environment except
+     * `testing`; SettingService::store() busts the cache on write.
      *
      * @param  mixed      $default
      * @return mixed|null
@@ -154,16 +160,17 @@ if (!function_exists('setting')) {
     {
         /** @var SettingService $settingService */
         $settingService = app(SettingService::class);
+        $key = RenamedSettings::resolve($key);
 
         try {
-            if (app()->environment('production')) {
+            if (!app()->environment('testing')) {
                 $cache = config('cache.keys.SETTINGS');
 
                 // Through the request memo first: the cache is shared across
                 // requests, but reading it again within one is a wasted round trip.
                 $value = $settingService->remember(
                     $key,
-                    fn () => Cache::remember($cache['key'].$key, $cache['time'], fn () => $settingService->retrieve($key)),
+                    fn () => Cache::remember($cache['key'].Setting::formatKey($key), $cache['time'], fn () => $settingService->retrieve($key)),
                 );
             } else {
                 $value = $settingService->retrieve($key);
@@ -584,5 +591,27 @@ if (!function_exists('theme_kind')) {
     function theme_kind(): string
     {
         return theme_setting('kind', 'blade');
+    }
+}
+
+if (!function_exists('theme_uses_spa_data')) {
+    /**
+     * Whether the active Blade theme opted in (theme.json `"data": "spa"`) to
+     * receive the SPA page props instead of the legacy Blade data.
+     */
+    function theme_uses_spa_data(): bool
+    {
+        return theme_setting('data') === 'spa';
+    }
+}
+
+if (!function_exists('theme_option')) {
+    /**
+     * Read one of the active theme's options: the value an admin saved, cast to
+     * its recorded type, else the default of the field the theme registered.
+     */
+    function theme_option(string $name): mixed
+    {
+        return app(ThemeFields::class)->get(Theme::get(), $name);
     }
 }
