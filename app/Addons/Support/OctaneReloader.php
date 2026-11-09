@@ -27,7 +27,7 @@ class OctaneReloader
 
     /**
      * @param (Closure(): bool)|null                  $underOctane Defaults to runtime detection.
-     * @param (Closure(array<int,string>): void)|null $runner      Defaults to a real Process run.
+     * @param (Closure(array<int,string>): void)|null $runner      Defaults to a detached Process run.
      */
     public function __construct(?Closure $underOctane = null, ?Closure $runner = null)
     {
@@ -35,8 +35,11 @@ class OctaneReloader
         // is absent under php-fpm/CLI. This is far more reliable than the
         // octane.enabled config flag (which defaults to true everywhere).
         $this->underOctane = $underOctane ?? static fn (): bool => ($_SERVER['LARAVEL_OCTANE'] ?? false) !== false;
+        // Detached: the reload waits for this worker's request to end, so
+        // waiting on it here deadlocks until Octane force-kills the thread.
         $this->runner = $runner ?? static function (array $command): void {
-            new Process($command, base_path())->setTimeout(60)->run();
+            $line = implode(' ', array_map(escapeshellarg(...), $command)).' > /dev/null 2>&1 &';
+            Process::fromShellCommandline($line, base_path())->run();
         };
     }
 
