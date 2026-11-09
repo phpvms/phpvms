@@ -79,7 +79,7 @@ final class ProfileEditData extends Data
             timezone: $user->timezone,
             simbriefUsername: $user->simbrief_username,
             optIn: (bool) $user->opt_in,
-            hubsOnly: (bool) setting('pilots.home_hubs_only'),
+            hubsOnly: (bool) setting('operations.home_hubs_only'),
             apiKey: $user->api_key,
             avatarWidth: (int) config('phpvms.avatar.width'),
             avatarHeight: (int) config('phpvms.avatar.height'),

@@ -149,7 +149,7 @@ it('requires a required custom field to submit but not to save', function (): vo
 });
 
 it('shows a filing rule as an error and files nothing', function (): void {
-    updateSetting('pilots.only_flights_from_current', true);
+    updateSetting('operations.only_flights_from_current', true);
     $this->fx['pilot']->update(['curr_airport_id' => $this->fx['arr']->id]);
 
     Livewire::test(PirepForm::class)

@@ -166,7 +166,7 @@ test('get aircraft allowed from flight', function (): void {
     ]);
 
     // Make sure no flights are filtered out
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
 
     // And restrict the aircraft
     updateSetting('operations.restrict_aircraft_to_rank', false);
@@ -209,7 +209,7 @@ test('get aircraft allowed from flight', function (): void {
 
 test('api flight list excludes flights without allowable subfleets', function (): void {
     updateSetting('pilots.restrict_to_company', false);
-    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('operations.only_flights_from_current', false);
     updateSetting('operations.restrict_aircraft_to_rank', true);
     updateSetting('operations.restrict_aircraft_to_typerating', false);
 

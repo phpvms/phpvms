@@ -165,7 +165,7 @@ final readonly class SaveManualPirep
     private function assertMayFile(User $user, Pirep $pirep): void
     {
         // Are they allowed at this airport?
-        if (setting('pilots.only_flights_from_current')
+        if (setting('operations.only_flights_from_current')
             && $user->curr_airport_id !== $pirep->dpt_airport_id) {
             Log::info(
                 'Pilot '.$user->id

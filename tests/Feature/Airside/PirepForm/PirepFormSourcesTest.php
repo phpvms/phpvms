@@ -113,7 +113,7 @@ it('files a PIREP through the controller with the same action', function (): voi
 
 it('refuses a submitted PIREP from the controller when the pilot is not at the departure airport', function (): void {
     updateSetting('general.theme', 'seven');
-    updateSetting('pilots.only_flights_from_current', true);
+    updateSetting('operations.only_flights_from_current', true);
     $this->fx['pilot']->update(['curr_airport_id' => $this->fx['arr']->id]);
 
     $this->from(route('frontend.pireps.create'))->post(route('frontend.pireps.store'), [
