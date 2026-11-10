@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -48,12 +46,6 @@ return new class() extends Migration
                     'key'   => $new,
                     'group' => 'airports',
                 ]);
-            }
-
-            $cache = config('cache.keys.SETTINGS');
-            if (is_array($cache) && isset($cache['key'])) {
-                Cache::forget($cache['key'].LegacySetting::formatKey($old));
-                Cache::forget($cache['key'].LegacySetting::formatKey($new));
             }
         }
     }

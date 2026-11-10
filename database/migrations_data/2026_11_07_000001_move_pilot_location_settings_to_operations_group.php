@@ -2,7 +2,6 @@
 
 use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -38,7 +37,7 @@ return new class() extends Migration
 
             // Read, write and delete together, so a stop part-way never leaves
             // a half-moved setting for a retry to misread.
-            $moved = DB::transaction(function () use ($oldId, $newId, $new): bool {
+            DB::transaction(function () use ($oldId, $newId, $new): bool {
                 $oldRow = DB::table('settings_backup')->where('id', $oldId)->first();
                 if ($oldRow === null) {
                     return false;
@@ -57,13 +56,6 @@ return new class() extends Migration
 
                 return true;
             });
-
-            // After commit, so the cache is never cleared for a rolled-back write.
-            $cache = config('cache.keys.SETTINGS');
-            if ($moved && is_array($cache) && isset($cache['key'])) {
-                Cache::forget($cache['key'].LegacySetting::formatKey($old));
-                Cache::forget($cache['key'].LegacySetting::formatKey($new));
-            }
         }
     }
 };

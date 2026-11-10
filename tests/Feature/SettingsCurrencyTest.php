@@ -7,13 +7,15 @@ use App\Jobs\ChangeJournalCurrencies;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
 use App\Services\FinanceService;
+use App\Settings\PilotsSettings;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Ramsey\Uuid\Uuid;
+use Spatie\LaravelSettings\Events\SavingSettings;
 
 /**
  * Saving the settings page used to rewrite the currency of every journal and
@@ -105,25 +107,54 @@ it('moves the journals to the new currency and notifies the admin', function ():
         ->and($admin->notifications()->first()->data['title'])->toBe('Journal currencies updated');
 });
 
-it('queues the migration on a retry even when the cache already holds the new currency', function (): void {
-    // A currency save that rolled back can leave its uncommitted value in the
-    // application cache while the table and the journals keep the old one.
+it('queues the migration on a retry after a currency save rolled back', function (): void {
+    // The package writes the cache as soon as a group saves, inside the
+    // transaction. When a later group of the same save fails, the currency
+    // must not stay cached as EUR: the retry would then look unchanged and
+    // skip the journal move.
     Queue::fake();
-    app()->detectEnvironment(fn (): string => 'production');
+    enableSettingsCache();
     $this->actingAs(createAdminUser());
-    Cache::put(config('cache.keys.SETTINGS.key').'units.currency', 'EUR', 60);
+    setting_save('units.currency', 'USD');
+
+    $failPilots = true;
+    Event::listen(SavingSettings::class, function (SavingSettings $event): void {
+        if ($event->settings instanceof PilotsSettings) {
+            throw new RuntimeException('pilots failed');
+        }
+    });
+
+    try {
+        Livewire::test(Settings::class)
+            ->set('data.units.currency', 'EUR')
+            ->set('data.pilots.id_length', 6)
+            ->call('save');
+    } catch (RuntimeException) {
+    }
+
+    // Nothing committed: the next request reads USD from the cache.
+    app()->forgetScopedInstances();
+    expect(setting('units.currency'))->toBe('USD');
+    Queue::assertNothingPushed();
+
+    $failPilots = false;
 
     Livewire::test(Settings::class)
         ->set('data.units.currency', 'EUR')
         ->call('save');
 
-    Queue::assertPushed(ChangeJournalCurrencies::class);
+    Queue::assertPushed(ChangeJournalCurrencies::class, 1);
 });
 
 it('moves the journals to the stored currency, not a stale cached one', function (): void {
-    app()->detectEnvironment(fn (): string => 'production');
-    setting_save('units.currency', 'EUR');
-    Cache::put(config('cache.keys.SETTINGS.key').'units.currency', 'USD', 60);
+    enableSettingsCache();
+    setting_save('units.currency', 'USD');
+
+    // The table moves on while the cache still holds USD.
+    DB::table('settings')->where('group', 'units')->where('name', 'currency')->update(['payload' => json_encode('EUR')]);
+    app()->forgetScopedInstances();
+    expect(setting('units.currency'))->toBe('USD');
+
     $journal = Journal::factory()->create(['currency' => 'USD']);
     $txn = currencyTxn($journal, 'USD');
 

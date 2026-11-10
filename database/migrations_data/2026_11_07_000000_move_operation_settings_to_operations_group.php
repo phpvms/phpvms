@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -51,7 +49,7 @@ return new class() extends Migration
 
             // Read, write and delete together, so a stop part-way never leaves
             // a half-moved setting for a retry to misread.
-            $moved = DB::transaction(function () use ($oldId, $new): bool {
+            DB::transaction(function () use ($oldId, $new): bool {
                 $oldRow = DB::table('settings_backup')->where('id', $oldId)->first();
                 if ($oldRow === null) {
                     return false;
@@ -61,10 +59,6 @@ return new class() extends Migration
 
                 return true;
             });
-
-            if ($moved) {
-                $this->forget($old, $new);
-            }
         }
 
         $this->mergeLocks();
@@ -74,7 +68,7 @@ return new class() extends Migration
     {
         // One transaction: if it stops after the bids delete, a retry would read
         // the missing bids row as its default (on) and overwrite a correct off.
-        $merged = DB::transaction(function (): bool {
+        DB::transaction(function (): bool {
             $rows = [];
             foreach (self::LOCKS as $old => $default) {
                 $rows[$old] = DB::table('settings_backup')->where('id', $this->id($old))->first();
@@ -106,11 +100,6 @@ return new class() extends Migration
 
             return true;
         });
-
-        // After commit, so the cache is never cleared for a rolled-back write.
-        if ($merged) {
-            $this->forget(...array_keys(self::LOCKS), ...[self::LOCK_KEY]);
-        }
     }
 
     /** Put $value on the new key's row: reuse a seeded row, else rename the old one. */
@@ -141,17 +130,5 @@ return new class() extends Migration
     private function id(string $key): string
     {
         return str_replace('.', '_', $key);
-    }
-
-    private function forget(string ...$keys): void
-    {
-        $cache = config('cache.keys.SETTINGS');
-        if (!is_array($cache) || !isset($cache['key'])) {
-            return;
-        }
-
-        foreach ($keys as $key) {
-            Cache::forget($cache['key'].LegacySetting::formatKey($key));
-        }
     }
 };
