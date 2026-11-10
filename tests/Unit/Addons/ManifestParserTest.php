@@ -6,7 +6,7 @@ use App\Addons\Support\ManifestParser;
 it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'        => 'TablesWidget',
         'registry_id' => 'acme/tables-widget',
         'providers'   => [],
@@ -23,7 +23,7 @@ it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', func
         expect($result->tables)->toBe(['things', 'more_things']);
     } finally {
         unlink($tmpDir.'/composer.json');
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });
@@ -31,7 +31,7 @@ it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', func
 it('parses phpVMS keys: type, compat, registry_id, version', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'        => 'TestWidget',
         'type'        => 'theme',
         'compat'      => '^7.0',
@@ -52,15 +52,15 @@ it('parses phpVMS keys: type, compat, registry_id, version', function (): void {
             ->and($result->version)->toBe('2.3.0');
     } finally {
         unlink($tmpDir.'/composer.json');
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });
 
-it('returns null when module.json contains invalid JSON (D-15)', function (): void {
+it('returns null when addon.json contains invalid JSON (D-15)', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', '{not valid json}');
+    file_put_contents($tmpDir.'/addon.json', '{not valid json}');
 
     try {
         $parser = new ManifestParser();
@@ -68,12 +68,12 @@ it('returns null when module.json contains invalid JSON (D-15)', function (): vo
 
         expect($result)->toBeNull();
     } finally {
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });
 
-it('returns null when no module.json exists', function (): void {
+it('returns null when no addon.json exists', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
 
@@ -90,7 +90,7 @@ it('returns null when no module.json exists', function (): void {
 it('returns null when composer.json is missing (both files required)', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'      => 'NoComposer',
         'providers' => [],
     ]));
@@ -101,7 +101,7 @@ it('returns null when composer.json is missing (both files required)', function 
 
         expect($result)->toBeNull();
     } finally {
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });
@@ -109,7 +109,7 @@ it('returns null when composer.json is missing (both files required)', function 
 it('returns null when composer.json contains invalid JSON', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'      => 'BadComposer',
         'providers' => [],
     ]));
@@ -122,7 +122,7 @@ it('returns null when composer.json contains invalid JSON', function (): void {
         expect($result)->toBeNull();
     } finally {
         unlink($tmpDir.'/composer.json');
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });
@@ -133,7 +133,7 @@ it('resolves composer autoload.files into absolute paths under the addon dir', f
     mkdir($tmpDir.'/src', 0755, true);
     file_put_contents($tmpDir.'/helpers.php', "<?php\n");
     file_put_contents($tmpDir.'/src/fns.php', "<?php\n");
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'        => 'FilesWidget',
         'registry_id' => 'acme/files-widget',
         'providers'   => [],
@@ -154,7 +154,7 @@ it('resolves composer autoload.files into absolute paths under the addon dir', f
         ]);
     } finally {
         unlink($tmpDir.'/composer.json');
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         unlink($tmpDir.'/src/fns.php');
         unlink($tmpDir.'/helpers.php');
         rmdir($tmpDir.'/src');
@@ -165,7 +165,7 @@ it('resolves composer autoload.files into absolute paths under the addon dir', f
 it('returns an empty files list when autoload.files is absent or malformed', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'        => 'NoFiles',
         'registry_id' => 'acme/no-files',
         'providers'   => [],
@@ -184,7 +184,7 @@ it('returns an empty files list when autoload.files is absent or malformed', fun
         expect($result->files)->toBe([]);
     } finally {
         unlink($tmpDir.'/composer.json');
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });
@@ -198,7 +198,7 @@ it('rejects autoload.files entries that escape the addon directory', function ()
     // must not be able to point the file loader at it.
     file_put_contents($base.'/secret.php', "<?php\n");
 
-    file_put_contents($addonDir.'/module.json', json_encode([
+    file_put_contents($addonDir.'/addon.json', json_encode([
         'name'        => 'Escaper',
         'registry_id' => 'acme/escaper',
         'providers'   => [],
@@ -216,7 +216,7 @@ it('rejects autoload.files entries that escape the addon directory', function ()
         expect($result->files)->toBe([]);
     } finally {
         unlink($addonDir.'/composer.json');
-        unlink($addonDir.'/module.json');
+        unlink($addonDir.'/addon.json');
         unlink($base.'/secret.php');
         rmdir($addonDir);
         rmdir($base);
@@ -228,7 +228,7 @@ it('rejects escaping autoload.files entries even when the target does not exist'
     $addonDir = $base.'/addon';
     mkdir($addonDir, 0755, true);
 
-    file_put_contents($addonDir.'/module.json', json_encode([
+    file_put_contents($addonDir.'/addon.json', json_encode([
         'name'        => 'GhostEscaper',
         'registry_id' => 'acme/ghost-escaper',
         'providers'   => [],
@@ -246,7 +246,7 @@ it('rejects escaping autoload.files entries even when the target does not exist'
         expect($result->files)->toBe([]);
     } finally {
         unlink($addonDir.'/composer.json');
-        unlink($addonDir.'/module.json');
+        unlink($addonDir.'/addon.json');
         rmdir($addonDir);
         rmdir($base);
     }
@@ -255,7 +255,7 @@ it('rejects escaping autoload.files entries even when the target does not exist'
 it('returns null when registry_id is blank (D-03)', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'        => 'BlankId',
         'registry_id' => '   ',
         'providers'   => [],
@@ -268,7 +268,7 @@ it('returns null when registry_id is blank (D-03)', function (): void {
         expect($parser->parse($tmpDir))->toBeNull();
     } finally {
         unlink($tmpDir.'/composer.json');
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });
@@ -276,7 +276,7 @@ it('returns null when registry_id is blank (D-03)', function (): void {
 it('returns null when registry_id is absent — it is the addon identity', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
-    file_put_contents($tmpDir.'/module.json', json_encode([
+    file_put_contents($tmpDir.'/addon.json', json_encode([
         'name'      => 'NoId',
         'providers' => [],
     ]));
@@ -288,7 +288,7 @@ it('returns null when registry_id is absent — it is the addon identity', funct
         expect($parser->parse($tmpDir))->toBeNull();
     } finally {
         unlink($tmpDir.'/composer.json');
-        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/addon.json');
         rmdir($tmpDir);
     }
 });

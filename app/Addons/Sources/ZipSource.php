@@ -13,7 +13,7 @@ use ZipArchive;
 
 /**
  * Extracts an addon from a local .zip file, guarding against zip-slip, then
- * unwraps a single top-level directory so the returned root holds module.json.
+ * unwraps a single top-level directory so the returned root holds addon.json.
  */
 class ZipSource implements AddonSource
 {
@@ -81,7 +81,7 @@ class ZipSource implements AddonSource
 
     /**
      * If the archive wrapped everything in a single top-level directory and
-     * there's no addon.json or module.json at the root, descend into it.
+     * there's no addon.json at the root, descend into it.
      */
     private function resolveRoot(string $dest): string
     {

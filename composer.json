@@ -106,7 +106,8 @@
     "filafly/filament-phosphor-icons": "^2.2",
     "socialiteproviders/openidconnect": "^1.0",
     "tallstackui/tallstackui": "^4",
-    "spatie/laravel-settings": "^3.10"
+    "spatie/laravel-settings": "^3.10",
+    "justinrainbow/json-schema": "^6.13"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",

@@ -15,7 +15,7 @@ interface AddonSource
      * Extract/copy the addon into a fresh subdir of $stagingDir.
      *
      * @return string Absolute path to the extracted addon root (the dir
-     *                containing module.json).
+     *                containing addon.json).
      *
      * @throws AddonInstallException
      */

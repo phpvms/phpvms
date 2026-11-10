@@ -1,8 +1,12 @@
 {
+    "$schema": "https://addons.phpvms.net/schema/addon.json",
+    "schema_version": 1,
     "name": "Acme",
     "alias": "acme",
     "registry_id": "acme/fixture",
     "version": "1.0.0",
+    "type": "module",
+    "description": "Test fixture addon.",
     "providers": [
         "PhpvmsAddonFixture\\Providers\\AcmeServiceProvider"
     ],

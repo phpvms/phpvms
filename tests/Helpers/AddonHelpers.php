@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\File;
  * ->skip(sampleAddonMissing(...), ...) rather than failing the suite.
  *
  * Matched on the manifest, never on the directory name: the addon engine reads
- * each addon's own module.json/composer.json and is directory-name agnostic, so
+ * each addon's own addon.json/composer.json and is directory-name agnostic, so
  * the sample may sit in "Sample", "phpvms-sample", or anything else.
  */
 function sampleAddonPath(): ?string
@@ -87,4 +87,22 @@ function storeAddonSettingRow(string $registryId, string $name, mixed $payload, 
 function addonSettingRowsExist(string $registryId): bool
 {
     return DB::table('addon_settings')->where('group', 'like', $registryId.':%')->exists();
+}
+
+/**
+ * An addon.json payload that passes the registry's manifest schema.
+ *
+ * The caller supplies at least `registry_id`; any key can be overridden.
+ *
+ * @param  array<string, mixed> $overrides
+ * @return array<string, mixed>
+ */
+function addonManifest(array $overrides = []): array
+{
+    return [
+        'schema_version' => 1,
+        'type'           => 'module',
+        'description'    => 'Test addon.',
+        ...$overrides,
+    ];
 }

@@ -12,6 +12,7 @@ use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonVersions;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
+use App\Addons\Support\ManifestSchemaValidator;
 use App\Addons\Support\ThemeAddonRegistrar;
 use App\Addons\Support\ThemeAssetLinker;
 use App\Models\Addon;
@@ -175,13 +176,13 @@ class AddonDiscoveryService
 
     /**
      * A fingerprint of the addon manifests on disk: for each immediate child
-     * directory of the addons base path, the mtime+size of module.json and
+     * directory of the addons base path, the mtime+size of addon.json and
      * composer.json (both feed a boot-cache entry — namespace and version
      * derive from composer.json). Hashing the sorted set means an added or
      * removed addon directory, or an edited manifest, changes the hash.
      *
      * databaseFingerprint() cannot see any of this: renaming an addon in its
-     * module.json leaves the addons table untouched, so without a disk
+     * addon.json leaves the addons table untouched, so without a disk
      * dimension the cache serves the old manifest values forever.
      */
     private function diskFingerprint(): string
@@ -491,7 +492,16 @@ class AddonDiscoveryService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof AddonManifest) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json (or module.json) is missing or invalid", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json is missing or invalid", $resolved));
+
+                continue;
+            }
+
+            // Resolved per scan: the validator is scoped and this service is a singleton.
+            $errors = app(ManifestSchemaValidator::class)->errors($manifest->raw);
+
+            if ($errors !== []) {
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json does not match the manifest schema: %s", $manifest->name, implode('; ', $errors)));
 
                 continue;
             }

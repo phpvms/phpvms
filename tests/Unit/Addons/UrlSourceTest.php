@@ -21,7 +21,7 @@ it('downloads a zip and extracts it', function (): void {
     $zipPath = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', '{"name":"Demo"}');
+    $zip->addFromString('addon.json', '{"name":"Demo"}');
     $zip->close();
 
     Http::fake([
@@ -30,7 +30,7 @@ it('downloads a zip and extracts it', function (): void {
 
     $root = new UrlSource('https://example.test/demo.zip')->fetch($this->staging);
 
-    expect(File::exists($root.'/module.json'))->toBeTrue();
+    expect(File::exists($root.'/addon.json'))->toBeTrue();
 });
 
 it('throws when the download fails', function (): void {
@@ -43,7 +43,7 @@ it('extracts when the sha256 matches', function (): void {
     $zipPath = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', '{"name":"Demo"}');
+    $zip->addFromString('addon.json', '{"name":"Demo"}');
     $zip->close();
 
     $bytes = File::get($zipPath);
@@ -51,14 +51,14 @@ it('extracts when the sha256 matches', function (): void {
 
     $root = new UrlSource('https://example.test/demo.zip', hash('sha256', $bytes))->fetch($this->staging);
 
-    expect(File::exists($root.'/module.json'))->toBeTrue();
+    expect(File::exists($root.'/addon.json'))->toBeTrue();
 });
 
 it('rejects a checksum mismatch and deletes the staged file', function (): void {
     $zipPath = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', '{"name":"Demo"}');
+    $zip->addFromString('addon.json', '{"name":"Demo"}');
     $zip->close();
 
     Http::fake(['example.test/*' => Http::response(File::get($zipPath), 200)]);

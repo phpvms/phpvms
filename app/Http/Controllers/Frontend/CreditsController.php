@@ -38,7 +38,7 @@ class CreditsController extends Controller
         ]);
     }
 
-    // Read the addon manifest (addon.json, or the older module.json)
+    // Read the addon manifest (addon.json)
     // Return laravel collection
     public function ReadModuleJson($module_name = null, ?Addon $module = null): ?stdClass
     {

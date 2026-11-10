@@ -47,14 +47,14 @@ function bundledThemeInImage(string $work, bool $bundled = true): string
     File::ensureDirectoryExists($dir.'/public/build');
     File::ensureDirectoryExists($dir.'/resources/views');
 
-    File::put($dir.'/module.json', json_encode([
+    File::put($dir.'/addon.json', json_encode(addonManifest([
         'name'        => 'FixtureTheme',
         'registry_id' => 'phpvms/fixture-theme',
         'type'        => 'theme',
         'version'     => '1.0.0',
         'bundled'     => $bundled,
         'providers'   => [],
-    ]));
+    ])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\FixtureTheme\\' => 'app']]]));
     File::put($dir.'/theme.json', json_encode(['name' => 'fixture', 'kind' => 'blade']));
     File::put($dir.'/public/build/manifest.json', '{}');

@@ -7,7 +7,7 @@ namespace App\Addons\Models;
 /**
  * Immutable parse-result contract returned by ManifestParser.
  *
- * All fields mirror the addon's module.json (nwidart keys + phpVMS keys) plus
+ * All fields mirror the addon's addon.json (nwidart keys + phpVMS keys) plus
  * derived values (namespace, version) resolved from composer.json per D-07.
  *
  * Identity rules (D-03 / D-04):
@@ -18,7 +18,7 @@ namespace App\Addons\Models;
 final readonly class AddonManifest
 {
     /**
-     * @param int|null             $schema_version Schema version of the module.json
+     * @param int|null             $schema_version Schema version of the addon.json
      * @param string               $name           Namespace name of the module
      * @param string|null          $alias          Short machine alias, used for views
      * @param string               $type           Addon type: 'module', 'theme', etc. (D-02:
@@ -32,15 +32,15 @@ final readonly class AddonManifest
      *                                             composer.json, else fallback (D-07).
      * @param list<string>         $providers      List of Laravel service-provider class names.
      * @param string               $path           Absolute filesystem path to the addon directory.
-     * @param array<string, mixed> $raw            The decoded module.json array, kept for
+     * @param array<string, mixed> $raw            The decoded addon.json array, kept for
      *                                             forward-compat.
      * @param string               $autoloadPath   Absolute filesystem path the PSR-4 namespace
      *                                             resolves to.
      * @param string               $layout         Addon layout: always lowercase 'root' or 'app'.
-     * @param string|null          $description    Human-readable description from module.json;
+     * @param string|null          $description    Human-readable description from addon.json;
      *                                             null when absent or blank.
      * @param list<string>         $tables         Database tables owned by the addon, declared
-     *                                             under module.json `database.tables`. Used to
+     *                                             under addon.json `database.tables`. Used to
      *                                             drop the addon's tables on uninstall; empty when
      *                                             undeclared (D-16).
      * @param list<string>         $files          Absolute filesystem paths declared under
@@ -74,7 +74,7 @@ final readonly class AddonManifest
 
     /**
      * Whether the addon is bundled with phpVMS (declared via `"bundled": true`
-     * in module.json). Bundled addons are enabled by default and cannot be
+     * in addon.json). Bundled addons are enabled by default and cannot be
      * disabled or deleted from the panel.
      */
     public function isBundled(): bool

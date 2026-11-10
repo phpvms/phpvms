@@ -65,7 +65,7 @@ function placeAddonInRoot(string $root, string $name, ?string $registryId = null
         $manifest['version'] = $version;
     }
 
-    File::put($dir.'/module.json', json_encode($manifest));
+    File::put($dir.'/addon.json', json_encode(addonManifest($manifest)));
     File::put($dir.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => 'app/']],
     ]));
@@ -82,12 +82,12 @@ function addonZip(string $workDir, string $name, string $registryId, ?string $ve
 
     $zip = new ZipArchive();
     $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode(array_filter([
+    $zip->addFromString('addon.json', json_encode(addonManifest(array_filter([
         'name'        => $name,
         'registry_id' => $registryId,
         'version'     => $version,
         'providers'   => [],
-    ], static fn (string|array|null $value): bool => $value !== null)));
+    ], static fn (string|array|null $value): bool => $value !== null))));
     $zip->addFromString('composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => '']],
     ]));
@@ -328,12 +328,12 @@ it('treats a symlinked module in the image root as image-managed', function (): 
     // files it has no business touching.
     $target = $this->work.'/external-checkout';
     File::ensureDirectoryExists($target);
-    File::put($target.'/module.json', json_encode([
+    File::put($target.'/addon.json', json_encode(addonManifest([
         'name'        => 'Linked',
         'registry_id' => 'acme/linked',
         'version'     => '1.0.0',
         'providers'   => [],
-    ]));
+    ])));
     File::put($target.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\Linked\\' => 'app/']],
     ]));
@@ -351,7 +351,7 @@ it('treats a symlinked module in the image root as image-managed', function (): 
 
     expect($outcome)->toBe(AddonDeleteOutcome::Disabled)
         ->and(Addon::query()->where('registry_id', 'acme/linked')->value('enabled'))->toBeFalsy()
-        ->and(File::exists($target.'/module.json'))->toBeTrue();
+        ->and(File::exists($target.'/addon.json'))->toBeTrue();
 });
 
 it('delete() of a registry update reverts to the bundled version', function (): void {
@@ -395,12 +395,12 @@ it('re-points an existing row when a deploy ships a newer bundled version', func
         ->and(Addon::query()->where('registry_id', 'acme/twin')->value('version'))->toBe('1.1.0');
 
     // Deploy ships 1.2.0: the bundled copy wins again and the row follows it.
-    File::put($imageDir.'/module.json', json_encode([
+    File::put($imageDir.'/addon.json', json_encode(addonManifest([
         'name'        => 'Twin',
         'registry_id' => 'acme/twin',
         'version'     => '1.2.0',
         'providers'   => [],
-    ]));
+    ])));
     app(AddonDiscoveryService::class)->discoverNewAddons();
 
     expect(Addon::query()->where('registry_id', 'acme/twin')->value('path'))

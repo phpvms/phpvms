@@ -68,13 +68,13 @@ function themeAddonZip(
 
     $zip = new ZipArchive();
     $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode([
+    $zip->addFromString('addon.json', json_encode(addonManifest([
         'name'        => 'Testsky',
         'registry_id' => 'acme/testsky',
         'type'        => $type,
         'version'     => $version,
         'providers'   => [],
-    ]));
+    ])));
     $zip->addFromString('composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']],
     ]));
@@ -272,9 +272,9 @@ it('refuses a second theme addon with the same theme name', function (): void {
     $other = $this->work.'/other.zip';
     $zip = new ZipArchive();
     $zip->open($other, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode([
+    $zip->addFromString('addon.json', json_encode(addonManifest([
         'name' => 'Other', 'registry_id' => 'acme/other', 'type' => 'theme', 'version' => '1.0.0', 'providers' => [],
-    ]));
+    ])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Other\\' => '']]]));
     $zip->addFromString('theme.json', json_encode(['name' => 'testsky']));
     $zip->addFromString('resources/views/home.blade.php', 'other');
@@ -314,12 +314,12 @@ it('records the new type when an update turns a module into a theme', function (
     $moduleZip = $this->work.'/module.zip';
     $zip = new ZipArchive();
     $zip->open($moduleZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode([
+    $zip->addFromString('addon.json', json_encode(addonManifest([
         'name'        => 'Testsky',
         'registry_id' => 'acme/testsky',
         'version'     => '0.9.0',
         'providers'   => [],
-    ]));
+    ])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']]]));
     $zip->close();
 
@@ -383,9 +383,9 @@ it('restores the type and the theme link when reverting to the bundled copy', fu
     $bundled = $this->work.'/image/testsky';
     File::ensureDirectoryExists($bundled.'/resources/views');
     File::ensureDirectoryExists($bundled.'/public/css');
-    File::put($bundled.'/module.json', json_encode([
+    File::put($bundled.'/addon.json', json_encode(addonManifest([
         'name' => 'Testsky', 'registry_id' => 'acme/testsky', 'type' => 'theme', 'version' => '1.0.0', 'providers' => [],
-    ]));
+    ])));
     File::put($bundled.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']]]));
     File::put($bundled.'/theme.json', json_encode(['name' => 'testsky']));
     File::put($bundled.'/public/css/app.css', 'bundled');

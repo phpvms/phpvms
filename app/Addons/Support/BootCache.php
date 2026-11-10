@@ -111,7 +111,7 @@ class BootCache
      *
      * AddonDiscoveryService compares this against a freshly computed disk
      * fingerprint to decide whether the cache still reflects the manifests on
-     * disk — editing a module.json used to leave this cache serving stale values forever.
+     * disk — editing an addon.json used to leave this cache serving stale values forever.
      */
     public function diskFingerprint(): ?string
     {

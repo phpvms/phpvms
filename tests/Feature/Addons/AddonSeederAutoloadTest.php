@@ -17,10 +17,10 @@ beforeEach(function (): void {
     File::ensureDirectoryExists($this->addonDir.'/database/seeders');
     Config::set('addons.paths.base', $this->base);
 
-    // module.json + composer.json: PSR-4 Modules\SeedFixture\ => app/. This path
+    // addon.json + composer.json: PSR-4 Modules\SeedFixture\ => app/. This path
     // is NOT in Composer's autoload map, so the class below is only loadable if
     // SeederService registers the addon's namespace before running the seeder.
-    File::put($this->addonDir.'/module.json', json_encode(['name' => 'SeedFixture', 'registry_id' => 'acme/seed-fixture', 'providers' => []]));
+    File::put($this->addonDir.'/addon.json', json_encode(addonManifest(['name' => 'SeedFixture', 'registry_id' => 'acme/seed-fixture', 'providers' => []])));
     File::put($this->addonDir.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\SeedFixture\\' => 'app/']],
     ]));

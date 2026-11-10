@@ -21,18 +21,18 @@ afterEach(function (): void {
 });
 
 /**
- * Drop a valid addon on disk, optionally flagged bundled in its module.json.
+ * Drop a valid addon on disk, optionally flagged bundled in its addon.json.
  */
 function placeBundledAddonOnDisk(string $base, string $name, bool $bundled): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/module.json', json_encode([
+    File::put($dir.'/addon.json', json_encode(addonManifest([
         'name'        => $name,
         'registry_id' => 'acme/'.strtolower($name),
         'providers'   => [],
         'bundled'     => $bundled,
-    ]));
+    ])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => '']]]));
 }
 

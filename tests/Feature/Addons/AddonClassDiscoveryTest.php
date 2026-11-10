@@ -44,7 +44,7 @@ PHP;
         File::put($dir.'/app/'.$path, str_replace('{NS}', $ns, $source));
     }
 
-    File::put($dir.'/module.json', json_encode(['name' => 'Disc', 'alias' => 'disc', 'registry_id' => 'acme/disc', 'providers' => [$provider]]));
+    File::put($dir.'/addon.json', json_encode(addonManifest(['name' => 'Disc', 'alias' => 'disc', 'registry_id' => 'acme/disc', 'providers' => [$provider]])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => [$ns.'\\' => 'app/']]]));
 
     $loader = collect(spl_autoload_functions())->first(fn ($entry): bool => is_array($entry) && $entry[0] instanceof ClassLoader)[0];

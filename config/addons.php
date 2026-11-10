@@ -9,6 +9,14 @@ return [
     // Maximum size (bytes) for a downloaded addon archive. 0 disables the cap.
     'max_download_bytes' => 100 * 1024 * 1024,
 
+    // The registry's published addon manifest schema, kept as a local file and
+    // re-downloaded once it is older than `ttl` seconds.
+    'schema' => [
+        'url'  => 'https://addons.phpvms.net/schema/addon.json',
+        'path' => storage_path('app/addons/addon.schema.json'),
+        'ttl'  => 86400,
+    ],
+
     'paths' => [
         // Addons shipped inside the deployment image, updated only by deploying
         // a new image. Never written to at runtime: in a container this path is

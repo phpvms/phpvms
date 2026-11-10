@@ -37,14 +37,14 @@ afterEach(function (): void {
 });
 
 /**
- * Drop a valid addon (module.json + composer.json) directly on disk, mirroring
+ * Drop a valid addon (addon.json + composer.json) directly on disk, mirroring
  * an FTP upload or an addon whose files remain after a panel delete.
  */
 function placeAddonOnDisk(string $base, string $name): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/module.json', json_encode(['name' => $name, 'registry_id' => 'acme/'.strtolower($name), 'providers' => []]));
+    File::put($dir.'/addon.json', json_encode(addonManifest(['name' => $name, 'registry_id' => 'acme/'.strtolower($name), 'providers' => []])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => '']]]));
 }
 

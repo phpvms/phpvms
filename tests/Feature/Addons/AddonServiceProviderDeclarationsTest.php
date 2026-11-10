@@ -385,7 +385,7 @@ it('finds the addon root from the provider file when there is no boot cache entr
     $directory = $this->probeDir.'/'.$providerDirectory;
 
     File::ensureDirectoryExists($directory);
-    File::put($this->probeDir.'/module.json', json_encode(['name' => 'Probe', 'registry_id' => 'acme/probe']));
+    File::put($this->probeDir.'/addon.json', json_encode(addonManifest(['name' => 'Probe', 'registry_id' => 'acme/probe'])));
     File::put($this->probeDir.'/composer.json', json_encode(['autoload' => ['psr-4' => [$namespace.'\\' => $autoload]]]));
     File::put($directory.'/Rooted.php', '<?php
 namespace '.$namespace.'\\'.$namespaceSuffix.';

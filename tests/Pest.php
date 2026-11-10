@@ -73,6 +73,11 @@ pest()
             'addons.paths.themes'       => $installedThemes,
             'addons.paths.theme_assets' => $themeAssets,
             'phpvms.kvp_storage_path'   => $kvpStore,
+
+            // The addon manifest schema comes from a committed copy and never goes stale,
+            // so no test downloads it. A test of the download path overrides these.
+            'addons.schema.path' => base_path('tests/fixtures/Addons/addon.schema.json'),
+            'addons.schema.ttl'  => PHP_INT_MAX,
         ]);
 
         // Pin the registry cache to the (array) test store at runtime so a stale

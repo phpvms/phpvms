@@ -11,6 +11,8 @@ use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
+use App\Addons\Support\ManifestSchema;
+use App\Addons\Support\ManifestSchemaValidator;
 use App\Addons\Support\ThemeAddonRegistrar;
 use App\Addons\Support\ThemeAssetLinker;
 use App\Support\RegistersApiScopes;
@@ -56,6 +58,9 @@ class AddonServiceProvider extends ServiceProvider
         // ── Phase 1 singletons ──────────────────────────────────────────────
         $this->app->singleton(BootCache::class);
         $this->app->singleton(ManifestParser::class);
+        // Scoped: memoises the decoded schema, which Octane must not carry across requests.
+        $this->app->scoped(ManifestSchema::class);
+        $this->app->scoped(ManifestSchemaValidator::class);
         $this->app->singleton(AutoloadGuard::class);
         $this->app->singleton(AddonDiscoveryService::class);
 

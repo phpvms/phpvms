@@ -18,11 +18,11 @@ afterEach(function (): void {
 });
 
 it('returns the manifest for a valid addon', function (): void {
-    File::put($this->dir.'/module.json', json_encode([
+    File::put($this->dir.'/addon.json', json_encode(addonManifest([
         'name'        => 'Demo',
         'registry_id' => 'acme/demo',
         'providers'   => [],
-    ]));
+    ])));
     File::put($this->dir.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\Demo\\' => '']],
     ]));
@@ -30,6 +30,6 @@ it('returns the manifest for a valid addon', function (): void {
     expect($this->validator->validate($this->dir))->toBeInstanceOf(AddonManifest::class);
 });
 
-it('throws when module.json is missing', function (): void {
+it('throws when addon.json is missing', function (): void {
     $this->validator->validate($this->dir);
 })->throws(AddonInstallException::class);

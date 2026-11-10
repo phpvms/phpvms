@@ -28,7 +28,7 @@ function placeEnabledAddon(string $base, string $name): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/module.json', json_encode(['name' => $name, 'registry_id' => 'acme/'.strtolower($name), 'providers' => []]));
+    File::put($dir.'/addon.json', json_encode(addonManifest(['name' => $name, 'registry_id' => 'acme/'.strtolower($name), 'providers' => []])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => 'app/']]]));
 
     Addon::factory()->create([

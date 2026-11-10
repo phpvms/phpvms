@@ -1,5 +1,5 @@
 {
-    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "$schema": "https://addons.phpvms.net/schema/addon.json",
     "schema_version": 1,
     "name": "Airside",
     "alias": "airside",

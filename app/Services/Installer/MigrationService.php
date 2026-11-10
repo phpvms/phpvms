@@ -86,13 +86,13 @@ class MigrationService extends Service
     /**
      * Scan disk for addon directories, mirroring
      * AddonDiscoveryService::scanLocation()'s conventions: immediate child
-     * directories of the addon base that contain a module.json. Used only
+     * directories of the addon base that contain an addon.json. Used only
      * pre-install, before the `addons` table exists to be the source of
      * truth (see getMigrationPaths()).
      *
      * Direct-child symlinks are permitted (e.g. modules/phpvms-acars
      * symlinked to an external checkout); anything that isn't a direct
-     * child of the base, or has no module.json, is skipped.
+     * child of the base, or has no addon.json, is skipped.
      *
      * Scans both addon roots and picks the same copy discovery would load, so
      * the migrations that run belong to the code that will be running.

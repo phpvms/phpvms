@@ -16,7 +16,7 @@ beforeEach(function (): void {
     $this->base = sys_get_temp_dir().'/rebuild-'.uniqid();
     $this->addonDir = $this->base.'/Demo';
     File::ensureDirectoryExists($this->addonDir);
-    File::put($this->addonDir.'/module.json', json_encode(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []]));
+    File::put($this->addonDir.'/addon.json', json_encode(addonManifest(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []])));
     File::put($this->addonDir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
     Config::set('addons.paths.base', $this->base);
 
