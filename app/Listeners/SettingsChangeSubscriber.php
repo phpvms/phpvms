@@ -15,6 +15,7 @@ use DateTimeInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Spatie\Activitylog\CauserResolver;
 use Spatie\LaravelSettings\Events\SavingSettings;
 use Spatie\LaravelSettings\Events\SettingsSaved;
 use Spatie\LaravelSettings\Settings;
@@ -92,7 +93,9 @@ final class SettingsChangeSubscriber
             $changes,
             static fn (array $change): bool => in_array($change[0]->group.'.'.$change[0]->name, Branding::SETTING_KEYS, true),
         );
-        $userId = auth()->id();
+        // The activity log's causer: the signed-in user, if any, resolved the
+        // way the package resolves it for the entry above.
+        $userId = app(CauserResolver::class)->resolve()?->getKey();
 
         DB::afterCommit(static function () use ($currencyChanged, $brandingChanged, $userId): void {
             if ($brandingChanged) {
@@ -130,8 +133,8 @@ final class SettingsChangeSubscriber
             $old[$key] = $this->loggable($before);
         }
 
+        // The causer defaults to the signed-in user (CauserResolver).
         activity('settings')
-            ->causedBy(auth()->user())
             ->event('updated')
             ->withProperties(array_filter([
                 'attributes' => $attributes,
