@@ -10,6 +10,7 @@ use App\Models\Aircraft;
 use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\PirepField;
+use App\Models\PirepFieldValue;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Services\FareService;
@@ -146,7 +147,7 @@ final readonly class SaveManualPirep
         }
 
         // @phpstan-ignore argument.type (the service documents models but reads the array rows built here)
-        $this->pireps->updateCustomFields($pirep->id, $this->customFields($input));
+        $this->pireps->updateCustomFields($pirep->id, $this->withoutAcarsValues($pirep, $this->customFields($input)));
         $this->saveFares($pirep, $input);
 
         if ($submit === 'submit') {
@@ -236,6 +237,27 @@ final readonly class SaveManualPirep
         Log::info('PIREP Custom Fields', $fields);
 
         return $fields;
+    }
+
+    /**
+     * Drop submitted values for the fields that ACARS or server code filled
+     * in. The form shows those values read-only, so a value for them can only
+     * come from a crafted request.
+     *
+     * @param  list<array{name: string, slug: string, value: mixed, source: PirepFieldSource}> $fields
+     * @return list<array{name: string, slug: string, value: mixed, source: PirepFieldSource}>
+     */
+    private function withoutAcarsValues(Pirep $pirep, array $fields): array
+    {
+        $acarsSlugs = PirepFieldValue::where('pirep_id', $pirep->id)
+            ->where('source', PirepFieldSource::ACARS)
+            ->pluck('slug')
+            ->all();
+
+        return array_values(array_filter(
+            $fields,
+            fn (array $field): bool => !in_array($field['slug'], $acarsSlugs, true)
+        ));
     }
 
     /**

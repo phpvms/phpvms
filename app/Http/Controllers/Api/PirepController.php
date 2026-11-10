@@ -105,6 +105,39 @@ class PirepController extends Controller
     }
 
     /**
+     * Check that the PIREP's custom fields can still be changed through the
+     * API, which is only until the PIREP is filed
+     *
+     * @throws PirepError
+     */
+    protected function checkFieldsWritable(Pirep $pirep): void
+    {
+        if (!$pirep->fields_writable) {
+            throw new PirepError($pirep, "PIREP has been filed, its fields can't be changed");
+        }
+    }
+
+    /**
+     * The custom fields sent to update or file an existing PIREP. Once the
+     * PIREP has been filed they're ignored, and the rest of the request still
+     * goes through.
+     *
+     * @return ?PirepFieldValue[]
+     */
+    protected function getFieldsFor(Pirep $pirep, Request $request): ?array
+    {
+        if (!$pirep->fields_writable) {
+            if ($request->filled('fields')) {
+                Log::warning('PIREP '.$pirep->id.' has been filed, ignored the fields sent with the request');
+            }
+
+            return [];
+        }
+
+        return $this->getFields($request);
+    }
+
+    /**
      * @return ?PirepFieldValue[]
      */
     protected function getFields(Request $request): ?array
@@ -237,7 +270,7 @@ class PirepController extends Controller
             }
         }
 
-        $fields = $this->getFields($request);
+        $fields = $this->getFieldsFor($pirep, $request);
         $fares = $this->getFares($request);
         $pirep = $this->pirepSvc->update($pirep_id, $attrs, $fields, $fares);
 
@@ -280,7 +313,7 @@ class PirepController extends Controller
         }
 
         try {
-            $fields = $this->getFields($request);
+            $fields = $this->getFieldsFor($pirep, $request);
             $fares = $this->getFares($request);
             $pirep = $this->pirepSvc->file($pirep, $attrs, $fields, $fares);
         } catch (Exception $exception) {
@@ -370,6 +403,7 @@ class PirepController extends Controller
     {
         $pirep = Pirep::findOrFail($pirep_id);
         $this->checkCancelled($pirep);
+        $this->checkFieldsWritable($pirep);
 
         $fields = $this->getFields($request);
         $this->pirepSvc->updateCustomFields($pirep_id, $fields);
