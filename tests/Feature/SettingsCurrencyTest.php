@@ -117,9 +117,12 @@ it('queues the migration on a retry after a currency save rolled back', function
     $this->actingAs(createAdminUser());
     setting_save('units.currency', 'USD');
 
-    $failPilots = true;
-    Event::listen(SavingSettings::class, function (SavingSettings $event): void {
-        if ($event->settings instanceof PilotsSettings) {
+    // An object, not a by-reference variable: the flag flips after the
+    // listener is registered, and Rector drops by-reference closure uses it
+    // considers unused.
+    $failure = (object) ['pilots' => true];
+    Event::listen(SavingSettings::class, function (SavingSettings $event) use ($failure): void {
+        if ($failure->pilots && $event->settings instanceof PilotsSettings) {
             throw new RuntimeException('pilots failed');
         }
     });
@@ -137,7 +140,7 @@ it('queues the migration on a retry after a currency save rolled back', function
     expect(setting('units.currency'))->toBe('USD');
     Queue::assertNothingPushed();
 
-    $failPilots = false;
+    $failure->pilots = false;
 
     Livewire::test(Settings::class)
         ->set('data.units.currency', 'EUR')
