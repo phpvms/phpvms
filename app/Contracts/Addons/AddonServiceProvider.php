@@ -966,11 +966,15 @@ abstract class AddonServiceProvider extends ServiceProvider
             return;
         }
 
-        $found = $this->discoveredClasses($rootNamespace);
+        // Discovery runs addon code (autoloading, attributes), so a failure here
+        // quarantines the addon instead of stopping the boot.
+        $this->guard('registerListeners', function () use ($rootNamespace): void {
+            $found = $this->discoveredClasses($rootNamespace);
 
-        if ($this->registerListenerClasses($found['listeners'], 'Listeners') && $this->registerListenerClasses($found['hooks'], 'Hooks')) {
-            $this->registerPolicyClasses($found['policies'], $rootNamespace);
-        }
+            if ($this->registerListenerClasses($found['listeners'], 'Listeners') && $this->registerListenerClasses($found['hooks'], 'Hooks')) {
+                $this->registerPolicyClasses($found['policies'], $rootNamespace);
+            }
+        });
     }
 
     /**
@@ -1062,7 +1066,7 @@ abstract class AddonServiceProvider extends ServiceProvider
                 if ($eventClass !== null) {
                     $this->registerListener($fqcn, $eventClass);
                 }
-            } catch (LogicException|InvalidArgumentException $failure) {
+            } catch (Throwable $failure) {
                 // One broken listener must not stop every boot (the admin panel
                 // included): quarantine the addon and skip the rest of its listeners.
                 $addonNamespace = $this->bootEntry()->namespace ?? $this->addonRootNamespace() ?? '';

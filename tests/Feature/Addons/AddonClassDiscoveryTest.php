@@ -154,6 +154,20 @@ it('quarantines an addon whose listener breaks the hook directory rules', functi
     'extra required param'   => ['Hooks/TwoArgs.php', 'Hooks', 'TwoArgs', 'class TwoArgs extends GateListener { public function check(PlacingBid $hook, string $reason): void {} }', 'must take only the hook point'],
 ]);
 
+it('quarantines instead of failing the boot when addon attributes are invalid', function (string $path, string $source): void {
+    Log::spy();
+    $addon = makeDiscoveryAddon($this, [$path => $source]);
+
+    app()->register($addon['provider']);
+
+    Log::shouldHaveReceived('error')
+        ->withArgs(fn (string $message): bool => str_contains($message, 'quarantined'))
+        ->once();
+})->with([
+    'bad hook priority'    => ['Hooks/BadPriority.php', "<?php\nnamespace {NS}\\Hooks;\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Attributes\\HookPriority;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Features\\Hooks\\Points\\PlacingBid;\n#[AddonListener]\n#[HookPriority('high')]\nclass BadPriority extends GateListener { public function check(PlacingBid \$hook): void {} }"],
+    'policy with no model' => ['Policies/EmptyPolicy.php', "<?php\nnamespace {NS}\\Policies;\nuse App\\Contracts\\Addons\\Attributes\\PolicyFor;\n#[PolicyFor]\nclass EmptyPolicy {}"],
+]);
+
 it('skips onBoot once a broken listener has disabled the addon', function (): void {
     Log::spy();
     $this->mock(AddonQuarantine::class)->shouldReceive('handle')->once()->andReturnTrue();
