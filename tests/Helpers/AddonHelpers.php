@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\ManifestParser;
 use App\Contracts\Addons\AddonSettings;
@@ -25,9 +26,9 @@ use Illuminate\Support\Facades\File;
  */
 function sampleAddonPath(): ?string
 {
-    $base = config('addons.paths.base', base_path('modules'));
+    $base = AddonRoots::root();
 
-    if (!is_string($base) || !File::isDirectory($base)) {
+    if (!File::isDirectory($base)) {
         return null;
     }
 

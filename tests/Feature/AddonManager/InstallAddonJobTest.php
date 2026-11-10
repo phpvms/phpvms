@@ -30,15 +30,14 @@ beforeEach(function (): void {
 
     // …then redirect install targets to a scratch dir.
     $this->work = sys_get_temp_dir().'/addon-install-'.uniqid('', true);
-    File::ensureDirectoryExists($this->work.'/modules');
+    File::ensureDirectoryExists($this->work);
 
-    // install()/update() place files in the writable root, never in the image
-    // root, so that is where this suite's path assertions look.
-    $this->installed = $this->work.'/installed';
+    // install()/update() place files in the addon root, which is where this
+    // suite's path assertions look.
+    $this->installed = $this->work.'/addons';
 
     config([
-        'addons.paths.base'          => $this->work.'/modules',
-        'addons.paths.installed'     => $this->installed,
+        'addons.paths.root'          => $this->installed,
         'addons.paths.staging'       => $this->work.'/staging',
         'addon-manager.registry_url' => 'https://registry.test',
     ]);

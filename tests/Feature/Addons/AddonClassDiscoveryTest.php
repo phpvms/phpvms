@@ -83,7 +83,7 @@ beforeEach(function (): void {
     Addon::query()->delete();
     $this->base = sys_get_temp_dir().'/discovery-'.uniqid();
     File::ensureDirectoryExists($this->base);
-    Config::set('addons.paths.base', $this->base);
+    Config::set('addons.paths.root', $this->base);
     app(BootCache::class)->delete();
 });
 

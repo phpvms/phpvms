@@ -11,14 +11,9 @@ use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {
     $this->work = sys_get_temp_dir().'/install-'.uniqid();
-    $this->modules = $this->work.'/modules';
-    File::ensureDirectoryExists($this->modules);
-    Config::set('addons.paths.base', $this->modules);
-
-    // install() places files in the writable root, never in the image root,
-    // so that is where this suite asserts they land.
-    $this->installed = $this->work.'/installed';
-    Config::set('addons.paths.installed', $this->installed);
+    File::ensureDirectoryExists($this->work);
+    $this->installed = $this->work.'/addons';
+    Config::set('addons.paths.root', $this->installed);
 
     $this->zip = $this->work.'/demo.zip';
     $zip = new ZipArchive();
@@ -84,11 +79,11 @@ it('install() leaves no staging directory behind when the fetch fails', function
     expect(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
 });
 
-it('install() places the addon when it cannot be renamed into the installed root', function (): void {
+it('install() places the addon when it cannot be renamed into the addon root', function (): void {
     $staging = $this->work.'/staging';
     Config::set('addons.paths.staging', $staging);
 
-    // Stands in for the installed root being on its own filesystem, which is
+    // Stands in for the addon root being on its own filesystem, which is
     // what config/addons.php documents it as: rename(2) refuses to move a
     // directory across a mount point (EXDEV), so placement has to copy instead.
     // Forcing the return value is the only portable way to get there — a test

@@ -23,6 +23,7 @@ function mockUpdaterServices(): void
         $mock->shouldReceive('isUpgradePending')->andReturnTrue();
         $mock->shouldReceive('ensurePassportKeys');
         $mock->shouldReceive('linkStorage')->andReturnTrue();
+        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
     });
     test()->mock(MigrationService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('migrationsAvailable')->andReturn([]);

@@ -35,7 +35,7 @@ beforeEach(function (): void {
     // Empty addons dir so on-disk bundled modules aren't discovered as rows.
     $dir = sys_get_temp_dir().'/addons-check-'.uniqid();
     File::ensureDirectoryExists($dir);
-    Config::set('addons.paths.base', $dir);
+    Config::set('addons.paths.root', $dir);
 
     Addon::query()->delete();
     Addon::factory()->create([

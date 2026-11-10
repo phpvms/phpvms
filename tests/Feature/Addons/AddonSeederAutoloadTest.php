@@ -15,7 +15,7 @@ beforeEach(function (): void {
     $this->addonDir = $this->base.'/seedfixture';
     File::ensureDirectoryExists($this->addonDir.'/app/Models');
     File::ensureDirectoryExists($this->addonDir.'/database/seeders');
-    Config::set('addons.paths.base', $this->base);
+    Config::set('addons.paths.root', $this->base);
 
     // addon.json + composer.json: PSR-4 Modules\SeedFixture\ => app/. This path
     // is NOT in Composer's autoload map, so the class below is only loadable if

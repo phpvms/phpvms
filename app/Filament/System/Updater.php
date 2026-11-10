@@ -146,6 +146,10 @@ class Updater extends Page
             $streamCallback(__('installer.storage_link_failed'));
         }
 
+        if (!app(InstallerService::class)->linkBundledAddons()) {
+            $streamCallback(__('installer.bundled_link_failed'));
+        }
+
         if (count($dataMigrationsPending) !== 0) {
             if ($migrationSvc->runAllDataMigrationsWithStreaming($streamCallback) !== 0) {
                 $streamCallback(__('installer.failed'));

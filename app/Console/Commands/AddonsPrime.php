@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Addons\Services\AddonDiscoveryService;
+use App\Addons\Support\BundledAddonLinker;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -18,15 +19,19 @@ class AddonsPrime extends Command
 {
     /**
      * Prime (or re-prime) the addon registry and write the enabled-only boot cache.
+     * Links the bundled addons into the addon root first, so a release that
+     * bundles a new addon is found by the scan.
      *
      * Without --force: calls primeIfNeeded() — no-ops when the boot cache already exists.
      * With    --force: calls run() — always rebuilds the cache and reconciles disk→DB.
      *
      * Returns self::SUCCESS on completion; self::FAILURE on exception.
      */
-    public function handle(AddonDiscoveryService $prime): int
+    public function handle(AddonDiscoveryService $prime, BundledAddonLinker $linker): int
     {
         try {
+            $linker->link();
+
             if ($this->option('force')) {
                 $this->components->task('Priming addon registry (forced)', static function () use ($prime): void {
                     $prime->run();

@@ -852,8 +852,8 @@ class Addons extends Page implements HasTable
                 );
 
                 // Three outcomes, and they are genuinely different things: an
-                // uninstall, a disable (image files cannot be removed at
-                // runtime), and a revert to the bundled version. Reporting any
+                // uninstall, a disable (a linked addon's files are not in the
+                // addon root), and a revert to the bundled version. Reporting any
                 // of them as another misdescribes what just happened to the
                 // operator's install.
                 match ($outcome) {

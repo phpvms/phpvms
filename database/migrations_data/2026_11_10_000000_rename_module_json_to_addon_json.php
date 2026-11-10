@@ -27,17 +27,13 @@ return new class() extends Migration
     {
         $renamed = false;
 
-        foreach (AddonRoots::all() as $root) {
-            if (!is_dir($root)) {
-                continue;
-            }
+        $root = AddonRoots::root();
 
-            foreach (File::directories($root) as $dir) {
-                $legacy = $dir.'/module.json';
+        foreach (is_dir($root) ? File::directories($root) : [] as $dir) {
+            $legacy = $dir.'/module.json';
 
-                if (is_file($legacy) && !file_exists($dir.'/addon.json') && !$this->isRetired($legacy)) {
-                    $renamed = rename($legacy, $dir.'/addon.json') || $renamed;
-                }
+            if (is_file($legacy) && !file_exists($dir.'/addon.json') && !$this->isRetired($legacy)) {
+                $renamed = rename($legacy, $dir.'/addon.json') || $renamed;
             }
         }
 

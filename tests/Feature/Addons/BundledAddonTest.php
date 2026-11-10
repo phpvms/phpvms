@@ -13,7 +13,7 @@ beforeEach(function (): void {
 
     $this->modules = sys_get_temp_dir().'/bundled-addon-'.uniqid();
     File::ensureDirectoryExists($this->modules);
-    Config::set('addons.paths.base', $this->modules);
+    Config::set('addons.paths.root', $this->modules);
 });
 
 afterEach(function (): void {

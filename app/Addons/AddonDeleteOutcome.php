@@ -22,15 +22,15 @@ enum AddonDeleteOutcome: string
     case Removed = 'removed';
 
     /**
-     * Loaded from the image root, so nothing could be removed: the files belong
-     * to the image layer and the next deploy restores them. Disabled instead,
-     * with its row and files intact.
+     * A symlink in the addon root (a bundled addon, or a dev checkout), so
+     * nothing could be removed: its files are not in the root. Disabled
+     * instead, with its row and files intact.
      */
     case Disabled = 'disabled';
 
     /**
-     * A runtime copy was shadowing a version the image still ships. The copy is
-     * gone and the row now points at the bundled version, which keeps running —
+     * A registry update had replaced a bundled addon's link. The update is
+     * gone, the link is back and the row points at the bundled version —
      * a revert, not an uninstall, so tables and settings were left alone.
      */
     case Reverted = 'reverted';

@@ -8,8 +8,8 @@ use Throwable;
 use Version\Version;
 
 /**
- * Semver comparison for deciding which copy of an addon loads when the same
- * addon is present in both roots.
+ * Semver comparison for deciding whether a registry update of a bundled addon
+ * keeps loading, or the bundled copy a release ships takes over again.
  *
  * Core cannot use the addon manager's `CompatibilityEvaluator`, which does the
  * same job for the catalog UI: design decision 1 requires core to install and
@@ -22,19 +22,19 @@ use Version\Version;
 final class AddonVersions
 {
     /**
-     * Whether the copy installed at runtime should win over the image's copy.
+     * Whether a registry update of a bundled addon should keep loading over the
+     * bundled copy ({@see BundledAddonLinker}).
      *
      * Deliberately asymmetric, and the asymmetry is the whole safety property.
      * The runtime copy wins ONLY when both versions parse and it is strictly
      * newer. Every other case — either side unversioned, unparseable, or equal
-     * — hands it to the image.
+     * — hands it to the bundled copy.
      *
-     * Failing toward the image is what stops this reintroducing the staleness
-     * bug the two roots exist to fix. If an unversioned runtime copy could win,
-     * it would shadow the image's copy permanently and no later deploy could
-     * ever take that back; the cost of the other direction is merely that a
-     * bundled module which declares no version is not registry-updatable, which
-     * is visible, logged, and fixed by declaring one.
+     * Failing toward the bundled copy is what stops a stale update shadowing
+     * every later release: if an unversioned runtime copy could win, no later
+     * deploy could ever take it back. The cost of the other direction is merely
+     * that a bundled addon which declares no version is not registry-updatable,
+     * which is visible, logged, and fixed by declaring one.
      */
     public static function installedSupersedesImage(?string $installed, ?string $image): bool
     {

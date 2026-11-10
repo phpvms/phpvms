@@ -94,6 +94,7 @@ it('reloads workers once and does not rebuild the cache again after an update', 
         $mock->shouldReceive('isUpgradePending')->andReturnTrue();
         $mock->shouldReceive('ensurePassportKeys');
         $mock->shouldReceive('linkStorage')->andReturnTrue();
+        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
     });
     $this->mock(MigrationService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('migrationsAvailable')->andReturn([]);

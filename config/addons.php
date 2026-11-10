@@ -17,32 +17,24 @@ return [
         'ttl'  => 86400,
     ],
 
+    // Addons that ship with phpvms. Each one stays in modules/<name> and is
+    // linked into the addon root as `<root>/<name> -> ../../../modules/<name>`
+    // by `phpvms:addons-link-bundled`, so a new release updates it in place.
+    'bundled' => [
+        'phpvms-addon-manager',
+        'phpvms-airside-theme',
+    ],
+
     'paths' => [
-        // Addons shipped inside the deployment image, updated only by deploying
-        // a new image. Never written to at runtime: in a container this path is
-        // part of the image layer, so a runtime write is either lost on the next
-        // deploy or — if a volume is mounted over it — freezes the image's copy
-        // forever, which is exactly what the `phpvms_modules` volume used to do.
-        'base' => base_path('modules'),
+        // The one directory addons are discovered in: modules and themes, the
+        // bundled links and every addon installed at runtime. Under storage/
+        // because that is the persistent writable volume in compose.deploy.yml,
+        // so installs survive a redeploy.
+        'root' => storage_path('app/addons'),
 
-        // Addons installed at runtime through the addon manager. Under storage/
-        // because that is already a persistent writable volume in
-        // compose.deploy.yml, so installs survive a redeploy without needing a
-        // mount of their own. Deliberately NOT under storage/app, which is a
-        // filesystem disk root.
-        //
-        // Must not be nested inside `base` above. Every addon under it would
-        // then also match the image root, and the lifecycle would treat all of
-        // them as image-managed: updates refused, delete reduced to disable,
-        // reinstall blocked by the existing-row check.
-        'installed' => storage_path('addons'),
-
-        // Installed addons of type "theme". Same volume and same lifecycle as
-        // `installed`, kept apart so themes and modules are not mixed on disk.
-        // The same nesting rule applies: not inside `base`. Not storage/themes:
-        // `theme:package` and `theme:install` keep their packages and a tmp/
-        // directory there.
-        'themes' => storage_path('addon-themes'),
+        // Where the bundled addons' files live. Part of the release, never
+        // written to at runtime.
+        'bundled' => base_path('modules'),
 
         // Where each theme addon's public/ is linked, as themes/<name>. Inside
         // storage/app/public so `storage:link` (public/storage) already serves

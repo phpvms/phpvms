@@ -91,7 +91,7 @@ function makeDbAddon(string $base, string $dirName, bool $enabled): Addon
 beforeEach(function (): void {
     $this->addonBase = sys_get_temp_dir().'/phpvms-addon-migration-ordering-'.uniqid('', true);
     File::ensureDirectoryExists($this->addonBase);
-    Config::set('addons.paths.base', $this->addonBase);
+    Config::set('addons.paths.root', $this->addonBase);
 
     // Bundled module rows seeded by the addons migration aren't relevant here
     // and would leak into the "DB is source of truth" assertions.

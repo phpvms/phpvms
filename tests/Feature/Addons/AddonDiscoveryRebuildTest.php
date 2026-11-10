@@ -18,7 +18,7 @@ beforeEach(function (): void {
     File::ensureDirectoryExists($this->addonDir);
     File::put($this->addonDir.'/addon.json', json_encode(addonManifest(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []])));
     File::put($this->addonDir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
-    Config::set('addons.paths.base', $this->base);
+    Config::set('addons.paths.root', $this->base);
 
     app(BootCache::class)->delete();
 });

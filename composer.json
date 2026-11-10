@@ -155,11 +155,11 @@
       "phpvms-module"
     ],
     "installer-paths": {
-      "modules/{$name}/": [
+      "storage/app/addons/{$name}/": [
         "type:phpvms-module"
       ]
     },
-    "module-dir": "modules"
+    "module-dir": "storage/app/addons"
   },
   "scripts": {
     "post-autoload-dump": [

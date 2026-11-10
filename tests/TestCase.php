@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
@@ -141,7 +142,7 @@ abstract class TestCase extends BaseTestCase
         $parser = $app->make(ManifestParser::class);
         $known = array_map(static fn (AddonBootCache $entry): string => $entry->registryId, $cache->read());
 
-        $directories = glob(rtrim((string) config('addons.paths.base'), '/').'/*', GLOB_ONLYDIR) ?: [];
+        $directories = array_map(static fn (string $name): string => AddonRoots::bundledSource().'/'.$name, AddonRoots::bundled());
         $missing = [];
 
         foreach ([...$directories, ...($addon !== null ? [$addon] : [])] as $directory) {

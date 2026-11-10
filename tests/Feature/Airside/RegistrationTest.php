@@ -20,13 +20,9 @@ beforeEach(function (): void {
     Addon::query()->delete();
 
     $this->work = sys_get_temp_dir().'/airside-registration-'.uniqid('', true);
-    File::ensureDirectoryExists($this->work.'/image');
-    File::ensureDirectoryExists($this->work.'/installed');
-    File::ensureDirectoryExists($this->work.'/themes');
+    File::ensureDirectoryExists($this->work.'/root');
 
-    Config::set('addons.paths.base', $this->work.'/image');
-    Config::set('addons.paths.installed', $this->work.'/installed');
-    Config::set('addons.paths.themes', $this->work.'/themes');
+    Config::set('addons.paths.root', $this->work.'/root');
     Config::set('addons.paths.theme_assets', $this->work.'/public-disk/themes');
     Config::set('addons.paths.assets', $this->work.'/ext');
 
@@ -39,11 +35,11 @@ afterEach(function (): void {
 });
 
 /**
- * A bundled theme in the image root, shaped like modules/phpvms-airside-theme.
+ * A bundled theme in the addon root, shaped like modules/phpvms-airside-theme.
  */
 function bundledThemeInImage(string $work, bool $bundled = true): string
 {
-    $dir = $work.'/image/phpvms-fixture-theme';
+    $dir = $work.'/root/phpvms-fixture-theme';
     File::ensureDirectoryExists($dir.'/public/build');
     File::ensureDirectoryExists($dir.'/resources/views');
 

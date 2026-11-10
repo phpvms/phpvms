@@ -13,7 +13,7 @@ beforeEach(function (): void {
     $this->work = sys_get_temp_dir().'/update-'.uniqid();
     $this->modules = $this->work.'/modules';
     File::ensureDirectoryExists($this->modules);
-    Config::set('addons.paths.base', $this->modules);
+    Config::set('addons.paths.root', $this->modules);
 
     $this->makeZip = function (string $version): string {
         $path = $this->work.'/demo-'.$version.'.zip';

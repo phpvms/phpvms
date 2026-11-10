@@ -10,6 +10,7 @@ use App\Addons\Sources\AddonSource;
 use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonValidator;
+use App\Addons\Support\BundledAddonLinker;
 use App\Addons\Support\CoreTables;
 use App\Addons\Support\ManifestParser;
 use App\Addons\Support\OctaneReloader;
@@ -165,13 +166,14 @@ class AddonRegistry
 
         $this->assertNotActiveTheme($addon, 'deleted');
 
-        // An addon shipped in the image cannot be removed from disk at runtime:
-        // the files belong to the image layer, and the next deploy restores
-        // them regardless. Deleting the row alone would be worse than useless —
-        // discoverNewAddons() re-adds any manifest without one, so the addon
-        // would silently come back. Disable it instead and keep the row, so it
-        // stays listed and stays switchable.
-        if (AddonRoots::isImageManaged($addon->getPath())) {
+        // A linked addon (a bundled one, or a dev checkout linked in by hand)
+        // cannot be removed from disk here: its files are not in the addon
+        // root, and a bundled link comes back on the next link step. Deleting
+        // the row alone would be worse than useless — discoverNewAddons()
+        // re-adds any manifest without one, so the addon would silently come
+        // back. Disable it instead and keep the row, so it stays listed and
+        // stays switchable.
+        if (AddonRoots::isLinked($addon->getPath())) {
             // $removeTables is deliberately ignored here. The files stay, so the
             // addon can be re-enabled at any time; dropping its tables would
             // leave it re-enableable with no schema. The false return is how the
@@ -182,33 +184,32 @@ class AddonRegistry
             return AddonDeleteOutcome::Disabled;
         }
 
-        // The loaded copy is a registry update sitting on top of a version the
-        // image still ships. Removing it is a revert, not an uninstall: the
-        // image's copy takes over on the rebuild below, so the row stays (now
-        // pointing at the image path) and the addon's tables and settings must
-        // survive — the addon is still installed, just at the bundled version.
-        $imageCopy = $this->imageRootCopy($addon->registry_id);
+        // The loaded copy is a registry update that replaced a bundled link.
+        // Removing it is a revert, not an uninstall: the bundled copy is linked
+        // back in, so the row stays (now pointing at the bundled path) and the
+        // addon's tables and settings must survive — the addon is still
+        // installed, just at the bundled version.
+        $bundledCopy = $this->bundledCopy($addon->registry_id);
 
-        if ($imageCopy instanceof AddonManifest) {
+        if ($bundledCopy instanceof AddonManifest) {
             // Read before the files go: the overlay's theme.json names its link.
             $outgoingTheme = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
 
-            // Before any row state changes: a surviving overlay is still the
-            // newer copy, so it would keep winning precedence and the "revert"
-            // would be a lie.
+            // Before any row state changes: a surviving update would keep the
+            // link from being made, and the "revert" would be a lie.
             $this->removeAddonFilesOrFail($addon);
+            app(BundledAddonLinker::class)->link();
 
-            // Re-point the row at the image copy explicitly. Neither
-            // discoverNewAddons() nor rebuildCache() will do it: the first skips
-            // addons that already have a row, and the second only regenerates
-            // the boot cache. Left alone, the row would still name the directory
-            // just deleted and the addon would stop loading entirely.
-            $addon->path = $imageCopy->path;
-            $addon->version = $imageCopy->version;
+            // Re-point the row at the bundled copy explicitly. rebuildCache()
+            // below only regenerates the boot cache. Left alone, the row would
+            // still name the directory just deleted and the addon would stop
+            // loading entirely.
+            $addon->path = $bundledCopy->path;
+            $addon->version = $bundledCopy->version;
             // The overlay may have changed the type (a theme updated into a
             // module, or back); linkAssets() below branches on it.
-            $addon->type = $imageCopy->type;
-            $addon->namespace = $imageCopy->namespace;
+            $addon->type = $bundledCopy->type;
+            $addon->namespace = $bundledCopy->namespace;
             $addon->save();
 
             $incomingTheme = $addon->type === 'theme' ? ThemeAddonRegistrar::themeName($addon->getPath(), $addon->getName()) : null;
@@ -291,27 +292,25 @@ class AddonRegistry
     }
 
     /**
-     * The deployment image's copy of this addon, if it ships one.
+     * The bundled copy of this addon in modules/, if phpvms bundles it.
      *
-     * Read off disk rather than from the addons table: the table holds one row
-     * per addon, pointing at whichever copy currently wins precedence, so it
-     * cannot say whether a second copy exists in the other root.
+     * Read off disk rather than from the addons table: the row points at the
+     * registry update that is loading, so it cannot say whether a bundled copy
+     * exists as well.
      */
-    private function imageRootCopy(?string $registryId): ?AddonManifest
+    private function bundledCopy(?string $registryId): ?AddonManifest
     {
-        if ($registryId === null || $registryId === '' || !File::isDirectory(AddonRoots::image())) {
+        if ($registryId === null || $registryId === '') {
             return null;
         }
 
         $parser = app(ManifestParser::class);
 
-        foreach (File::directories(AddonRoots::image()) as $directory) {
+        foreach (AddonRoots::bundled() as $name) {
             // Parse the resolved path, exactly as
             // AddonDiscoveryService::scanLocation() does, so the manifest path
-            // written back to the row matches what discovery would store. A
-            // mix of resolved and unresolved paths in that column is what made
-            // symlinked modules misclassify in the first place.
-            $resolved = realpath($directory);
+            // written back to the row matches what discovery would store.
+            $resolved = realpath(AddonRoots::bundledSource().'/'.$name);
 
             if ($resolved === false) {
                 continue;
@@ -328,7 +327,7 @@ class AddonRegistry
     }
 
     /**
-     * Delete an addon's files from the writable installed root, or throw.
+     * Delete an addon's files from the addon root, or throw.
      *
      * Without this, uninstalling is not durable: delete() removes the row, and
      * the next `discoverNewAddons()` pass finds the untouched manifest and
@@ -342,8 +341,8 @@ class AddonRegistry
      * permissions problem would otherwise leave the addon on disk while its row
      * disappeared.
      *
-     * Containment guard: only paths inside the installed root are touched. The
-     * caller has already excluded image-managed addons, but `addons.path` is a
+     * Containment guard: only paths inside the addon root are touched. The
+     * caller has already excluded linked addons, but `addons.path` is a
      * stored string — a hand-edited or legacy row must not be able to aim a
      * recursive delete at an arbitrary directory. A path outside the root is
      * logged and left alone, and is not an error: there is nothing of ours
@@ -355,19 +354,18 @@ class AddonRegistry
     {
         $path = rtrim($addon->getPath(), '/');
 
-        // Resolved on both sides, for the same reason AddonRoots::isImageManaged()
-        // resolves: discovery stores realpath()s, and the configured root may
-        // itself contain a symlinked component. Resolving also closes the
-        // direction that matters for a recursive delete — a symlink inside the
-        // writable root pointing elsewhere resolves outside it and is refused.
+        // Resolved, because discovery stores realpath()s and the configured
+        // root may itself contain a symlinked component. Resolving also closes
+        // the direction that matters for a recursive delete — a symlink inside
+        // the root pointing elsewhere resolves outside it and is refused.
         $path = realpath($path) ?: $path;
 
-        if (!$this->inWritableRoot($path)) {
+        if (!AddonRoots::contains($path)) {
             Log::warning(sprintf(
-                'AddonRegistry: not removing files for "%s" — path %s is outside the writable addon roots %s',
+                'AddonRegistry: not removing files for "%s" — path %s is outside the addon root %s',
                 $addon->getName(),
                 $path === '' ? '(empty)' : $path,
-                implode(', ', AddonRoots::writable()),
+                AddonRoots::root(),
             ));
 
             return;
@@ -394,32 +392,12 @@ class AddonRegistry
     }
 
     /**
-     * Whether a resolved path lies inside one of the writable roots.
-     */
-    private function inWritableRoot(string $path): bool
-    {
-        if ($path === '') {
-            return false;
-        }
-
-        foreach (AddonRoots::writable() as $root) {
-            $root = realpath($root) ?: $root;
-
-            if ($root !== '' && str_starts_with($path, $root.'/')) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Rename the addon's directory to a hidden staging name inside its own
-     * writable root, so the rename is atomic and on one filesystem. Discovery
+     * the addon root, so the rename is atomic and on one filesystem. Discovery
      * ignores dot-directories, so a staged addon is not found again.
      *
      * Same containment guard as {@see removeAddonFilesOrFail()}: only a
-     * directory inside a writable root is touched.
+     * directory inside the addon root is touched.
      *
      * @return string|null the staged path, or null when there is nothing to stage
      */
@@ -428,12 +406,12 @@ class AddonRegistry
         $path = rtrim($addon->getPath(), '/');
         $path = realpath($path) ?: $path;
 
-        if (!$this->inWritableRoot($path)) {
+        if (!AddonRoots::contains($path)) {
             Log::warning(sprintf(
-                'AddonRegistry: not removing files for "%s" — path %s is outside the writable addon roots %s',
+                'AddonRegistry: not removing files for "%s" — path %s is outside the addon root %s',
                 $addon->getName(),
                 $path === '' ? '(empty)' : $path,
-                implode(', ', AddonRoots::writable()),
+                AddonRoots::root(),
             ));
 
             return null;
@@ -638,14 +616,13 @@ class AddonRegistry
             $manifest = $this->validator->validate($extracted);
             $this->assertThemeNameAvailable($manifest, $extracted);
             $safeName = $this->safeName($manifest);
-            $root = AddonRoots::installedFor($manifest->type);
+            $root = AddonRoots::root();
             $dest = $root.'/'.$safeName;
 
-            // Identity, not directory name. A second copy in the writable root
-            // would be ignored by discovery in favour of the image one, leaving
-            // files nothing ever loads — but the image root's directories are
-            // named arbitrarily (modules/Awards, modules/phpvms-addon-manager),
-            // so comparing $safeName against them would miss the duplicate.
+            // Identity, not directory name. A second copy in the root would be
+            // ignored by discovery, leaving files nothing ever loads — but the
+            // bundled links are named after their modules/ directory, so
+            // comparing $safeName against them would miss the duplicate.
             // registry_id is the identity discovery itself de-duplicates on.
             if (Addon::query()->where('registry_id', $manifest->registryId)->exists()) {
                 throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
@@ -738,24 +715,25 @@ class AddonRegistry
                 ));
             }
 
-            $root = AddonRoots::installedFor($manifest->type);
-            $dest = $root.'/'.$this->safeName($manifest);
+            $root = AddonRoots::root();
+            // In place: the entry the addon already has in the root (for a
+            // bundled addon, its link), so the root never holds two copies.
+            $dest = AddonRoots::entryFor($existing->getPath()) ?? $root.'/'.$this->safeName($manifest);
 
             File::ensureDirectoryExists($root);
 
-            // Updating a copy that lives in the image root places the new
-            // version in the writable root for the first time, so there is
-            // nothing at $dest to move aside and $backup stays null. Record
+            // Nothing at $dest to move aside means $backup stays null. Record
             // that, or restorePreviousVersion() leaves the failed new version
-            // sitting there — and a newer-looking broken copy would then win
-            // precedence over the working image one.
-            $destWasCreated = !File::isDirectory($dest);
+            // sitting there.
+            $destWasCreated = !file_exists($dest) && !is_link($dest);
 
-            // Move the current version aside instead of deleting it.
-            if (File::isDirectory($dest)) {
-                $backup = $dest.'.bak-'.uniqid('', true);
+            // Move the current version aside instead of deleting it. rename()
+            // moves a bundled link itself, never the files it points at. A dot
+            // name keeps discovery from scanning the backup.
+            if (!$destWasCreated) {
+                $backup = $root.'/.'.basename($dest).'.bak-'.uniqid('', true);
 
-                if (!File::moveDirectory($dest, $backup)) {
+                if (!rename($dest, $backup)) {
                     throw new AddonInstallException(sprintf('Failed to stage the current version aside: %s', $manifest->name));
                 }
             }
@@ -790,7 +768,7 @@ class AddonRegistry
         File::deleteDirectory($staging);
 
         if ($backup !== null) {
-            File::deleteDirectory($backup);
+            $this->removeEntry($backup);
         }
 
         // The rebuild inside the try ran while both copies existed and may
@@ -826,17 +804,16 @@ class AddonRegistry
      */
     private function restorePreviousVersion(Addon $addon, array $prior, ?string $dest, ?string $backup, bool $destWasCreated = false): void
     {
-        // Nothing was moved aside because nothing was there: the addon is still
-        // whole in the image root, and all that has to go is the half-placed
-        // new copy. Leaving it would shadow the working one on version.
+        // Nothing was moved aside because nothing was there: all that has to go
+        // is the half-placed new copy.
         if ($destWasCreated && $backup === null && $dest !== null) {
-            File::deleteDirectory($dest);
+            $this->removeEntry($dest);
         }
 
-        if ($backup !== null && $dest !== null && File::isDirectory($backup)) {
-            File::deleteDirectory($dest);
+        if ($backup !== null && $dest !== null && (is_link($backup) || File::isDirectory($backup))) {
+            $this->removeEntry($dest);
 
-            if (!File::moveDirectory($backup, $dest)) {
+            if (!rename($backup, $dest)) {
                 // Restore failed (disk full, cross-device, permissions): the DB
                 // row below points at $dest which no longer exists. Surface it
                 // loudly — the addon needs manual recovery from $backup.
@@ -893,12 +870,12 @@ class AddonRegistry
      *
      * `File::moveDirectory()` is a bare `rename()`, and rename(2) cannot move a
      * directory across a mount point — it fails with EXDEV. Staging lives under
-     * `storage/`, while the installed root is documented in config/addons.php as
+     * `storage/`, while the addon root is documented in config/addons.php as
      * "a persistent writable volume": point it at an actual separate volume and
      * every install fails with "Failed to place addon" for a reason that has
      * nothing to do with the addon. The test suite hits the same wall now that
      * `ubuntu-latest` has moved to the ubuntu-26 image, which mounts /tmp as a
-     * tmpfs: the suite's installed root is a temp directory, staging is in the
+     * tmpfs: the suite's addon root is a temp directory, staging is in the
      * ext4 workspace, and the rename crosses between them.
      *
      * Copy-then-delete is the standard fallback. A partial copy is removed
@@ -1026,13 +1003,12 @@ class AddonRegistry
 
     /**
      * Delete the previous version's directory when an update placed the new
-     * one somewhere else — a version that changed the addon's type moves it
-     * from the installed root to the themes root, or back. Left behind, the
-     * old copy is still a valid addon on disk: once the new one is deleted,
-     * discovery finds the old one and the addon comes back.
+     * one somewhere else. Left behind, the old copy is still a valid addon on
+     * disk: once the new one is deleted, discovery finds the old one and the
+     * addon comes back.
      *
-     * Only a copy in a writable root is removed. An image-root copy is not
-     * superseded, it is the bundled version a delete reverts to.
+     * Only a copy inside the addon root is removed. A bundled copy in modules/
+     * is not superseded, it is the version a delete reverts to.
      *
      * @return bool whether a copy was removed
      */
@@ -1044,11 +1020,28 @@ class AddonRegistry
             return false;
         }
 
-        if (AddonRoots::isImageManaged($prior) || !$this->inWritableRoot($prior)) {
+        if (!AddonRoots::contains($prior)) {
             return false;
         }
 
         return File::deleteDirectory($prior);
+    }
+
+    /**
+     * Remove a root entry: unlink a symlink, delete a directory.
+     *
+     * Never File::deleteDirectory() a symlink: it empties the target, which for
+     * a bundled link is modules/<name>.
+     */
+    private function removeEntry(string $path): void
+    {
+        if (is_link($path)) {
+            unlink($path);
+
+            return;
+        }
+
+        File::deleteDirectory($path);
     }
 
     /**

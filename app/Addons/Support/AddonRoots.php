@@ -4,132 +4,107 @@ declare(strict_types=1);
 
 namespace App\Addons\Support;
 
-use Illuminate\Support\Facades\File;
-
 /**
- * The directories an addon can live in, and the rules that follow from which
- * one it is in.
+ * The directory addons are discovered in, and where the bundled ones come from.
  *
- * - The IMAGE root (`addons.paths.base`, `modules/`) ships inside the
- *   deployment image. It is read-only at runtime: install, update and file
- *   removal never touch it, because a container cannot persist a write there.
- *   Addons here are updated by deploying a new image, and can only be
- *   enabled/disabled from the admin UI.
- * - The INSTALLED root (`addons.paths.installed`) is a persistent writable
- *   volume. Everything the addon manager places at runtime goes here, and the
- *   full lifecycle (install/update/delete) applies.
- * - The THEMES root (`addons.paths.themes`) is the installed root for addons
- *   of type "theme". Same volume and same rules as the installed root.
+ * - The ROOT (`addons.paths.root`, `storage/app/addons`) is the only directory
+ *   discovery scans. It holds modules and themes alike: every addon installed
+ *   at runtime, and a symlink for each bundled addon.
+ * - The BUNDLED source (`addons.paths.bundled`, `modules/`) holds the files of
+ *   the addons listed in `addons.bundled`. It ships with each release and is
+ *   never written to at runtime. {@see BundledAddonLinker} links each one into
+ *   the root.
  *
  * Both are read from config on every call rather than cached, so tests that
- * point either root at a temp directory behave as expected.
+ * point either one at a temp directory behave as expected.
  */
 final class AddonRoots
 {
     /**
-     * The image root: addons shipped with the deployment.
+     * The one directory addons are discovered and installed in.
      */
-    public static function image(): string
+    public static function root(): string
     {
-        return rtrim((string) config('addons.paths.base'), '/');
+        return rtrim((string) config('addons.paths.root', storage_path('app/addons')), '/');
     }
 
     /**
-     * The writable root: addons installed at runtime.
+     * Where the files of the bundled addons live.
      */
-    public static function installed(): string
+    public static function bundledSource(): string
     {
-        return rtrim((string) config('addons.paths.installed', storage_path('addons')), '/');
+        return rtrim((string) config('addons.paths.bundled', base_path('modules')), '/');
     }
 
     /**
-     * The writable root for installed addons of type "theme".
-     */
-    public static function themes(): string
-    {
-        return rtrim((string) config('addons.paths.themes', storage_path('addon-themes')), '/');
-    }
-
-    /**
-     * The writable root an addon of $type is installed into.
-     */
-    public static function installedFor(string $type): string
-    {
-        return $type === 'theme' ? self::themes() : self::installed();
-    }
-
-    /**
-     * Every writable root: the ones install/update place files in, and the
-     * only ones delete may remove files from.
+     * The directory names of the bundled addons, in `bundledSource()` and in the root.
      *
      * @return list<string>
      */
-    public static function writable(): array
+    public static function bundled(): array
     {
-        return array_values(array_unique([self::installed(), self::themes()]));
+        return array_values(array_filter((array) config('addons.bundled', []), is_string(...)));
     }
 
     /**
-     * Every root to scan, image root first.
+     * Whether $path lies inside the root, after resolving symlinks on both sides.
      *
-     * When the same addon is present in more than one root, the higher version
-     * wins (AddonDiscoveryService::scanAllRoots()); ties and unversioned copies
-     * go to the image.
-     *
-     * Duplicates are removed so a deployment that points two keys at the same
-     * directory (the pre-split layout, and what several tests do) scans it once
-     * instead of reporting every addon twice.
-     *
-     * @return list<string>
+     * A bundled or dev addon is a symlink in the root, so its resolved path is
+     * outside it: this is what keeps a recursive delete away from files that are
+     * not ours to remove.
      */
-    public static function all(): array
+    public static function contains(string $path): bool
     {
-        return array_values(array_unique([self::image(), ...self::writable()]));
-    }
-
-    /**
-     * Whether $path belongs to an addon that ships in the deployment image,
-     * i.e. one the addon manager must not write to or remove.
-     *
-     * Resolving matters here. `AddonDiscoveryService::scanLocation()` stores
-     * each addon's realpath() (AddonDiscoveryService.php:402), so a symlinked
-     * module — the standard local dev workflow, e.g.
-     * `modules/phpvms-acars -> ../../acars-plugin` — is recorded as its TARGET,
-     * which lies outside the image root entirely. A plain prefix test on the
-     * stored path therefore calls such a module runtime-managed and lets
-     * update() place a shadow copy in the writable root that discovery then
-     * ignores in favour of the image one.
-     *
-     * So two checks: the resolved path is at or under the resolved image root,
-     * or it is what one of the image root's direct children resolves to. The
-     * second is what "the symlink lives in the image root" actually means.
-     */
-    public static function isImageManaged(string $path): bool
-    {
-        $image = self::image();
-
-        if ($image === '' || $path === '') {
+        if ($path === '') {
             return false;
+        }
+
+        $root = realpath(self::root()) ?: self::root();
+        $resolved = realpath($path) ?: rtrim($path, '/');
+
+        return $root !== '' && str_starts_with($resolved, $root.'/');
+    }
+
+    /**
+     * The entry in the root that holds the addon at $path, or null.
+     *
+     * Discovery stores each addon's resolved path, so a linked addon's row names
+     * its target. This finds the link (or the directory) in the root that
+     * resolves to it.
+     */
+    public static function entryFor(string $path): ?string
+    {
+        $root = self::root();
+
+        if ($path === '' || !is_dir($root)) {
+            return null;
         }
 
         $target = realpath($path) ?: rtrim($path, '/');
-        $root = realpath($image) ?: $image;
 
-        if ($target === $root || str_starts_with($target, $root.'/')) {
-            return true;
-        }
+        foreach (scandir($root) ?: [] as $name) {
+            if ($name === '.' || $name === '..' || str_starts_with($name, '.')) {
+                continue;
+            }
 
-        if (!is_dir($image)) {
-            return false;
-        }
+            $entry = $root.'/'.$name;
 
-        // Symlinked modules: compare what each direct child resolves to.
-        foreach (File::directories($image) as $child) {
-            if ((realpath($child) ?: $child) === $target) {
-                return true;
+            if ((realpath($entry) ?: $entry) === $target) {
+                return $entry;
             }
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * Whether the addon at $path is a symlink in the root: a bundled addon, or
+     * a dev checkout linked in by hand. Its files are not ours to remove.
+     */
+    public static function isLinked(string $path): bool
+    {
+        $entry = self::entryFor($path);
+
+        return $entry !== null && is_link($entry);
     }
 }

@@ -8,15 +8,9 @@ use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {
     $this->work = sys_get_temp_dir().'/rename-manifest-'.uniqid();
-    $this->base = $this->work.'/modules';
-    $this->installed = $this->work.'/installed';
-    $this->themes = $this->work.'/themes';
+    $this->base = $this->work.'/root';
     File::ensureDirectoryExists($this->base);
-    File::ensureDirectoryExists($this->installed);
-    File::ensureDirectoryExists($this->themes);
-    Config::set('addons.paths.base', $this->base);
-    Config::set('addons.paths.installed', $this->installed);
-    Config::set('addons.paths.themes', $this->themes);
+    Config::set('addons.paths.root', $this->base);
 
     $this->migration = require database_path('migrations_data/2026_11_10_000000_rename_module_json_to_addon_json.php');
 });
@@ -25,8 +19,8 @@ afterEach(function (): void {
     File::deleteDirectory($this->work);
 });
 
-it('renames module.json to addon.json in every addon root', function (): void {
-    foreach ([$this->base.'/legacy', $this->installed.'/acme-legacy', $this->themes.'/acme-theme'] as $dir) {
+it('renames module.json to addon.json in the addon root', function (): void {
+    foreach ([$this->base.'/legacy', $this->base.'/acme-legacy', $this->base.'/acme-theme'] as $dir) {
         File::ensureDirectoryExists($dir);
         File::put($dir.'/module.json', '{"name":"Legacy"}');
     }
@@ -35,14 +29,14 @@ it('renames module.json to addon.json in every addon root', function (): void {
     // Safe to run again.
     $this->migration->up();
 
-    foreach ([$this->base.'/legacy', $this->installed.'/acme-legacy', $this->themes.'/acme-theme'] as $dir) {
+    foreach ([$this->base.'/legacy', $this->base.'/acme-legacy', $this->base.'/acme-theme'] as $dir) {
         expect(File::exists($dir.'/module.json'))->toBeFalse()
             ->and(File::get($dir.'/addon.json'))->toBe('{"name":"Legacy"}');
     }
 });
 
 it('leaves a directory that has both files alone', function (): void {
-    $dir = $this->installed.'/both';
+    $dir = $this->base.'/both';
     File::ensureDirectoryExists($dir);
     File::put($dir.'/module.json', '{"old":true}');
     File::put($dir.'/addon.json', '{"new":true}');

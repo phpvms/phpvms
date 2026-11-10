@@ -144,8 +144,7 @@ describe('validation', function (): void {
         $zip->addFromString('addon.json', json_encode(validManifest(['description' => ''])));
         $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
         $zip->close();
-        Config::set('addons.paths.base', $this->work.'/modules');
-        Config::set('addons.paths.installed', $this->work.'/installed');
+        Config::set('addons.paths.root', $this->work.'/root');
 
         try {
             app(AddonRegistry::class)->install(new ZipSource($zipPath));
@@ -158,8 +157,8 @@ describe('validation', function (): void {
     });
 
     it('skips a local addon without schema_version and warns naming it', function (): void {
-        $base = $this->work.'/modules';
-        Config::set('addons.paths.base', $base);
+        $base = $this->work.'/root';
+        Config::set('addons.paths.root', $base);
 
         foreach (['good' => validManifest(['name' => 'Good', 'registry_id' => 'acme/good']), 'bad' => (static function (): array {
             $manifest = validManifest(['name' => 'Bad', 'registry_id' => 'acme/bad']);

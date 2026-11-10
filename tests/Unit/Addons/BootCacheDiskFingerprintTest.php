@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 
 // Boot-cache isolation is handled globally in tests/Pest.php (unique temp path
-// per test). This file additionally redirects addons.paths.base to a temp
+// per test). This file additionally redirects addons.paths.root to a temp
 // directory so it can freely add/remove/edit addon directories.
 
 beforeEach(function (): void {
@@ -17,7 +17,7 @@ beforeEach(function (): void {
 
     $this->base = sys_get_temp_dir().'/addon-disk-fingerprint-'.uniqid('', true);
     File::ensureDirectoryExists($this->base);
-    Config::set('addons.paths.base', $this->base);
+    Config::set('addons.paths.root', $this->base);
 });
 
 afterEach(function (): void {

@@ -17,16 +17,15 @@ use Illuminate\Support\Facades\Schema;
 use PhpvmsOwnershipFixture\Providers\OwnershipServiceProvider;
 
 /**
- * Uninstall against an addon that really lives in a writable addon root, so its
+ * Uninstall against an addon that really lives in the addon root, so its
  * files are deleted. AddonUninstallTest cannot catch an ordering bug here: its
- * fixture sits outside the writable roots, so its files are never removed.
+ * fixture sits outside the addon root, so its files are never removed.
  */
 beforeEach(function (): void {
     Addon::query()->delete();
 
     $this->root = sys_get_temp_dir().'/asp-ownership-'.uniqid('', true);
-    Config::set('addons.paths.installed', $this->root);
-    Config::set('addons.paths.themes', $this->root.'-themes');
+    Config::set('addons.paths.root', $this->root);
     File::ensureDirectoryExists($this->root);
 
     $this->fixture = realpath(__DIR__.'/../../fixtures/Addons/ownership');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
+use App\Addons\Support\BundledAddonLinker;
 use App\Contracts\Service;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +77,26 @@ class InstallerService extends Service
     public function clearCaches(): void
     {
         Artisan::call('optimize:clear');
+    }
+
+    /**
+     * Link the bundled addons from modules/ into the addon root. Runs on install
+     * and on update, so an addon bundled by a new release is found.
+     *
+     * Returns false when a link cannot be made, so the caller can report it:
+     * without the links, the bundled addons do not load.
+     */
+    public function linkBundledAddons(): bool
+    {
+        try {
+            app(BundledAddonLinker::class)->link();
+        } catch (RuntimeException $runtimeException) {
+            Log::error('Could not link the bundled addons', ['exception' => $runtimeException]);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

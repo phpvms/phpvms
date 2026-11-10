@@ -13,7 +13,7 @@ beforeEach(function (): void {
 
     $this->base = sys_get_temp_dir().'/addon-reconcile-'.uniqid('', true);
     File::ensureDirectoryExists($this->base);
-    Config::set('addons.paths.base', $this->base);
+    Config::set('addons.paths.root', $this->base);
 });
 
 afterEach(function (): void {
