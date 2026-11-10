@@ -2,61 +2,90 @@
 
 declare(strict_types=1);
 
-use App\Models\AddonSetting;
-use App\Models\Setting;
+use App\Settings\GeneralSettings;
+use App\Support\Settings\SettingDefinition;
+use App\Support\Settings\SettingType;
 use App\Support\SettingsTabs;
 use Illuminate\Support\Collection;
 
 /**
- * The settings pages grouped rows sorted on `order` alone. Settings of different
- * groups share `order` values and the database returns rows tied on it in no
- * fixed order, so the tabs changed places from one load to the next.
+ * The settings pages lay their sections out through SettingsTabs: General
+ * first, then alphabetically whatever order the settings come in, and the
+ * settings of a section by declaration order, then by key on a tie, so the
+ * page is the same on every load.
  */
-function tabSetting(string $class, string $group, int $order, string $key): Setting|AddonSetting
+function tabSetting(string $section, int $order, string $key): SettingDefinition
 {
-    return new $class()->forceFill(['group' => $group, 'order' => $order, 'key' => $key]);
+    return new SettingDefinition(
+        class: GeneralSettings::class,
+        group: $section,
+        section: $section,
+        key: $key,
+        name: $key,
+        type: SettingType::String,
+        nullable: false,
+        default: '',
+        enum: null,
+        hidden: false,
+        encrypted: false,
+        order: $order,
+        labelKey: null,
+        descriptionKey: null,
+        translationPrefix: null,
+    );
 }
 
-/** Tab names, and each tab's setting keys, as the pages would build them. */
+/** Section names, and each section's setting keys, as the pages would build them. */
 function tabLayout(Collection $settings): array
 {
     return SettingsTabs::group($settings)->map(fn (Collection $tab): array => $tab->pluck('key')->all())->all();
 }
 
-it('orders the tabs alphabetically whatever order the rows come in', function (string $class): void {
+it('puts General first and orders the other sections alphabetically whatever order the settings come in', function (): void {
     $settings = collect([
-        tabSetting($class, 'pilots', 1, 'pilots.a'),
-        tabSetting($class, 'airports', 1, 'airports.a'),
-        tabSetting($class, 'general', 1, 'general.a'),
-        tabSetting($class, 'bids', 1, 'bids.a'),
+        tabSetting('pilots', 1, 'pilots.a'),
+        tabSetting('airports', 1, 'airports.a'),
+        tabSetting('general', 1, 'general.a'),
+        tabSetting('bids', 1, 'bids.a'),
     ]);
 
-    expect(array_keys(tabLayout($settings)))->toBe(['airports', 'bids', 'general', 'pilots'])
-        ->and(array_keys(tabLayout($settings->reverse())))->toBe(['airports', 'bids', 'general', 'pilots'])
-        ->and(array_keys(tabLayout($settings->shuffle())))->toBe(['airports', 'bids', 'general', 'pilots']);
-})->with([Setting::class, AddonSetting::class]);
+    $expected = ['general', 'airports', 'bids', 'pilots'];
 
-it('orders a tab by order, then by key on a tie', function (string $class): void {
+    expect(array_keys(tabLayout($settings)))->toBe($expected)
+        ->and(array_keys(tabLayout($settings->reverse())))->toBe($expected)
+        ->and(array_keys(tabLayout($settings->shuffle())))->toBe($expected);
+});
+
+it('orders a section by declaration order, then by key on a tie', function (): void {
     $settings = collect([
-        tabSetting($class, 'general', 2, 'general.c'),
-        tabSetting($class, 'general', 1, 'general.z'),
-        tabSetting($class, 'general', 2, 'general.a'),
-        tabSetting($class, 'general', 10, 'general.b'),
+        tabSetting('general', 2, 'general.c'),
+        tabSetting('general', 1, 'general.z'),
+        tabSetting('general', 2, 'general.a'),
+        tabSetting('general', 10, 'general.b'),
     ]);
 
     $expected = ['general' => ['general.z', 'general.a', 'general.c', 'general.b']];
 
     expect(tabLayout($settings))->toBe($expected)
         ->and(tabLayout($settings->reverse()))->toBe($expected);
-})->with([Setting::class, AddonSetting::class]);
+});
 
-it('sorts the tab names regardless of case', function (): void {
+it('sorts the section names regardless of case', function (): void {
     // A case-sensitive sort would put 'Beta' before 'alpha'.
     $settings = collect([
-        tabSetting(AddonSetting::class, 'charlie', 1, 'c'),
-        tabSetting(AddonSetting::class, 'Beta', 1, 'b'),
-        tabSetting(AddonSetting::class, 'alpha', 1, 'a'),
+        tabSetting('charlie', 1, 'c'),
+        tabSetting('Beta', 1, 'b'),
+        tabSetting('alpha', 1, 'a'),
     ]);
 
     expect(array_keys(tabLayout($settings)))->toBe(['alpha', 'Beta', 'charlie']);
+});
+
+it('keeps a numeric section name as its own section', function (): void {
+    $settings = collect([
+        tabSetting('2024', 1, 'a'),
+        tabSetting('General', 1, 'b'),
+    ]);
+
+    expect(array_map(strval(...), array_keys(tabLayout($settings))))->toBe(['General', '2024']);
 });

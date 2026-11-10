@@ -34,7 +34,6 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Js;
 use InvalidArgumentException;
@@ -163,36 +162,10 @@ class Branding extends Page
         try {
             $data = $this->form->getState();
 
-            // store() returns null for a key with no row, and settings rows are
-            // seeded by migration -- so an install that has not run
-            // `migrate-data` silently persists nothing. Reporting success there
-            // is worse than failing: the admin sees a green toast, reloads, and
-            // finds the old value with no clue why.
-            $missing = DB::transaction(function () use ($data): array {
-                $settingService = app(SettingService::class);
-
-                $writes = [
-                    'general.site_name'    => $data['general']['site_name'] ?? '',
-                    'branding.brand_color' => $data['branding']['brand_color'] ?? '',
-                ];
-
-                return array_keys(array_filter(
-                    $writes,
-                    fn (string $value, string $key): bool => $settingService->store($key, $value) === null,
-                    ARRAY_FILTER_USE_BOTH,
-                ));
-            });
-
-            if ($missing !== []) {
-                Notification::make()
-                    ->danger()
-                    ->title(__('filament.branding_save_failed'))
-                    ->body(__('filament.branding_save_failed_body', ['keys' => implode(', ', $missing)]))
-                    ->persistent()
-                    ->send();
-
-                return;
-            }
+            app(SettingService::class)->storeMany([
+                'general.site_name'    => $data['general']['site_name'] ?? '',
+                'branding.brand_color' => $data['branding']['brand_color'] ?? '',
+            ], skipNull: false);
 
             Notification::make()
                 ->success()
