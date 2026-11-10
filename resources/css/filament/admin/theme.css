@@ -5011,6 +5011,15 @@ html[data-density="comfortable"] .tbl tbody td {
   background: linear-gradient(140deg, #e4a43a, #b8701a);
 }
 
+/* A manifest icon brings its own colours, so no tint behind it. */
+.addon-plate--icon {
+  @apply overflow-hidden border border-(--line);
+}
+
+.addon-plate--icon img {
+  @apply rounded-none;
+}
+
 /* Disabled add-ons stay listed, dimmed. */
 .addon-card--dim .addon-plate,
 .addon-card--dim .addon-card__name {
