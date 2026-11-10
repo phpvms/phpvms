@@ -125,6 +125,7 @@ class ManifestParser
             description: $description,
             tables: $tables,
             files: $files,
+            icon: is_string($data['icon'] ?? null) && trim($data['icon']) !== '' ? trim($data['icon']) : null,
         );
     }
 

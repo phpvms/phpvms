@@ -47,6 +47,8 @@ final readonly class AddonManifest
      *                                             composer.json `autoload.files`. Loaded once per
      *                                             boot cycle so module global helpers are available;
      *                                             empty when undeclared.
+     * @param string|null          $icon           The manifest `icon`: an http(s) URL or a path
+     *                                             relative to the addon folder; null when absent.
      *
      * @mago-ignore lint:excessive-parameter-list
      */
@@ -67,6 +69,7 @@ final readonly class AddonManifest
         public ?string $description,
         public array $tables = [],
         public array $files = [],
+        public ?string $icon = null,
     ) {}
 
     /**

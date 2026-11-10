@@ -8,6 +8,8 @@ use App\Addons\AddonDeleteOutcome;
 use App\Addons\AddonRegistry;
 use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Sources\ZipSource;
+use App\Addons\Support\AddonIcon;
+use App\Addons\Support\ManifestParser;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
@@ -294,6 +296,24 @@ class Addons extends Page implements HasTable
     }
 
     /**
+     * The icon URL an installed addon declares in its manifest, or null.
+     */
+    private function manifestIcon(?Addon $addon): ?string
+    {
+        if (!$addon instanceof Addon) {
+            return null;
+        }
+
+        try {
+            $icon = new ManifestParser()->parse($addon->getPath())?->icon;
+        } catch (Throwable) {
+            return null;
+        }
+
+        return AddonIcon::url($addon->getName(), $addon->getPath(), $icon);
+    }
+
+    /**
      * Shape one merged listing row.
      *
      * @param  array<string, mixed> $entry
@@ -325,8 +345,9 @@ class Addons extends Page implements HasTable
             'product_url' => $this->safeUrl((string) ($entry['product_url'] ?? '')),
             // Not yet emitted by registry.phpvms.net — read defensively so the
             // row appears the moment the registry starts sending it.
-            'changelog_url'       => $this->safeUrl((string) ($entry['changelog_url'] ?? '')),
-            'icon'                => $this->safeUrl((string) ($entry['icon'] ?? '')) ?: null,
+            'changelog_url' => $this->safeUrl((string) ($entry['changelog_url'] ?? '')),
+            // The registry's listing icon, else the installed addon's manifest icon.
+            'icon'                => $this->safeUrl((string) ($entry['icon'] ?? '')) ?: $this->manifestIcon($addon),
             'monogram'            => $this->monogram((string) $entry['name']),
             'tint'                => $this->tint((string) ($entry['category'] ?? ''), (string) $entry['registry_id']),
             'installs'            => (int) ($entry['installs_total'] ?? 0),

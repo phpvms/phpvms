@@ -522,6 +522,7 @@ class AddonDiscoveryService
             enabled: $enabled,
             files: $m->files,
             discovered: $this->discoverClasses($m),
+            icon: $m->icon,
         );
     }
 

@@ -30,6 +30,7 @@ final readonly class AddonBootCache
      * @param array{listeners: list<class-string>, hooks: list<class-string>, policies: list<class-string>}|null $discovered
      *                                                                                                                         Classes found in `app/Listeners`, `app/Hooks` and `app/Policies`
      *                                                                                                                         when the cache was built; null for a cache written before they were saved.
+     * @param string|null                                                                                        $icon         The manifest `icon`; null when absent.
      */
     public function __construct(
         public string $name,
@@ -46,6 +47,7 @@ final readonly class AddonBootCache
         public bool $enabled,
         public array $files = [],
         public ?array $discovered = null,
+        public ?string $icon = null,
     ) {}
 
     /**
@@ -70,6 +72,7 @@ final readonly class AddonBootCache
             enabled: (bool) ($data['enabled'] ?? false),
             files: array_values(array_filter((array) ($data['files'] ?? []), is_string(...))),
             discovered: self::discoveredFrom($data['discovered'] ?? null),
+            icon: isset($data['icon']) ? (string) $data['icon'] : null,
         );
     }
 
@@ -111,6 +114,7 @@ final readonly class AddonBootCache
             'enabled'       => $this->enabled,
             'files'         => $this->files,
             'discovered'    => $this->discovered,
+            'icon'          => $this->icon,
         ];
     }
 }
