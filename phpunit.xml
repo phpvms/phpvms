@@ -56,6 +56,12 @@
              them. Pin it at a path that never exists. -->
         <server name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
         <env name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
+        <!-- Same for the addon boot cache: booting from the install's
+             bootstrap/cache/addons.php loads every addon enabled on this
+             machine into the suite. Tests boot from their own cache instead,
+             which TestCase seeds with the bundled themes, as on CI. -->
+        <server name="ADDONS_BOOT_CACHE" value="bootstrap/cache/addons-phpunit.php" force="true"/>
+        <env name="ADDONS_BOOT_CACHE" value="bootstrap/cache/addons-phpunit.php" force="true"/>
         <server name="DB_CONNECTION" value="sqlite" force="true"/>
         <server name="DB_DATABASE" value=":memory:" force="true"/>
         <server name="DB_URL" value="" force="true"/>

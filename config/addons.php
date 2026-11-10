@@ -41,8 +41,13 @@ return [
         // it, and inside the persistent volume so the link survives a redeploy.
         'theme_assets' => storage_path('app/public/themes'),
 
-        'assets'     => public_path('ext'),
-        'staging'    => storage_path('app/addon-staging'),
-        'boot_cache' => base_path('bootstrap/cache/addons.php'),
+        'assets'  => public_path('ext'),
+        'staging' => storage_path('app/addon-staging'),
+        // ADDONS_BOOT_CACHE moves it, as APP_CONFIG_CACHE moves the config
+        // cache; a relative value is resolved against the app root. The test
+        // suite uses this to boot from its own cache, not the install's.
+        'boot_cache' => str_starts_with((string) env('ADDONS_BOOT_CACHE', ''), '/')
+            ? (string) env('ADDONS_BOOT_CACHE')
+            : base_path((string) env('ADDONS_BOOT_CACHE', 'bootstrap/cache/addons.php')),
     ],
 ];
