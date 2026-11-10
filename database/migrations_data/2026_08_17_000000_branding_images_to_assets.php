@@ -2,7 +2,7 @@
 
 use App\Features\Assets\AssetService;
 use App\Models\Asset;
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use App\Support\Branding;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
@@ -55,15 +55,15 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings') || !Schema::hasTable('assets')) {
+        if (!Schema::hasTable('settings_backup') || !Schema::hasTable('assets')) {
             return;
         }
 
         $assets = app(AssetService::class);
 
         foreach ($this->map as $settingKey => $assetKey) {
-            $id = Setting::formatKey($settingKey);
-            $url = DB::table('settings')->where('id', $id)->value('value');
+            $id = LegacySetting::formatKey($settingKey);
+            $url = DB::table('settings_backup')->where('id', $id)->value('value');
 
             if (filled($url)) {
                 // The setting holds a URL, and `storage = 'url'` is what an
@@ -109,7 +109,7 @@ return new class() extends Migration
             // (2026_08_13_000000_branding_settings.php:51-81) and nothing reads
             // them any more — Branding::url() goes through the asset slot — so
             // the row is inert either way, and keeping it costs one dead row.
-            DB::table('settings')->where('id', $id)->update(['type' => 'hidden']);
+            DB::table('settings_backup')->where('id', $id)->update(['type' => 'hidden']);
         }
     }
 
@@ -125,7 +125,7 @@ return new class() extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -139,13 +139,13 @@ return new class() extends Migration
         ];
 
         foreach ($names as $key => $name) {
-            $id = Setting::formatKey($key);
+            $id = LegacySetting::formatKey($key);
 
-            if (DB::table('settings')->where('id', $id)->exists()) {
+            if (DB::table('settings_backup')->where('id', $id)->exists()) {
                 continue;
             }
 
-            DB::table('settings')->insert([
+            DB::table('settings_backup')->insert([
                 'id'          => $id,
                 'key'         => strtolower($key),
                 'name'        => $name,

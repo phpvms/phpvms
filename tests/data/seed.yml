@@ -1,12 +1,8 @@
 settings:
   ignore_on_update:
-    - value
+    - payload
   data:
-    - id: test_setting
-      key: test.setting
-      name: "A test setting"
-      group: general
-      value: "default"
-      options: ""
-      type: select
-      description: "a test setting"
+    - id: 1000
+      group: captcha
+      name: site_key
+      payload: '"default"'

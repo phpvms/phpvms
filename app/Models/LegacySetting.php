@@ -3,19 +3,21 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Observers\SettingObserver;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
+ * A row of `settings_backup`: the settings table as it was before the move to
+ * typed settings classes (see App\Settings and config/settings.php).
+ *
+ * Only the historical data migrations in `database/migrations_data/` use it.
+ * They still write the old table, so an install upgrading past several of them
+ * gets their changes; the last data migration then copies the backup into the
+ * new `settings` table. Nothing reads current settings from here.
+ *
  * @property string      $id
  * @property int         $offset
  * @property int         $order
@@ -29,36 +31,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, Activity> $activities
- * @property-read int|null $activities_count
  *
- * @method static Builder<static>|Setting byKey(string $key)
- * @method static Builder<static>|Setting newModelQuery()
- * @method static Builder<static>|Setting newQuery()
- * @method static Builder<static>|Setting query()
- * @method static Builder<static>|Setting whereCreatedAt($value)
- * @method static Builder<static>|Setting whereDefault($value)
- * @method static Builder<static>|Setting whereDescription($value)
- * @method static Builder<static>|Setting whereGroup($value)
- * @method static Builder<static>|Setting whereId($value)
- * @method static Builder<static>|Setting whereKey($value)
- * @method static Builder<static>|Setting whereName($value)
- * @method static Builder<static>|Setting whereOffset($value)
- * @method static Builder<static>|Setting whereOptions($value)
- * @method static Builder<static>|Setting whereOrder($value)
- * @method static Builder<static>|Setting whereType($value)
- * @method static Builder<static>|Setting whereUpdatedAt($value)
- * @method static Builder<static>|Setting whereValue($value)
+ * @method static Builder<static>|LegacySetting byKey(string $key)
+ * @method static Builder<static>|LegacySetting newModelQuery()
+ * @method static Builder<static>|LegacySetting newQuery()
+ * @method static Builder<static>|LegacySetting query()
  *
  * @mixin \Eloquent
  */
-#[ObservedBy(SettingObserver::class)]
 #[WithoutIncrementing]
-class Setting extends Model
+class LegacySetting extends Model
 {
-    use LogsActivity;
-
-    public $table = 'settings';
+    public $table = 'settings_backup';
 
     protected $keyType = 'string';
 
@@ -105,13 +89,5 @@ class Setting extends Model
     protected function byKey(Builder $q, string $key): Builder
     {
         return $q->where('id', self::formatKey($key));
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly($this->fillable)
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
     }
 }

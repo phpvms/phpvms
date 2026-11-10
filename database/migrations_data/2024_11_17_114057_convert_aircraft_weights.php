@@ -8,7 +8,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        if (setting('units.weight') == 'kg') {
+        if (DB::table('settings_backup')->where('id', 'units_weight')->value('value') === 'kg') {
             // Get all aircraft data, directly from database which had weights defined
             $aircraft = DB::table('aircraft')->whereNotNull('dow')->orWhereNotNull('zfw')->orWhereNotNull('mtow')->orWhereNotNull('mlw')->orderBy('id')->get();
             Log::debug('Begin weight conversion for '.$aircraft->count().' aircraft records');
@@ -24,7 +24,7 @@ return new class() extends Migration
         }
     }
 
-    public function PoundsConversion($value)
+    public function PoundsConversion($value): ?float
     {
         if ($value > 0) {
             return round($value / 0.45359237, 2);

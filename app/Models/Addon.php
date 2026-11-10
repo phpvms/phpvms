@@ -9,7 +9,6 @@ use App\Contracts\Model;
 use Database\Factories\AddonFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Override;
 use Str;
@@ -82,16 +81,6 @@ class Addon extends Model
             'bundled'      => 'boolean',
             'installed_at' => 'datetime',
         ];
-    }
-
-    /**
-     * The settings declared by this addon.
-     *
-     * @return HasMany<AddonSetting, $this>
-     */
-    public function settings(): HasMany
-    {
-        return $this->hasMany(AddonSetting::class, 'registry_id', 'registry_id');
     }
 
     /**

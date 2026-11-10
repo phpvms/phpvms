@@ -6,13 +6,13 @@ namespace App\Contracts\Addons;
 
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\AddonQuarantine;
+use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\AdminPanelBuilder;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Addons\Support\ThemeAddonRegistrar;
 use App\Contracts\Addons\Attributes\AddonListener;
 use App\Contracts\Addons\Attributes\AddonModel;
-use App\Features\AddonSettings\Setting;
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Hook;
 use App\Features\Themes\ThemeOptions;
@@ -73,7 +73,8 @@ use Throwable;
  *                                 first parameter is a filter or gate hook point
  *                                 (top-level dir only; no subdirectory scan)
  *
- * Call order in `register()`: merge config, the admin panel (when
+ * Call order in `register()`: merge config, the settings classes (when
+ * `registerSettings()` is overridden), the admin panel (when
  * `registerAdminFilamentPanel()` is overridden), `onRegister()`.
  *
  * Call order in `boot()`: the auto-wiring, `registerAppComponents()`, `registerPolicies()`, `registerEventListeners()`,
@@ -138,6 +139,10 @@ abstract class AddonServiceProvider extends ServiceProvider
 
         try {
             $this->registerConfig();
+
+            if ($this->overrides('registerSettings')) {
+                $this->registerAddonSettings();
+            }
 
             if ($this->overrides('registerAdminFilamentPanel')) {
                 $this->registerAdminPanel();
@@ -309,19 +314,20 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
-     * The addon's settings schema, synced into the `addon_settings` table on
-     * boot (see App\Services\AddonSettingSyncService): new keys are inserted
-     * with their `default` as the initial value, metadata is reconciled, and
-     * existing user-edited values are preserved.
+     * The addon's settings, as a list of {@see AddonSettings} class names, one
+     * per section of the addon's settings page. Each class declares typed
+     * properties with defaults; a setting reads as its default until it is
+     * first saved, so a new setting needs no migration.
      *
      * Read values back with `addon_setting()` / `addon_setting_save()`,
-     * addressing the addon by its manifest `alias` or `registry_id`.
+     * addressing the addon by its manifest `alias` or `registry_id`, or resolve
+     * the class from the container. A property marked
+     * `#[SettingField(hidden: true)]` is stored but not listed on the page.
      *
-     * A list of {@see Setting} (`Setting::text()`, `int()`, `float()`, `bool()`,
-     * `date()`, `select()` or `hidden()`). A hidden setting is stored but not
-     * listed on the settings page.
+     * Called while the provider registers. An invalid list registers none of
+     * the addon's settings and logs a warning; the addon keeps running.
      *
-     * @return list<Setting>
+     * @return list<class-string<AddonSettings>>
      */
     public function registerSettings(): array
     {
@@ -544,6 +550,18 @@ abstract class AddonServiceProvider extends ServiceProvider
         }
 
         return $this->bootEntry;
+    }
+
+    /**
+     * Register and bind the addon's settings classes (see registerSettings()).
+     */
+    private function registerAddonSettings(): void
+    {
+        try {
+            AddonSettingsRegistry::register($this->app, $this->bootEntry()->registryId ?? '', $this->registerSettings());
+        } catch (Throwable $throwable) {
+            Log::warning(sprintf('Addon "%s" (%s) settings were not registered: %s', $this->addonNamespace(), static::class, $throwable->getMessage()));
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────

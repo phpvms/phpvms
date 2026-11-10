@@ -146,14 +146,6 @@ return [
             'key'  => 'ranks.pilot_list',
             'time' => 60 * 10,
         ],
-        'SETTINGS' => [
-            'key'  => 'settings.', // append setting key
-            'time' => 60 * 60 * 24, // Cache for 1 day
-        ],
-        'ADDON_SETTINGS' => [
-            'key'  => 'addon_settings.', // append "{addon_id}.{key}"
-            'time' => 60 * 60 * 24, // Cache for 1 day
-        ],
         'BRANDING' => [
             'key'  => 'branding',
             'time' => 60 * 60 * 24, // Cache for 1 day; busted by Branding::flush() on any change

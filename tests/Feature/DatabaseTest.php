@@ -16,21 +16,21 @@ test('seeder', function (): void {
 
     $databaseSvc->seedFromYaml($yml);
 
-    $value = setting('test.setting');
+    $value = setting('captcha.site_key');
     expect($value)->toEqual('default');
 
     // Try updating the value now
-    $yml['settings']['data'][0]['value'] = 'changed';
+    $yml['settings']['data'][0]['payload'] = '"changed"';
 
     // The value shouldn't change here
     $databaseSvc->seedFromYaml($yml);
-    $value = setting('test.setting');
+    $value = setting('captcha.site_key');
     expect($value)->toEqual('default');
 
     // Now the value should change
     $yml['settings']['ignore_on_update'] = [];
     $databaseSvc->seedFromYaml($yml);
-    $value = setting('test.setting');
+    $value = setting('captcha.site_key');
     expect($value)->toEqual('changed');
 });
 
@@ -112,15 +112,15 @@ test('seeder value ignore value', function (): void {
 
     $databaseSvc->seedFromYaml($yml);
 
-    $value = setting('test.setting');
+    $value = setting('captcha.site_key');
     expect($value)->toEqual('default');
 
     // Try updating the value now
-    $yml['settings']['data'][0]['value'] = 'changed';
+    $yml['settings']['data'][0]['payload'] = '"changed"';
 
     // The value shouldn't change here
     $databaseSvc->seedFromYaml($yml);
-    $value = setting('test.setting');
+    $value = setting('captcha.site_key');
     expect($value)->toEqual('default');
 });
 
@@ -134,14 +134,14 @@ test('seeder dont ignore value', function (): void {
 
     $databaseSvc->seedFromYaml($yml);
 
-    $value = setting('test.setting');
+    $value = setting('captcha.site_key');
     expect($value)->toEqual('default');
 
     // Change the value
-    $yml['settings']['data'][0]['value'] = 'changed';
+    $yml['settings']['data'][0]['payload'] = '"changed"';
 
     // Now the value should change
     $databaseSvc->seedFromYaml($yml);
-    $value = setting('test.setting');
+    $value = setting('captcha.site_key');
     expect($value)->toEqual('changed');
 });

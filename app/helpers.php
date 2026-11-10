@@ -4,18 +4,16 @@ use App\Addons\Support\AddonAssetLinker;
 use App\Exceptions\SettingNotFound;
 use App\Features\Themes\ThemeFields;
 use App\Models\Addon;
-use App\Models\Setting;
 use App\Services\AddonSettingService;
 use App\Services\KvpService;
 use App\Services\SettingService;
-use App\Support\RenamedSettings;
 use Carbon\Carbon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 /*
  * array_key_first only exists in PHP 7.3+
@@ -148,38 +146,22 @@ if (!function_exists('skin_view')) {
  */
 if (!function_exists('setting')) {
     /**
-     * Read a setting from the settings table.
+     * Read a core setting by its `group.name` key.
      *
-     * Cached (request memo + application cache) in every environment except
-     * `testing`; SettingService::store() busts the cache on write.
+     * Values come from the settings classes in App\Settings, which the package
+     * loads once per request and caches across requests. Renamed keys resolve
+     * to their current key. An enum setting is returned as its backing value.
      *
-     * @param  mixed      $default
+     * @param  mixed      $default Returned when the key is unknown or the store cannot be read
      * @return mixed|null
      */
     function setting(string $key, $default = null)
     {
-        /** @var SettingService $settingService */
-        $settingService = app(SettingService::class);
-        $key = RenamedSettings::resolve($key);
-
         try {
-            if (!app()->environment('testing')) {
-                $cache = config('cache.keys.SETTINGS');
-
-                // Through the request memo first: the cache is shared across
-                // requests, but reading it again within one is a wasted round trip.
-                $value = $settingService->remember(
-                    $key,
-                    fn () => Cache::remember($cache['key'].Setting::formatKey($key), $cache['time'], fn () => $settingService->retrieve($key)),
-                );
-            } else {
-                $value = $settingService->retrieve($key);
-            }
+            return app(SettingService::class)->retrieve($key);
         } catch (Throwable) {
             return $default;
         }
-
-        return $value;
     }
 }
 
@@ -187,13 +169,16 @@ if (!function_exists('setting')) {
  * Shortcut for retrieving a setting value
  */
 if (!function_exists('setting_save')) {
+    /**
+     * Save a core setting by its `group.name` key.
+     *
+     * @return mixed the value given, or null when the key is unknown (nothing is created)
+     *
+     * @throws ValidationException when the value cannot represent the setting's type
+     */
     function setting_save(string $key, $value)
     {
-        /** @var SettingService $settingService */
-        $settingService = app(SettingService::class);
-        $settingService->save($key, $value);
-
-        return $value;
+        return app(SettingService::class)->save($key, $value) === null ? null : $value;
     }
 }
 

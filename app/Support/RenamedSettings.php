@@ -35,6 +35,8 @@ final class RenamedSettings
         'pilots.home_hubs_only'                 => 'operations.home_hubs_only',
         'pilots.only_flights_from_current'      => 'operations.only_flights_from_current',
         'pilots.only_show_flights_from_current' => 'operations.only_show_flights_from_current',
+
+        'va_global_id' => 'registry.va_global_id',
     ];
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -20,23 +20,23 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
-        DB::table('settings')
-            ->where('id', Setting::formatKey('general.theme'))
+        DB::table('settings_backup')
+            ->where('id', LegacySetting::formatKey('general.theme'))
             ->update(['type' => 'hidden']);
     }
 
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
-        DB::table('settings')
-            ->where('id', Setting::formatKey('general.theme'))
+        DB::table('settings_backup')
+            ->where('id', LegacySetting::formatKey('general.theme'))
             ->update(['type' => 'select']);
     }
 };

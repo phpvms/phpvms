@@ -25,7 +25,6 @@ class DatabaseSeeder extends Seeder
     {
         $seeders = [
             RolesPermissionsSeeder::class,
-            SettingsSeeder::class,
             BaseDataSeeder::class,
             PassportSeeder::class,
         ];

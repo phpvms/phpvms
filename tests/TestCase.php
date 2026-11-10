@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Services\SettingService;
 use App\Support\InstallMarker;
-use Database\Seeders\SettingsSeeder;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\ParallelTesting;
@@ -129,21 +129,24 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Seed the settings table for every test.
+     * Apply the settings every test starts from.
      *
-     * This lives here rather than in a `beforeEach` in tests/Pest.php because
-     * that hook is scoped by `->in(...)` to the test directories, and Pest's
-     * agent mode (`pest --agent=...`) generates its test file outside them, so
-     * the hook never runs for it. Most code paths read settings, so an agent
-     * snippet would otherwise execute against an empty settings table.
+     * Settings need no seeding (each reads as its class default until saved);
+     * only the test-wide overrides below are written. This lives here rather
+     * than in a `beforeEach` in tests/Pest.php because that hook is scoped by
+     * `->in(...)` to the test directories, and Pest's agent mode
+     * (`pest --agent=...`) generates its test file outside them, so the hook
+     * never runs for it.
      *
-     * `parent::setUp()` runs first so RefreshDatabase has prepared the schema,
-     * which puts the seed at the same point in the lifecycle it occupied as a
-     * `beforeEach`.
+     * `parent::setUp()` runs first so RefreshDatabase has prepared the schema.
      */
     #[Override]
     protected function setUp(): void
     {
+        // Addon settings registrations are per process; the app booted below
+        // registers the enabled addons' classes again.
+        AddonSettingsRegistry::flush();
+
         parent::setUp();
 
         // Keep the install marker out of storage/framework: tests must neither
@@ -153,9 +156,7 @@ abstract class TestCase extends BaseTestCase
         $marker->remove();
         $this->instance(InstallMarker::class, $marker);
 
-        $this->seed(SettingsSeeder::class);
-
-        // The seeder ships `general.auto_airport_lookup` ON, which makes
+        // The default for `airports.auto_airport_lookup` is ON, which makes
         // AirportService::lookupAirport() issue a LIVE HTTP request to
         // config('phpvms.api_url') (AirportService.php:86-88). Any test that
         // touches an unknown airport would then pass or fail on network
@@ -167,7 +168,7 @@ abstract class TestCase extends BaseTestCase
         // turns it back on itself AND fakes the HTTP response.
         app(SettingService::class)->store('general.auto_airport_lookup', false);
 
-        // The seeder ships `general.theme` as airside (the default for fresh
+        // The default for `general.theme` is airside (the default for fresh
         // installs). The suite predates that and most theme-dependent tests
         // assume skylight, so every test starts on it. A test that wants
         // airside activates it itself (`useAirside()`), and the fresh-install

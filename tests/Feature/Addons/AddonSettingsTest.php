@@ -2,169 +2,145 @@
 
 declare(strict_types=1);
 
-use App\Models\Addon;
-use App\Models\AddonSetting;
-use App\Models\Setting;
+use App\Addons\Support\AddonSettingsRegistry;
 use App\Services\AddonSettingService;
-use App\Services\AddonSettingSyncService;
-use Illuminate\Support\Carbon;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Tests\Support\AddonSettings\AlphaSettings;
+use Tests\Support\AddonSettings\BetaSettings;
+use Tests\Support\AddonSettings\WidgetNetworkSettings;
+use Tests\Support\AddonSettings\WidgetSettings;
 
 /**
- * Create an addon row plus one setting and return [Addon, AddonSetting].
- *
- * @return array{0: Addon, 1: AddonSetting}
+ * Addon settings: declared as typed classes, scoped to the addon's registry_id,
+ * read and written through addon_setting() / addon_setting_save().
  */
-function makeAddonSetting(array $addon = [], array $setting = []): array
-{
-    $addonModel = Addon::factory()->create($addon);
-    $settingModel = AddonSetting::factory()->create(['registry_id' => $addonModel->registry_id] + $setting);
-
-    return [$addonModel, $settingModel];
-}
-
-// ── Sync (8.1) ──────────────────────────────────────────────────────────────
-
-it('inserts declared keys with their defaults on first sync', function (): void {
-    $this->artisan('phpvms:addons-prime')->assertSuccessful();
-    app(AddonSettingSyncService::class)->sync();
-
-    $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
-
-    $greeting = AddonSetting::where('registry_id', $sample->registry_id)->where('key', 'greeting')->first();
-
-    expect($greeting)->not->toBeNull()
-        ->and($greeting->value)->toBe('Hello from the Sample module!')
-        ->and($greeting->default)->toBe('Hello from the Sample module!')
-        ->and($greeting->alias)->toBe('sample');
-})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
-
-it('preserves a user-edited value but reconciles metadata on re-sync', function (): void {
-    $this->artisan('phpvms:addons-prime')->assertSuccessful();
-    $sync = app(AddonSettingSyncService::class);
-    $sync->sync();
-
-    $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
-    $row = AddonSetting::where('registry_id', $sample->registry_id)->where('key', 'greeting')->firstOrFail();
-
-    // User edits the value and we corrupt the description to prove it gets reconciled.
-    $row->update(['value' => 'Custom greeting', 'description' => 'stale']);
-
-    $sync->sync();
-    $row->refresh();
-
-    expect($row->value)->toBe('Custom greeting')
-        ->and($row->description)->toBe('Text returned by sample_module_greeting()');
-})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
-
-it('is idempotent — repeated syncs do not duplicate rows', function (): void {
-    $this->artisan('phpvms:addons-prime')->assertSuccessful();
-    $sync = app(AddonSettingSyncService::class);
-
-    $sync->sync();
-
-    $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
-    $countAfterFirst = AddonSetting::where('registry_id', $sample->registry_id)->count();
-
-    $sync->sync();
-    $countAfterSecond = AddonSetting::where('registry_id', $sample->registry_id)->count();
-
-    expect($countAfterFirst)->toBe(5)
-        ->and($countAfterSecond)->toBe($countAfterFirst);
-})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
-
-// ── No HasSettings (8.2) ─────────────────────────────────────────────────────
-
-it('registers no rows for an addon whose providers do not declare settings', function (): void {
-    $this->artisan('phpvms:addons-prime')->assertSuccessful();
-    app(AddonSettingSyncService::class)->sync();
-
-    $awards = Addon::where('namespace', 'Modules\\Awards')->first();
-
-    if ($awards === null) {
-        expect(true)->toBeTrue(); // Awards not bundled in this checkout — nothing to assert.
-
-        return;
-    }
-
-    expect(AddonSetting::where('registry_id', $awards->registry_id)->count())->toBe(0);
+beforeEach(function (): void {
+    registerAddonSettings('vendor/widget', [WidgetSettings::class, WidgetNetworkSettings::class], ['name' => 'Widget']);
 });
 
-// ── Helper resolution (8.3) ──────────────────────────────────────────────────
+// ── Declaration ─────────────────────────────────────────────────────────────
 
-it('resolves a setting by addon alias', function (): void {
-    $this->artisan('phpvms:addons-prime')->assertSuccessful();
-    app(AddonSettingSyncService::class)->sync();
+it('reads a declared setting as its default before it is ever saved', function (): void {
+    expect(addon_setting('vendor/widget', 'retries'))->toBe(3)
+        ->and(DB::table('addon_settings')->count())->toBe(0);
+});
 
-    expect(addon_setting('sample', 'greeting'))->toBe('Hello from the Sample module!');
-})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
+it('stores each section under the addon registry_id', function (): void {
+    addon_setting_save('vendor/widget', 'retries', 5);
 
-it('resolves a setting by addon registry_id', function (): void {
-    makeAddonSetting(
-        ['registry_id' => 'vendor/widget', 'name' => 'Widget'],
-        ['key' => 'token', 'value' => 'abc', 'type' => 'text'],
-    );
+    expect(DB::table('addon_settings')->where('group', 'vendor/widget:network')->where('name', 'retries')->value('payload'))->toBe('5');
+});
 
-    expect(addon_setting('vendor/widget', 'token'))->toBe('abc');
+it('keeps a saved value when a new version adds a setting', function (): void {
+    addon_setting_save('vendor/widget', 'flag', true);
+
+    // The next boot registers a class that declares one more setting.
+    AddonSettingsRegistry::flush();
+    registerAddonSettings('vendor/widget', [WidgetSettings::class, WidgetNetworkSettings::class]);
+    app()->forgetScopedInstances();
+
+    expect(addon_setting('vendor/widget', 'flag'))->toBeTrue()
+        ->and(addon_setting('vendor/widget', 'endpoint'))->toBe('https://example.test');
+});
+
+// ── Helper resolution ───────────────────────────────────────────────────────
+
+it('resolves a setting by addon registry_id and by name', function (): void {
+    addon_setting_save('vendor/widget', 'token', 'abc');
+
+    expect(addon_setting('vendor/widget', 'token'))->toBe('abc')
+        ->and(addon_setting('Widget', 'token'))->toBe('abc');
 });
 
 it('returns the default for an unknown addon or key', function (): void {
-    expect(addon_setting('does-not-exist', 'k', 'fallback'))->toBe('fallback');
-
-    makeAddonSetting(['registry_id' => 'vendor/widget'], ['key' => 'known']);
-    expect(addon_setting('vendor/widget', 'missing', 'fallback'))->toBe('fallback');
+    expect(addon_setting('does-not-exist', 'k', 'fallback'))->toBe('fallback')
+        ->and(addon_setting('vendor/widget', 'missing', 'fallback'))->toBe('fallback');
 });
 
-// ── Typed casting (8.4) ──────────────────────────────────────────────────────
+// ── Typed casting ───────────────────────────────────────────────────────────
 
-it('casts values by type', function (): void {
-    [$addon] = makeAddonSetting(['registry_id' => 'cast/test'], ['key' => 'flag', 'type' => 'boolean', 'value' => '1']);
-    AddonSetting::factory()->create(['registry_id' => $addon->registry_id, 'key' => 'count', 'type' => 'int', 'value' => '42']);
-    AddonSetting::factory()->create(['registry_id' => $addon->registry_id, 'key' => 'ratio', 'type' => 'float', 'value' => '0.25']);
-    AddonSetting::factory()->create(['registry_id' => $addon->registry_id, 'key' => 'day', 'type' => 'date', 'value' => '2026-01-15']);
+it('casts values by declared type', function (): void {
+    app(AddonSettingService::class)->storeManyFor('vendor/widget', [
+        'flag'  => '1',
+        'count' => '42',
+        'ratio' => '0.25',
+        'day'   => '2026-01-15',
+        'unit'  => 'kg',
+    ]);
+    app()->forgetScopedInstances();
 
-    expect(addon_setting('cast/test', 'flag'))->toBeTrue()
-        ->and(addon_setting('cast/test', 'count'))->toBe(42)
-        ->and(addon_setting('cast/test', 'ratio'))->toBe(0.25)
-        ->and(addon_setting('cast/test', 'day'))->toBeInstanceOf(Carbon::class);
+    expect(addon_setting('vendor/widget', 'flag'))->toBeTrue()
+        ->and(addon_setting('vendor/widget', 'count'))->toBe(42)
+        ->and(addon_setting('vendor/widget', 'ratio'))->toBe(0.25)
+        ->and(addon_setting('vendor/widget', 'day'))->toBeInstanceOf(CarbonImmutable::class)
+        ->and(addon_setting('vendor/widget', 'unit'))->toBe('kg');
 });
 
-// ── Write + cache (8.5) ──────────────────────────────────────────────────────
+it('hands out a date that callers cannot change for the next reader', function (): void {
+    addon_setting_save('vendor/widget', 'day', '2026-01-15');
 
-it('persists a value via addon_setting_save and reads it back fresh', function (): void {
-    makeAddonSetting(['registry_id' => 'vendor/widget'], ['key' => 'token', 'value' => 'old', 'type' => 'text']);
+    $nextDay = addon_setting('vendor/widget', 'day')->addDay();
 
+    expect($nextDay->format('Y-m-d'))->toBe('2026-01-16')
+        ->and(addon_setting('vendor/widget', 'day')->format('Y-m-d'))->toBe('2026-01-15');
+});
+
+it('rejects a value that is not of the declared type', function (): void {
+    expect(fn (): mixed => addon_setting_save('vendor/widget', 'count', 'many'))->toThrow(ValidationException::class)
+        ->and(addon_setting('vendor/widget', 'count'))->toBe(0);
+});
+
+// ── Writes ──────────────────────────────────────────────────────────────────
+
+it('persists a value via addon_setting_save and shows it to the next request', function (): void {
     addon_setting_save('vendor/widget', 'token', 'new');
+    app()->forgetScopedInstances();
 
-    expect(addon_setting('vendor/widget', 'token'))->toBe('new')
-        ->and(AddonSetting::query()->where('key', 'token')->value('value'))->toBe('new');
+    expect(addon_setting('vendor/widget', 'token'))->toBe('new');
 });
 
 it('does not store to an unknown addon or key', function (): void {
-    [$addon] = makeAddonSetting(['registry_id' => 'vendor/widget'], ['key' => 'token', 'value' => 'old']);
-
     expect(addon_setting_save('nope', 'token', 'x'))->toBeNull()
         ->and(app(AddonSettingService::class)->store('vendor/widget', 'missing', 'x'))->toBeNull()
-        ->and(AddonSetting::where('registry_id', $addon->registry_id)->where('key', 'token')->value('value'))->toBe('old');
+        ->and(DB::table('addon_settings')->count())->toBe(0);
 });
 
-// ── Isolation (8.6) ──────────────────────────────────────────────────────────
+// ── Isolation ───────────────────────────────────────────────────────────────
 
-it('isolates settings with the same key across addons', function (): void {
-    makeAddonSetting(['registry_id' => 'addon/alpha'], ['key' => 'api_token', 'value' => 'alpha-token', 'type' => 'text']);
-    makeAddonSetting(['registry_id' => 'addon/beta'], ['key' => 'api_token', 'value' => 'beta-token', 'type' => 'text']);
+it('isolates settings with the same name across addons', function (): void {
+    registerAddonSettings('addon/alpha', [AlphaSettings::class]);
+    registerAddonSettings('addon/beta', [BetaSettings::class]);
+
+    addon_setting_save('addon/alpha', 'api_token', 'alpha-token');
+    addon_setting_save('addon/beta', 'api_token', 'beta-token');
 
     expect(addon_setting('addon/alpha', 'api_token'))->toBe('alpha-token')
         ->and(addon_setting('addon/beta', 'api_token'))->toBe('beta-token');
 });
 
-// ── Core settings unaffected (8.8) ──────────────────────────────────────────
+it('keeps an addon value across an uninstall and reinstall with the same registry_id', function (): void {
+    addon_setting_save('vendor/widget', 'token', 'kept');
 
-it('leaves the core settings table untouched', function (): void {
-    $before = Setting::count();
+    DB::table('addons')->where('registry_id', 'vendor/widget')->delete();
+    AddonSettingsRegistry::flush();
+    registerAddonSettings('vendor/widget', [WidgetSettings::class, WidgetNetworkSettings::class], ['name' => 'Widget']);
+    app()->forgetScopedInstances();
 
-    $this->artisan('phpvms:addons-prime')->assertSuccessful();
-    app(AddonSettingSyncService::class)->sync();
+    expect(addon_setting('vendor/widget', 'token'))->toBe('kept');
+});
 
-    expect(Setting::count())->toBe($before)
-        ->and(Setting::where('id', 'like', 'sample%')->count())->toBe(0);
+it('rejects two sections declaring the same setting name', function (): void {
+    expect(fn () => AddonSettingsRegistry::register(app(), 'addon/dupe', [AlphaSettings::class, BetaSettings::class]))
+        ->toThrow(InvalidArgumentException::class)
+        ->and(AddonSettingsRegistry::classesFor('addon/dupe'))->toBe([]);
+});
+
+it('leaves the core settings untouched', function (): void {
+    $before = DB::table('settings')->count();
+
+    addon_setting_save('vendor/widget', 'token', 'abc');
+
+    expect(DB::table('settings')->count())->toBe($before);
 });

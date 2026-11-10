@@ -11,7 +11,6 @@ use App\Events\AddonUpdated;
 use App\Models\Addon;
 use App\Models\User;
 use App\Services\CronService;
-use App\Services\SettingService;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
@@ -57,11 +56,7 @@ afterEach(function (): void {
 function pinRegistryKeypair(): string
 {
     $kp = sodium_crypto_sign_keypair();
-    DB::table('settings')->updateOrInsert(
-        ['id' => 'registry_public_key'],
-        ['key' => 'registry.public_key', 'name' => 'Registry Public Key', 'value' => base64_encode(sodium_crypto_sign_publickey($kp)), 'group' => 'general', 'type' => 'hidden'],
-    );
-    app(SettingService::class)->clearMemo();
+    setting_save('registry.public_key', base64_encode(sodium_crypto_sign_publickey($kp)));
 
     return sodium_crypto_sign_secretkey($kp);
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
@@ -36,7 +36,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -50,15 +50,15 @@ return new class() extends Migration
             $position = $groupPositions[$group] ?? 0;
             $groupPositions[$group] = $position + 1;
 
-            $id = Setting::formatKey($setting['key']);
+            $id = LegacySetting::formatKey($setting['key']);
 
-            if (Setting::where('id', $id)->exists()) {
+            if (LegacySetting::where('id', $id)->exists()) {
                 continue;
             }
 
             // id, offset and order are not fillable / auto-derived, so set them
             // explicitly the same way SettingsSeeder does.
-            $model = new Setting([
+            $model = new LegacySetting([
                 'key'         => $setting['key'],
                 'name'        => $setting['name'],
                 'value'       => $setting['value'],
@@ -77,12 +77,12 @@ return new class() extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
         foreach ($this->settings as $setting) {
-            Setting::where('id', Setting::formatKey($setting['key']))->delete();
+            LegacySetting::where('id', LegacySetting::formatKey($setting['key']))->delete();
         }
     }
 };

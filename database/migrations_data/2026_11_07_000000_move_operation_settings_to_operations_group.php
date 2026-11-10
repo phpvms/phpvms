@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +42,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -52,7 +52,7 @@ return new class() extends Migration
             // Read, write and delete together, so a stop part-way never leaves
             // a half-moved setting for a retry to misread.
             $moved = DB::transaction(function () use ($oldId, $new): bool {
-                $oldRow = DB::table('settings')->where('id', $oldId)->first();
+                $oldRow = DB::table('settings_backup')->where('id', $oldId)->first();
                 if ($oldRow === null) {
                     return false;
                 }
@@ -77,7 +77,7 @@ return new class() extends Migration
         $merged = DB::transaction(function (): bool {
             $rows = [];
             foreach (self::LOCKS as $old => $default) {
-                $rows[$old] = DB::table('settings')->where('id', $this->id($old))->first();
+                $rows[$old] = DB::table('settings_backup')->where('id', $this->id($old))->first();
             }
 
             // Neither old row left: already migrated (or a fresh install).
@@ -100,7 +100,7 @@ return new class() extends Migration
                     $this->write($on ? '1' : '0', $this->id($old), self::LOCK_KEY);
                     $first = false;
                 } else {
-                    DB::table('settings')->where('id', $this->id($old))->delete();
+                    DB::table('settings_backup')->where('id', $this->id($old))->delete();
                 }
             }
 
@@ -118,14 +118,14 @@ return new class() extends Migration
     {
         $newId = $this->id($new);
 
-        if (DB::table('settings')->where('id', $newId)->exists()) {
-            DB::table('settings')->where('id', $newId)->update(['value' => $value]);
-            DB::table('settings')->where('id', $oldId)->delete();
+        if (DB::table('settings_backup')->where('id', $newId)->exists()) {
+            DB::table('settings_backup')->where('id', $newId)->update(['value' => $value]);
+            DB::table('settings_backup')->where('id', $oldId)->delete();
 
             return;
         }
 
-        DB::table('settings')->where('id', $oldId)->update([
+        DB::table('settings_backup')->where('id', $oldId)->update([
             'id'    => $newId,
             'key'   => $new,
             'group' => 'operations',
@@ -151,7 +151,7 @@ return new class() extends Migration
         }
 
         foreach ($keys as $key) {
-            Cache::forget($cache['key'].Setting::formatKey($key));
+            Cache::forget($cache['key'].LegacySetting::formatKey($key));
         }
     }
 };

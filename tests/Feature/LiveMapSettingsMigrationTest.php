@@ -2,23 +2,27 @@
 
 declare(strict_types=1);
 
-use App\Models\Setting;
-use Database\Seeders\SettingsSeeder;
+use App\Models\LegacySetting;
+
+// The pre-upgrade settings table these data migrations run against.
+beforeEach(function (): void {
+    seedLegacySettings();
+});
 
 function liveMapSettingsMigration(): object
 {
     return require base_path('database/migrations_data/2026_07_27_000001_live_map_settings.php');
 }
 
-function findSetting(string $key): ?Setting
+function findSetting(string $key): ?LegacySetting
 {
-    return Setting::where('id', Setting::formatKey($key))->first();
+    return LegacySetting::where('id', LegacySetting::formatKey($key))->first();
 }
 
 /** A pre-change `acars` group setting, as an install carries it. */
 function putAcarsSetting(string $key, string $value, string $name, string $type = 'int'): void
 {
-    $model = new Setting([
+    $model = new LegacySetting([
         'key'         => $key,
         'name'        => $name,
         'value'       => $value,
@@ -27,7 +31,7 @@ function putAcarsSetting(string $key, string $value, string $name, string $type 
         'options'     => '',
         'description' => 'the old description',
     ]);
-    $model->id = Setting::formatKey($key);
+    $model->id = LegacySetting::formatKey($key);
     $model->default = $value;
     $model->offset = 7;
     $model->order = 7;
@@ -71,8 +75,8 @@ test('an untouched default lands on the default', function (): void {
 
 test('the display settings are regrouped with their values intact', function (): void {
     seedPreUpgradeState();
-    Setting::where('id', Setting::formatKey('acars.center_coords'))->update(['value' => '51.4700,-0.4543']);
-    Setting::where('id', Setting::formatKey('acars.default_zoom'))->update(['value' => '9']);
+    LegacySetting::where('id', LegacySetting::formatKey('acars.center_coords'))->update(['value' => '51.4700,-0.4543']);
+    LegacySetting::where('id', LegacySetting::formatKey('acars.default_zoom'))->update(['value' => '9']);
 
     liveMapSettingsMigration()->up();
 
@@ -91,7 +95,7 @@ test('no setting is left in the acars group', function (): void {
 
     liveMapSettingsMigration()->up();
 
-    expect(Setting::where('group', 'acars')->count())->toBe(0);
+    expect(LegacySetting::where('group', 'acars')->count())->toBe(0);
 });
 
 test('the two new timers are left to the seeder', function (): void {
@@ -110,7 +114,7 @@ test('a re-run leaves a value the admin has since changed alone', function (): v
     seedPreUpgradeState(liveTime: '24');
     liveMapSettingsMigration()->up();
 
-    Setting::where('id', Setting::formatKey('pireps.tombstone_time'))->update(['value' => '6']);
+    LegacySetting::where('id', LegacySetting::formatKey('pireps.tombstone_time'))->update(['value' => '6']);
 
     // The source is gone, so there is nothing to carry and nothing to clobber.
     liveMapSettingsMigration()->up();
@@ -123,7 +127,7 @@ test('the migration is a no-op on an install that has already been through it', 
 
     expect(findSetting('pireps.tombstone_time')->value)->toBe('12')
         ->and(findSetting('livemap.center_coords')->value)->toBe('30.1945,-97.6699')
-        ->and(Setting::where('group', 'acars')->count())->toBe(0);
+        ->and(LegacySetting::where('group', 'acars')->count())->toBe(0);
 });
 
 test('reversing restores the previous keys, names and descriptions', function (): void {
@@ -182,11 +186,11 @@ test('a fresh install and an upgraded install agree on key, group and default', 
     $fresh = $snapshot();
 
     // Wind back to a pre-change install.
-    Setting::query()->whereIn('id', array_map(Setting::formatKey(...), $keys))->delete();
+    LegacySetting::query()->whereIn('id', array_map(LegacySetting::formatKey(...), $keys))->delete();
     seedPreUpgradeState(liveTime: '24');
 
     // Replay the upgrade in Updater's order: seeders, then data migrations.
-    new SettingsSeeder()->run();
+    seedLegacySettings();
     liveMapSettingsMigration()->up();
 
     expect($snapshot())->toBe($fresh);

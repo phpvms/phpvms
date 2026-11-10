@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\Airline;
-use App\Models\Setting;
 use App\Models\User;
+use App\Services\SettingService;
 
 /*
  * Regression coverage for JournalTrait::initJournal().
@@ -32,17 +32,24 @@ test('initJournal populates the journal relation on the same instance', function
 
 /*
  * The `created` hook reads units.currency, and setting() returns null for a key
- * it cannot read -- the settings table is empty during install, and the first
- * airline is created there. initJournal() declares a 'USD' default, but a
- * default only applies when the argument is omitted; passing the bare lookup
- * hands an explicit null to a string parameter and the install dies with
- * "Argument #1 ($currency_code) must be of type string, null given".
+ * it cannot read -- the settings table may not be readable yet during install,
+ * and the first airline is created there. initJournal() declares a 'USD'
+ * default, but a default only applies when the argument is omitted; passing the
+ * bare lookup hands an explicit null to a string parameter and the install dies
+ * with "Argument #1 ($currency_code) must be of type string, null given".
  *
- * tests/Pest.php seeds SettingsSeeder before every test, so the empty-settings
- * state these two cover is otherwise unreachable from the suite.
+ * An empty settings table reads as the class defaults, so these two make the
+ * settings unreadable instead.
  */
-test('a model with a journal can be created before units.currency is seeded', function (): void {
-    Setting::query()->delete();
+function makeSettingsUnreadable(): void
+{
+    test()->mock(SettingService::class)
+        ->shouldReceive('retrieve')
+        ->andThrow(new RuntimeException('settings unreadable'));
+}
+
+test('a model with a journal can be created while settings cannot be read', function (): void {
+    makeSettingsUnreadable();
 
     $airline = Airline::factory()->create();
 
@@ -51,7 +58,7 @@ test('a model with a journal can be created before units.currency is seeded', fu
 });
 
 test('users are also covered, not just airlines', function (): void {
-    Setting::query()->delete();
+    makeSettingsUnreadable();
 
     // Airline and User are the only two models using the trait, and the
     // installer creates both back to back.
@@ -62,11 +69,9 @@ test('users are also covered, not just airlines', function (): void {
 });
 
 test('a seeded units.currency still wins over the fallback', function (): void {
-    // Settings are already seeded by tests/Pest.php, so this is the normal
-    // path: the fallback must not shadow a value that is actually present.
-    // Matched on `key` -- the primary key stores dots as underscores
-    // (`units_currency`), which SettingService normalises on lookup.
-    Setting::where('key', 'units.currency')->update(['value' => 'EUR']);
+    // The normal path: the fallback must not shadow a value that is
+    // actually present.
+    updateSetting('units.currency', 'EUR');
 
     expect(Airline::factory()->create()->journal->currency)->toBe('EUR');
 });

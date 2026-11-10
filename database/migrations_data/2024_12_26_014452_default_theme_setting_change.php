@@ -14,10 +14,10 @@ return new class() extends Migration
     public function up(): void
     {
         // Check in the DB if the general_theme setting exists. If so, check if the value is "default". If so, change it to "beta".
-        if (Schema::hasTable('settings')) {
-            $theme = DB::table('settings')->where('key', 'general_theme')->first();
+        if (Schema::hasTable('settings_backup')) {
+            $theme = DB::table('settings_backup')->where('key', 'general_theme')->first();
             if ($theme && $theme->value === 'default') {
-                DB::table('settings')->where('key', 'general_theme')->update(['value' => 'beta']);
+                DB::table('settings_backup')->where('key', 'general_theme')->update(['value' => 'beta']);
             }
         }
 

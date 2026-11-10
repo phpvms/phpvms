@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 use App\Features\Assets\AssetService;
 use App\Models\Asset;
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use App\Support\Branding;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
+// The pre-upgrade settings table these data migrations run against.
+beforeEach(function (): void {
+    seedLegacySettings();
+});
 
 function brandingImagesMigration(): object
 {
@@ -22,8 +27,8 @@ function brandingImagesMigration(): object
  */
 function seedBrandingUrl(string $key, string $value, string $type = 'hidden'): void
 {
-    DB::table('settings')->updateOrInsert(
-        ['id' => Setting::formatKey($key)],
+    DB::table('settings_backup')->updateOrInsert(
+        ['id' => LegacySetting::formatKey($key)],
         [
             'key'         => strtolower($key),
             'name'        => $key,
@@ -45,7 +50,7 @@ function seedBrandingUrl(string $key, string $value, string $type = 'hidden'): v
  */
 function expectSettingKeptHidden(string $key, string $value): void
 {
-    $setting = Setting::find(Setting::formatKey($key));
+    $setting = LegacySetting::find(LegacySetting::formatKey($key));
 
     expect($setting)->not->toBeNull()
         ->and($setting->type)->toBe('hidden')
@@ -60,7 +65,7 @@ function expectSettingKeptHidden(string $key, string $value): void
  */
 function settingsPageKeys(): Collection
 {
-    return Setting::where('type', '!=', 'hidden')->orderBy('order')->get()->pluck('key');
+    return LegacySetting::where('type', '!=', 'hidden')->orderBy('order')->get()->pluck('key');
 }
 
 it('stores the setting URL as a link asset in the branding slot', function (): void {
@@ -172,8 +177,8 @@ it('hides the row from the settings page', function (): void {
 it('leaves brand_color and site_name alone', function (): void {
     brandingImagesMigration()->up();
 
-    expect(Setting::find(Setting::formatKey('branding.brand_color')))->not->toBeNull()
-        ->and(Setting::find(Setting::formatKey('general.site_name')))->not->toBeNull();
+    expect(LegacySetting::find(LegacySetting::formatKey('branding.brand_color')))->not->toBeNull()
+        ->and(LegacySetting::find(LegacySetting::formatKey('general.site_name')))->not->toBeNull();
 });
 
 it('is safe to run twice', function (): void {
@@ -209,8 +214,8 @@ it('leaves a surviving row untouched on down', function (): void {
 it('restores deleted rows empty on down', function (): void {
     $keys = ['branding.logo_url', 'branding.logo_32_url', 'branding.logo_64_url', 'branding.logo_180_url', 'branding.logo_dark_url', 'branding.banner_url'];
 
-    $ids = array_map(Setting::formatKey(...), $keys);
-    DB::table('settings')->whereIn('id', $ids)->delete();
+    $ids = array_map(LegacySetting::formatKey(...), $keys);
+    DB::table('settings_backup')->whereIn('id', $ids)->delete();
 
     brandingImagesMigration()->down();
 

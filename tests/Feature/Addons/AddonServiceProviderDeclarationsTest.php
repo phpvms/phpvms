@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 use App\Addons\AddonAutoLoader;
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonServiceProvider;
-use App\Features\AddonSettings\Setting;
+use App\Contracts\Addons\AddonSettings as AddonSettingsClass;
 use App\Features\Themes\ThemeOptions;
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
 use App\Filament\Pages\AddonSettings;
 use App\Models\Addon;
-use App\Models\AddonSetting;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\AddonSettingSyncService;
 use App\Services\PermissionRegistry;
 use App\Support\Metrics\Facades\Metrics;
 use App\Support\Metrics\Metric;
 use App\Support\Permissions\Scope;
+use App\Support\Settings\SettingField;
 use Composer\Autoload\ClassLoader;
 use Filament\Facades\Filament;
 use Filament\Notifications\DatabaseNotification;
@@ -207,13 +207,45 @@ class ProbeRootProvider extends AddonServiceProvider
     }
 }
 
+final class ProbeNetworkSettings extends AddonSettingsClass
+{
+    #[SettingField(label: 'Retries', description: 'How often to retry')]
+    public int $retries = 3;
+
+    public static function section(): string
+    {
+        return 'network';
+    }
+}
+
+final class ProbeHiddenSettings extends AddonSettingsClass
+{
+    #[SettingField(hidden: true)]
+    public string $cursor = 'abc';
+}
+
+final class ProbeLabelSettings extends AddonSettingsClass
+{
+    public string $label = '';
+
+    public static function section(): string
+    {
+        return 'labels';
+    }
+}
+
+final class ProbeFineSettings extends AddonSettingsClass
+{
+    public string $fine = '';
+}
+
 class ProbeGoodSettingsProvider extends AddonServiceProvider
 {
     use ProbesAddonCalls;
 
     public function registerSettings(): array
     {
-        return [Setting::text('fine', 'Fine')];
+        return [ProbeFineSettings::class];
     }
 }
 
@@ -570,62 +602,65 @@ it('registers the metrics a provider declares', function (): void {
         ->and(Metrics::resolve('probe.hours'))->toBe(1.5);
 });
 
-it('syncs the settings an addon returns from registerSettings', function (): void {
+it('registers the settings classes an addon returns from registerSettings', function (): void {
     probeBootCache(ProbeSettingsProvider::class);
-    ProbeSettingsProvider::$settings = [Setting::int('retries', 'Retries', 3, 'Network', 7, 'How often to retry')];
+    ProbeSettingsProvider::$settings = [ProbeNetworkSettings::class];
 
-    app(AddonSettingSyncService::class)->sync();
+    registerProbe(ProbeSettingsProvider::class);
 
-    $row = AddonSetting::query()->where('registry_id', 'acme/probe')->where('key', 'retries')->first();
+    $definition = AddonSettingsRegistry::find('acme/probe', 'retries');
 
-    expect($row?->alias)->toBe('probe')
-        ->and($row?->type)->toBe('int')
-        ->and($row?->value)->toBe('3')
-        ->and($row?->default)->toBe('3')
-        ->and($row?->group)->toBe('Network')
-        ->and($row?->order)->toBe(7)
-        ->and($row?->description)->toBe('How often to retry');
+    expect(addon_setting('probe', 'retries'))->toBe(3)
+        ->and($definition?->group)->toBe('acme/probe:network')
+        ->and($definition?->section)->toBe('network')
+        ->and($definition?->label())->toBe('Retries')
+        ->and($definition?->description())->toBe('How often to retry');
 });
 
-it('keeps a saved setting value when the schema syncs again', function (): void {
+it('keeps a saved setting value when the addon registers again', function (): void {
     probeBootCache(ProbeSettingsProvider::class);
-    ProbeSettingsProvider::$settings = [Setting::int('retries', 'Retries', 3)];
-    app(AddonSettingSyncService::class)->sync();
-    AddonSetting::query()->where('key', 'retries')->update(['value' => '9']);
+    ProbeSettingsProvider::$settings = [ProbeNetworkSettings::class];
+    registerProbe(ProbeSettingsProvider::class);
+    addon_setting_save('acme/probe', 'retries', 9);
 
-    app(AddonSettingSyncService::class)->sync();
+    // The next worker boot registers the classes afresh.
+    AddonSettingsRegistry::flush();
+    app()->register(ProbeSettingsProvider::class, force: true);
+    app()->forgetScopedInstances();
 
-    expect(AddonSetting::query()->where('key', 'retries')->first()->value)->toBe('9');
+    expect(addon_setting('probe', 'retries'))->toBe(9);
 });
 
 it('stores a hidden setting but does not list it on the settings page', function (): void {
     probeBootCache(ProbeSettingsProvider::class);
     Addon::factory()->create(['name' => 'Probe', 'namespace' => 'ProbeAddon', 'registry_id' => 'acme/probe', 'enabled' => true]);
-    ProbeSettingsProvider::$settings = [Setting::hidden('cursor', 'abc')];
-    app(AddonSettingSyncService::class)->sync();
+    ProbeSettingsProvider::$settings = [ProbeHiddenSettings::class];
+    registerProbe(ProbeSettingsProvider::class);
     Filament::setCurrentPanel(Panel::make()->id('acme/probe'));
 
-    expect(AddonSetting::query()->where('key', 'cursor')->first()?->type)->toBe('hidden')
+    expect(addon_setting('probe', 'cursor'))->toBe('abc')
         ->and(AddonSettings::canAccess())->toBeFalse();
 
-    ProbeSettingsProvider::$settings = [Setting::hidden('cursor', 'abc'), Setting::text('label', 'Label')];
-    app(AddonSettingSyncService::class)->sync();
+    AddonSettingsRegistry::flush();
+    ProbeSettingsProvider::$settings = [ProbeHiddenSettings::class, ProbeLabelSettings::class];
+    app()->register(ProbeSettingsProvider::class, force: true);
 
     expect(AddonSettings::canAccess())->toBeTrue();
 });
 
-it('skips only the addon whose settings list holds a non-Setting entry', function (): void {
+it('registers none of the settings of an addon whose list holds a non-settings entry', function (): void {
     Log::spy();
     probeBootCache(ProbeSettingsProvider::class);
-    ProbeSettingsProvider::$settings = [Setting::text('good', 'Good'), ['key' => 'legacy']];
+    ProbeSettingsProvider::$settings = [ProbeLabelSettings::class, stdClass::class];
 
-    app(AddonSettingSyncService::class)->sync();
+    registerProbe(ProbeSettingsProvider::class);
 
-    expect(AddonSetting::query()->where('registry_id', 'acme/probe')->count())->toBe(0);
+    expect(AddonSettingsRegistry::classesFor('acme/probe'))->toBe([])
+        ->and(addon_setting('probe', 'label', 'unset'))->toBe('unset');
     Log::shouldHaveReceived('warning')->withArgs(fn (string $message): bool => str_contains($message, 'ProbeSettingsProvider'))->once();
 });
 
-it('still syncs the next addon when one addon returns a bad settings list', function (): void {
+it('still registers the next addon when one addon returns a bad settings list', function (): void {
     app(BootCache::class)->write([
         AddonBootCache::fromArray([
             'name'          => 'Probe', 'alias' => 'probe', 'type' => 'module', 'registry_id' => 'acme/probe', 'version' => '1.0.0',
@@ -640,10 +675,11 @@ it('still syncs the next addon when one addon returns a bad settings list', func
     ]);
     ProbeSettingsProvider::$settings = [['key' => 'legacy']];
 
-    app(AddonSettingSyncService::class)->sync();
+    registerProbe(ProbeSettingsProvider::class);
+    registerProbe(ProbeGoodSettingsProvider::class);
 
-    expect(AddonSetting::query()->where('registry_id', 'acme/probe')->count())->toBe(0)
-        ->and(AddonSetting::query()->where('registry_id', 'acme/probe-two')->pluck('key')->all())->toBe(['fine']);
+    expect(AddonSettingsRegistry::classesFor('acme/probe'))->toBe([])
+        ->and(AddonSettingsRegistry::classesFor('acme/probe-two'))->toBe([ProbeFineSettings::class]);
 });
 
 it('registers the scopes a provider declares with their group and label', function (): void {

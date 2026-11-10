@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 use App\Filament\Pages\Theme;
 use App\Models\Permission;
-use App\Models\Setting;
 use App\Models\User;
-use Database\Seeders\SettingsSeeder;
+use App\Support\Settings\SettingsRegistry;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\DB;
@@ -64,19 +63,21 @@ it('blocks saving with only the view permission', function (): void {
         ->assertForbidden();
 });
 
-it('seeds general.theme as a hidden row and hides an existing one by data migration', function (): void {
-    $id = Setting::formatKey('general.theme');
+it('declares general.theme hidden and hides an existing backup row by data migration', function (): void {
+    DB::table('settings_backup')->insert([
+        'id'    => 'general_theme',
+        'key'   => 'general.theme',
+        'name'  => 'Current Theme',
+        'value' => 'airside',
+        'group' => 'general',
+        'type'  => 'select',
+    ]);
 
-    DB::table('settings')->where('id', $id)->update(['type' => 'select']);
     $migration = require base_path('database/migrations_data/2026_10_30_000000_hide_theme_setting.php');
     $migration->up();
 
-    expect(DB::table('settings')->where('id', $id)->value('type'))->toBe('hidden');
-
-    DB::table('settings')->where('id', $id)->delete();
-    app(SettingsSeeder::class)->run();
-
-    expect(DB::table('settings')->where('id', $id)->value('type'))->toBe('hidden');
+    expect(DB::table('settings_backup')->where('id', 'general_theme')->value('type'))->toBe('hidden')
+        ->and(app(SettingsRegistry::class)->find('general.theme')->hidden)->toBeTrue();
 });
 
 it('hides the reset action when no override exists', function (): void {

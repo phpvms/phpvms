@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -84,14 +84,14 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
-        $siteNameId = Setting::formatKey('general.site_name');
+        $siteNameId = LegacySetting::formatKey('general.site_name');
 
-        if (!DB::table('settings')->where('id', $siteNameId)->exists()) {
-            DB::table('settings')->where('group', 'general')->increment('order');
+        if (!DB::table('settings_backup')->where('id', $siteNameId)->exists()) {
+            DB::table('settings_backup')->where('group', 'general')->increment('order');
         }
 
         foreach ($this->rows as $row) {
@@ -107,12 +107,12 @@ return new class() extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
         foreach ($this->rows as $row) {
-            Setting::where('id', Setting::formatKey($row['key']))->delete();
+            LegacySetting::where('id', LegacySetting::formatKey($row['key']))->delete();
         }
     }
 
@@ -123,9 +123,9 @@ return new class() extends Migration
      */
     private function ensureSetting(string $key, string $name, string $group, string $type, ?int $order): void
     {
-        $id = Setting::formatKey($key);
+        $id = LegacySetting::formatKey($key);
 
-        if (DB::table('settings')->where('id', $id)->exists()) {
+        if (DB::table('settings_backup')->where('id', $id)->exists()) {
             return;
         }
 
@@ -147,6 +147,6 @@ return new class() extends Migration
             $values['order'] = $order;
         }
 
-        DB::table('settings')->insert($values);
+        DB::table('settings_backup')->insert($values);
     }
 };

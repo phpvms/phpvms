@@ -6,7 +6,6 @@ use App\Addons\AddonRegistry;
 use App\Addons\Sources\ZipSource;
 use App\Addons\Support\CoreTables;
 use App\Models\Addon;
-use App\Models\AddonSetting;
 use App\Services\Installer\MigrationService;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Database\Schema\Blueprint;
@@ -76,7 +75,7 @@ afterEach(function (): void {
 
 it('drops the declared model table and the manifest tables, then deletes the files', function (): void {
     $dir = ($this->installFixture)();
-    AddonSetting::factory()->create(['registry_id' => 'acme/ownership', 'key' => 'token']);
+    storeAddonSettingRow('acme/ownership', 'token', 'secret');
 
     app(AddonRegistry::class)->delete('Ownership', true);
 
@@ -84,19 +83,19 @@ it('drops the declared model table and the manifest tables, then deletes the fil
         ->and(Schema::hasTable('own_widget_tags'))->toBeFalse()
         ->and(is_dir($dir))->toBeFalse()
         ->and(File::directories($this->root))->toBe([])
-        ->and(AddonSetting::query()->where('registry_id', 'acme/ownership')->exists())->toBeFalse();
+        ->and(addonSettingRowsExist('acme/ownership'))->toBeFalse();
 });
 
 it('keeps the tables and the settings when the data is not removed', function (): void {
     $dir = ($this->installFixture)();
-    AddonSetting::factory()->create(['registry_id' => 'acme/ownership', 'key' => 'token']);
+    storeAddonSettingRow('acme/ownership', 'token', 'secret');
 
     app(AddonRegistry::class)->delete('Ownership', false);
 
     expect(Schema::hasTable('own_widgets'))->toBeTrue()
         ->and(Schema::hasTable('own_widget_tags'))->toBeTrue()
         ->and(is_dir($dir))->toBeFalse()
-        ->and(AddonSetting::query()->where('registry_id', 'acme/ownership')->exists())->toBeTrue();
+        ->and(addonSettingRowsExist('acme/ownership'))->toBeTrue();
 });
 
 it('rolls the migrations back when the addon declares no tables and no models', function (): void {

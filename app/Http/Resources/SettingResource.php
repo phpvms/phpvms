@@ -5,25 +5,29 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
-use App\Models\Setting;
+use App\Support\Settings\SettingDefinition;
 use Override;
 
 /**
- * @mixin Setting
+ * One core setting, in the shape the settings table rows were listed in.
+ *
+ * @property-read SettingDefinition $resource
  */
 class SettingResource extends Resource
 {
     #[Override]
     public function toArray($request)
     {
+        $definition = $this->resource;
+
         return [
-            'id'          => $this->id,
-            'type'        => $this->type,
-            'name'        => $this->name,
-            'value'       => $this->value,
-            'group'       => $this->group,
-            'order'       => $this->order,
-            'description' => $this->description,
+            'id'          => $definition->id(),
+            'type'        => $definition->type->legacyName(),
+            'name'        => $definition->label(),
+            'value'       => $definition->toLegacyString(app($definition->class)->{$definition->name}),
+            'group'       => $definition->group,
+            'order'       => $definition->order,
+            'description' => $definition->description(),
         ];
     }
 }

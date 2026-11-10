@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 
 function discordRouteMigration(): object
 {
@@ -11,7 +11,7 @@ function discordRouteMigration(): object
 
 function putSetting(string $key, string $value, string $name): void
 {
-    $model = new Setting([
+    $model = new LegacySetting([
         'key'         => $key,
         'name'        => $name,
         'value'       => $value,
@@ -20,7 +20,7 @@ function putSetting(string $key, string $value, string $name): void
         'options'     => '',
         'description' => '',
     ]);
-    $model->id = Setting::formatKey($key);
+    $model->id = LegacySetting::formatKey($key);
     $model->default = '';
     $model->offset = 3;
     $model->order = 3;
@@ -28,20 +28,21 @@ function putSetting(string $key, string $value, string $name): void
 }
 
 /**
- * Drop the new keys, leaving the shape an install has *before* SettingsSeeder
- * has ever run with them. Note this is NOT the upgrade order — Updater runs
+ * Drop the new keys from the backup, leaving the shape an install had *before*
+ * SettingsSeeder ever ran with them. Note this is NOT the upgrade order — Updater runs
  * syncAllSeeds() before the data migrations, so the new keys normally exist and
  * are empty by the time the migration runs. See the seeded-first test below.
  */
 function dropRouteSettings(): void
 {
-    Setting::query()->whereIn('id', [
-        Setting::formatKey('notifications.discord_public_route'),
-        Setting::formatKey('notifications.discord_private_route'),
+    LegacySetting::query()->whereIn('id', [
+        LegacySetting::formatKey('notifications.discord_public_route'),
+        LegacySetting::formatKey('notifications.discord_private_route'),
     ])->delete();
 }
 
 beforeEach(function (): void {
+    seedLegacySettings();
     dropRouteSettings();
 });
 
@@ -54,9 +55,10 @@ test('the seeder having already created the new key does not cost the admin thei
     putSetting('notifications.discord_public_webhook_url', 'https://discord.com/api/webhooks/1/abc', 'Discord Public Webhook URL');
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
     expect(setting('notifications.discord_public_route'))->toBe('https://discord.com/api/webhooks/1/abc')
-        ->and(Setting::where('id', Setting::formatKey('notifications.discord_public_webhook_url'))->exists())->toBeFalse();
+        ->and(LegacySetting::where('id', LegacySetting::formatKey('notifications.discord_public_webhook_url'))->exists())->toBeFalse();
 });
 
 test('a value already set on the new key wins over the old one', function (): void {
@@ -64,6 +66,7 @@ test('a value already set on the new key wins over the old one', function (): vo
     putSetting('notifications.discord_public_webhook_url', 'https://discord.com/api/webhooks/1/stale', 'Discord Public Webhook URL');
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
     expect(setting('notifications.discord_public_route'))->toBe('123456789012345678');
 });
@@ -73,6 +76,7 @@ test('an empty old value does not overwrite a configured new key', function (): 
     putSetting('notifications.discord_public_webhook_url', '', 'Discord Public Webhook URL');
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
     expect(setting('notifications.discord_public_route'))->toBe('123456789012345678');
 });
@@ -81,14 +85,15 @@ test('an install with a configured webhook keeps its value', function (): void {
     putSetting('notifications.discord_public_webhook_url', 'https://discord.com/api/webhooks/1/abc', 'Discord Public Webhook URL');
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
-    $new = Setting::where('id', Setting::formatKey('notifications.discord_public_route'))->first();
+    $new = LegacySetting::where('id', LegacySetting::formatKey('notifications.discord_public_route'))->first();
 
     expect($new)->not->toBeNull()
         ->and($new->value)->toBe('https://discord.com/api/webhooks/1/abc')
         // The row keeps its place in the notifications group.
         ->and($new->offset)->toBe(3)
-        ->and(Setting::where('id', Setting::formatKey('notifications.discord_public_webhook_url'))->exists())->toBeFalse();
+        ->and(LegacySetting::where('id', LegacySetting::formatKey('notifications.discord_public_webhook_url'))->exists())->toBeFalse();
 });
 
 test('both webhook settings are carried across', function (): void {
@@ -96,6 +101,7 @@ test('both webhook settings are carried across', function (): void {
     putSetting('notifications.discord_private_webhook_url', 'https://discord.com/api/webhooks/2/staff', 'Discord Private Webhook URL');
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
     expect(setting('notifications.discord_public_route'))->toBe('https://discord.com/api/webhooks/1/public')
         ->and(setting('notifications.discord_private_route'))->toBe('https://discord.com/api/webhooks/2/staff');
@@ -105,8 +111,9 @@ test('an unconfigured install ends up with empty routes', function (): void {
     putSetting('notifications.discord_public_webhook_url', '', 'Discord Public Webhook URL');
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
-    $new = Setting::where('id', Setting::formatKey('notifications.discord_public_route'))->first();
+    $new = LegacySetting::where('id', LegacySetting::formatKey('notifications.discord_public_route'))->first();
 
     expect($new)->not->toBeNull()
         ->and($new->value)->toBe('');
@@ -117,8 +124,9 @@ test('the migration is idempotent', function (): void {
 
     discordRouteMigration()->up();
     discordRouteMigration()->up();
+    copyLegacySettings();
 
-    expect(Setting::where('id', Setting::formatKey('notifications.discord_public_route'))->count())->toBe(1)
+    expect(LegacySetting::where('id', LegacySetting::formatKey('notifications.discord_public_route'))->count())->toBe(1)
         ->and(setting('notifications.discord_public_route'))->toBe('https://discord.com/api/webhooks/1/abc');
 });
 
@@ -126,11 +134,13 @@ test('a re-run does not clobber a value an admin has since changed', function ()
     putSetting('notifications.discord_public_webhook_url', 'https://discord.com/api/webhooks/1/abc', 'Discord Public Webhook URL');
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
     // Admin switches the public route over to a bot channel.
-    Setting::where('id', Setting::formatKey('notifications.discord_public_route'))->update(['value' => '123456789012345678']);
+    LegacySetting::where('id', LegacySetting::formatKey('notifications.discord_public_route'))->update(['value' => '123456789012345678']);
 
     discordRouteMigration()->up();
+    copyLegacySettings();
 
     expect(setting('notifications.discord_public_route'))->toBe('123456789012345678');
 });
@@ -142,6 +152,6 @@ test('down restores the webhook keys with their values', function (): void {
     $migration->up();
     $migration->down();
 
-    expect(setting('notifications.discord_public_webhook_url'))->toBe('https://discord.com/api/webhooks/1/abc')
-        ->and(Setting::where('id', Setting::formatKey('notifications.discord_public_route'))->exists())->toBeFalse();
+    expect(LegacySetting::byKey('notifications.discord_public_webhook_url')->value('value'))->toBe('https://discord.com/api/webhooks/1/abc')
+        ->and(LegacySetting::where('id', LegacySetting::formatKey('notifications.discord_public_route'))->exists())->toBeFalse();
 });

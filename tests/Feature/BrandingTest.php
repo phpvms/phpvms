@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Http\Data\BrandingData;
 use App\Jobs\GenerateBrandingSizes;
-use App\Models\Setting;
 use App\Services\SettingService;
 use App\Support\Branding;
 use Filament\Support\Colors\Color;
@@ -19,7 +18,7 @@ function brandingMigrationForBrandingTest(): object
 
 function setBrandingSetting(string $key, string $value): void
 {
-    Setting::where('id', Setting::formatKey($key))->update(['value' => $value]);
+    setting_save($key, $value);
 }
 
 it('resolves via the container as a singleton', function (): void {
@@ -38,9 +37,9 @@ it('declares no non-static properties holding resolved values', function (): voi
 
 describe('with no settings rows at all', function (): void {
     beforeEach(function (): void {
-        // TestCase seeds SettingsSeeder for every test; simulate a bare
-        // install (or one that has not yet run migrate-data) by wiping it.
-        Setting::query()->delete();
+        // Simulate a bare install, where no setting was ever saved.
+        DB::table('settings')->delete();
+        reloadSettings();
     });
 
     it('every accessor falls back without raising SettingNotFound', function (): void {
