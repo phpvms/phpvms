@@ -117,10 +117,13 @@ it('queues the migration on a retry after a currency save rolled back', function
     $this->actingAs(createAdminUser());
     setting_save('units.currency', 'USD');
 
-    // An object, not a by-reference variable: the flag flips after the
-    // listener is registered, and Rector drops by-reference closure uses it
-    // considers unused.
-    $failure = (object) ['pilots' => true];
+    // An object with a typed flag, not a by-reference variable: the flag flips
+    // after the listener is registered, and Rector drops by-reference closure
+    // uses it considers unused.
+    $failure = new class()
+    {
+        public bool $pilots = true;
+    };
     Event::listen(SavingSettings::class, function (SavingSettings $event) use ($failure): void {
         if ($failure->pilots && $event->settings instanceof PilotsSettings) {
             throw new RuntimeException('pilots failed');
