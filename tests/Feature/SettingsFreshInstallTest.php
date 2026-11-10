@@ -35,4 +35,7 @@ it('reads every setting as its default on a fresh install, plus what the data mi
         ->all();
 
     expect($changedFromDefault)->toBe([]);
-});
+})->skip(
+    fn (): bool => in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true),
+    'A data migration creates tables, and MySQL commits DDL outside the test transaction.',
+);

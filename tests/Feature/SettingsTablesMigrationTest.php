@@ -15,6 +15,16 @@ use Tests\Support\AddonSettings\WidgetSettings;
  * kept as backups, new tables take their names, and the values are copied over
  * (by the schema migration, then again by the last data migration).
  */
+/**
+ * MySQL and MariaDB commit DDL implicitly, so renaming and recreating the
+ * tables inside the test transaction would leak into the tests that follow.
+ * SQLite and PostgreSQL roll DDL back with the transaction.
+ */
+function ddlRollsBack(): bool
+{
+    return !in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true);
+}
+
 function settingsTablesMigration(): object
 {
     return require base_path('database/migrations/2026_11_10_075533_move_settings_to_typed_settings_tables.php');
@@ -88,7 +98,7 @@ it('keeps the old tables as backups and gives the new tables the package schema'
 
         expect($unique)->not->toBeNull();
     }
-});
+})->skip(fn (): bool => !ddlRollsBack(), 'DDL is not transactional on this driver.');
 
 it('copies the values as soon as the schema migration runs', function (): void {
     preUpgradeSettingsTables();
@@ -99,7 +109,7 @@ it('copies the values as soon as the schema migration runs', function (): void {
     expect(setting('pilots.id_length'))->toBe(5)
         ->and(setting('registry.va_global_id'))->toBe('GLOBALID')
         ->and(setting('va_global_id'))->toBe('GLOBALID');
-});
+})->skip(fn (): bool => !ddlRollsBack(), 'DDL is not transactional on this driver.');
 
 it('encrypts a secret it copies', function (): void {
     preUpgradeSettingsTables();
@@ -109,7 +119,7 @@ it('encrypts a secret it copies', function (): void {
 
     expect((string) DB::table('settings')->where('group', 'captcha')->where('name', 'secret_key')->value('payload'))->not->toContain('hunter2')
         ->and(app(CaptchaSettings::class)->secret_key)->toBe('hunter2');
-});
+})->skip(fn (): bool => !ddlRollsBack(), 'DDL is not transactional on this driver.');
 
 it('restores the old tables and their rows on rollback', function (): void {
     preUpgradeSettingsTables();
@@ -125,7 +135,7 @@ it('restores the old tables and their rows on rollback', function (): void {
         ->and(DB::table('addon_settings')->where('key', 'count')->value('value'))->toBe('7');
 
     settingsTablesMigration()->up();
-});
+})->skip(fn (): bool => !ddlRollsBack(), 'DDL is not transactional on this driver.');
 
 it('replaces a value it cannot cast with the default and logs it', function (): void {
     seedLegacySettings();
@@ -191,7 +201,7 @@ it('copies stored addon values under the addon registry_id and section', functio
 
     expect(addon_setting('vendor/widget', 'token'))->toBe('abc')
         ->and(addon_setting('vendor/widget', 'count'))->toBe(7);
-});
+})->skip(fn (): bool => !ddlRollsBack(), 'DDL is not transactional on this driver.');
 
 it('keeps and logs stored addon values the addon no longer declares', function (): void {
     preUpgradeSettingsTables();
@@ -204,7 +214,7 @@ it('keeps and logs stored addon values the addon no longer declares', function (
     expect(DB::table('addon_settings')->where('group', 'vendor/widget:general')->where('name', 'gone')->value('payload'))->toBe('"old"')
         ->and(DB::table('addon_settings_backup')->where('key', 'gone')->value('value'))->toBe('old');
     Log::shouldHaveReceived('info')->withArgs(fn (string $message): bool => str_contains($message, 'vendor/widget') && str_contains($message, 'gone'))->once();
-});
+})->skip(fn (): bool => !ddlRollsBack(), 'DDL is not transactional on this driver.');
 
 it('keeps the addon backup when an addon setting is changed after the upgrade', function (): void {
     preUpgradeSettingsTables();
@@ -215,4 +225,4 @@ it('keeps the addon backup when an addon setting is changed after the upgrade', 
 
     expect(DB::table('addon_settings_backup')->where('key', 'token')->value('value'))->toBe('abc')
         ->and(addon_setting('vendor/widget', 'token'))->toBe('changed');
-});
+})->skip(fn (): bool => !ddlRollsBack(), 'DDL is not transactional on this driver.');
