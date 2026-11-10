@@ -81,3 +81,31 @@ it('does not offer actions that alter the type rating itself', function (): void
         ->assertActionDoesNotExist(TestAction::make('delete')->table($typerating))
         ->assertActionDoesNotExist(TestAction::make('edit')->table($typerating));
 });
+
+it('rejects attaching a type rating the user already holds', function (): void {
+    $user = User::factory()->create();
+    $attached = Typerating::create(['name' => 'T1', 'type' => 'T1', 'active' => 1]);
+    $user->typeratings()->attach($attached->id);
+
+    Livewire::test(TypeRatingsRelationManager::class, [
+        'ownerRecord' => $user,
+        'pageClass'   => EditUser::class,
+    ])
+        ->callAction(TestAction::make('attach')->table(), ['recordId' => $attached->id])
+        ->assertHasActionErrors(['recordId']);
+
+    expect($user->fresh()->typeratings->pluck('id')->all())->toBe([$attached->id]);
+});
+
+it('rejects attaching a type rating that does not exist', function (): void {
+    $user = User::factory()->create();
+
+    Livewire::test(TypeRatingsRelationManager::class, [
+        'ownerRecord' => $user,
+        'pageClass'   => EditUser::class,
+    ])
+        ->callAction(TestAction::make('attach')->table(), ['recordId' => 999999])
+        ->assertHasActionErrors(['recordId']);
+
+    expect($user->fresh()->typeratings)->toBeEmpty();
+});
