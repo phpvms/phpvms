@@ -9,6 +9,6 @@
     }
   },
   "deploy": {
-    "startCommand": "sh resources/docker/run-phpvms-links.sh; php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${FORWARD_HTTP_PORT:-8080}"
+    "startCommand": "sh resources/docker/run-phpvms-links.sh; php artisan octane:frankenphp --host=0.0.0.0 --port=${FORWARD_HTTP_PORT:-8080} --admin-host=127.0.0.1"
   }
 }

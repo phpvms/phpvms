@@ -97,9 +97,9 @@ services:
       [
         "php",
         "/var/www/html/artisan",
-        "octane:start",
-        "--server=frankenphp",
+        "octane:frankenphp",
         "--port=8080",
+        "--admin-host=127.0.0.1",
         "--caddyfile=/etc/frankenphp/Caddyfile",
         "--workers=auto",
         "--max-requests=500",
