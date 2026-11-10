@@ -28,6 +28,10 @@ export function createInfiniteSelect(
 
   let generation = 0;
   let loadingMore = false;
+  let destroyed = false;
+  let inInput = false;
+  let nextLoadFromInput = false;
+  let latestQuery: string | null = null;
 
   let tom: any = new TomSelect(el, {
     plugins: ["virtual_scroll"],
@@ -48,19 +52,6 @@ export function createInfiniteSelect(
     load(this: any, query: string, callback: (options?: InfiniteSelectOption[]) => void) {
       const self = this;
       const page = self.getUrl(query);
-
-      if (page === 1) {
-        generation++;
-      }
-
-      const gen = generation;
-
-      if (page > 1) {
-        loadingMore = true;
-      }
-
-      const isStale = () => gen !== generation || query !== self.lastValue;
-
       // Finish a load whose result is not passed through the real callback.
       const settle = () => {
         if (loadingMore) {
@@ -80,11 +71,49 @@ export function createInfiniteSelect(
         }
       };
 
+      const fromInput = nextLoadFromInput;
+      nextLoadFromInput = false;
+
+      // Typing back to a query already on screen must not replace page 1
+      // with its queued page 2.
+      if (fromInput && page > 1) {
+        self.setNextUrl(query, page);
+        delete self.loadedSearches[query];
+        settle();
+        return;
+      }
+
+      if (page === 1) {
+        generation++;
+        latestQuery = query;
+      }
+
+      const gen = generation;
+
+      if (page > 1) {
+        loadingMore = true;
+      }
+
+      // Re-fetch the current query when its own response was discarded
+      // and nothing newer is in flight for it.
+      const reloadIfCurrent = () => {
+        if (query === self.lastValue && latestQuery !== query) {
+          self.load(query);
+        }
+      };
+
+      const isStale = () => gen !== generation || query !== self.lastValue;
+
       getPage(query, page)
         .then((response) => {
+          if (destroyed) {
+            return;
+          }
+
           if (isStale()) {
             delete self.loadedSearches[query];
             settle();
+            reloadIfCurrent();
             return;
           }
 
@@ -105,6 +134,10 @@ export function createInfiniteSelect(
           // scrolled, so virtual_scroll never loads the next one.
           // Nudge its scroll listener until the list overflows.
           requestAnimationFrame(() => {
+            if (destroyed) {
+              return;
+            }
+
             const content = self.dropdown_content;
 
             if (
@@ -118,6 +151,10 @@ export function createInfiniteSelect(
           });
         })
         .catch((error) => {
+          if (destroyed) {
+            return;
+          }
+
           const stale = isStale();
 
           delete self.loadedSearches[query];
@@ -129,15 +166,45 @@ export function createInfiniteSelect(
 
           settle();
 
-          if (!stale) {
-            onError?.(error);
+          if (stale) {
+            reloadIfCurrent();
+            return;
           }
+
+          if (page === 1) {
+            // Do not leave the previous query's rows clickable.
+            self.clearOptions((_option: unknown, value: string) => self.items.includes(value));
+            self.refreshOptions(false);
+
+            if (query === "") {
+              // Let refocusing retry the preload.
+              self.wrapper.classList.remove("preloaded");
+            }
+          }
+
+          onError?.(error);
         });
     },
     onChange(value: string) {
       onChange(value === "" ? null : value);
     },
   } as any);
+
+  // Tell input-driven loads from scroll-driven ones: only the input path
+  // calls load() from inside _onInput.
+  tom.hook("before", "_onInput", () => {
+    inInput = true;
+  });
+  tom.hook("after", "_onInput", () => {
+    inInput = false;
+  });
+  // Only a load that will run may set the flag, or a refused call could
+  // clear it while an input-driven load is still debounced.
+  tom.hook("before", "load", (value: string) => {
+    if (tom.canLoad(value)) {
+      nextLoadFromInput = inInput;
+    }
+  });
 
   return {
     setValue(value) {
@@ -171,6 +238,7 @@ export function createInfiniteSelect(
       }
     },
     destroy() {
+      destroyed = true;
       tom?.destroy();
       tom = null;
     },
