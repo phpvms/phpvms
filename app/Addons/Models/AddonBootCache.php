@@ -13,20 +13,23 @@ namespace App\Addons\Models;
 final readonly class AddonBootCache
 {
     /**
-     * @param string       $name         Human-readable module name.
-     * @param string|null  $alias        Short machine alias; null when absent.
-     * @param string       $type         Addon type ('module', 'theme', etc.).
-     * @param string       $registryId   Registry canonical identity; required (MAN-03).
-     * @param string|null  $version      Version string; null when absent.
-     * @param string       $namespace    PSR-4 root namespace.
-     * @param list<string> $providers    Service-provider class names.
-     * @param string       $path         Absolute path to the addon directory.
-     * @param string       $autoloadPath Absolute path the PSR-4 namespace resolves to.
-     * @param string       $layout       Layout hint: 'root' or 'app'.
-     * @param string|null  $description  Human-readable description; null when absent.
-     * @param bool         $enabled      Whether the addon is active.
-     * @param list<string> $files        Absolute paths declared under composer.json
-     *                                   `autoload.files`, required once per boot cycle.
+     * @param string                                                                                             $name         Human-readable module name.
+     * @param string|null                                                                                        $alias        Short machine alias; null when absent.
+     * @param string                                                                                             $type         Addon type ('module', 'theme', etc.).
+     * @param string                                                                                             $registryId   Registry canonical identity; required (MAN-03).
+     * @param string|null                                                                                        $version      Version string; null when absent.
+     * @param string                                                                                             $namespace    PSR-4 root namespace.
+     * @param list<string>                                                                                       $providers    Service-provider class names.
+     * @param string                                                                                             $path         Absolute path to the addon directory.
+     * @param string                                                                                             $autoloadPath Absolute path the PSR-4 namespace resolves to.
+     * @param string                                                                                             $layout       Layout hint: 'root' or 'app'.
+     * @param string|null                                                                                        $description  Human-readable description; null when absent.
+     * @param bool                                                                                               $enabled      Whether the addon is active.
+     * @param list<string>                                                                                       $files        Absolute paths declared under composer.json
+     *                                                                                                                         `autoload.files`, required once per boot cycle.
+     * @param array{listeners: list<class-string>, hooks: list<class-string>, policies: list<class-string>}|null $discovered
+     *                                                                                                                         Classes found in `app/Listeners`, `app/Hooks` and `app/Policies`
+     *                                                                                                                         when the cache was built; null for a cache written before they were saved.
      */
     public function __construct(
         public string $name,
@@ -42,6 +45,7 @@ final readonly class AddonBootCache
         public ?string $description,
         public bool $enabled,
         public array $files = [],
+        public ?array $discovered = null,
     ) {}
 
     /**
@@ -65,7 +69,24 @@ final readonly class AddonBootCache
             description: isset($data['description']) ? (string) $data['description'] : null,
             enabled: (bool) ($data['enabled'] ?? false),
             files: array_values(array_filter((array) ($data['files'] ?? []), is_string(...))),
+            discovered: self::discoveredFrom($data['discovered'] ?? null),
         );
+    }
+
+    /**
+     * @return array{listeners: list<class-string>, hooks: list<class-string>, policies: list<class-string>}|null
+     */
+    private static function discoveredFrom(mixed $value): ?array
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        return [
+            'listeners' => array_values(array_filter((array) ($value['listeners'] ?? []), is_string(...))),
+            'hooks'     => array_values(array_filter((array) ($value['hooks'] ?? []), is_string(...))),
+            'policies'  => array_values(array_filter((array) ($value['policies'] ?? []), is_string(...))),
+        ];
     }
 
     /**
@@ -89,6 +110,7 @@ final readonly class AddonBootCache
             'description'   => $this->description,
             'enabled'       => $this->enabled,
             'files'         => $this->files,
+            'discovered'    => $this->discovered,
         ];
     }
 }

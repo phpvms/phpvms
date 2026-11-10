@@ -7,7 +7,7 @@ use App\Features\Hooks\Fill;
 use App\Features\Hooks\Points\RenderingPirepDetail;
 use App\Models\Pirep;
 use Composer\Autoload\ClassLoader;
-use PhpvmsAddonFixture\Listeners\AcmePirepFillListener;
+use PhpvmsAddonFixture\Hooks\Briefing\AcmePirepFillListener;
 use PhpvmsAddonFixture\Providers\AcmeServiceProvider;
 
 it('routes an addon render hook listener to the hook dispatcher', function (): void {

@@ -70,6 +70,63 @@
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+## Listeners, hooks and policies
+
+Core finds an addon's classes by directory. Each directory is scanned at every
+depth; subfolders carry no meaning.
+
+| Directory | Holds | Registered with |
+|-----------|-------|-----------------|
+| `app/Listeners` | Laravel event listeners | `Event::listen` |
+| `app/Hooks` | filter, render and gate hook listeners | the hook dispatcher |
+| `app/Policies` | model policies | `Gate::policy` |
+
+A class in `app/Listeners` or `app/Hooks` needs `#[AddonListener]`; one without
+it is skipped and logged. A class must also sit at the path its name gives under
+the addon's PSR-4 root (`Vendor\Addon\Hooks\Briefing\X` in `app/Hooks/Briefing/X.php`),
+or it is skipped and logged.
+
+### Hook listeners
+
+A class in `app/Hooks` extends the base class for its kind. Its `filter()`,
+`render()` or `check()` method types its parameter with the hook point:
+
+| Base class | Method | Point |
+|------------|--------|-------|
+| `FilterListener` | `filter($hook): mixed` | a filter point (not a render point) |
+| `RenderListener` | `render($hook): void` | a render point |
+| `GateListener` | `check($hook): void` | a gate point |
+
+```php
+#[AddonListener]
+class OpenInAcars extends RenderListener
+{
+    public function render(RenderingBriefingActions $hook): void
+    {
+        $hook->add(Fill::html('...'));
+    }
+}
+```
+
+A missing base class or method, a point of the wrong kind, a hook listener in
+`app/Listeners` or an event listener in `app/Hooks` quarantines the addon. The
+message names the class and the directory it belongs in.
+
+### Policies
+
+`#[PolicyFor(Pirep::class)]` names the model a policy authorizes, core models
+included. Without it, `TourPolicy` registers for the addon's own `Models\Tour`.
+A policy that matches no model is skipped and logged. Policies register before
+`registerPolicies()`, so a hand call there wins for the same model.
+
+### When a new file is picked up
+
+Outside the `local` environment, core reads the class lists saved in the addon
+boot cache and does not read the directories on boot. A file you add is
+registered after the cache is rebuilt: "Clear cache" or "Optimize" in the admin
+panel, or `php artisan optimize`. Installing, enabling or updating an addon
+rebuilds it too. In `local`, directories are scanned on every boot.
+
 ## PIREP view extension points
 
 Two hooks let an addon add content to the PIREP pages without core changing again.

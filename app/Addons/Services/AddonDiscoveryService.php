@@ -7,6 +7,7 @@ namespace App\Addons\Services;
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Models\AddonManifest;
 use App\Addons\Support\AddonAssetLinker;
+use App\Addons\Support\AddonClassScanner;
 use App\Addons\Support\AddonRoots;
 use App\Addons\Support\AddonVersions;
 use App\Addons\Support\BootCache;
@@ -520,7 +521,27 @@ class AddonDiscoveryService
             description: $m->description,
             enabled: $enabled,
             files: $m->files,
+            discovered: $this->discoverClasses($m),
         );
+    }
+
+    /**
+     * The classes in the addon's listener, hook and policy directories, saved
+     * in the boot cache so a production boot does not read the directories.
+     *
+     * @return array{listeners: list<class-string>, hooks: list<class-string>, policies: list<class-string>}
+     */
+    private function discoverClasses(AddonManifest $m): array
+    {
+        $namespace = rtrim($m->namespace, '\\');
+        $scanner = new AddonClassScanner();
+        $addon = $m->alias ?? $m->name;
+
+        return [
+            'listeners' => $scanner->scan($m->path.'/app/Listeners', $namespace.'\\Listeners', addon: $addon),
+            'hooks'     => $scanner->scan($m->path.'/app/Hooks', $namespace.'\\Hooks', addon: $addon),
+            'policies'  => $scanner->scan($m->path.'/app/Policies', $namespace.'\\Policies', addon: $addon),
+        ];
     }
 
     /**

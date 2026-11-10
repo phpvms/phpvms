@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Filament;
 
+use App\Addons\Support\OctaneReloader;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -41,6 +42,13 @@ final class ClearCaches extends Component
             foreach ($calls as $call) {
                 Process::env(['APP_RUNNING_IN_CONSOLE' => true])
                     ->run([$this->getPhpBinary(), base_path('artisan'), $call])->throw();
+            }
+
+            // Local boots scan addon classes live, and a cached config would hide .env edits.
+            if (!app()->isLocal()) {
+                Process::env(['APP_RUNNING_IN_CONSOLE' => true])
+                    ->run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
+                app(OctaneReloader::class)->reload();
             }
 
             Notification::make()

@@ -50,6 +50,9 @@ class AddonServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        // Rebuilds only on `optimize`; `optimize:clear` leaves the boot cache alone.
+        $this->optimizes(optimize: 'addons:cache');
+
         // ── Phase 1 singletons ──────────────────────────────────────────────
         $this->app->singleton(BootCache::class);
         $this->app->singleton(ManifestParser::class);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Addons;
 
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\AddonClassScanner;
 use App\Addons\Support\AddonQuarantine;
 use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\AdminPanelBuilder;
@@ -13,8 +14,15 @@ use App\Addons\Support\ManifestParser;
 use App\Addons\Support\ThemeAddonRegistrar;
 use App\Contracts\Addons\Attributes\AddonListener;
 use App\Contracts\Addons\Attributes\AddonModel;
+use App\Contracts\Addons\Attributes\PolicyFor;
 use App\Features\Hooks\Facades\Hooks;
+use App\Features\Hooks\FilterHook;
+use App\Features\Hooks\GateHook;
 use App\Features\Hooks\Hook;
+use App\Features\Hooks\Listeners\FilterListener;
+use App\Features\Hooks\Listeners\GateListener;
+use App\Features\Hooks\Listeners\RenderListener;
+use App\Features\Hooks\RenderHook;
 use App\Features\Themes\ThemeOptions;
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
@@ -24,7 +32,6 @@ use App\Support\Metrics\MetricRegistry;
 use App\Support\Metrics\Metrics;
 use App\Support\Permissions\Scope;
 use Closure;
-use Composer\ClassMapGenerator\ClassMapGenerator;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Schemas\Components\Component;
@@ -32,6 +39,7 @@ use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -69,9 +77,20 @@ use Throwable;
  *  - lang/            → loadTranslationsFrom
  *  - database/migrations → loadMigrationsFrom
  *  - app/Console/Commands/*.php → commands() (top-level dir only; no subdirectory scan)
- *  - app/Listeners/*.php        → Event::listen, or the hook dispatcher when the
- *                                 first parameter is a filter or gate hook point
- *                                 (top-level dir only; no subdirectory scan)
+ *  - app/Listeners/**   → Event::listen (event listeners only; any depth)
+ *  - app/Hooks/**       → the hook dispatcher: each class extends FilterListener,
+ *                         RenderListener or GateListener, and the parameter type of
+ *                         its filter() / render() / check() method names the hook
+ *                         point (any depth; a listener in the wrong directory
+ *                         quarantines the addon)
+ *  - app/Policies/**    → Gate::policy, for the model named by #[PolicyFor] or,
+ *                         failing that, the addon's own model matching the name
+ *                         (`TourPolicy` → `Models\Tour`), before registerPolicies()
+ *
+ * Every listener class needs #[AddonListener]. Outside the `local`
+ * environment the class lists come from the addon boot cache, so a new file
+ * is picked up after the cache is rebuilt ("Clear cache", `php artisan
+ * optimize`, an addon install or update).
  *
  * Call order in `register()`: merge config, the settings classes (when
  * `registerSettings()` is overridden), the admin panel (when
@@ -226,7 +245,7 @@ abstract class AddonServiceProvider extends ServiceProvider
      * the tile registry is first used. A non-closure entry, or a closure that
      * throws, registers none of the tiles and quarantines the addon.
      *
-     * To fill a theme outlet, listen to a `RenderHook` point in `app/Listeners`.
+     * To fill a theme outlet, add a `RenderListener` for a `RenderHook` point in `app/Hooks`.
      *
      * @return list<Closure(): Tile>
      */
@@ -594,16 +613,10 @@ abstract class AddonServiceProvider extends ServiceProvider
             return [];
         }
 
-        // Composer's class map generator reads each file's tokens without running
-        // it, so only files that declare a class at its PSR-4 path are loaded.
-        // Templates, routes, config and helpers are never included.
-        $generator = new ClassMapGenerator();
-        $generator->scanPaths($root, null, 'psr-4', $namespace.'\\', self::SCAN_EXCLUDED_DIRECTORIES);
-
         $models = [];
 
-        foreach (array_keys($generator->getClassMap()->getMap()) as $fqcn) {
-            if (!str_starts_with($fqcn, $namespace.'\\') || !class_exists($fqcn) || !is_subclass_of($fqcn, Model::class)) {
+        foreach ($this->scanClasses($root, $namespace, self::SCAN_EXCLUDED_DIRECTORIES) as $fqcn) {
+            if (!class_exists($fqcn) || !is_subclass_of($fqcn, Model::class)) {
                 continue;
             }
 
@@ -942,8 +955,8 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
-     * Auto-discover the event and hook listeners in `app/Listeners`, the
-     * `Listeners` namespace of the addon.
+     * Auto-discover the addon's event listeners (`app/Listeners`), hook
+     * listeners (`app/Hooks`) and policies (`app/Policies`), at any depth.
      */
     private function registerListeners(): void
     {
@@ -953,58 +966,263 @@ abstract class AddonServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->loadListenersFromDirectory($this->addonBasePath().'/app/Listeners', $rootNamespace.'\\Listeners');
+        $found = $this->discoveredClasses($rootNamespace);
+
+        if ($this->registerListenerClasses($found['listeners'], 'Listeners') && $this->registerListenerClasses($found['hooks'], 'Hooks')) {
+            $this->registerPolicyClasses($found['policies'], $rootNamespace);
+        }
     }
 
     /**
-     * Register every event and hook listener in a directory: each `*.php` file
-     * there holds one class named after the file, in `$namespace`. The class
-     * must type-hint a single named event or hook point class as the first
-     * parameter of its public `handle()` method, or of `__invoke()` when it
-     * has no `handle()`. A file that does not follow this is skipped. A
-     * listener that targets a hook point that does not exist, or a class that
-     * is not a hook point, quarantines the addon.
+     * The classes in the addon's listener, hook and policy directories: the
+     * lists saved in the boot cache, or a scan of the directories when the app
+     * is `local` or the cache entry predates the lists.
+     *
+     * @return array{listeners: list<class-string>, hooks: list<class-string>, policies: list<class-string>}
+     */
+    private function discoveredClasses(string $rootNamespace): array
+    {
+        $cached = $this->bootEntry()?->discovered;
+
+        if ($cached !== null && !$this->app->isLocal()) {
+            return $cached;
+        }
+
+        $base = $this->addonBasePath().'/app';
+
+        return [
+            'listeners' => $this->scanClasses($base.'/Listeners', $rootNamespace.'\\Listeners', warn: true),
+            'hooks'     => $this->scanClasses($base.'/Hooks', $rootNamespace.'\\Hooks', warn: true),
+            'policies'  => $this->scanClasses($base.'/Policies', $rootNamespace.'\\Policies', warn: true),
+        ];
+    }
+
+    /**
+     * The classes a directory declares in the addon's namespace, at any depth.
+     * A class whose name does not match its path cannot be autoloaded, so it
+     * is left out and, when `$warn` is set, logged.
+     *
+     * @param  list<string>       $excludedDirs
+     * @return list<class-string>
+     */
+    private function scanClasses(string $directory, string $namespace, array $excludedDirs = [], bool $warn = false): array
+    {
+        return new AddonClassScanner()->scan($directory, $namespace, $excludedDirs, $warn ? $this->addonNamespace() : null);
+    }
+
+    /**
+     * Register every event and hook listener in a directory, at any depth. A
+     * class must declare its event or hook point as the first parameter of
+     * its public `handle()` method, or of `__invoke()` when it has no
+     * `handle()`. A hook listener that extends a hook listener base class
+     * declares it on its `filter()`, `render()` or `check()` method instead.
+     * A listener that targets a hook point that does not exist, or a class
+     * that is not a hook point, quarantines the addon.
      *
      * Override it to look somewhere else, or call it from
      * {@see registerEventListeners()} for a second directory.
      *
-     * @param string $namespace namespace of the classes in the directory, without a trailing backslash
+     * @param string $namespace namespace of the directory, without a trailing backslash
      */
     public function loadListenersFromDirectory(string $directory, string $namespace): void
     {
-        if (!is_dir($directory)) {
-            return;
-        }
+        $this->registerListenerClasses($this->scanClasses($directory, $namespace, warn: true), null);
+    }
 
-        foreach (glob($directory.'/*.php') ?: [] as $file) {
-            $fqcn = rtrim($namespace, '\\').'\\'.basename($file, '.php');
-
+    /**
+     * Register scanned listener classes.
+     *
+     * @param  list<class-string>       $classes
+     * @param  'Listeners'|'Hooks'|null $directory the directory they came from; null skips the directory checks
+     * @return bool                     false when a listener quarantined the addon, so the caller stops
+     */
+    private function registerListenerClasses(array $classes, ?string $directory): bool
+    {
+        foreach ($classes as $fqcn) {
             if (!class_exists($fqcn)) {
                 continue;
             }
 
-            if (new ReflectionClass($fqcn)->getAttributes(AddonListener::class) === []) {
+            $class = new ReflectionClass($fqcn);
+
+            // A hook point declared next to its listeners is not a listener.
+            if ($class->isAbstract() || $class->isSubclassOf(Hook::class)) {
+                continue;
+            }
+
+            if ($class->getAttributes(AddonListener::class) === []) {
                 Log::warning(sprintf('Addon "%s": listener %s lacks #[AddonListener], so it is not registered.', $this->addonNamespace(), $fqcn));
 
                 continue;
             }
 
-            $eventClass = $this->resolveListenerEventClass($fqcn);
-
-            if ($eventClass === null) {
-                continue;
-            }
-
             try {
-                $this->registerListener($fqcn, $eventClass);
+                $eventClass = $this->resolveListenerPoint($class, $directory);
+
+                if ($eventClass !== null) {
+                    $this->registerListener($fqcn, $eventClass);
+                }
             } catch (LogicException|InvalidArgumentException $failure) {
                 // One broken listener must not stop every boot (the admin panel
                 // included): quarantine the addon and skip the rest of its listeners.
                 $addonNamespace = $this->bootEntry()->namespace ?? $this->addonRootNamespace() ?? '';
-                $this->app->make(AddonQuarantine::class)->handle($addonNamespace, $this->addonNamespace(), 'listener '.$fqcn, $failure);
+                $disabled = $this->app->make(AddonQuarantine::class)->handle($addonNamespace, $this->addonNamespace(), 'listener '.$fqcn, $failure);
 
-                return;
+                // A disabled addon must not run its remaining declarations or onBoot().
+                $this->quarantined = $this->quarantined || $disabled;
+
+                return false;
             }
+        }
+
+        return true;
+    }
+
+    /**
+     * The event or hook point a listener handles, checked against the
+     * directory it sits in.
+     *
+     * @param  ReflectionClass<object>  $class
+     * @param  'Listeners'|'Hooks'|null $directory
+     * @return class-string|null
+     *
+     * @throws LogicException when the listener does not fit its directory or its hook listener base class
+     */
+    private function resolveListenerPoint(ReflectionClass $class, ?string $directory): ?string
+    {
+        $fqcn = $class->getName();
+        $kind = $this->hookListenerKind($class);
+
+        if ($kind !== null) {
+            if ($directory === 'Listeners') {
+                throw new LogicException(sprintf('Addon "%s": hook listener %s is in app/Listeners, which holds event listeners only. Move it to app/Hooks.', $this->addonNamespace(), $fqcn));
+            }
+
+            return $this->resolveKindMethodPoint($class, $kind);
+        }
+
+        $eventClass = $this->resolveListenerEventClass($fqcn);
+
+        if ($directory === 'Hooks') {
+            if ($eventClass !== null && !is_subclass_of($eventClass, Hook::class)) {
+                throw new LogicException(sprintf('Addon "%s": listener %s handles %s, which is not a hook point, so it does not belong in app/Hooks. Move it to app/Listeners.', $this->addonNamespace(), $fqcn, $eventClass));
+            }
+
+            throw new LogicException(sprintf('Addon "%s": listener %s in app/Hooks must extend %s, %s or %s.', $this->addonNamespace(), $fqcn, FilterListener::class, RenderListener::class, GateListener::class));
+        }
+
+        if ($directory === 'Listeners' && $eventClass !== null && is_subclass_of($eventClass, Hook::class)) {
+            throw new LogicException(sprintf('Addon "%s": listener %s handles hook point %s, so it does not belong in app/Listeners. Move it to app/Hooks and extend a hook listener base class.', $this->addonNamespace(), $fqcn, $eventClass));
+        }
+
+        return $eventClass;
+    }
+
+    /**
+     * The kind of hook listener a class is, from the base class it extends.
+     *
+     * @param  ReflectionClass<object>       $class
+     * @return 'filter'|'render'|'gate'|null
+     */
+    private function hookListenerKind(ReflectionClass $class): ?string
+    {
+        return match (true) {
+            $class->isSubclassOf(FilterListener::class) => 'filter',
+            $class->isSubclassOf(RenderListener::class) => 'render',
+            $class->isSubclassOf(GateListener::class)   => 'gate',
+            default                                     => null,
+        };
+    }
+
+    /**
+     * The hook point named by the parameter type of a hook listener's kind
+     * method (`filter()`, `render()` or `check()`).
+     *
+     * @param  ReflectionClass<object>  $class
+     * @param  'filter'|'render'|'gate' $kind
+     * @return class-string
+     *
+     * @throws LogicException when the method is missing, untyped, or its point is of another kind
+     */
+    private function resolveKindMethodPoint(ReflectionClass $class, string $kind): string
+    {
+        $fqcn = $class->getName();
+        $method = $kind === 'gate' ? 'check' : $kind;
+
+        if (!$class->hasMethod($method) || $class->getMethod($method)->isPrivate()) {
+            throw new LogicException(sprintf('Addon "%s": %s listener %s defines no %s() method.', $this->addonNamespace(), $kind, $fqcn, $method));
+        }
+
+        // The base class passes the hook as the only argument.
+        if ($class->getMethod($method)->getNumberOfRequiredParameters() > 1) {
+            throw new LogicException(sprintf('Addon "%s": %s listener %s must take only the hook point in %s().', $this->addonNamespace(), $kind, $fqcn, $method));
+        }
+
+        $type = $class->getMethod($method)->getParameters()[0] ?? null;
+        $type = $type?->getType();
+
+        if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
+            throw new LogicException(sprintf('Addon "%s": %s listener %s must type the parameter of %s() with a %s hook point.', $this->addonNamespace(), $kind, $fqcn, $method, $kind));
+        }
+
+        /** @var class-string $point */
+        $point = $type->getName();
+        $pointKind = match (true) {
+            is_subclass_of($point, RenderHook::class) => 'render',
+            is_subclass_of($point, FilterHook::class) => 'filter',
+            is_subclass_of($point, GateHook::class)   => 'gate',
+            default                                   => null,
+        };
+
+        if ($pointKind !== $kind) {
+            throw new LogicException(sprintf(
+                'Addon "%s": %s listener %s takes %s in %s(), which is %s.',
+                $this->addonNamespace(),
+                $kind,
+                $fqcn,
+                $point,
+                $method,
+                $pointKind === null ? 'not a hook point' : 'a '.$pointKind.' hook point',
+            ));
+        }
+
+        return $point;
+    }
+
+    /**
+     * Register the policies of `app/Policies`: for the model named by
+     * `#[PolicyFor]`, else for the addon's own model that `{Name}Policy`
+     * matches. A policy that matches no model is skipped with a warning.
+     *
+     * @param list<class-string> $classes
+     */
+    private function registerPolicyClasses(array $classes, string $rootNamespace): void
+    {
+        foreach ($classes as $fqcn) {
+            if (!class_exists($fqcn)) {
+                continue;
+            }
+
+            $class = new ReflectionClass($fqcn);
+
+            if ($class->isAbstract()) {
+                continue;
+            }
+
+            $model = ($class->getAttributes(PolicyFor::class)[0] ?? null)?->newInstance()->model;
+
+            if ($model === null && str_ends_with($class->getShortName(), 'Policy')) {
+                $candidate = $rootNamespace.'\\Models\\'.Str::beforeLast($class->getShortName(), 'Policy');
+                $model = is_subclass_of($candidate, Model::class) ? $candidate : null;
+            }
+
+            if ($model === null) {
+                Log::warning(sprintf('Addon "%s": policy %s matches no model, so it is not registered.', $this->addonNamespace(), $fqcn));
+
+                continue;
+            }
+
+            Gate::policy($model, $fqcn);
         }
     }
 
