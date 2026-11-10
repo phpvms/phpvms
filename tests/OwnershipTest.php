@@ -315,6 +315,15 @@ final class OwnershipTest extends TestCase
         $this->assertSame(0, JournalTransaction::where('ref_model_id', $this->pirep->id)->count());
     }
 
+    public function test_admin_can_read_and_recalculate_another_pilots_finances(): void
+    {
+        $this->pirep->update(['state' => PirepState::ACCEPTED]);
+        $admin = User::find(1);
+
+        $this->get('/api/pireps/'.$this->pirep->id.'/finances', [], $admin)->assertOk();
+        $this->post('/api/pireps/'.$this->pirep->id.'/finances/recalculate', [], [], $admin)->assertOk();
+    }
+
     public function test_owner_cannot_change_or_resubmit_an_accepted_pirep(): void
     {
         $this->pirep->update(['state' => PirepState::ACCEPTED, 'flight_time' => 60]);
