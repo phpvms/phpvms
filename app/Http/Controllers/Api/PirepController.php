@@ -12,6 +12,7 @@ use App\Http\Requests\Acars\CommentRequest;
 use App\Http\Requests\Acars\FieldsRequest;
 use App\Http\Requests\Acars\FileRequest;
 use App\Http\Requests\Acars\OwnPirepRequest;
+use App\Http\Requests\Acars\PirepFinancesRequest;
 use App\Http\Requests\Acars\PrefileRequest;
 use App\Http\Requests\Acars\RouteRequest;
 use App\Http\Requests\Acars\UpdateRequest;
@@ -400,7 +401,7 @@ class PirepController extends Controller
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
-    public function finances_get(string $id, OwnPirepRequest $request): AnonymousResourceCollection
+    public function finances_get(string $id, PirepFinancesRequest $request): AnonymousResourceCollection
     {
         $pirep = Pirep::findOrFail($id);
         $transactions = $this->journalRepo->getAllForObject($pirep);
@@ -414,7 +415,7 @@ class PirepController extends Controller
      * @throws \Exception
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function finances_recalculate(string $id, OwnPirepRequest $request): AnonymousResourceCollection
+    public function finances_recalculate(string $id, PirepFinancesRequest $request): AnonymousResourceCollection
     {
         $pirep = Pirep::findOrFail($id);
 

@@ -7,8 +7,8 @@ use App\Models\Pirep;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Authorizes a body-less PIREP write (cancel, route delete, finance
- * recalculation) for the PIREP's owner only.
+ * Authorizes a body-less PIREP write (cancel, route delete) for the
+ * PIREP's owner only.
  */
 class OwnPirepRequest extends FormRequest
 {
