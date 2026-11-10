@@ -520,6 +520,17 @@ abstract class AddonServiceProvider extends ServiceProvider
     }
 
     /**
+     * Whether a provider class declares its own admin panel by overriding
+     * {@see registerAdminFilamentPanel()}. Read without booting the provider,
+     * so the main admin panel can leave that addon's Filament classes to it.
+     */
+    final public static function declaresAdminPanel(string $provider): bool
+    {
+        return is_subclass_of($provider, self::class)
+            && new ReflectionMethod($provider, 'registerAdminFilamentPanel')->getDeclaringClass()->getName() !== self::class;
+    }
+
+    /**
      * Whether the addon overrides a declaration method, that is, whether the
      * method is declared by a class other than this base.
      */
