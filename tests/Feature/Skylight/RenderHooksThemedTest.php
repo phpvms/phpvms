@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingBidDrawerActions;
-use App\Features\Hooks\Points\RenderingBidRowActions;
+use App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions;
+use App\Features\Hooks\Points\App\Slots\SlotBidRowActions;
 use App\Support\Extensions\Facades\Extensions;
 use Igaster\LaravelTheme\Facades\Theme;
 
 final class ThemedRowActionsListener
 {
-    public function handle(RenderingBidRowActions $hook): void
+    public function handle(SlotBidRowActions $hook): void
     {
         $hook->add(Fill::vue('Foo'), Fill::html('<i>blade</i>'), Fill::vue('Bar', '/ext/bar.js'));
     }
@@ -19,7 +19,7 @@ final class ThemedRowActionsListener
 
 function renderHooksForTheme(): array
 {
-    return [RenderingBidRowActions::forList(), RenderingBidDrawerActions::forList()];
+    return [SlotBidRowActions::forList(), SlotBidDrawerActions::forList()];
 }
 
 it('dispatches no render hook on the Blade path', function (): void {
@@ -33,8 +33,8 @@ it('dispatches no render hook on the Blade path', function (): void {
         return renderHooksForTheme();
     });
 
-    $fake->assertNotDispatched(RenderingBidRowActions::class);
-    $fake->assertNotDispatched(RenderingBidDrawerActions::class);
+    $fake->assertNotDispatched(SlotBidRowActions::class);
+    $fake->assertNotDispatched(SlotBidDrawerActions::class);
 
     expect($built)->toBe(0);
 });
@@ -52,12 +52,12 @@ it('dispatches each render hook once on the SPA path, for the direct and the pre
             return [];
         }
     };
-    response()->themed('Foo', 'flights.bids', $presenter, renderHooks: [RenderingBidRowActions::forList()]);
+    response()->themed('Foo', 'flights.bids', $presenter, renderHooks: [SlotBidRowActions::forList()]);
 
-    $fake->assertDispatched(RenderingBidDrawerActions::class);
+    $fake->assertDispatched(SlotBidDrawerActions::class);
     // Row hook: once on the direct path, once on the presenter path.
     $rows = 0;
-    $fake->assertDispatched(RenderingBidRowActions::class, function () use (&$rows): bool {
+    $fake->assertDispatched(SlotBidRowActions::class, function () use (&$rows): bool {
         $rows++;
 
         return true;
@@ -67,7 +67,7 @@ it('dispatches each render hook once on the SPA path, for the direct and the pre
 
 it("stores the vue fills of a hook's final list in the slots, in list order", function (): void {
     Theme::set('skylight');
-    Hooks::listen(RenderingBidRowActions::class, ThemedRowActionsListener::class);
+    Hooks::listen(SlotBidRowActions::class, ThemedRowActionsListener::class);
 
     response()->themed('Foo', 'flights.bids', spa: [], renderHooks: renderHooksForTheme());
 

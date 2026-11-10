@@ -7,7 +7,7 @@ use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Actions\RemoveBid;
 use App\Features\Hooks\Exceptions\HookDenied;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\PlacingBid;
+use App\Features\Hooks\Points\App\Gates\GatePlacingBid;
 use App\Features\Tour\Models\UserTour;
 use App\Models\Aircraft;
 use App\Models\Airport;
@@ -37,7 +37,7 @@ function bidActionFixture(): array
     return ['user' => $user, 'flight' => $flight, 'aircraft' => $aircraft];
 }
 
-it('places a bid and runs the PlacingBid gate', function (): void {
+it('places a bid and runs the GatePlacingBid gate', function (): void {
     $hooks = Hooks::fake();
     ['user' => $user, 'flight' => $flight, 'aircraft' => $aircraft] = bidActionFixture();
 
@@ -45,11 +45,11 @@ it('places a bid and runs the PlacingBid gate', function (): void {
 
     expect($bid->flight_id)->toBe($flight->id)
         ->and($bid->aircraft_id)->toBe($aircraft->id);
-    $hooks->assertDispatched(PlacingBid::class, fn (PlacingBid $gate): bool => $gate->flight->is($flight) && !$gate->startsTour);
+    $hooks->assertDispatched(GatePlacingBid::class, fn (GatePlacingBid $gate): bool => $gate->flight->is($flight) && !$gate->startsTour);
 });
 
 it('creates no bid when a gate denies it', function (): void {
-    Hooks::fake()->deny(PlacingBid::class, 'Complete your checkride first');
+    Hooks::fake()->deny(GatePlacingBid::class, 'Complete your checkride first');
     ['user' => $user, 'flight' => $flight] = bidActionFixture();
 
     expect(fn () => app(PlaceBid::class)->handle($flight, $user))
@@ -60,7 +60,7 @@ it('creates no bid when a gate denies it', function (): void {
 it('skips the gate when the pilot already holds a bid for the flight', function (): void {
     ['user' => $user, 'flight' => $flight, 'aircraft' => $aircraft] = bidActionFixture();
     $existing = app(PlaceBid::class)->handle($flight, $user);
-    Hooks::fake()->deny(PlacingBid::class, 'One bid at a time');
+    Hooks::fake()->deny(GatePlacingBid::class, 'One bid at a time');
 
     $bid = app(PlaceBid::class)->handle($flight, $user, $aircraft);
 
@@ -69,17 +69,17 @@ it('skips the gate when the pilot already holds a bid for the flight', function 
 });
 
 it('gates a tour start once, before any leg bid is written', function (): void {
-    $hooks = Hooks::fake()->deny(PlacingBid::class, 'No tours today');
+    $hooks = Hooks::fake()->deny(GatePlacingBid::class, 'No tours today');
     ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(3);
 
     expect(fn () => app(PlaceBid::class)->handle($flights[0], $user, $aircraft))->toThrow(HookDenied::class);
     expect(Bid::query()->count())->toBe(0)
         ->and(UserTour::query()->count())->toBe(0);
-    $hooks->assertDispatched(PlacingBid::class, fn (PlacingBid $gate): bool => $gate->startsTour);
+    $hooks->assertDispatched(GatePlacingBid::class, fn (GatePlacingBid $gate): bool => $gate->startsTour);
 });
 
 it('returns a 422 hook-denied response from the web bid endpoint', function (): void {
-    Hooks::fake()->deny(PlacingBid::class, 'Complete your checkride first');
+    Hooks::fake()->deny(GatePlacingBid::class, 'Complete your checkride first');
     ['user' => $user, 'flight' => $flight] = bidActionFixture();
 
     $this->actingAs($user)
@@ -90,7 +90,7 @@ it('returns a 422 hook-denied response from the web bid endpoint', function (): 
 });
 
 it('returns a 422 hook-denied problem from the API bid endpoint', function (): void {
-    Hooks::fake()->deny(PlacingBid::class, 'Complete your checkride first');
+    Hooks::fake()->deny(GatePlacingBid::class, 'Complete your checkride first');
     ['user' => $user, 'flight' => $flight] = bidActionFixture();
     apiAs($user);
 

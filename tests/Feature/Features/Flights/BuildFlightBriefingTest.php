@@ -6,7 +6,7 @@ use App\Enums\BriefingItemKind;
 use App\Enums\BriefingStationRole;
 use App\Features\Flights\Actions\BuildFlightBriefing;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\BuildingFlightBriefing;
+use App\Features\Hooks\Points\App\Filters\FilterBriefingTimeline;
 use App\Http\Data\BriefingTimelineItemData;
 use App\Models\Airport;
 use App\Models\Flight;
@@ -20,7 +20,7 @@ final class AddsBriefingNotice
     /**
      * @return list<BriefingTimelineItemData>
      */
-    public function handle(BuildingFlightBriefing $hook): array
+    public function handle(FilterBriefingTimeline $hook): array
     {
         return [
             ...$hook->value,
@@ -36,7 +36,7 @@ final class AddsBriefingNotice
 
 final class MutatesBriefingItems
 {
-    public function handle(BuildingFlightBriefing $hook): array
+    public function handle(FilterBriefingTimeline $hook): array
     {
         $hook->value[0]->title = 'Changed';
 
@@ -136,9 +136,25 @@ test('an OFP turns TOC and TOD into phases, drops the airports and marks step cl
         ->and($rows->whereIn('anchor', ['OMAA', 'OMDB'])->where('kind', '!=', BriefingItemKind::Station))->toBeEmpty()
         ->and($rows->first(fn (BriefingTimelineItemData $item): bool => $item->anchor === 'LORID')->detail)->toBe('Step climb to FL110')
         ->and($rows->first(fn (BriefingTimelineItemData $item): bool => $item->anchor === 'OBMUK')->detail)->toBeNull()
-        ->and($rows->first(fn (BriefingTimelineItemData $item): bool => $item->anchor === 'TOC')->elapsedMinutes)->toBe(2)
+        ->and($rows->first(fn (BriefingTimelineItemData $item): bool => $item->anchor === 'TOC')->offsetMinutes)->toBe(2)
         ->and($briefing->plannedFixes)->not->toBeEmpty()
         ->and($briefing->ofp->weightUnit)->toBe('kg');
+});
+
+test('departure is at offset 0 and the arrival at the OFP time enroute, else without an offset', function (): void {
+    $user = User::factory()->create();
+    $flight = briefingFlight();
+
+    $stationOffsets = fn (): array => collect(app(BuildFlightBriefing::class)->handle($flight, $user)->timeline)
+        ->whereIn('role', [BriefingStationRole::Departure, BriefingStationRole::Arrival])
+        ->mapWithKeys(fn (BriefingTimelineItemData $item): array => [$item->role->value => $item->offsetMinutes])
+        ->all();
+
+    expect($stationOffsets())->toBe([BriefingStationRole::Departure->value => 0, BriefingStationRole::Arrival->value => null]);
+
+    briefingOfpFor($user, $flight);
+
+    expect($stationOffsets())->toBe([BriefingStationRole::Departure->value => 0, BriefingStationRole::Arrival->value => 37]);
 });
 
 test("another pilot's OFP is not used", function (): void {
@@ -153,7 +169,7 @@ test("another pilot's OFP is not used", function (): void {
 });
 
 test('an addon notice added through the hook is in the result', function (): void {
-    Hooks::listen(BuildingFlightBriefing::class, AddsBriefingNotice::class);
+    Hooks::listen(FilterBriefingTimeline::class, AddsBriefingNotice::class);
 
     $briefing = app(BuildFlightBriefing::class)->handle(briefingFlight(), User::factory()->create());
 
@@ -164,7 +180,7 @@ test('an addon notice added through the hook is in the result', function (): voi
 });
 
 test('a listener cannot change an item in place', function (): void {
-    Hooks::listen(BuildingFlightBriefing::class, MutatesBriefingItems::class);
+    Hooks::listen(FilterBriefingTimeline::class, MutatesBriefingItems::class);
 
     $briefing = app(BuildFlightBriefing::class)->handle(briefingFlight(), User::factory()->create());
 

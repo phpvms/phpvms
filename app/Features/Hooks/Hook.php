@@ -16,7 +16,8 @@ use Illuminate\Support\Str;
 abstract class Hook
 {
     /**
-     * Dotted name for logs and docs, e.g. PlacingBid → "placing-bid".
+     * Dotted name for logs and docs. Defaults to the kebab-case class name;
+     * hook points override it with a stable name, e.g. "bid.placing".
      */
     public static function name(): string
     {

@@ -25,6 +25,7 @@
             @foreach ($menu as $index => $item)
                 <x-vms::shell.topbar-item :item="$item" :key="(string) $index" :active-keys="$activeKeys" />
             @endforeach
+            <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotMenuItems(\App\Features\Hooks\Points\App\Slots\SlotMenuItems::TOPBAR, auth()->user())" />
         </ul>
     </nav>
 
@@ -47,6 +48,7 @@
             @foreach ($menu as $index => $item)
                 <x-vms::shell.topbar-item :item="$item" :key="(string) $index" :active-keys="$activeKeys" mobile />
             @endforeach
+            <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotMenuItems(\App\Features\Hooks\Points\App\Slots\SlotMenuItems::TOPBAR_MOBILE, auth()->user())" />
         </ul>
     </nav>
 </x-ts-slide>

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingPirepDetail;
+use App\Features\Hooks\Points\App\Slots\SlotPirepDetail;
 use App\Models\Pirep;
 use Composer\Autoload\ClassLoader;
 use PhpvmsAddonFixture\Hooks\Briefing\AcmePirepFillListener;
@@ -18,10 +18,10 @@ it('routes an addon render hook listener to the hook dispatcher', function (): v
 
     // Other installed addons (the symlinked acars plugin on a dev machine) may
     // listen on the same point, so look for the fixture's listener and fill only.
-    expect(collect(Hooks::listenersFor(RenderingPirepDetail::class))->pluck('listener')->all())
+    expect(collect(Hooks::listenersFor(SlotPirepDetail::class))->pluck('listener')->all())
         ->toContain(AcmePirepFillListener::class);
 
-    $fills = collect(Hooks::filter(new RenderingPirepDetail(new Pirep())))
+    $fills = collect(Hooks::filter(new SlotPirepDetail(new Pirep())))
         ->filter(fn (Fill $fill): bool => $fill->kind === 'html' && str_contains((string) $fill->html, 'data-acme-fill'));
 
     expect($fills)->toHaveCount(1);

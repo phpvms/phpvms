@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points;
+namespace App\Features\Hooks\Points\App\Slots;
 
 use App\Features\Hooks\RenderHook;
 use App\Http\Data\FlightDispatchPolicyData;
@@ -22,7 +22,7 @@ use App\Models\User;
  * `forList()` is the form used where no single flight exists yet: `$flight` is
  * null and `isList()` is true.
  */
-final class RenderingFlightActions extends RenderHook
+final class SlotFlightActions extends RenderHook
 {
     public function __construct(
         public readonly ?FlightListItemData $flight,

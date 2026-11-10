@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points;
+namespace App\Features\Hooks\Points\App\Slots;
 
 use App\Features\Hooks\RenderHook;
 use App\Http\Data\ProfileData;
@@ -12,7 +12,7 @@ use App\Http\Data\ProfileData;
  *
  * `$profile` is the profile DTO, including `isOwnProfile`.
  */
-final class RenderingProfileCards extends RenderHook
+final class SlotProfileCards extends RenderHook
 {
     public function __construct(public readonly ProfileData $profile)
     {

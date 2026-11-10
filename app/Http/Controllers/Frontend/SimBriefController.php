@@ -9,7 +9,7 @@ use App\Enums\AirframeSource;
 use App\Enums\FareType;
 use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
-use App\Features\Hooks\Points\RenderingBriefingActions;
+use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\OFPPlanningSelectionData;
@@ -618,7 +618,7 @@ class SimBriefController
             'ofp.briefing',
             spa: fn (): array => ['briefing' => $briefingData()],
             renderHooks: fn (): array => [
-                new RenderingBriefingActions(
+                new SlotBriefingActions(
                     $briefingData()->flight,
                     $briefingData()->bid,
                     $briefingData(),

@@ -66,7 +66,7 @@
                 <x-ts-button :href="route('frontend.ofp.planning', ['bid_id' => $row->bid->id])" wire:navigate sm outline>Generate OFP</x-ts-button>
             @endif
 
-            <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingBidRowActions($row->bid, $row->flight)" />
+            <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotBidRowActions($row->bid, $row->flight)" />
         </div>
     </x-slot:footer>
 </x-ts-card>

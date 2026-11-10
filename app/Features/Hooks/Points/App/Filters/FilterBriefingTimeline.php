@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points;
+namespace App\Features\Hooks\Points\App\Filters;
 
 use App\Features\Hooks\FilterHook;
 use App\Http\Data\BriefingTimelineItemData;
@@ -15,9 +15,10 @@ use App\Models\User;
  *
  * A listener receives `$hook->value`, the current list of
  * `BriefingTimelineItemData`, and returns the new list. Core renders every item
- * it gets back. A notice attaches under the first non-notice row with the same
- * `anchor`; a notice with no match goes under the departure station. Non-notice
- * rows keep the order of the list. A result that is not a list of
+ * it gets back, placed by `offsetMinutes`, the offset in minutes from
+ * departure (0): set it to 42 to show an item at +0:42. Items with the same
+ * offset stack, in list order. Items without one follow the timed items, in
+ * list order. A result that is not a list of
  * `BriefingTimelineItemData` is dropped and the previous list stays.
  *
  * Items are immutable: build a new item to change one. A station row from an
@@ -25,7 +26,7 @@ use App\Models\User;
  *
  * `$briefing` is the pilot's own OFP for this flight, or null before one exists.
  */
-final class BuildingFlightBriefing extends FilterHook
+final class FilterBriefingTimeline extends FilterHook
 {
     /**
      * @param list<BriefingTimelineItemData> $items

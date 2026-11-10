@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points;
+namespace App\Features\Hooks\Points\App\Slots;
 
 use App\Features\Hooks\RenderHook;
 use App\Http\Data\BidData;
@@ -15,7 +15,7 @@ use App\Http\Data\SimBriefBriefingData;
  * OFP lifecycle buttons. The values are the DTOs the briefing page holds; `$flight`,
  * `$bid` and `$aircraft` are the briefing's own.
  */
-final class RenderingBriefingActions extends RenderHook
+final class SlotBriefingActions extends RenderHook
 {
     public function __construct(
         public readonly FlightDetailData $flight,

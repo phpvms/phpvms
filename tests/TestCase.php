@@ -89,9 +89,10 @@ abstract class TestCase extends BaseTestCase
     private function addonUnderTest(): ?string
     {
         // Pest declares the test file on each generated test class.
-        $file = property_exists(static::class, '__filename')
-            ? (string) static::$__filename
-            : (string) new ReflectionClass(static::class)->getFileName();
+        $reflection = new ReflectionClass(static::class);
+        $file = $reflection->hasProperty('__filename')
+            ? (string) $reflection->getStaticPropertyValue('__filename')
+            : (string) $reflection->getFileName();
 
         $core = realpath(dirname(__DIR__));
         $directory = realpath(dirname($file));

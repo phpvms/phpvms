@@ -10,10 +10,10 @@ use App\Features\Flights\Livewire\FlightActions;
 use App\Features\Flights\Livewire\FlightManifest;
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingBidDrawerActions;
-use App\Features\Hooks\Points\RenderingBidRowActions;
-use App\Features\Hooks\Points\RenderingFlightActions;
-use App\Features\Hooks\Points\RenderingFlightRowActions;
+use App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions;
+use App\Features\Hooks\Points\App\Slots\SlotBidRowActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightRowActions;
 use App\Models\Bid;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
@@ -23,7 +23,7 @@ use Livewire\Livewire;
  */
 final class FlightsProbeRow
 {
-    public function handle(RenderingFlightRowActions $hook): void
+    public function handle(SlotFlightRowActions $hook): void
     {
         $hook->add(Fill::view('flightsprobe::probe', ['flight' => $hook->flight, 'policy' => $hook->policy]));
     }
@@ -31,7 +31,7 @@ final class FlightsProbeRow
 
 final class FlightsProbeDetail
 {
-    public function handle(RenderingFlightActions $hook): void
+    public function handle(SlotFlightActions $hook): void
     {
         $hook->add(Fill::view('flightsprobe::probe', ['flight' => $hook->flight, 'policy' => $hook->policy]));
     }
@@ -39,7 +39,7 @@ final class FlightsProbeDetail
 
 final class FlightsProbeBidRow
 {
-    public function handle(RenderingBidRowActions $hook): void
+    public function handle(SlotBidRowActions $hook): void
     {
         $hook->add(Fill::view('flightsprobe::probe', ['flight' => $hook->flight, 'bid' => $hook->bid]));
     }
@@ -47,7 +47,7 @@ final class FlightsProbeBidRow
 
 final class FlightsProbeBidDrawer
 {
-    public function handle(RenderingBidDrawerActions $hook): void
+    public function handle(SlotBidDrawerActions $hook): void
     {
         $hook->add(Fill::view('flightsprobe::probe', ['bid' => $hook->bid, 'selection' => $hook->selection]));
     }
@@ -61,10 +61,10 @@ beforeEach(function (): void {
     $this->fixture = airsideDispatchFixture();
     $this->actingAs($this->fixture['user']);
 
-    Hooks::listen(RenderingFlightRowActions::class, FlightsProbeRow::class);
-    Hooks::listen(RenderingFlightActions::class, FlightsProbeDetail::class);
-    Hooks::listen(RenderingBidRowActions::class, FlightsProbeBidRow::class);
-    Hooks::listen(RenderingBidDrawerActions::class, FlightsProbeBidDrawer::class);
+    Hooks::listen(SlotFlightRowActions::class, FlightsProbeRow::class);
+    Hooks::listen(SlotFlightActions::class, FlightsProbeDetail::class);
+    Hooks::listen(SlotBidRowActions::class, FlightsProbeBidRow::class);
+    Hooks::listen(SlotBidDrawerActions::class, FlightsProbeBidDrawer::class);
 });
 
 it('fills flights.row.actions and flights.detail.actions on the manifest with flight and policy', function (): void {

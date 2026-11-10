@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
-use App\Features\Hooks\Points\RenderingProfileCards;
+use App\Features\Hooks\Points\App\Slots\SlotProfileCards;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Features\Profile\Actions\CreatePersonalToken;
@@ -157,7 +157,7 @@ class ProfileController extends Controller
                         : null,
                 ),
             ],
-            renderHooks: fn (): array => [new RenderingProfileCards($profile())],
+            renderHooks: fn (): array => [new SlotProfileCards($profile())],
         );
     }
 

@@ -7,7 +7,7 @@ use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Support\AddonQuarantine;
 use App\Addons\Support\BootCache;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\RenderingFlightActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
 use App\Models\Addon;
 use App\Models\Pirep;
 use App\Models\User;
@@ -64,12 +64,12 @@ namespace {$namespace};
 
 use App\Contracts\Addons\Attributes\AddonListener;
 use App\Features\Hooks\Listeners\RenderListener;
-use App\Features\Hooks\Points\RenderingFlightActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
 
 #[AddonListener]
 class {$name} extends RenderListener
 {
-    public function render(RenderingFlightActions \$hook): void {}
+    public function render(SlotFlightActions \$hook): void {}
 }
 PHP;
 }
@@ -102,7 +102,7 @@ it('registers event and hook listeners from subfolders', function (): void {
     app()->register($addon['provider']);
 
     expect(Event::getListeners($addon['ns'].'\\Events\\Ping'))->not->toBeEmpty()
-        ->and(discoveryListeners(RenderingFlightActions::class))->toContain($addon['ns'].'\\Hooks\\Briefing\\FlightRender');
+        ->and(discoveryListeners(SlotFlightActions::class))->toContain($addon['ns'].'\\Hooks\\Briefing\\FlightRender');
 });
 
 it('skips a class whose name does not match its file, with a warning, and ignores function files', function (): void {
@@ -114,7 +114,7 @@ it('skips a class whose name does not match its file, with a warning, and ignore
 
     app()->register($addon['provider']);
 
-    expect(discoveryListeners(RenderingFlightActions::class))->not->toContain($addon['ns'].'\\Hooks\\OnAccepted');
+    expect(discoveryListeners(SlotFlightActions::class))->not->toContain($addon['ns'].'\\Hooks\\OnAccepted');
     Log::shouldHaveReceived('warning')
         ->withArgs(fn (string $message): bool => str_contains($message, 'accepted.php') && str_contains($message, 'OnAccepted'))
         ->once();
@@ -129,7 +129,7 @@ it('does not register a scanned listener without #[AddonListener]', function ():
 
     app()->register($addon['provider']);
 
-    expect(discoveryListeners(RenderingFlightActions::class))->not->toContain($addon['ns'].'\\Hooks\\Bare');
+    expect(discoveryListeners(SlotFlightActions::class))->not->toContain($addon['ns'].'\\Hooks\\Bare');
     Log::shouldHaveReceived('warning')
         ->withArgs(fn (string $message): bool => str_contains($message, $addon['ns'].'\\Hooks\\Bare') && str_contains($message, 'lacks #[AddonListener]'))
         ->once();
@@ -137,7 +137,7 @@ it('does not register a scanned listener without #[AddonListener]', function ():
 
 it('quarantines an addon whose listener breaks the hook directory rules', function (string $path, string $namespace, string $class, string $source, string $expected): void {
     Log::spy();
-    $addon = makeDiscoveryAddon($this, [$path => "<?php\nnamespace {NS}\\{$namespace};\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Listeners\\FilterListener;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Features\\Hooks\\Points\\PlacingBid;\nuse App\\Features\\Hooks\\Points\\RenderingFlightActions;\nuse App\\Events\\PirepAccepted;\n#[AddonListener]\n{$source}"]);
+    $addon = makeDiscoveryAddon($this, [$path => "<?php\nnamespace {NS}\\{$namespace};\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Listeners\\FilterListener;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Features\\Hooks\\Points\\App\\Gates\\GatePlacingBid;\nuse App\\Features\\Hooks\\Points\\App\\Slots\\SlotFlightActions;\nuse App\\Events\\PirepAccepted;\n#[AddonListener]\n{$source}"]);
 
     app()->register($addon['provider']);
 
@@ -145,13 +145,13 @@ it('quarantines an addon whose listener breaks the hook directory rules', functi
         ->withArgs(fn (string $message): bool => str_contains($message, 'quarantined') && str_contains($message, $addon['ns'].'\\'.$namespace.'\\'.$class) && str_contains($message, $expected))
         ->once();
 })->with([
-    'no base class'          => ['Hooks/Plain.php', 'Hooks', 'Plain', 'class Plain { public function handle(RenderingFlightActions $hook): void {} }', 'must extend'],
+    'no base class'          => ['Hooks/Plain.php', 'Hooks', 'Plain', 'class Plain { public function handle(SlotFlightActions $hook): void {} }', 'must extend'],
     'missing kind method'    => ['Hooks/NoCheck.php', 'Hooks', 'NoCheck', 'class NoCheck extends GateListener {}', 'defines no check() method'],
-    'gate point on filter'   => ['Hooks/Mismatch.php', 'Hooks', 'Mismatch', 'class Mismatch extends FilterListener { public function filter(PlacingBid $hook): mixed { return null; } }', 'a gate hook point'],
-    'render point on filter' => ['Hooks/OnRender.php', 'Hooks', 'OnRender', 'class OnRender extends FilterListener { public function filter(RenderingFlightActions $hook): mixed { return null; } }', 'a render hook point'],
-    'hook left in Listeners' => ['Listeners/Left.php', 'Listeners', 'Left', 'class Left { public function handle(RenderingFlightActions $hook): void {} }', 'Move it to app/Hooks'],
+    'gate point on filter'   => ['Hooks/Mismatch.php', 'Hooks', 'Mismatch', 'class Mismatch extends FilterListener { public function filter(GatePlacingBid $hook): mixed { return null; } }', 'a gate hook point'],
+    'render point on filter' => ['Hooks/OnRender.php', 'Hooks', 'OnRender', 'class OnRender extends FilterListener { public function filter(SlotFlightActions $hook): mixed { return null; } }', 'a render hook point'],
+    'hook left in Listeners' => ['Listeners/Left.php', 'Listeners', 'Left', 'class Left { public function handle(SlotFlightActions $hook): void {} }', 'Move it to app/Hooks'],
     'event in Hooks'         => ['Hooks/OnAccepted.php', 'Hooks', 'OnAccepted', 'class OnAccepted { public function handle(PirepAccepted $event): void {} }', 'Move it to app/Listeners'],
-    'extra required param'   => ['Hooks/TwoArgs.php', 'Hooks', 'TwoArgs', 'class TwoArgs extends GateListener { public function check(PlacingBid $hook, string $reason): void {} }', 'must take only the hook point'],
+    'extra required param'   => ['Hooks/TwoArgs.php', 'Hooks', 'TwoArgs', 'class TwoArgs extends GateListener { public function check(GatePlacingBid $hook, string $reason): void {} }', 'must take only the hook point'],
 ]);
 
 it('quarantines instead of failing the boot when addon attributes are invalid', function (string $path, string $source): void {
@@ -164,7 +164,7 @@ it('quarantines instead of failing the boot when addon attributes are invalid', 
         ->withArgs(fn (string $message): bool => str_contains($message, 'quarantined'))
         ->once();
 })->with([
-    'bad hook priority'    => ['Hooks/BadPriority.php', "<?php\nnamespace {NS}\\Hooks;\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Attributes\\HookPriority;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Features\\Hooks\\Points\\PlacingBid;\n#[AddonListener]\n#[HookPriority('high')]\nclass BadPriority extends GateListener { public function check(PlacingBid \$hook): void {} }"],
+    'bad hook priority'    => ['Hooks/BadPriority.php', "<?php\nnamespace {NS}\\Hooks;\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Attributes\\HookPriority;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Features\\Hooks\\Points\\App\\Gates\\GatePlacingBid;\n#[AddonListener]\n#[HookPriority('high')]\nclass BadPriority extends GateListener { public function check(GatePlacingBid \$hook): void {} }"],
     'policy with no model' => ['Policies/EmptyPolicy.php', "<?php\nnamespace {NS}\\Policies;\nuse App\\Contracts\\Addons\\Attributes\\PolicyFor;\n#[PolicyFor]\nclass EmptyPolicy {}"],
 ]);
 
@@ -249,7 +249,7 @@ it('boots from the saved lists outside local and scans live in local or without 
 
     app()->register($addon['provider']);
 
-    $listeners = discoveryListeners(RenderingFlightActions::class);
+    $listeners = discoveryListeners(SlotFlightActions::class);
 
     expect($listeners)->toContain($addon['ns'].'\\Hooks\\FlightRender')
         ->and(in_array($addon['ns'].'\\Hooks\\LateRender', $listeners, true))->toBe($seesLateClass);

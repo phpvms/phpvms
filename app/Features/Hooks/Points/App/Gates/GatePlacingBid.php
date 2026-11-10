@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points;
+namespace App\Features\Hooks\Points\App\Gates;
 
 use App\Features\Hooks\GateHook;
 use App\Models\Aircraft;
@@ -16,7 +16,7 @@ use App\Models\User;
  * never holds them. An addon can only add a reason to refuse; core's rules
  * (bid limit, conflicts, aircraft eligibility) still apply afterwards.
  */
-final class PlacingBid extends GateHook
+final class GatePlacingBid extends GateHook
 {
     public function __construct(
         public readonly User $user,

@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points;
+namespace App\Features\Hooks\Points\App\Slots;
 
 use App\Features\Hooks\RenderHook;
 use App\Http\Data\BidData;
-use App\Http\Data\FlightListItemData;
+use App\Http\Data\BidSelectionData;
 
 /**
- * Render hook for the per-row action cell of a bid card on the My Bids page.
+ * Render hook for the My Bids drawer, overview tab, next to the OFP action.
  *
- * `forList()` is the form used where no single row exists: `$bid` and
- * `$flight` are null and `isList()` is true.
+ * `$selection` is the selected bid row. `forList()` is the form used where no
+ * single bid exists: `$bid` and `$selection` are null and `isList()` is true.
  */
-final class RenderingBidRowActions extends RenderHook
+final class SlotBidDrawerActions extends RenderHook
 {
     public function __construct(
         public readonly ?BidData $bid,
-        public readonly ?FlightListItemData $flight,
+        public readonly ?BidSelectionData $selection,
     ) {
         parent::__construct();
     }
@@ -35,6 +35,6 @@ final class RenderingBidRowActions extends RenderHook
 
     public static function name(): string
     {
-        return 'bids.row.actions';
+        return 'bids.drawer.overview.actions';
     }
 }

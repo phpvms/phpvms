@@ -62,7 +62,7 @@
                     <x-vms::bids.aircraft-card label="Aircraft" :aircraft="$selection->aircraft" />
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingBidDrawerActions($selection->bid, $selection)" />
+                        <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions($selection->bid, $selection)" />
                         @if ($selection->ofpGenerated && $selection->ofpUrl)
                             <x-ts-button :href="$selection->ofpUrl" wire:navigate>View OFP</x-ts-button>
                         @elseif ($selection->policy->simbriefEnabled && $selection->ofpPlanningUrl)

@@ -16,5 +16,5 @@
         <a href="{{ $flight->ofpPlanningUrl }}" wire:navigate class="text-xs font-semibold hover:underline">Generate OFP</a>
     @endif
 
-    <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingFlightActions($flight->summary, $policy, auth()->user(), $this->detail['bid'], null)" />
+    <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotFlightActions($flight->summary, $policy, auth()->user(), $this->detail['bid'], null)" />
 </div>

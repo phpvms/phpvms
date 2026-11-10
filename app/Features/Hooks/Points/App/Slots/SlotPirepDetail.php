@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points;
+namespace App\Features\Hooks\Points\App\Slots;
 
 use App\Features\Hooks\RenderHook;
 use App\Models\Pirep;
@@ -11,7 +11,7 @@ use App\Models\Pirep;
  * Render hook for the PIREP detail page, full-width below the two-column
  * detail grid.
  */
-final class RenderingPirepDetail extends RenderHook
+final class SlotPirepDetail extends RenderHook
 {
     public function __construct(public readonly Pirep $pirep)
     {

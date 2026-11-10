@@ -7,7 +7,7 @@ require_once __DIR__.'/Support.php';
 use App\Enums\AircraftStatus;
 use App\Features\Bids\Livewire\AssignmentDrawer;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\PlacingBid;
+use App\Features\Hooks\Points\App\Gates\GatePlacingBid;
 use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Flight;
@@ -185,7 +185,7 @@ it('reports a stale aircraft that is no longer eligible and clears it', function
 });
 
 it('reports a bid an addon gate denies', function (): void {
-    Hooks::fake()->deny(PlacingBid::class, 'Complete your checkride first');
+    Hooks::fake()->deny(GatePlacingBid::class, 'Complete your checkride first');
 
     openDrawer($this->fixture['flight']->id)
         ->call('submit')

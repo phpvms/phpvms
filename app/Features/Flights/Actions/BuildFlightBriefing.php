@@ -7,7 +7,7 @@ namespace App\Features\Flights\Actions;
 use App\Enums\BriefingItemKind;
 use App\Enums\BriefingStationRole;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\BuildingFlightBriefing;
+use App\Features\Hooks\Points\App\Filters\FilterBriefingTimeline;
 use App\Http\Data\BriefingTimelineItemData;
 use App\Http\Data\FlightBriefingData;
 use App\Http\Data\FlightBriefingOfpData;
@@ -22,7 +22,10 @@ use App\Support\Dto\SimBriefOfp\SimBriefOfpNavlog;
 
 /**
  * Build the pilot's briefing for a flight: a timeline of stations, route and
- * fixes, open to addon notices through the `BuildingFlightBriefing` filter.
+ * fixes, open to addon notices through the `FilterBriefingTimeline` filter.
+ *
+ * Departure is at offset 0. Fixes carry their OFP elapsed time, and the arrival
+ * the OFP's time enroute; without an OFP the rows after departure have none.
  *
  * Only the pilot's own OFP is used. The alternate comes from the flight, and
  * from the OFP when the flight has none.
@@ -43,9 +46,14 @@ final readonly class BuildFlightBriefing
         $ofp = $briefing?->ofp;
 
         $items = [
-            $this->station($flight->dpt_airport, $flight->dpt_airport_id, BriefingStationRole::Departure),
+            $this->station($flight->dpt_airport, $flight->dpt_airport_id, BriefingStationRole::Departure, 0),
             ...($ofp instanceof SimBriefOfp ? $this->fixes($ofp) : $this->routeRow($flight)),
-            $this->station($flight->arr_airport, $flight->arr_airport_id, BriefingStationRole::Arrival),
+            $this->station(
+                $flight->arr_airport,
+                $flight->arr_airport_id,
+                BriefingStationRole::Arrival,
+                $ofp instanceof SimBriefOfp ? $this->minutes($ofp->times->est_time_enroute) : null,
+            ),
         ];
 
         $alternate = $this->alternate($flight, $ofp);
@@ -54,7 +62,7 @@ final readonly class BuildFlightBriefing
         }
 
         /** @var list<BriefingTimelineItemData> $timeline */
-        $timeline = Hooks::filter(new BuildingFlightBriefing($flight, $user, $briefing, $items));
+        $timeline = Hooks::filter(new FilterBriefingTimeline($flight, $user, $briefing, $items));
 
         return new FlightBriefingData(
             timeline: $timeline,
@@ -63,13 +71,14 @@ final readonly class BuildFlightBriefing
         );
     }
 
-    private function station(?Airport $airport, ?string $icao, BriefingStationRole $role): BriefingTimelineItemData
+    private function station(?Airport $airport, ?string $icao, BriefingStationRole $role, ?int $offsetMinutes = null): BriefingTimelineItemData
     {
         return new BriefingTimelineItemData(
             kind: BriefingItemKind::Station,
             anchor: $icao,
             title: filled($airport?->name) ? $airport->name : (string) $icao,
             detail: $role->getLabel(),
+            offsetMinutes: $offsetMinutes,
             role: $role,
         );
     }
@@ -152,7 +161,7 @@ final readonly class BuildFlightBriefing
                     default => $fix->ident,
                 },
                 detail: $detail,
-                elapsedMinutes: $this->minutes($fix->time_total),
+                offsetMinutes: $this->minutes($fix->time_total),
                 altitudeFt: $fix->altitude_feet,
                 viaAirway: filled($fix->via_airway) ? $fix->via_airway : null,
             );
