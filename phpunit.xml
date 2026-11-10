@@ -32,6 +32,7 @@
         <env name="BCRYPT_ROUNDS" value="4" force="true"/>
         <env name="BROADCAST_CONNECTION" value="null" force="true"/>
         <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="SETTINGS_CACHE_ENABLED" value="false" force="true"/>
         <!-- Pin the addon-manager registry cache to the (array) test store too,
              so it stays flushable/isolated instead of falling back to file. -->
         <env name="ADDON_REGISTRY_CACHE_STORE" value="array" force="true"/>
