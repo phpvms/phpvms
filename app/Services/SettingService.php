@@ -6,129 +6,62 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Exceptions\SettingNotFound;
-use App\Models\Setting;
-use App\Services\Concerns\CastsSettingValue;
-use App\Support\Branding;
 use App\Support\RenamedSettings;
-use Illuminate\Support\Facades\Cache;
+use App\Support\Settings\SettingDefinition;
+use App\Support\Settings\SettingsRegistry;
+use App\Support\Settings\SettingsWriter;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
+use Spatie\LaravelSettings\Settings;
 
 /**
- * Read/write access to application settings stored in the `settings` table.
+ * Key-addressed access to the core settings classes in App\Settings.
  *
- * Replaces the deleted SettingRepository. Owns:
- *   - retrieve(): typed read of a single setting (throws SettingNotFound on miss)
- *   - store():    update an existing setting; ALSO invalidates the per-key
- *                 cache slot under `cache.keys.SETTINGS` so the `setting()`
- *                 global helper observes the new value on the next read
- *   - save():     alias for store() that returns the value (mirrors the deleted repo's API)
- *
- * The 60-second CacheableRepository layer that the old repo inherited is
- * intentionally not preserved — the only path doing many reads is the
- * `setting()` helper, which has its own application cache (every environment
- * except `testing`).
- *
- * Tier-1 memo: $memo caches resolved values for the duration of one request
- * (keyed by the formatted setting id). The service is bound as a singleton
- * and registered in config/octane.php 'flush' so Octane discards the instance
- * (and its memo) before every new request.
+ * The `setting()` / `setting_save()` helpers and code that only knows a
+ * setting's `group.name` key go through here; code that knows the group can
+ * resolve the settings class from the container instead and read the typed
+ * property. Both see the same instance, which the package binds per request
+ * and per queued job, and caches across requests.
  */
 class SettingService extends Service
 {
-    use CastsSettingValue;
-
-    /** @var array<string, mixed> Per-request in-process memo, keyed by formatted setting id. */
-    private array $memo = [];
+    public function __construct(
+        private readonly SettingsRegistry $registry,
+        private readonly SettingsWriter $writer,
+    ) {}
 
     /**
-     * Retrieve a typed setting value.
+     * The value of a setting, as the helpers hand it out: typed, with an enum
+     * as its backing value.
      *
-     * Resolved values are memoized in $memo for the lifetime of the current
-     * request so repeated reads of the same key hit the source at most once.
-     *
-     * @throws SettingNotFound when the key has no row in `settings`.
+     * @throws SettingNotFound when no settings class declares the key
      */
     public function retrieve(string $key): mixed
     {
-        $key = Setting::formatKey(RenamedSettings::resolve($key));
+        $definition = $this->definition($key) ?? throw new SettingNotFound($key.' not found');
 
-        if (array_key_exists($key, $this->memo)) {
-            return $this->memo[$key];
-        }
-
-        $setting = Setting::where('id', $key)->first(['type', 'value']);
-
-        if ($setting === null) {
-            throw new SettingNotFound($key.' not found');
-        }
-
-        return $this->memo[$key] = $this->castSettingValue($setting->type, $setting->value);
+        return $definition->present($this->instance($definition)->{$definition->name});
     }
 
     /**
-     * The memoized value of a setting, or $resolve's result memoized for the
-     * rest of the request.
+     * Save a setting. Returns the value on success, or null when the key is
+     * unknown or the value is null (nothing is created or written then).
      *
-     * The `setting()` helper resolves through the application cache in
-     * every environment except `testing`. Without this, every call is a cache round trip even after
-     * the first one: an API response that converts the units of thousands of
-     * aircraft read `units.weight` from the cache thousands of times.
-     */
-    public function remember(string $key, callable $resolve): mixed
-    {
-        $formattedKey = Setting::formatKey(RenamedSettings::resolve($key));
-
-        if (array_key_exists($formattedKey, $this->memo)) {
-            return $this->memo[$formattedKey];
-        }
-
-        return $this->memo[$formattedKey] = $resolve();
-    }
-
-    /**
-     * Update an existing setting. Returns the value on success, null when
-     * the key does not exist OR when the caller passes a null $value
-     * (does not insert new settings — these are seeded by migrations).
-     *
-     * Saving through the model fires SettingObserver, which drops the
-     * cached value (see {@see forgetCached()}) so the `setting()` helper
-     * observes the new value; the explicit call below keeps that true when
-     * model events are muted.
+     * @throws ValidationException when the value cannot represent the setting's type
      */
     public function store(string $key, mixed $value): mixed
     {
-        $key = RenamedSettings::resolve($key);
-
-        if ($key === 'bids.expire_time' && $value !== null && (int) $value < 0) {
-            throw ValidationException::withMessages([
-                'bids.expire_time' => 'Bid expiry cannot be negative.',
-            ]);
-        }
-
-        $formattedKey = Setting::formatKey($key);
-
-        $setting = Setting::where('id', $formattedKey)->first(['id', 'value']);
-
-        if ($setting === null) {
+        if ($value === null || !$this->definition($key) instanceof SettingDefinition) {
             return null;
         }
 
-        if (is_bool($value)) {
-            $value = $value ? 1 : 0;
-        }
+        $this->storeMany([$key => $value]);
 
-        if ($value !== null) {
-            $setting->value = (string) $value;
-            $setting->save();
-
-            $this->forgetCached($formattedKey);
-        }
-
-        return $value;
+        return is_bool($value) ? (int) $value : $value;
     }
 
     /**
-     * Alias for store(). Mirrors the deleted SettingRepository::save().
+     * Alias for store().
      */
     public function save(string $key, mixed $value): mixed
     {
@@ -136,35 +69,48 @@ class SettingService extends Service
     }
 
     /**
-     * Clear all memoized values. Called at request/job boundaries that the
-     * Octane 'flush' does not cover (AppServiceProvider's Queue::before hook)
-     * and after raw settings writes that bypass store() (YamlDatabaseService).
+     * Save several settings, writing each affected group once, in one
+     * transaction. Unknown keys are skipped, and so are null values unless
+     * `$skipNull` is false (a cleared form field then clears a string or date).
+     *
+     * @param array<string, mixed> $values keyed by `group.name`
+     *
+     * @throws ValidationException when a value cannot represent its setting's type
      */
-    public function clearMemo(): void
+    public function storeMany(array $values, bool $skipNull = true): void
     {
-        $this->memo = [];
+        /** @var array<class-string<Settings>, array<string, mixed>> $byClass */
+        $byClass = [];
+
+        foreach ($values as $key => $value) {
+            $definition = $this->definition((string) $key);
+
+            if (!$definition instanceof SettingDefinition || ($value === null && $skipNull)) {
+                continue;
+            }
+
+            try {
+                $byClass[$definition->class][$definition->name] = $definition->cast($value);
+            } catch (InvalidArgumentException $exception) {
+                throw ValidationException::withMessages([$definition->key => $exception->getMessage()]);
+            }
+        }
+
+        if ($byClass !== []) {
+            $this->writer->write($byClass);
+        }
     }
 
     /**
-     * Drop every copy of one setting this request could serve: the request
-     * memo, the shared cache entry the `setting()` helper keeps, and the
-     * branding cache when the key feeds it. Keyed by the formatted key, so
-     * writes that bypass store() (SettingObserver, YAML import) can bust it
-     * by row id.
+     * The definition of a core setting, with renamed keys resolved.
      */
-    public function forgetCached(string $key): void
+    public function definition(string $key): ?SettingDefinition
     {
-        $formattedKey = Setting::formatKey($key);
+        return $this->registry->find(RenamedSettings::resolve($key));
+    }
 
-        unset($this->memo[$formattedKey]);
-
-        $cache = config('cache.keys.SETTINGS');
-        if (is_array($cache) && isset($cache['key'])) {
-            Cache::forget($cache['key'].$formattedKey);
-        }
-
-        if (in_array($formattedKey, Branding::SETTING_KEYS, true)) {
-            Branding::flush();
-        }
+    private function instance(SettingDefinition $definition): Settings
+    {
+        return app($definition->class);
     }
 }

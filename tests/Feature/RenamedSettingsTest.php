@@ -2,16 +2,29 @@
 
 declare(strict_types=1);
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use App\Services\SettingService;
-use Database\Seeders\SettingsSeeder;
-use Illuminate\Support\Facades\Cache;
+use App\Support\Settings\LegacySettingsCopier;
+use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Settings moved to another key stay reachable through their old key, and the
  * data migration moves existing rows without losing the operator's value.
+ *
+ * The data migrations run against `settings_backup`, the settings table as it
+ * was before typed settings; the helpers read the current settings tables.
  */
+
+/** The stored, decoded payload of a current setting row, or null. */
+function storedPayload(string $key): mixed
+{
+    [$group, $name] = explode('.', $key, 2);
+    $payload = DB::table('settings')->where('group', $group)->where('name', $name)->value('payload');
+
+    return $payload === null ? null : json_decode((string) $payload, true);
+}
+
 function airportSettingsMigration(): object
 {
     return require base_path('database/migrations_data/2026_11_05_000000_move_airport_settings_to_airports_group.php');
@@ -20,31 +33,29 @@ function airportSettingsMigration(): object
 /** Put the DB in the pre-upgrade shape: only the old rows exist. */
 function seedOldAirportRows(string $lookup, string $unadded): void
 {
-    Setting::whereIn('id', ['airports_auto_airport_lookup', 'airports_allow_unadded_airports'])->delete();
-    Setting::where('id', 'general_auto_airport_lookup')->delete();
-    Setting::where('id', 'general_allow_unadded_airports')->delete();
+    LegacySetting::whereIn('id', ['airports_auto_airport_lookup', 'airports_allow_unadded_airports'])->delete();
+    LegacySetting::where('id', 'general_auto_airport_lookup')->delete();
+    LegacySetting::where('id', 'general_allow_unadded_airports')->delete();
 
     foreach ([
         'general.auto_airport_lookup'    => $lookup,
         'general.allow_unadded_airports' => $unadded,
     ] as $key => $value) {
-        $row = new Setting([
+        $row = new LegacySetting([
             'name'  => $key,
             'key'   => $key,
             'value' => $value,
             'group' => 'general',
             'type'  => 'boolean',
         ]);
-        $row->id = Setting::formatKey($key);
+        $row->id = LegacySetting::formatKey($key);
         $row->save();
     }
 
-    app(SettingService::class)->clearMemo();
 }
 
 it('reads the new key through the old key', function (): void {
     app(SettingService::class)->store('airports.auto_airport_lookup', false);
-    app(SettingService::class)->clearMemo();
 
     expect(setting('general.auto_airport_lookup'))->toBeFalsy();
 
@@ -56,7 +67,7 @@ it('reads the new key through the old key', function (): void {
 it('writes through the old key into the new row', function (): void {
     setting_save('general.allow_unadded_airports', true);
 
-    expect(Setting::find('airports_allow_unadded_airports')->value)->toBe('1')
+    expect(storedPayload('airports.allow_unadded_airports'))->toBeTrue()
         ->and(setting('airports.allow_unadded_airports'))->toBeTruthy()
         ->and(setting('general.allow_unadded_airports'))->toBeTruthy();
 
@@ -66,25 +77,22 @@ it('writes through the old key into the new row', function (): void {
         ->and(setting('general.allow_unadded_airports'))->toBeFalsy();
 });
 
-it('shares one cache slot between both spellings in production', function (): void {
-    app()->detectEnvironment(fn (): string => 'production');
-    $service = app(SettingService::class);
+it('reads one value through both spellings across requests with the cache on', function (): void {
+    enableSettingsCache();
 
-    // Prime the cache through the old key, then write through the old key.
+    // Load through the old key, then write through the old key.
     setting('general.auto_airport_lookup');
-    $service->store('general.auto_airport_lookup', false);
+    setting_save('general.auto_airport_lookup', false);
 
     expect(setting('airports.auto_airport_lookup'))->toBeFalsy()
         ->and(setting('general.auto_airport_lookup'))->toBeFalsy();
 
-    // A fresh request (empty memo) must read the new value from the cache,
-    // not a stale entry under either key.
-    $service->clearMemo();
-    $service->store('airports.auto_airport_lookup', true);
-    $service->clearMemo();
+    // A fresh request reads the cached group, which the write replaced.
+    app()->forgetScopedInstances();
+    setting_save('airports.auto_airport_lookup', true);
+    app()->forgetScopedInstances();
 
-    expect(Cache::has(config('cache.keys.SETTINGS.key').Setting::formatKey('general.auto_airport_lookup')))->toBeFalse()
-        ->and(setting('general.auto_airport_lookup'))->toBeTruthy()
+    expect(setting('general.auto_airport_lookup'))->toBeTruthy()
         ->and(setting('airports.auto_airport_lookup'))->toBeTruthy();
 });
 
@@ -93,40 +101,41 @@ it('renames the old rows in place and keeps their values', function (): void {
 
     airportSettingsMigration()->up();
 
-    $lookup = Setting::find('airports_auto_airport_lookup');
-    $unadded = Setting::find('airports_allow_unadded_airports');
+    $lookup = LegacySetting::find('airports_auto_airport_lookup');
+    $unadded = LegacySetting::find('airports_allow_unadded_airports');
 
     expect($lookup->value)->toBe('0')
         ->and($lookup->key)->toBe('airports.auto_airport_lookup')
         ->and($lookup->group)->toBe('airports')
         ->and($unadded->value)->toBe('1')
         ->and($unadded->group)->toBe('airports')
-        ->and(Setting::where('id', 'like', 'general_%airport%')->count())->toBe(0);
+        ->and(LegacySetting::where('id', 'like', 'general_%airport%')->count())->toBe(0);
 });
 
 it('copies the old value onto a seeded new row and removes the old row', function (): void {
     seedOldAirportRows('0', '1');
-    $this->seed(SettingsSeeder::class);
+    seedLegacySettings();
 
     // The seeder ran first: new rows hold their defaults, old rows still exist.
-    expect(Setting::find('airports_auto_airport_lookup')->value)->toBe('true')
-        ->and(Setting::find('general_auto_airport_lookup'))->not->toBeNull();
+    expect(LegacySetting::find('airports_auto_airport_lookup')->value)->toBe('true')
+        ->and(LegacySetting::find('general_auto_airport_lookup'))->not->toBeNull();
 
     airportSettingsMigration()->up();
 
-    expect(Setting::find('airports_auto_airport_lookup')->value)->toBe('0')
-        ->and(Setting::find('airports_allow_unadded_airports')->value)->toBe('1')
-        ->and(Setting::find('general_auto_airport_lookup'))->toBeNull()
-        ->and(Setting::find('general_allow_unadded_airports'))->toBeNull();
+    expect(LegacySetting::find('airports_auto_airport_lookup')->value)->toBe('0')
+        ->and(LegacySetting::find('airports_allow_unadded_airports')->value)->toBe('1')
+        ->and(LegacySetting::find('general_auto_airport_lookup'))->toBeNull()
+        ->and(LegacySetting::find('general_allow_unadded_airports'))->toBeNull();
 });
 
 it('does nothing when only the new rows exist', function (): void {
-    app(SettingService::class)->store('airports.auto_airport_lookup', false);
-    $before = Setting::find('airports_auto_airport_lookup')->value;
+    LegacySetting::whereIn('id', ['general_auto_airport_lookup', 'airports_auto_airport_lookup'])->delete();
+    insertOldSetting('airports.auto_airport_lookup', '0');
+    $before = LegacySetting::find('airports_auto_airport_lookup')->value;
 
     airportSettingsMigration()->up();
 
-    expect(Setting::find('airports_auto_airport_lookup')->value)->toBe($before);
+    expect(LegacySetting::find('airports_auto_airport_lookup')->value)->toBe($before);
 });
 
 /** @var array<string, string> old key => new key, for the one-to-one operations moves */
@@ -146,14 +155,14 @@ function operationSettingsMigration(): object
 /** Insert an old-shape settings row. */
 function insertOldSetting(string $key, string $value): void
 {
-    $row = new Setting([
+    $row = new LegacySetting([
         'name'  => $key,
         'key'   => $key,
         'value' => $value,
         'group' => explode('.', $key)[0],
         'type'  => 'boolean',
     ]);
-    $row->id = Setting::formatKey($key);
+    $row->id = LegacySetting::formatKey($key);
     $row->save();
 }
 
@@ -166,25 +175,23 @@ function insertOldSetting(string $key, string $value): void
 function seedOldOperationRows(string $value, array $locks = ['bids' => '1', 'simbrief' => '1']): void
 {
     foreach (array_keys(OPERATION_MOVES) as $old) {
-        Setting::where('id', Setting::formatKey($old))->delete();
-        Setting::where('id', Setting::formatKey(OPERATION_MOVES[$old]))->delete();
+        LegacySetting::where('id', LegacySetting::formatKey($old))->delete();
+        LegacySetting::where('id', LegacySetting::formatKey(OPERATION_MOVES[$old]))->delete();
         insertOldSetting($old, $value);
     }
 
-    Setting::whereIn('id', ['operations_block_aircraft', 'bids_block_aircraft', 'simbrief_block_aircraft'])->delete();
+    LegacySetting::whereIn('id', ['operations_block_aircraft', 'bids_block_aircraft', 'simbrief_block_aircraft'])->delete();
     foreach ($locks as $group => $lock) {
         if ($lock !== null) {
             insertOldSetting($group.'.block_aircraft', $lock);
         }
     }
 
-    app(SettingService::class)->clearMemo();
 }
 
 it('reads each moved operations setting through its old key', function (): void {
     foreach (OPERATION_MOVES as $old => $new) {
         app(SettingService::class)->store($new, true);
-        app(SettingService::class)->clearMemo();
         expect(setting($old))->toBeTruthy();
 
         app(SettingService::class)->store($new, false);
@@ -194,7 +201,6 @@ it('reads each moved operations setting through its old key', function (): void 
 
 it('reads the merged lock through both old block_aircraft keys', function (): void {
     app(SettingService::class)->store('operations.block_aircraft', true);
-    app(SettingService::class)->clearMemo();
 
     expect(setting('bids.block_aircraft'))->toBeTruthy()
         ->and(setting('simbrief.block_aircraft'))->toBeTruthy();
@@ -207,11 +213,11 @@ it('reads the merged lock through both old block_aircraft keys', function (): vo
 
 it('writes through either old block_aircraft key into the merged row', function (): void {
     setting_save('bids.block_aircraft', false);
-    expect(Setting::find('operations_block_aircraft')->value)->toBe('0')
+    expect(storedPayload('operations.block_aircraft'))->toBeFalse()
         ->and(setting('simbrief.block_aircraft'))->toBeFalsy();
 
     setting_save('simbrief.block_aircraft', true);
-    expect(Setting::find('operations_block_aircraft')->value)->toBe('1')
+    expect(storedPayload('operations.block_aircraft'))->toBeTrue()
         ->and(setting('bids.block_aircraft'))->toBeTruthy();
 });
 
@@ -221,34 +227,34 @@ it('renames the old operations rows in place and keeps their values', function (
     operationSettingsMigration()->up();
 
     foreach (OPERATION_MOVES as $old => $new) {
-        $row = Setting::find(Setting::formatKey($new));
+        $row = LegacySetting::find(LegacySetting::formatKey($new));
 
         expect($row->value)->toBe('1')
             ->and($row->key)->toBe($new)
             ->and($row->group)->toBe('operations')
-            ->and(Setting::find(Setting::formatKey($old)))->toBeNull();
+            ->and(LegacySetting::find(LegacySetting::formatKey($old)))->toBeNull();
     }
 });
 
 it('copies old operations values onto seeded new rows and removes the old rows', function (): void {
     seedOldOperationRows('1', ['bids' => '0', 'simbrief' => '1']);
-    $this->seed(SettingsSeeder::class);
+    seedLegacySettings();
 
     // The seeder ran first: the new rows hold their defaults, the old rows still exist.
-    expect(Setting::find('operations_restrict_aircraft_to_rank')->value)->toBe('false')
-        ->and(Setting::find('pireps_restrict_aircraft_to_rank'))->not->toBeNull()
-        ->and(Setting::find('operations_block_aircraft')->value)->toBe('false');
+    expect(LegacySetting::find('operations_restrict_aircraft_to_rank')->value)->toBe('false')
+        ->and(LegacySetting::find('pireps_restrict_aircraft_to_rank'))->not->toBeNull()
+        ->and(LegacySetting::find('operations_block_aircraft')->value)->toBe('false');
 
     operationSettingsMigration()->up();
 
     foreach (OPERATION_MOVES as $old => $new) {
-        expect(Setting::find(Setting::formatKey($new))->value)->toBe('1')
-            ->and(Setting::find(Setting::formatKey($old)))->toBeNull();
+        expect(LegacySetting::find(LegacySetting::formatKey($new))->value)->toBe('1')
+            ->and(LegacySetting::find(LegacySetting::formatKey($old)))->toBeNull();
     }
 
-    expect(Setting::find('operations_block_aircraft')->value)->toBe('1')
-        ->and(Setting::find('bids_block_aircraft'))->toBeNull()
-        ->and(Setting::find('simbrief_block_aircraft'))->toBeNull();
+    expect(LegacySetting::find('operations_block_aircraft')->value)->toBe('1')
+        ->and(LegacySetting::find('bids_block_aircraft'))->toBeNull()
+        ->and(LegacySetting::find('simbrief_block_aircraft'))->toBeNull();
 });
 
 it('merges the two block_aircraft rows as an OR of their stored values', function (
@@ -260,13 +266,13 @@ it('merges the two block_aircraft rows as an OR of their stored values', functio
 
     operationSettingsMigration()->up();
 
-    $merged = Setting::find('operations_block_aircraft');
+    $merged = LegacySetting::find('operations_block_aircraft');
 
     expect($merged->value)->toBe($expected)
         ->and($merged->key)->toBe('operations.block_aircraft')
         ->and($merged->group)->toBe('operations')
-        ->and(Setting::find('bids_block_aircraft'))->toBeNull()
-        ->and(Setting::find('simbrief_block_aircraft'))->toBeNull();
+        ->and(LegacySetting::find('bids_block_aircraft'))->toBeNull()
+        ->and(LegacySetting::find('simbrief_block_aircraft'))->toBeNull();
 })->with([
     'bids on, simbrief off'          => ['1', '0', '1'],
     'bids off, simbrief on'          => ['0', '1', '1'],
@@ -298,26 +304,23 @@ it('rolls the lock merge back when it fails part-way', function (): void {
         operationSettingsMigration()->up();
     })->toThrow(RuntimeException::class, 'interrupted');
 
-    expect(Setting::find('operations_block_aircraft')->value)->toBe('1')
-        ->and(Setting::find('bids_block_aircraft'))->not->toBeNull()
-        ->and(Setting::find('bids_block_aircraft')->value)->toBe('0')
-        ->and(Setting::find('simbrief_block_aircraft'))->not->toBeNull();
+    expect(LegacySetting::find('operations_block_aircraft')->value)->toBe('1')
+        ->and(LegacySetting::find('bids_block_aircraft'))->not->toBeNull()
+        ->and(LegacySetting::find('bids_block_aircraft')->value)->toBe('0')
+        ->and(LegacySetting::find('simbrief_block_aircraft'))->not->toBeNull();
 });
 
-it('forgets the cached lock values for all three keys', function (): void {
-    app()->detectEnvironment(fn (): string => 'production');
-    seedOldOperationRows('0', ['bids' => '0', 'simbrief' => '0']);
-
-    $prefix = config('cache.keys.SETTINGS.key');
-    foreach (['bids.block_aircraft', 'simbrief.block_aircraft', 'operations.block_aircraft'] as $key) {
-        Cache::put($prefix.Setting::formatKey($key), 'stale');
-    }
+it('serves the merged lock, not a cached value, once the data migrations have run', function (): void {
+    enableSettingsCache();
+    updateSetting('operations.block_aircraft', false);
+    seedOldOperationRows('0', ['bids' => '1', 'simbrief' => '0']);
 
     operationSettingsMigration()->up();
+    app(LegacySettingsCopier::class)->copy();
+    event(new MigrationsEnded('up'));
+    app()->forgetScopedInstances();
 
-    foreach (['bids.block_aircraft', 'simbrief.block_aircraft', 'operations.block_aircraft'] as $key) {
-        expect(Cache::has($prefix.Setting::formatKey($key)))->toBeFalse();
-    }
+    expect(setting('operations.block_aircraft'))->toBeTrue();
 });
 
 it('runs the operations migration twice without changing anything', function (): void {
@@ -327,22 +330,22 @@ it('runs the operations migration twice without changing anything', function ():
     operationSettingsMigration()->up();
 
     foreach (OPERATION_MOVES as $new) {
-        expect(Setting::find(Setting::formatKey($new))->value)->toBe('1');
+        expect(LegacySetting::find(LegacySetting::formatKey($new))->value)->toBe('1');
     }
 
-    expect(Setting::find('operations_block_aircraft')->value)->toBe('1');
+    expect(LegacySetting::find('operations_block_aircraft')->value)->toBe('1');
 });
 
 it('does nothing to the operations rows when only the new rows exist', function (): void {
-    app(SettingService::class)->store('operations.advanced_fuel', true);
-    app(SettingService::class)->store('operations.block_aircraft', false);
+    insertOldSetting('operations.advanced_fuel', '1');
+    insertOldSetting('operations.block_aircraft', '0');
 
-    $fuel = Setting::find('operations_advanced_fuel')->value;
+    $fuel = LegacySetting::find('operations_advanced_fuel')->value;
 
     operationSettingsMigration()->up();
 
-    expect(Setting::find('operations_advanced_fuel')->value)->toBe($fuel)
-        ->and(Setting::find('operations_block_aircraft')->value)->toBe('0');
+    expect(LegacySetting::find('operations_advanced_fuel')->value)->toBe($fuel)
+        ->and(LegacySetting::find('operations_block_aircraft')->value)->toBe('0');
 });
 
 /** @var array<string, string> old key => new key, for the pilot location moves */
@@ -361,21 +364,19 @@ function pilotLocationSettingsMigration(): object
 function seedOldPilotLocationRows(string $value): void
 {
     foreach (PILOT_LOCATION_MOVES as $old => $new) {
-        Setting::whereIn('id', [Setting::formatKey($old), Setting::formatKey($new)])->delete();
+        LegacySetting::whereIn('id', [LegacySetting::formatKey($old), LegacySetting::formatKey($new)])->delete();
         insertOldSetting($old, $value);
     }
 
-    app(SettingService::class)->clearMemo();
 }
 
 it('reads each moved pilot location setting through its old key', function (): void {
     foreach (PILOT_LOCATION_MOVES as $old => $new) {
         app(SettingService::class)->store($new, true);
-        app(SettingService::class)->clearMemo();
         expect(setting($old))->toBeTruthy();
 
         setting_save($old, false);
-        expect(Setting::find(Setting::formatKey($new))->value)->toBe('0');
+        expect(storedPayload($new))->toBeFalse();
     }
 });
 
@@ -385,36 +386,36 @@ it('renames the old pilot location rows in place and keeps their values', functi
     pilotLocationSettingsMigration()->up();
 
     foreach (PILOT_LOCATION_MOVES as $old => $new) {
-        $row = Setting::find(Setting::formatKey($new));
+        $row = LegacySetting::find(LegacySetting::formatKey($new));
 
         expect($row->value)->toBe('1')
             ->and($row->key)->toBe($new)
             ->and($row->group)->toBe('operations')
-            ->and(Setting::find(Setting::formatKey($old)))->toBeNull();
+            ->and(LegacySetting::find(LegacySetting::formatKey($old)))->toBeNull();
     }
 });
 
 it('copies old pilot location values onto seeded new rows and removes the old rows', function (): void {
     seedOldPilotLocationRows('1');
-    $this->seed(SettingsSeeder::class);
+    seedLegacySettings();
 
     // The seeder ran first: the new rows hold their defaults, the old rows still exist.
-    expect(Setting::find('operations_home_hubs_only')->value)->toBe('false')
-        ->and(Setting::find('pilots_home_hubs_only'))->not->toBeNull();
+    expect(LegacySetting::find('operations_home_hubs_only')->value)->toBe('false')
+        ->and(LegacySetting::find('pilots_home_hubs_only'))->not->toBeNull();
 
     pilotLocationSettingsMigration()->up();
 
     foreach (PILOT_LOCATION_MOVES as $old => $new) {
-        expect(Setting::find(Setting::formatKey($new))->value)->toBe('1')
-            ->and(Setting::find(Setting::formatKey($old)))->toBeNull();
+        expect(LegacySetting::find(LegacySetting::formatKey($new))->value)->toBe('1')
+            ->and(LegacySetting::find(LegacySetting::formatKey($old)))->toBeNull();
     }
 });
 
 it('does nothing to the pilot location rows when only the new rows exist', function (): void {
-    app(SettingService::class)->store('operations.only_flights_from_current', true);
+    insertOldSetting('operations.only_flights_from_current', '1');
 
     pilotLocationSettingsMigration()->up();
     pilotLocationSettingsMigration()->up();
 
-    expect(Setting::find('operations_only_flights_from_current')->value)->toBe('1');
+    expect(LegacySetting::find('operations_only_flights_from_current')->value)->toBe('1');
 });

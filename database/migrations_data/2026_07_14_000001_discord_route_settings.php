@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
@@ -32,7 +32,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -48,7 +48,7 @@ return new class() extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -75,11 +75,11 @@ return new class() extends Migration
      */
     private function move(string $from, string $to, string $name, string $description): void
     {
-        $target = Setting::where('id', Setting::formatKey($to))->first();
-        $source = Setting::where('id', Setting::formatKey($from))->first();
+        $target = LegacySetting::where('id', LegacySetting::formatKey($to))->first();
+        $source = LegacySetting::where('id', LegacySetting::formatKey($from))->first();
 
-        if ($target instanceof Setting) {
-            if (blank($target->value) && $source instanceof Setting && filled($source->value)) {
+        if ($target instanceof LegacySetting) {
+            if (blank($target->value) && $source instanceof LegacySetting && filled($source->value)) {
                 $target->value = $source->value;
                 $target->save();
             }
@@ -91,7 +91,7 @@ return new class() extends Migration
 
         // id, offset and order are not fillable / auto-derived, so set them
         // explicitly the same way SettingsSeeder does.
-        $model = new Setting([
+        $model = new LegacySetting([
             'key'         => $to,
             'name'        => $name,
             'value'       => $source->value ?? '',
@@ -100,7 +100,7 @@ return new class() extends Migration
             'options'     => '',
             'description' => $description,
         ]);
-        $model->id = Setting::formatKey($to);
+        $model->id = LegacySetting::formatKey($to);
         $model->default = '';
         $model->offset = $source->offset ?? 0;
         $model->order = $source->order ?? 0;

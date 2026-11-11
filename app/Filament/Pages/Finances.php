@@ -8,6 +8,7 @@ use App\Filament\Widgets\AirlineFinanceChart;
 use App\Filament\Widgets\AirlineFinanceTable;
 use App\Models\Airline;
 use BackedEnum;
+use Carbon\CarbonInterface;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -19,7 +20,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Carbon;
 use Override;
 use UnitEnum;
 
@@ -42,7 +42,9 @@ class Finances extends Page
 
     public function filtersForm(Schema $schema): Schema
     {
-        $startDate = setting('general.start_date') instanceof Carbon ? setting('general.start_date') : now();
+        $startDate = setting('general.start_date');
+        $startDate = $startDate instanceof CarbonInterface ? $startDate : now();
+
         $minDate = $startDate->diffInSeconds() > 2 ? $startDate : now()->subYear();
 
         return $schema->components([

@@ -9,13 +9,13 @@ use App\Filament\Pages\Branding;
 use App\Jobs\GenerateBrandingSizes;
 use App\Models\Asset;
 use App\Models\Permission;
-use App\Models\Setting;
 use App\Models\User;
 use App\Services\ImageUploadService;
 use App\Support\Branding as BrandingSupport;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -70,8 +70,8 @@ it('saves the airline name to general.site_name', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->toBe('Acme Air')
-        ->and(Setting::where('id', Setting::formatKey('branding.brand_color'))->value('value'))->toBe('#4f46e5');
+    expect(setting('general.site_name'))->toBe('Acme Air')
+        ->and(setting('branding.brand_color'))->toBe('#4f46e5');
 });
 
 it('saves a palette name to branding.brand_color', function (): void {
@@ -85,7 +85,7 @@ it('saves a palette name to branding.brand_color', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect(Setting::where('id', Setting::formatKey('branding.brand_color'))->value('value'))->toBe('blue');
+    expect(setting('branding.brand_color'))->toBe('blue');
 });
 
 it('rejects an invalid hex colour and writes nothing', function (): void {
@@ -99,8 +99,8 @@ it('rejects an invalid hex colour and writes nothing', function (): void {
         ->call('save')
         ->assertHasFormErrors(['branding.brand_color']);
 
-    expect(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air')
-        ->and(Setting::where('id', Setting::formatKey('branding.brand_color'))->value('value'))->toBe('');
+    expect(setting('general.site_name'))->not->toBe('Acme Air')
+        ->and(setting('branding.brand_color'))->toBe('');
 });
 
 it('autosaves the logo upload without calling save', function (): void {
@@ -117,7 +117,7 @@ it('autosaves the logo upload without calling save', function (): void {
         // Branding renders on the login screen, so it has to be reachable
         // without a session.
         ->and($asset->storage)->toBe(config('filesystems.public_files'))
-        ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
+        ->and(setting('general.site_name'))->not->toBe('Acme Air');
 
     // The staging copy is not left behind on the disk.
     expect(Storage::disk(Asset::STORAGE_LOCAL)->files(Asset::PATH_PREFIX.'/staging'))->toBeEmpty();
@@ -193,7 +193,7 @@ it('autosaves the dark logo upload without calling save', function (): void {
         ->assertDispatched('autosaved');
 
     expect(brandingAsset(BrandingSupport::KEY_LOGO_DARK))->not->toBeNull()
-        ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
+        ->and(setting('general.site_name'))->not->toBe('Acme Air');
 });
 
 it('does not dispatch GenerateBrandingSizes when the dark logo is autosaved', function (): void {
@@ -221,15 +221,15 @@ it('does not dispatch GenerateBrandingSizes when the banner is autosaved', funct
 });
 
 /**
- * SettingService::store() only updates rows that already exist, so an install
- * that has not run `migrate-data` persists nothing. The page used to report
- * success anyway, which is how a real "I changed the colour and it did nothing"
- * report came in.
+ * Settings rows are created on first save: an install that never stored the
+ * branding settings persists them like any other (it once reported success and
+ * saved nothing).
  */
-it('reports failure instead of success when a settings row is missing', function (): void {
+it('saves on an install that has never stored the branding settings', function (): void {
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
 
-    Setting::where('id', 'branding_brand_color')->delete();
+    DB::table('settings')->where('group', 'branding')->delete();
+    reloadSettings();
 
     Livewire::test(Branding::class)
         ->fillForm([
@@ -237,9 +237,9 @@ it('reports failure instead of success when a settings row is missing', function
             'branding.brand_color' => '#4f46e5',
         ])
         ->call('save')
-        ->assertNotified(__('filament.branding_save_failed'));
+        ->assertNotified(__('filament.branding_saved'));
 
-    expect(Setting::find('branding_brand_color'))->toBeNull();
+    expect(setting('branding.brand_color'))->toBe('#4f46e5');
 });
 
 it('still reports success when every row exists', function (): void {
@@ -253,7 +253,7 @@ it('still reports success when every row exists', function (): void {
         ->call('save')
         ->assertNotified(__('filament.branding_saved'));
 
-    expect(Setting::find('branding_brand_color')->value)->toBe('#4f46e5');
+    expect(setting('branding.brand_color'))->toBe('#4f46e5');
 });
 
 /**

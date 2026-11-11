@@ -7,17 +7,17 @@ use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Models\User;
 use App\Services\FareService;
-use App\Services\SettingService;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Reset the request-scoped setting memo so a measured request starts cold, as
- * it would under Octane (which flushes the singleton per request). Without this
- * the memo warms across in-test requests and masks the query-count comparison.
+ * Drop the request-scoped instances (the settings classes among them) so a
+ * measured request starts cold, as it would under Octane, which forgets scoped
+ * instances per request. Without this they warm across in-test requests and
+ * mask the query-count comparison.
  */
 function freshRequestState(): void
 {
-    app(SettingService::class)->clearMemo();
+    app()->forgetScopedInstances();
     DB::connection()->flushQueryLog();
 }
 

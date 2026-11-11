@@ -34,17 +34,17 @@ use Illuminate\Support\Facades\Cache;
  * that Octane keeps across requests, while scoped instances are reset per
  * request. Anything that changes what it holds must call {@see flush()}: the
  * `Asset` model's saved/deleted hooks do for the `branding` slot, and
- * `SettingService` does for {@see SETTING_KEYS}.
+ * `SettingsChangeSubscriber` does for {@see SETTING_KEYS}.
  */
 final class Branding
 {
     /**
-     * Formatted ids (see `Setting::formatKey()`) of the settings
-     * {@see getBranding()} reads. A write to any of them must {@see flush()}.
+     * Keys of the settings {@see getBranding()} reads. A change to any of them
+     * must {@see flush()}.
      *
      * @var list<string>
      */
-    public const array SETTING_KEYS = ['general_site_name', 'branding_brand_color'];
+    public const array SETTING_KEYS = ['general.site_name', 'branding.brand_color'];
 
     /** Fallback brand colour: the phpVMS blue. */
     private const string DEFAULT_BRAND_COLOR = '#067ec1';

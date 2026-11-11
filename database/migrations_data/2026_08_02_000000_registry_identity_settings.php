@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -28,7 +28,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -38,14 +38,14 @@ return new class() extends Migration
         // Deliver the pinned key to installs whose row was seeded empty before
         // the key shipped. Never overwrites a non-empty value, so an
         // operator-customised key survives.
-        DB::table('settings')
-            ->where('id', Setting::formatKey('registry.public_key'))
+        DB::table('settings_backup')
+            ->where('id', LegacySetting::formatKey('registry.public_key'))
             ->where('value', '')
             ->update(['value' => self::REGISTRY_PUBLIC_KEY, 'updated_at' => now()]);
 
         // Resolve va_global_id, preferring an already-populated value.
-        $current = (string) (DB::table('settings')
-            ->where('id', Setting::formatKey('va_global_id'))
+        $current = (string) (DB::table('settings_backup')
+            ->where('id', LegacySetting::formatKey('va_global_id'))
             ->value('value') ?? '');
 
         if ($current !== '') {
@@ -77,13 +77,13 @@ return new class() extends Migration
      */
     private function ensureSetting(string $key, string $name, string $value = ''): void
     {
-        $id = Setting::formatKey($key);
+        $id = LegacySetting::formatKey($key);
 
-        if (DB::table('settings')->where('id', $id)->exists()) {
+        if (DB::table('settings_backup')->where('id', $id)->exists()) {
             return;
         }
 
-        DB::table('settings')->insert([
+        DB::table('settings_backup')->insert([
             'id'          => $id,
             'key'         => strtolower($key),
             'name'        => $name,
@@ -100,8 +100,8 @@ return new class() extends Migration
 
     private function setSettingValue(string $key, string $value): void
     {
-        DB::table('settings')
-            ->where('id', Setting::formatKey($key))
+        DB::table('settings_backup')
+            ->where('id', LegacySetting::formatKey($key))
             ->update(['value' => $value, 'updated_at' => now()]);
     }
 };

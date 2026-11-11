@@ -42,10 +42,12 @@ use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
 use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Services\SettingService;
 use App\Services\Theme\ActiveThemeService;
+use App\Services\VersionService;
 use App\Support\Branding;
 use App\Support\Extensions\Facades\Extensions;
 use App\Support\InstallMarker;
 use App\Support\PirepView\PirepViewTabRegistry;
+use App\Support\Settings\SettingsCacheRefresher;
 use App\Support\Themes;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
@@ -61,6 +63,7 @@ use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Application;
 use Illuminate\Pagination\Paginator;
@@ -87,7 +90,9 @@ use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature;
 use Spatie\Activitylog\Models\Activity;
+use Spatie\LaravelSettings\SettingsCache;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -117,15 +122,16 @@ class AppServiceProvider extends ServiceProvider
         DateTimePicker::configureUsing(static fn (DateTimePicker $picker): DateTimePicker => $picker
             ->suffixIcon(static fn (DateTimePicker $component): ?Phosphor => $component->hasDate() ? Phosphor::CalendarLight : null));
 
-        // The SettingService and AddonSettingService memos are request-scoped via config/octane.php 'flush',
-        // but a long-running queue worker is not flushed per job. Reset the memo
-        // before each job so a worker observes settings changed by other
-        // processes — otherwise a stale memoized value could be written back into
-        // the shared cache on the next Cache::remember() miss.
+        // The AddonSettingService memo of resolved addon handles is
+        // request-scoped via config/octane.php 'flush', but a long-running queue
+        // worker is not flushed per job. Settings values themselves need no
+        // reset: the settings classes are scoped bindings, which Laravel
+        // discards before every request and every queued job.
         Queue::before(static function (): void {
-            app(SettingService::class)->clearMemo();
             app(AddonSettingService::class)->clearMemo();
         });
+
+        $this->bootSettingsCache();
 
         // The cron_daily channel (storage/logs/cron.log) is reserved for the
         // scheduler and the queue worker. Switch the default log channel only
@@ -325,6 +331,35 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * Scope the settings cache to the installed version, so the first request
+     * after an upgrade never unserializes a settings object cached by the
+     * previous version's classes, and reload the cached settings after
+     * migrations, which write the settings tables directly.
+     */
+    private function bootSettingsCache(): void
+    {
+        // Read once per worker: the version only changes with a deploy, which
+        // restarts the workers.
+        $version = null;
+
+        SettingsCache::resolvePrefixUsing(static function () use (&$version): string {
+            if ($version === null) {
+                try {
+                    $version = app(VersionService::class)->getCurrentVersion();
+                } catch (Throwable) {
+                    $version = '';
+                }
+            }
+
+            return $version;
+        });
+
+        Event::listen(MigrationsEnded::class, static function (): void {
+            app(SettingsCacheRefresher::class)->refreshAll();
+        });
+    }
+
+    /**
      * Register any application services.
      */
     #[Override]
@@ -364,14 +399,12 @@ class AppServiceProvider extends ServiceProvider
         // bound as a singleton so tests can swap the path.
         $this->app->singleton(InstallMarker::class, fn (): InstallMarker => new InstallMarker(InstallMarker::defaultPath()));
 
-        // Core settings read/write. Bound as a singleton so the per-request
-        // Tier-1 memo ($memo array) is shared across all setting() calls within
-        // one request. Registered in config/octane.php 'flush' so Octane
-        // discards the instance (empty memo) before each new request.
+        // Core settings by key. Stateless (values live in the scoped settings
+        // classes); bound as a singleton purely for reuse.
         $this->app->singleton(SettingService::class);
 
-        // Per-addon settings read/write. Stateless/Octane-safe; bound as a
-        // singleton so the `addon_setting()` helper reuses one instance.
+        // Per-addon settings by handle. Holds a per-request memo of resolved
+        // handles, discarded through config/octane.php 'flush'.
         $this->app->singleton(AddonSettingService::class);
 
         // Airline branding resolution. Stateless/Octane-safe (see class

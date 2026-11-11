@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Addons\Support\RegistrySignatureVerifier;
 use App\Services\SettingService;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Pin a fresh public key and return the matching secret key so the test can
@@ -15,18 +14,7 @@ function seedRegistryKeypair(): string
     $keypair = sodium_crypto_sign_keypair();
     $public = sodium_crypto_sign_publickey($keypair);
 
-    DB::table('settings')->updateOrInsert(
-        ['id' => 'registry_public_key'],
-        [
-            'key'   => 'registry.public_key',
-            'name'  => 'Registry Public Key',
-            'value' => base64_encode($public),
-            'group' => 'general',
-            'type'  => 'hidden',
-        ],
-    );
-
-    app(SettingService::class)->clearMemo();
+    setting_save('registry.public_key', base64_encode($public));
 
     return sodium_crypto_sign_secretkey($keypair);
 }

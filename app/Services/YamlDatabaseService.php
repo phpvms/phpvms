@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Support\Branding;
+use App\Support\Settings\SettingsCacheRefresher;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -108,19 +109,10 @@ class YamlDatabaseService extends Service
 
             $this->resetPostgresSequence($table, $id_column);
 
-            // Raw writes here bypass SettingService::store(), so drop the
-            // per-request memo and the shared cache entries of the imported
-            // keys, or reads keep answering with the pre-import values.
-            if ($table === 'settings') {
-                $settings = app(SettingService::class);
-                $settings->clearMemo();
-
-                foreach ($rows as $row) {
-                    if (isset($row[$id_column])) {
-                        $settings->forgetCached((string) $row[$id_column]);
-                    }
-                }
-
+            // Raw writes here bypass Settings::save(), so reload the cached
+            // settings, or reads keep answering with the pre-import values.
+            if (in_array($table, ['settings', 'addon_settings'], true)) {
+                app(SettingsCacheRefresher::class)->refreshAll();
                 Branding::flush();
             }
         }

@@ -1,7 +1,7 @@
 <?php
 
+use App\Models\LegacySetting;
 use App\Models\MapLayer;
-use App\Models\Setting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
@@ -35,7 +35,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('map_layers') || !Schema::hasTable('settings')) {
+        if (!Schema::hasTable('map_layers') || !Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -52,12 +52,12 @@ return new class() extends Migration
             ]);
         }
 
-        Setting::query()->whereIn('key', self::RETIRED_KEYS)->delete();
+        LegacySetting::query()->whereIn('key', self::RETIRED_KEYS)->delete();
     }
 
     private function settingValue(string $key, string $default): string
     {
-        $value = (string) (Setting::query()->where('key', $key)->value('value') ?? '');
+        $value = (string) (LegacySetting::query()->where('key', $key)->value('value') ?? '');
 
         return $value === '' ? $default : $value;
     }

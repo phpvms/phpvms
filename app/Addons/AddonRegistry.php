@@ -21,7 +21,7 @@ use App\Events\AddonUpdated;
 use App\Exceptions\AddonInstallException;
 use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
-use App\Models\AddonSetting;
+use App\Services\AddonSettingService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Closure;
@@ -272,7 +272,7 @@ class AddonRegistry
 
         if ($removeTables) {
             app(SeederService::class)->clearAddonSeedMarkers($addon);
-            AddonSetting::query()->where('registry_id', $addon->registry_id)->delete();
+            app(AddonSettingService::class)->deleteFor($addon->registry_id);
         }
 
         $this->assetLinker->unlink($addon->getName());

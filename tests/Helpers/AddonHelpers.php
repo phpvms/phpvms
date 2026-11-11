@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\ManifestParser;
+use App\Contracts\Addons\AddonSettings;
+use App\Models\Addon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -44,4 +48,43 @@ function sampleAddonPath(): ?string
 function sampleAddonMissing(): bool
 {
     return sampleAddonPath() === null;
+}
+
+/**
+ * Create an enabled addon row and register settings classes for it, as its
+ * provider's registerSettings() would at boot.
+ *
+ * @param list<class-string<AddonSettings>> $classes
+ * @param array<string, mixed>              $attributes Addon factory attributes
+ */
+function registerAddonSettings(string $registryId, array $classes, array $attributes = []): Addon
+{
+    $addon = Addon::query()->where('registry_id', $registryId)->first()
+        ?? Addon::factory()->create(['registry_id' => $registryId, 'enabled' => true] + $attributes);
+
+    AddonSettingsRegistry::register(app(), $registryId, $classes);
+
+    return $addon;
+}
+
+/**
+ * Write an addon setting row directly, as a save through the addon's settings
+ * class would have stored it.
+ */
+function storeAddonSettingRow(string $registryId, string $name, mixed $payload, string $section = 'general'): void
+{
+    DB::table('addon_settings')->insert([
+        'group'   => $registryId.':'.$section,
+        'name'    => $name,
+        'payload' => json_encode($payload),
+        'locked'  => false,
+    ]);
+}
+
+/**
+ * Whether any setting of the addon is stored.
+ */
+function addonSettingRowsExist(string $registryId): bool
+{
+    return DB::table('addon_settings')->where('group', 'like', $registryId.':%')->exists();
 }

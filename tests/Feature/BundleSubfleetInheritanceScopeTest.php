@@ -578,20 +578,21 @@ test('the scope costs a fixed number of queries however many flights and bundles
     $small = $count($page(1, 2));
     $large = $count($page(6, 15));
 
-    // Seven statements plus the four `settings` reads `Aircraft::allowedFor`
-    // makes: the flights (with the has-pins probe folded in), the bundles, the
-    // capped bundle subfleets, their aircraft, those aircraft's bids, the
-    // subfleets' fares, and the flights' own pins.
+    // Seven statements: the flights (with the has-pins probe folded in), the
+    // bundles, the capped bundle subfleets, their aircraft, those aircraft's
+    // bids, the subfleets' fares, and the flights' own pins. The settings
+    // `Aircraft::allowedFor` reads come from the request's settings instances,
+    // which load each group once, before this point.
     //
     // The accessible-subfleet count that drives truncation logging is a
     // correlated subselect on the bundles statement, not a statement of its
     // own, so it is inside this number rather than added to it — dropping the
-    // `withCount` and re-running gives 11 as well.
+    // `withCount` and re-running gives 7 as well.
     //
     // The constant is the whole point of the scope: it must not move with page
     // size or with how many distinct bundles the page touches.
-    expect($small)->toBe(11)
-        ->and($large)->toBe(11);
+    expect($small)->toBe(7)
+        ->and($large)->toBe(7);
 });
 
 test('inheritance resolves through a nested eager load', function (): void {

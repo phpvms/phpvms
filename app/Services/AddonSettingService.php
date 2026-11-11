@@ -4,140 +4,129 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Addons\Support\AddonSettingsRegistry;
 use App\Addons\Support\BootCache;
+use App\Contracts\Addons\AddonSettings;
 use App\Contracts\Service;
 use App\Exceptions\SettingNotFound;
 use App\Models\Addon;
-use App\Models\AddonSetting;
-use App\Services\Concerns\CastsSettingValue;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
+use App\Support\Settings\SettingDefinition;
+use App\Support\Settings\SettingsWriter;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
+use Spatie\LaravelSettings\Settings;
 
 /**
- * Read/write access to per-addon settings stored in `addon_settings`.
+ * Handle-addressed access to the settings classes addons register (see
+ * {@see AddonSettings}).
  *
- * An addon is addressed by a handle that resolves as its manifest `alias`,
- * its `registry_id`, or its name. Reads are typed via {@see CastsSettingValue}
- * and cached per resolved registry_id + key, so the helper observes the same
- * value regardless of which handle was used.
+ * An addon is addressed by a handle that resolves as its manifest `alias`, its
+ * `registry_id`, or its name; the setting by its property name. Values come from
+ * the addon's settings classes, which the package loads once per request and
+ * caches across requests, so this service keeps only the handle resolution.
  *
- * Resolved registry_ids and values are also memoized for the current request,
- * as SettingService does for core settings: a page reading an addon setting in
- * a loop looks each one up once. The service is a singleton registered in
+ * Resolved registry_ids are memoized: the service is a singleton registered in
  * config/octane.php 'flush', so Octane discards the memo before every request,
  * and the queue worker clears it before every job.
  */
 class AddonSettingService extends Service
 {
-    use CastsSettingValue;
-
     /** @var array<string, string|null> Per-request memo of resolved registry_ids, keyed by handle. */
     private array $registryIds = [];
 
-    /** @var array<string, mixed> Per-request memo of values, keyed by "{registry_id}.{formatted key}". */
-    private array $memo = [];
-
-    public function __construct(private readonly BootCache $bootCache) {}
+    public function __construct(
+        private readonly BootCache $bootCache,
+        private readonly SettingsWriter $writer,
+    ) {}
 
     /**
-     * Retrieve a typed setting value for the addon identified by $handle.
+     * The value of an addon setting: typed, with an enum as its backing value.
      *
-     * @throws SettingNotFound when the addon or key cannot be resolved.
+     * @throws SettingNotFound when the addon or key cannot be resolved
      */
     public function retrieve(string $handle, string $key): mixed
     {
-        $registryId = $this->resolveRegistryId($handle);
+        $registryId = $this->resolveRegistryId($handle) ?? throw new SettingNotFound($handle.' addon not found');
+        $definition = AddonSettingsRegistry::find($registryId, $key) ?? throw new SettingNotFound($key.' not found');
 
-        if ($registryId === null) {
-            throw new SettingNotFound($handle.' addon not found');
-        }
-
-        $formattedKey = AddonSetting::formatKey($key);
-        $memoKey = $registryId.'.'.$formattedKey;
-
-        if (!array_key_exists($memoKey, $this->memo)) {
-            $this->memo[$memoKey] = !app()->environment('testing')
-                ? Cache::remember(
-                    config('cache.keys.ADDON_SETTINGS.key').$memoKey,
-                    config('cache.keys.ADDON_SETTINGS.time'),
-                    fn (): mixed => $this->read($registryId, $formattedKey),
-                )
-                : $this->read($registryId, $formattedKey);
-        }
-
-        return $this->copy($this->memo[$memoKey]);
+        return $definition->present($this->instance($definition)->{$definition->name});
     }
 
     /**
-     * A date setting is a mutable Carbon: each read gets its own, so a caller
-     * doing addon_setting(...)->addDay() doesn't change what the next read sees.
-     */
-    private function copy(mixed $value): mixed
-    {
-        return is_object($value) ? clone $value : $value;
-    }
-
-    /**
-     * Forget the memoized registry_ids and values. Called before each queued
-     * job, which Octane's flush does not cover, so a long-running worker
-     * observes settings changed by other processes.
+     * Forget the memoized registry_ids. Called before each queued job, which
+     * Octane's flush does not cover.
      */
     public function clearMemo(): void
     {
         $this->registryIds = [];
-        $this->memo = [];
     }
 
     /**
-     * Persist a value for the addon identified by $handle and invalidate its
-     * cached value. Returns the value on success, or null when the addon/key
-     * does not exist (settings are created by the sync, not by store()).
+     * Save a value for the addon identified by $handle. Returns the value on
+     * success, or null when the addon/key is unknown or the value is null.
+     *
+     * @throws ValidationException when the value cannot represent the setting's type
      */
     public function store(string $handle, string $key, mixed $value): mixed
     {
         $registryId = $this->resolveRegistryId($handle);
 
-        if ($registryId === null) {
-            return null;
-        }
-
-        return $this->storeFor($registryId, $key, $value);
+        return $registryId === null ? null : $this->storeFor($registryId, $key, $value);
     }
 
     /**
-     * Persist a value for a known addon registry_id. Returns the value on
-     * success, or null when the key does not exist. Invalidates the cache.
+     * Save a value for a known addon registry_id. Returns the value on
+     * success, or null when the key is unknown or the value is null.
+     *
+     * @throws ValidationException when the value cannot represent the setting's type
      */
     public function storeFor(string $registryId, string $key, mixed $value): mixed
     {
-        $formattedKey = AddonSetting::formatKey($key);
-
-        $setting = AddonSetting::query()
-            ->where('registry_id', $registryId)
-            ->where('key', $formattedKey)
-            ->first(['id', 'value']);
-
-        if ($setting === null) {
+        if ($value === null || !AddonSettingsRegistry::find($registryId, $key) instanceof SettingDefinition) {
             return null;
         }
 
-        if (is_bool($value)) {
-            $value = $value ? 1 : 0;
-        }
+        $this->storeManyFor($registryId, [$key => $value]);
 
-        if ($value !== null) {
-            $setting->value = (string) $value;
-            $setting->save();
-
-            $this->forgetCache($registryId, $formattedKey);
-            unset($this->memo[$registryId.'.'.$formattedKey]);
-        }
-
-        return $value;
+        return is_bool($value) ? (int) $value : $value;
     }
 
     /**
-     * Alias for store() that always returns the value.
+     * Save several settings of one addon, writing each affected section once,
+     * in one transaction. Unknown keys are skipped, and so are null values unless
+     * `$skipNull` is false (a cleared form field then clears a string or date).
+     *
+     * @param array<string, mixed> $values keyed by setting name
+     *
+     * @throws ValidationException when a value cannot represent its setting's type
+     */
+    public function storeManyFor(string $registryId, array $values, bool $skipNull = true): void
+    {
+        /** @var array<class-string<Settings>, array<string, mixed>> $byClass */
+        $byClass = [];
+
+        foreach ($values as $key => $value) {
+            $definition = AddonSettingsRegistry::find($registryId, (string) $key);
+
+            if (!$definition instanceof SettingDefinition || ($value === null && $skipNull)) {
+                continue;
+            }
+
+            try {
+                $byClass[$definition->class][$definition->name] = $definition->cast($value);
+            } catch (InvalidArgumentException $exception) {
+                throw ValidationException::withMessages([$definition->key => $exception->getMessage()]);
+            }
+        }
+
+        if ($byClass !== []) {
+            $this->writer->write($byClass);
+        }
+    }
+
+    /**
+     * Alias for store().
      */
     public function save(string $handle, string $key, mixed $value): mixed
     {
@@ -145,16 +134,31 @@ class AddonSettingService extends Service
     }
 
     /**
-     * All settings for an addon, ordered for display.
-     *
-     * @return Collection<int, AddonSetting>
+     * Delete every stored setting of an addon (uninstall with data removal).
+     * Groups are matched exactly in PHP rather than with LIKE, whose `_`
+     * wildcard a registry_id may contain.
      */
-    public function all(string $registryId): Collection
+    public function deleteFor(string $registryId): void
     {
-        return AddonSetting::query()
-            ->where('registry_id', $registryId)
-            ->orderBy('order')
-            ->get();
+        $groups = DB::table('addon_settings')
+            ->distinct()
+            ->pluck('group')
+            ->filter(fn (string $group): bool => str_starts_with($group, $registryId.':'))
+            ->values();
+
+        if ($groups->isNotEmpty()) {
+            DB::table('addon_settings')->whereIn('group', $groups)->delete();
+        }
+    }
+
+    /**
+     * Every setting an addon declares, in section then declaration order.
+     *
+     * @return list<SettingDefinition>
+     */
+    public function all(string $registryId): array
+    {
+        return AddonSettingsRegistry::definitionsFor($registryId);
     }
 
     /**
@@ -208,31 +212,8 @@ class AddonSettingService extends Service
         return $entry?->registryId;
     }
 
-    /**
-     * Fetch and cast a single setting value.
-     *
-     * @throws SettingNotFound when the key has no row for the addon.
-     */
-    private function read(string $registryId, string $formattedKey): mixed
+    private function instance(SettingDefinition $definition): Settings
     {
-        $setting = AddonSetting::query()
-            ->where('registry_id', $registryId)
-            ->where('key', $formattedKey)
-            ->first(['type', 'value']);
-
-        if ($setting === null) {
-            throw new SettingNotFound($formattedKey.' not found');
-        }
-
-        return $this->castSettingValue($setting->type, $setting->value);
-    }
-
-    private function forgetCache(string $registryId, string $formattedKey): void
-    {
-        $cache = config('cache.keys.ADDON_SETTINGS');
-
-        if (is_array($cache) && isset($cache['key'])) {
-            Cache::forget($cache['key'].$registryId.'.'.$formattedKey);
-        }
+        return app($definition->class);
     }
 }

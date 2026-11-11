@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Models\Setting;
-use Database\Seeders\SettingsSeeder;
+use App\Models\LegacySetting;
 use Illuminate\Support\Facades\DB;
+
+// The pre-upgrade settings table these data migrations run against.
+beforeEach(function (): void {
+    seedLegacySettings();
+});
 
 function brandingSettingsMigration(): object
 {
@@ -13,7 +17,7 @@ function brandingSettingsMigration(): object
 
 function brandingSettingRow(string $key): ?object
 {
-    return DB::table('settings')->where('id', Setting::formatKey($key))->first();
+    return DB::table('settings_backup')->where('id', LegacySetting::formatKey($key))->first();
 }
 
 /** The seven keys this migration owns. */
@@ -34,8 +38,8 @@ it('seeds general.site_name below every existing general row', function (): void
     brandingSettingsMigration()->up();
 
     $siteName = brandingSettingRow('general.site_name');
-    $minOtherOrder = Setting::where('group', 'general')
-        ->where('id', '!=', Setting::formatKey('general.site_name'))
+    $minOtherOrder = LegacySetting::where('group', 'general')
+        ->where('id', '!=', LegacySetting::formatKey('general.site_name'))
         ->min('order');
 
     expect($siteName)->not->toBeNull()
@@ -43,7 +47,7 @@ it('seeds general.site_name below every existing general row', function (): void
         ->and($siteName->type)->toBe('text')
         ->and($siteName->value)->toBe('')
         ->and((int) $siteName->order)->toBeLessThan($minOtherOrder)
-        ->and(Setting::where('group', 'general')->min('order'))->toBe((int) $siteName->order);
+        ->and(LegacySetting::where('group', 'general')->min('order'))->toBe((int) $siteName->order);
 });
 
 it('seeds the six branding keys as hidden and empty', function (): void {
@@ -68,19 +72,19 @@ it('seeds the six branding keys as hidden and empty', function (): void {
 
 it('is idempotent: a re-run does not shift general order twice', function (): void {
     brandingSettingsMigration()->up();
-    $firstRun = Setting::where('group', 'general')->orderBy('order')->pluck('order', 'key')->all();
+    $firstRun = LegacySetting::where('group', 'general')->orderBy('order')->pluck('order', 'key')->all();
 
     brandingSettingsMigration()->up();
-    $secondRun = Setting::where('group', 'general')->orderBy('order')->pluck('order', 'key')->all();
+    $secondRun = LegacySetting::where('group', 'general')->orderBy('order')->pluck('order', 'key')->all();
 
     expect($secondRun)->toBe($firstRun);
 });
 
 it('does not touch an already-present row', function (): void {
-    Setting::where('id', Setting::formatKey('general.site_name'))->delete();
+    LegacySetting::where('id', LegacySetting::formatKey('general.site_name'))->delete();
 
-    DB::table('settings')->insert([
-        'id'          => Setting::formatKey('general.site_name'),
+    DB::table('settings_backup')->insert([
+        'id'          => LegacySetting::formatKey('general.site_name'),
         'key'         => 'general.site_name',
         'name'        => 'Operator Set Name',
         'value'       => 'Acme Air',
@@ -104,23 +108,23 @@ it('does not shift order again when the seeder already created general.site_name
     // general.site_name first (order 0) and shifts every other general row
     // naturally via array position. Snapshot before running the data
     // migration, since that is what the guard must leave untouched.
-    $before = Setting::where('group', 'general')->orderBy('key')->pluck('order', 'key')->all();
+    $before = LegacySetting::where('group', 'general')->orderBy('key')->pluck('order', 'key')->all();
 
     expect(brandingSettingRow('general.site_name'))->not->toBeNull();
 
     brandingSettingsMigration()->up();
 
-    $after = Setting::where('group', 'general')->orderBy('key')->pluck('order', 'key')->all();
+    $after = LegacySetting::where('group', 'general')->orderBy('key')->pluck('order', 'key')->all();
 
     expect($after)->toBe($before);
 });
 
 it('ordering survives seed -> migrate -> re-seed with no tie on order', function (): void {
-    new SettingsSeeder()->run();
+    seedLegacySettings();
     brandingSettingsMigration()->up();
-    new SettingsSeeder()->run();
+    seedLegacySettings();
 
-    $general = Setting::where('group', 'general')->orderBy('order')->get();
+    $general = LegacySetting::where('group', 'general')->orderBy('order')->get();
     $siteName = $general->firstWhere('key', 'general.site_name');
     $rest = $general->where('key', '!=', 'general.site_name');
 
@@ -140,5 +144,5 @@ it('down() deletes exactly the seven seeded rows', function (): void {
     }
 
     // Nothing else in the general group was removed.
-    expect(Setting::where('group', 'general')->where('key', 'general.theme')->exists())->toBeTrue();
+    expect(LegacySetting::where('group', 'general')->where('key', 'general.theme')->exists())->toBeTrue();
 });

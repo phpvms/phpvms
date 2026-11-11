@@ -2,38 +2,62 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Addons\AddonSettings as AddonSettingsClass;
 use App\Filament\Pages\AddonSettings;
-use App\Models\Addon;
-use App\Models\AddonSetting;
 use App\Models\Permission;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Livewire\Livewire;
+use Tests\Support\AddonSettings\WidgetNetworkSettings;
+use Tests\Support\AddonSettings\WidgetSettings;
 
 /*
- * The addon settings page shares the core Settings layout: a searchable group
- * nav beside one section per group, each section saving on its own.
+ * The addon settings page shares the core Settings layout: a searchable section
+ * nav beside one section per settings class, each section saving on its own.
  */
 
-beforeEach(function (): void {
+final class DemoUpperFuelSettings extends AddonSettingsClass
+{
+    public string $upper = 'upper';
+
+    public static function section(): string
+    {
+        return 'Fuel';
+    }
+}
+
+final class DemoLowerFuelSettings extends AddonSettingsClass
+{
+    public string $lower = 'lower';
+
+    public static function section(): string
+    {
+        return 'fuel';
+    }
+}
+
+final class DemoSeasonSettings extends AddonSettingsClass
+{
+    public string $season = 'winter';
+
+    public static function section(): string
+    {
+        return '2024';
+    }
+}
+
+/**
+ * @param list<class-string<AddonSettingsClass>> $classes
+ */
+function demoAddon(array $classes = [WidgetSettings::class, WidgetNetworkSettings::class]): void
+{
     // The panel id resolves to the addon by name (or its manifest alias).
-    $this->addon = Addon::factory()->create(['name' => 'demo', 'registry_id' => 'phpvms/demo']);
+    registerAddonSettings('phpvms/demo', $classes, ['name' => 'demo']);
+}
 
-    $setting = fn (string $key, string $group, string $value, string $type = 'text'): AddonSetting => AddonSetting::factory()->create([
-        'registry_id' => $this->addon->registry_id,
-        'key'         => AddonSetting::formatKey($key),
-        'group'       => $group,
-        'type'        => $type,
-        'value'       => $value,
-        'default'     => $value,
-    ]);
-
-    $setting('general.callsign', 'general', 'DMO');
-    $setting('fuel.margin', 'fuel', '5', 'int');
-    $setting('fuel.enabled', 'fuel', '1', 'boolean');
-
+beforeEach(function (): void {
     Permission::firstOrCreate(['name' => 'edit:addon-settings', 'guard_name' => 'web']);
     $editor = User::factory()->create();
     $editor->givePermissionTo('edit:addon-settings');
@@ -44,83 +68,96 @@ beforeEach(function (): void {
     Filament::setCurrentPanel($panel);
 });
 
-function demoSetting(string $key): mixed
-{
-    return AddonSetting::query()
-        ->where('registry_id', 'phpvms/demo')
-        ->where('key', AddonSetting::formatKey($key))
-        ->value('value');
-}
-
 it('lays the settings out like the core settings page', function (): void {
+    demoAddon();
+
     Livewire::test(AddonSettings::class)
         ->assertSuccessful()
         ->assertSeeHtml('settings-page')
         ->assertSeeHtml('settings-nav')
         ->assertSeeHtml('id="settings-general"')
-        ->assertSeeHtml('id="settings-fuel"')
-        ->assertSeeHtml('saveSection-settings-fuel')
+        ->assertSeeHtml('id="settings-network"')
+        ->assertSeeHtml('saveSection-settings-network')
+        ->assertSee('API token')
+        ->assertSee('The token the widget sends')
         ->assertDontSeeHtml('fi-tabs');
 });
 
-it('saves every group from the page save', function (): void {
+it('does not list a hidden setting', function (): void {
+    demoAddon();
+
     Livewire::test(AddonSettings::class)
-        ->fillForm(['general_callsign' => 'NEW', 'fuel_margin' => 8])
+        ->assertFormFieldExists('settings-general.token')
+        ->assertFormFieldDoesNotExist('settings-general.cursor');
+});
+
+it('saves every section from the page save', function (): void {
+    demoAddon();
+
+    Livewire::test(AddonSettings::class)
+        ->fillForm(['token' => 'NEW', 'retries' => 8])
         ->call('save')
         ->assertHasNoFormErrors()
         ->assertNotified();
 
-    expect(demoSetting('general.callsign'))->toBe('NEW')
-        ->and(demoSetting('fuel.margin'))->toBe('8');
+    expect(addon_setting('phpvms/demo', 'token'))->toBe('NEW')
+        ->and(addon_setting('phpvms/demo', 'retries'))->toBe(8);
 });
 
-it('saves one group without writing the others', function (): void {
+it('saves one section without writing the others', function (): void {
+    demoAddon();
+
     Livewire::test(AddonSettings::class)
-        ->fillForm(['general_callsign' => 'NEW', 'fuel_margin' => 8])
-        ->call('saveGroup', 'fuel')
+        ->fillForm(['token' => 'NEW', 'retries' => 8])
+        ->call('saveGroup', 'network')
         ->assertHasNoFormErrors()
         ->assertNotified();
 
-    expect(demoSetting('fuel.margin'))->toBe('8')
-        ->and(demoSetting('general.callsign'))->toBe('DMO');
+    expect(addon_setting('phpvms/demo', 'retries'))->toBe(8)
+        ->and(addon_setting('phpvms/demo', 'token'))->toBe('');
 });
 
-it('refuses to save a group for a user who cannot edit', function (): void {
+it('reports a value of the wrong type on its field', function (): void {
+    demoAddon();
+
+    Livewire::test(AddonSettings::class)
+        ->fillForm(['retries' => 'many'])
+        ->call('save')
+        ->assertHasFormErrors(['retries']);
+
+    expect(addon_setting('phpvms/demo', 'retries'))->toBe(3);
+});
+
+it('refuses to save a section for a user who cannot edit', function (): void {
+    demoAddon();
     $this->actingAs(User::factory()->create());
 
     Livewire::test(AddonSettings::class)
-        ->call('saveGroup', 'fuel')
+        ->call('saveGroup', 'network')
         ->assertForbidden();
 });
 
 it('shows a user who cannot edit the settings without a save', function (): void {
+    demoAddon();
     $this->actingAs(User::factory()->create());
 
     Livewire::test(AddonSettings::class)
         ->assertSuccessful()
-        ->assertDontSeeHtml('saveSection-settings-fuel')
-        ->assertFormFieldDisabled('settings-fuel.fuel_margin');
+        ->assertDontSeeHtml('saveSection-settings-network')
+        ->assertFormFieldDisabled('settings-network.retries');
 });
 
-it('keeps groups whose names slug alike apart', function (): void {
-    foreach (['Fuel' => 'upper', 'fuel' => 'lower'] as $group => $value) {
-        AddonSetting::factory()->create([
-            'registry_id' => 'phpvms/demo',
-            'key'         => AddonSetting::formatKey($value.'.value'),
-            'group'       => $group,
-            'type'        => 'text',
-            'value'       => $value,
-        ]);
-    }
+it('keeps sections whose names slug alike apart', function (): void {
+    demoAddon([DemoUpperFuelSettings::class, DemoLowerFuelSettings::class]);
 
     $page = Livewire::test(AddonSettings::class)
         ->assertSeeHtml('id="settings-fuel"')
         ->assertSeeHtml('id="settings-fuel-2"');
 
-    // Each section's Save writes its own group: one group per section.
-    $page->fillForm(['lower_value' => 'LOWER', 'upper_value' => 'UPPER']);
+    // Each section's Save writes its own settings: one class per section.
+    $page->fillForm(['lower' => 'LOWER', 'upper' => 'UPPER']);
 
-    $saved = fn (): array => [demoSetting('upper.value'), demoSetting('lower.value')];
+    $saved = fn (): array => [addon_setting('phpvms/demo', 'upper'), addon_setting('phpvms/demo', 'lower')];
 
     $page->callAction(TestAction::make('saveSection-settings-fuel')->schemaComponent('settings-fuel'));
     expect(array_intersect($saved(), ['UPPER', 'LOWER']))->toHaveCount(1);
@@ -129,20 +166,14 @@ it('keeps groups whose names slug alike apart', function (): void {
     expect($saved())->toBe(['UPPER', 'LOWER']);
 });
 
-it('keeps a numeric group name', function (): void {
-    AddonSetting::factory()->create([
-        'registry_id' => 'phpvms/demo',
-        'key'         => AddonSetting::formatKey('season.name'),
-        'group'       => '2024',
-        'type'        => 'text',
-        'value'       => 'winter',
-    ]);
+it('keeps a numeric section name', function (): void {
+    demoAddon([DemoSeasonSettings::class]);
 
     Livewire::test(AddonSettings::class)
         ->assertSeeHtml('id="settings-2024"')
-        ->fillForm(['season_name' => 'summer'])
+        ->fillForm(['season' => 'summer'])
         ->call('saveGroup', '2024')
         ->assertHasNoFormErrors();
 
-    expect(demoSetting('season.name'))->toBe('summer');
+    expect(addon_setting('phpvms/demo', 'season'))->toBe('summer');
 });

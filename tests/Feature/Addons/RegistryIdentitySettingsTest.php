@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Support\Facades\DB;
 
 function runIdentityMigration(): void
@@ -13,13 +13,14 @@ function runIdentityMigration(): void
 
 function settingValue(string $key): ?string
 {
-    return DB::table('settings')->where('id', Setting::formatKey($key))->value('value');
+    return DB::table('settings_backup')->where('id', LegacySetting::formatKey($key))->value('value');
 }
 
 // A symlinked addon migration may already have set the id during RefreshDatabase.
 beforeEach(function (): void {
+    seedLegacySettings();
     DB::table('kvp')->where('key', 'va_global_id')->delete();
-    DB::table('settings')->where('id', Setting::formatKey('va_global_id'))->update(['value' => '']);
+    DB::table('settings_backup')->where('id', LegacySetting::formatKey('va_global_id'))->update(['value' => '']);
 });
 
 it('migrates an existing kvp va_global_id and is idempotent', function (): void {
@@ -50,13 +51,13 @@ it('stores identity rows as hidden and excludes them from the settings UI query'
     expect(settingRowType('va_global_id'))->toBe('hidden');
     expect(settingRowType('registry.public_key'))->toBe('hidden');
 
-    // The settings pages render `Setting::where('type', '!=', 'hidden')`.
-    $visible = Setting::where('type', '!=', 'hidden')->pluck('id')->all();
+    // The settings pages render `LegacySetting::where('type', '!=', 'hidden')`.
+    $visible = LegacySetting::where('type', '!=', 'hidden')->pluck('id')->all();
     expect($visible)->not->toContain('va_global_id');
     expect($visible)->not->toContain('registry_public_key');
 });
 
 function settingRowType(string $key): ?string
 {
-    return DB::table('settings')->where('id', Setting::formatKey($key))->value('type');
+    return DB::table('settings_backup')->where('id', LegacySetting::formatKey($key))->value('type');
 }

@@ -4,35 +4,37 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\AddonSetting;
-use App\Models\Setting;
+use App\Support\Settings\SettingDefinition;
 use Illuminate\Support\Collection;
 
 /**
- * Groups settings into the tabs of the settings pages (core and addon).
+ * Groups settings into the sections of the settings pages (core and addon).
  *
- * Tabs come in alphabetical order of their group, and the settings in a tab in
- * their `order`, then by key. Both are sorted here rather than in the query:
- * settings of different groups share `order` values, and rows tied on it come
- * back from the database in no fixed order, so the tabs used to change places
- * from one load to the next.
+ * Sections come General first, then in alphabetical order, and the settings in
+ * a section in their declaration order, then by key, so the page lays out the
+ * same way on every load.
  */
 final class SettingsTabs
 {
     /**
-     * @template TSetting of Setting|AddonSetting
-     *
-     * @param  Collection<int, TSetting>                     $settings
-     * @return Collection<string, Collection<int, TSetting>>
+     * @param  Collection<int, SettingDefinition>                     $settings
+     * @return Collection<string, Collection<int, SettingDefinition>>
      */
     public static function group(Collection $settings): Collection
     {
-        return $settings
+        $groups = $settings
             ->sortBy([
-                fn (Setting|AddonSetting $a, Setting|AddonSetting $b): int => (int) $a->order <=> (int) $b->order,
-                fn (Setting|AddonSetting $a, Setting|AddonSetting $b): int => strcmp((string) $a->key, (string) $b->key),
+                fn (SettingDefinition $a, SettingDefinition $b): int => $a->order <=> $b->order,
+                fn (SettingDefinition $a, SettingDefinition $b): int => strcmp($a->key, $b->key),
             ])
-            ->groupBy(fn (Setting|AddonSetting $setting): string => (string) $setting->group)
-            ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
+            ->groupBy(fn (SettingDefinition $setting): string => $setting->section)
+            ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE)
+            ->toBase();
+
+        // union(), not merge(): section names may be numeric strings, and
+        // merge() renumbers the integer keys they become.
+        $general = $groups->filter(fn (Collection $settings, string|int $section): bool => strcasecmp((string) $section, 'general') === 0);
+
+        return $general->union($groups->diffKeys($general));
     }
 }

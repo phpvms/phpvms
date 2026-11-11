@@ -61,8 +61,8 @@ return new class() extends Migration
                 'updated_at'  => now(),
             ]);
 
-            if (Schema::hasTable('addon_settings') && Schema::hasColumn('addon_settings', 'registry_id')) {
-                DB::table('addon_settings')
+            if (Schema::hasTable('addon_settings_backup') && Schema::hasColumn('addon_settings_backup', 'registry_id')) {
+                DB::table('addon_settings_backup')
                     ->where('registry_id', self::OLD_REGISTRY_ID)
                     ->update(['registry_id' => self::NEW_REGISTRY_ID]);
             }

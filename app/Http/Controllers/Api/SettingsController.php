@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Http\Resources\SettingResource;
-use App\Models\Setting;
+use App\Support\Settings\SettingDefinition;
+use App\Support\Settings\SettingsRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -14,11 +15,13 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class SettingsController extends Controller
 {
     /**
-     * Return all settings, ordered by `order`
+     * Every visible core setting, by group, in declaration order.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request, SettingsRegistry $registry): AnonymousResourceCollection
     {
-        $settings = Setting::orderBy('order', 'asc')->get();
+        $settings = $registry->all()
+            ->reject(fn (SettingDefinition $definition): bool => $definition->hidden)
+            ->values();
 
         return SettingResource::collection($settings);
     }

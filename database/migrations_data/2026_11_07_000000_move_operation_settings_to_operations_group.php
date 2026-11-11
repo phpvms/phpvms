@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\Setting;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -42,7 +40,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -51,8 +49,8 @@ return new class() extends Migration
 
             // Read, write and delete together, so a stop part-way never leaves
             // a half-moved setting for a retry to misread.
-            $moved = DB::transaction(function () use ($oldId, $new): bool {
-                $oldRow = DB::table('settings')->where('id', $oldId)->first();
+            DB::transaction(function () use ($oldId, $new): bool {
+                $oldRow = DB::table('settings_backup')->where('id', $oldId)->first();
                 if ($oldRow === null) {
                     return false;
                 }
@@ -61,10 +59,6 @@ return new class() extends Migration
 
                 return true;
             });
-
-            if ($moved) {
-                $this->forget($old, $new);
-            }
         }
 
         $this->mergeLocks();
@@ -74,10 +68,10 @@ return new class() extends Migration
     {
         // One transaction: if it stops after the bids delete, a retry would read
         // the missing bids row as its default (on) and overwrite a correct off.
-        $merged = DB::transaction(function (): bool {
+        DB::transaction(function (): bool {
             $rows = [];
             foreach (self::LOCKS as $old => $default) {
-                $rows[$old] = DB::table('settings')->where('id', $this->id($old))->first();
+                $rows[$old] = DB::table('settings_backup')->where('id', $this->id($old))->first();
             }
 
             // Neither old row left: already migrated (or a fresh install).
@@ -100,17 +94,12 @@ return new class() extends Migration
                     $this->write($on ? '1' : '0', $this->id($old), self::LOCK_KEY);
                     $first = false;
                 } else {
-                    DB::table('settings')->where('id', $this->id($old))->delete();
+                    DB::table('settings_backup')->where('id', $this->id($old))->delete();
                 }
             }
 
             return true;
         });
-
-        // After commit, so the cache is never cleared for a rolled-back write.
-        if ($merged) {
-            $this->forget(...array_keys(self::LOCKS), ...[self::LOCK_KEY]);
-        }
     }
 
     /** Put $value on the new key's row: reuse a seeded row, else rename the old one. */
@@ -118,14 +107,14 @@ return new class() extends Migration
     {
         $newId = $this->id($new);
 
-        if (DB::table('settings')->where('id', $newId)->exists()) {
-            DB::table('settings')->where('id', $newId)->update(['value' => $value]);
-            DB::table('settings')->where('id', $oldId)->delete();
+        if (DB::table('settings_backup')->where('id', $newId)->exists()) {
+            DB::table('settings_backup')->where('id', $newId)->update(['value' => $value]);
+            DB::table('settings_backup')->where('id', $oldId)->delete();
 
             return;
         }
 
-        DB::table('settings')->where('id', $oldId)->update([
+        DB::table('settings_backup')->where('id', $oldId)->update([
             'id'    => $newId,
             'key'   => $new,
             'group' => 'operations',
@@ -141,17 +130,5 @@ return new class() extends Migration
     private function id(string $key): string
     {
         return str_replace('.', '_', $key);
-    }
-
-    private function forget(string ...$keys): void
-    {
-        $cache = config('cache.keys.SETTINGS');
-        if (!is_array($cache) || !isset($cache['key'])) {
-            return;
-        }
-
-        foreach ($keys as $key) {
-            Cache::forget($cache['key'].Setting::formatKey($key));
-        }
     }
 };

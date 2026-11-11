@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -66,7 +66,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -85,7 +85,7 @@ return new class() extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -105,7 +105,7 @@ return new class() extends Migration
 
         // No pre-change counterpart to restore to.
         foreach ($this->introduced as $key) {
-            Setting::where('id', Setting::formatKey($key))->delete();
+            LegacySetting::where('id', LegacySetting::formatKey($key))->delete();
         }
     }
 
@@ -127,13 +127,13 @@ return new class() extends Migration
         string $default,
         string $description,
     ): void {
-        $source = Setting::where('id', Setting::formatKey($from))->first();
+        $source = LegacySetting::where('id', LegacySetting::formatKey($from))->first();
 
-        if (!$source instanceof Setting) {
+        if (!$source instanceof LegacySetting) {
             return;
         }
 
-        $target = Setting::where('id', Setting::formatKey($to))->first();
+        $target = LegacySetting::where('id', LegacySetting::formatKey($to))->first();
 
         $offset = $target->offset ?? $source->offset;
         $order = $target->order ?? $source->order;
@@ -142,10 +142,10 @@ return new class() extends Migration
 
         // Query builder because this rewrites the primary key, and the explicit
         // column list is what documents that `value` is not among them.
-        DB::table('settings')
-            ->where('id', Setting::formatKey($from))
+        DB::table('settings_backup')
+            ->where('id', LegacySetting::formatKey($from))
             ->update([
-                'id'          => Setting::formatKey($to),
+                'id'          => LegacySetting::formatKey($to),
                 'key'         => $to,
                 'name'        => $name,
                 'group'       => $group,

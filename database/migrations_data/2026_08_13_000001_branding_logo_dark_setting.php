@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\LegacySetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -18,17 +18,17 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
-        $id = Setting::formatKey(self::KEY);
+        $id = LegacySetting::formatKey(self::KEY);
 
-        if (DB::table('settings')->where('id', $id)->exists()) {
+        if (DB::table('settings_backup')->where('id', $id)->exists()) {
             return;
         }
 
-        DB::table('settings')->insert([
+        DB::table('settings_backup')->insert([
             'id'          => $id,
             'key'         => strtolower(self::KEY),
             'name'        => 'Dark Logo URL',
@@ -45,10 +45,10 @@ return new class() extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
-        Setting::where('id', Setting::formatKey(self::KEY))->delete();
+        LegacySetting::where('id', LegacySetting::formatKey(self::KEY))->delete();
     }
 };

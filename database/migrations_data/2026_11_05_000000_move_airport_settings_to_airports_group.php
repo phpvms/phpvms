@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\Setting;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -26,7 +24,7 @@ return new class() extends Migration
 
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (!Schema::hasTable('settings_backup')) {
             return;
         }
 
@@ -34,26 +32,20 @@ return new class() extends Migration
             $oldId = str_replace('.', '_', $old);
             $newId = str_replace('.', '_', $new);
 
-            $oldRow = DB::table('settings')->where('id', $oldId)->first();
+            $oldRow = DB::table('settings_backup')->where('id', $oldId)->first();
             if ($oldRow === null) {
                 continue;
             }
 
-            if (DB::table('settings')->where('id', $newId)->exists()) {
-                DB::table('settings')->where('id', $newId)->update(['value' => $oldRow->value]);
-                DB::table('settings')->where('id', $oldId)->delete();
+            if (DB::table('settings_backup')->where('id', $newId)->exists()) {
+                DB::table('settings_backup')->where('id', $newId)->update(['value' => $oldRow->value]);
+                DB::table('settings_backup')->where('id', $oldId)->delete();
             } else {
-                DB::table('settings')->where('id', $oldId)->update([
+                DB::table('settings_backup')->where('id', $oldId)->update([
                     'id'    => $newId,
                     'key'   => $new,
                     'group' => 'airports',
                 ]);
-            }
-
-            $cache = config('cache.keys.SETTINGS');
-            if (is_array($cache) && isset($cache['key'])) {
-                Cache::forget($cache['key'].Setting::formatKey($old));
-                Cache::forget($cache['key'].Setting::formatKey($new));
             }
         }
     }

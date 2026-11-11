@@ -13,7 +13,6 @@ use App\Models\Addon;
 use App\Models\Kvp;
 use Carbon\Carbon;
 use Database\Seeders\BaseDataSeeder;
-use Database\Seeders\SettingsSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -34,7 +33,6 @@ class SeederService extends Service
     public function syncAllSeeds(): void
     {
         app(BaseDataSeeder::class)->run();
-        app(SettingsSeeder::class)->run();
 
         // Persist any new resource/page/custom permissions discovered in the
         // registry (replaces the removed filament-shield generate/seed step).
@@ -64,15 +62,12 @@ class SeederService extends Service
      */
     public function coreSeedsPending(): bool
     {
-        // Before the core migration that creates `settings` has run, querying it
-        // would throw. Treat a missing table as core-pending so callers such as
-        // UpdatePending redirect to /system/update instead of erroring — mirrors
+        // Settings need no seeding: each reads as its class default until it
+        // is saved, and changes to stored values ship as data migrations. A
+        // missing settings table still means the core migrations have not run,
+        // so callers such as UpdatePending redirect to /system/update — mirrors
         // the addons-table guard in MigrationService.
-        if (!Schema::hasTable('settings')) {
-            return true;
-        }
-
-        return new SettingsSeeder()->settingsPending();
+        return !Schema::hasTable('settings');
     }
 
     /**

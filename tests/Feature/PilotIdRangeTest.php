@@ -112,9 +112,9 @@ test('createUser rolls back the user row when the range is exhausted', function 
     expect(User::where('email', 'exhausted@example.com')->exists())->toBeFalse();
 });
 
-test('an empty range start setting never assigns pilot id 0', function (): void {
+test('a zero range start setting never assigns pilot id 0', function (): void {
     setting_save('pilots.id_range_enabled', true);
-    setting_save('pilots.id_range_start', '');
+    setting_save('pilots.id_range_start', 0);
     setting_save('pilots.id_range_end', 999);
 
     $user = User::factory()->create();

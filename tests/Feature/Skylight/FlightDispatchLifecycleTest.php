@@ -16,7 +16,6 @@ use App\Models\Bid;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Pirep;
-use App\Models\Setting;
 use App\Models\SimBrief;
 use App\Models\SimBriefAttempt;
 use App\Models\Subfleet;
@@ -225,10 +224,7 @@ it('uses the OFP namespace only for the new Skylight route surface', function ()
 });
 
 it('clamps legacy negative bid expiry and rejects new negative settings', function (): void {
-    $setting = Setting::query()->where('id', 'bids_expire_time')->firstOrFail();
-    $setting->update(['value' => '-3']);
-
-    app(SettingService::class)->clearMemo();
+    writeRawSetting('bids.expire_time', -3);
 
     expect(FlightDispatchPolicyData::fromSettings()->expireHours)->toBe(0)
         ->and(fn (): mixed => app(SettingService::class)->store('bids.expire_time', -1))

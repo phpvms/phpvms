@@ -105,7 +105,8 @@
     "enshrined/svg-sanitize": "^1.1",
     "filafly/filament-phosphor-icons": "^2.2",
     "socialiteproviders/openidconnect": "^1.0",
-    "tallstackui/tallstackui": "^4"
+    "tallstackui/tallstackui": "^4",
+    "spatie/laravel-settings": "^3.10"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",

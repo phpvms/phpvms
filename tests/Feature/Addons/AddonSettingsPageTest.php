@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 use App\Addons\AddonAutoLoader;
 use App\Filament\Pages\AddonSettings;
-use App\Models\Addon;
-use App\Models\AddonSetting;
 use App\Models\Permission;
 use App\Models\User;
 use App\Services\AddonSettingService;
-use App\Services\AddonSettingSyncService;
 use App\Services\PermissionRegistry;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Modules\Sample\Providers\Filament\SampleAdminPanelProvider;
+use Tests\Support\AddonSettings\AlphaSettings;
+use Tests\Support\AddonSettings\WidgetSettings;
 
 function sampleSettingsPanel(): Panel
 {
@@ -29,8 +28,6 @@ beforeEach(function (): void {
     // and that must happen before the first Modules\Sample\* lookup, since
     // Composer's ClassLoader memoises misses in $missingClasses.
     app(AddonAutoLoader::class)->register(app());
-
-    app(AddonSettingSyncService::class)->sync();
 });
 
 it('registers the shared AddonSettings page on an addon panel', function (): void {
@@ -58,17 +55,14 @@ it('grants page access within the addon panel but not on the core panel', functi
 })->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('scopes settings to the owning addon only', function (): void {
-    $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
+    registerAddonSettings('demo/widget', [WidgetSettings::class]);
+    registerAddonSettings('other/addon', [AlphaSettings::class]);
 
-    // A second addon with its own settings must not appear in Sample's scope.
-    $other = Addon::factory()->create(['registry_id' => 'other/addon']);
-    AddonSetting::factory()->create(['registry_id' => $other->registry_id, 'key' => 'secret']);
+    $scoped = collect(app(AddonSettingService::class)->all('demo/widget'));
 
-    $scoped = app(AddonSettingService::class)->all($sample->registry_id);
-
-    expect($scoped)->toHaveCount(5)
-        ->and($scoped->pluck('registry_id')->unique()->all())->toBe([$sample->registry_id]);
-})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
+    expect($scoped->pluck('class')->unique()->all())->toBe([WidgetSettings::class])
+        ->and($scoped->pluck('name'))->not->toContain('api_token');
+});
 
 it('contributes the edit:addon-settings permission to the registry', function (): void {
     expect(app(PermissionRegistry::class)->all())->toContain('edit:addon-settings');
