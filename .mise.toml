@@ -1,9 +1,8 @@
 
 [env]
 BUILDKIT_HOST = "docker-container://buildkit"
-PHPRC = "resources/mise"
+PHP_PREBUILT_STATIC = "{{ os() != 'windows' }}"
 _.php = {
-    prebuilt_static = true,
     prebuilt_static_flavor = "bulk",
     extra_configure_options = "--with-pdo-mysql --with-pdo-pgsql",
     pie_extensions = "redis/phpredis xdebug/xdebug"
