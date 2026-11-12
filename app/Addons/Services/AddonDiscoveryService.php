@@ -188,19 +188,19 @@ class AddonDiscoveryService
     {
         $parts = [];
 
-        $root = AddonRoots::root();
-
         // File::directories() follows symlinks, so a bundled link counts, and
         // a release that edits a bundled manifest changes the hash.
-        foreach (is_dir($root) ? File::directories($root) : [] as $dir) {
-            foreach ([...ManifestParser::MANIFEST_FILES, 'composer.json'] as $file) {
-                $path = $dir.'/'.$file;
+        foreach (array_keys(AddonRoots::scanned()) as $root) {
+            foreach (is_dir($root) ? File::directories($root) : [] as $dir) {
+                foreach ([...ManifestParser::MANIFEST_FILES, 'composer.json'] as $file) {
+                    $path = $dir.'/'.$file;
 
-                if (!File::exists($path)) {
-                    continue;
+                    if (!File::exists($path)) {
+                        continue;
+                    }
+
+                    $parts[] = $path.'|'.filemtime($path).'|'.filesize($path);
                 }
-
-                $parts[] = $path.'|'.filemtime($path).'|'.filesize($path);
             }
         }
 
@@ -335,12 +335,14 @@ class AddonDiscoveryService
     }
 
     /**
-     * Scan the addon root, one manifest per addon.
+     * Scan the addon root and modules/, one manifest per addon.
      *
      * De-duplication is on registry_id, which ManifestParser guarantees is
      * present and non-empty — a directory without one never produces a
-     * manifest. Two directories with the same registry_id (a copy left by
-     * hand) load the first one found; the other is logged and inert.
+     * manifest. The first copy found loads, in {@see AddonRoots::scanned()}
+     * order. A copy in a later directory is skipped: it is the one a
+     * registry update in the root replaced. Two copies in the same directory
+     * (one left by hand) are logged, and the second is inert.
      *
      * @return AddonManifest[]
      */
@@ -349,19 +351,31 @@ class AddonDiscoveryService
         /** @var array<string, AddonManifest> $chosen */
         $chosen = [];
 
-        foreach ($this->scanLocation(AddonRoots::root()) as $manifest) {
-            if (isset($chosen[$manifest->registryId])) {
-                Log::warning(sprintf(
-                    'AddonDiscoveryService: "%s" is in the addon root twice — loading %s, ignoring %s',
-                    $manifest->name,
-                    $chosen[$manifest->registryId]->path,
-                    $manifest->path,
-                ));
+        foreach (AddonRoots::scanned() as $dir => $skip) {
+            /** @var array<string, AddonManifest> $found */
+            $found = [];
 
-                continue;
+            foreach ($this->scanLocation($dir, $skip) as $manifest) {
+                if (isset($chosen[$manifest->registryId])) {
+                    continue;
+                }
+
+                if (isset($found[$manifest->registryId])) {
+                    Log::warning(sprintf(
+                        'AddonDiscoveryService: "%s" is in %s twice — loading %s, ignoring %s',
+                        $manifest->name,
+                        $dir,
+                        $found[$manifest->registryId]->path,
+                        $manifest->path,
+                    ));
+
+                    continue;
+                }
+
+                $found[$manifest->registryId] = $manifest;
             }
 
-            $chosen[$manifest->registryId] = $manifest;
+            $chosen = [...$chosen, ...$found];
         }
 
         return array_values($chosen);
@@ -371,7 +385,8 @@ class AddonDiscoveryService
      * Enumerate immediate subdirectories of $dir and parse each manifest.
      *
      * Returns an empty array when the directory does not exist; modules
-     * may be absent on a fresh install (LOAD-01).
+     * may be absent on a fresh install (LOAD-01). Entries named in $skip are
+     * passed over.
      *
      * Path-traversal guard (T-04-03): each entry must be a direct child of the
      * scanned base dir. Direct-child symlinks are permitted even when their
@@ -379,9 +394,10 @@ class AddonDiscoveryService
      * symlinked local-module dev). Broken symlinks and non-direct-child entries
      * are skipped and logged.
      *
+     * @param  list<string>    $skip
      * @return AddonManifest[]
      */
-    private function scanLocation(string $dir): array
+    private function scanLocation(string $dir, array $skip = []): array
     {
         if (!is_dir($dir)) {
             return [];
@@ -396,6 +412,10 @@ class AddonDiscoveryService
         $results = [];
 
         foreach (File::directories($dir) as $subDir) {
+            if (in_array(basename((string) $subDir), $skip, true)) {
+                continue;
+            }
+
             $resolved = realpath($subDir);
 
             // Broken symlink or vanished directory — nothing to scan.

@@ -8,7 +8,7 @@ use App\Addons\Models\AddonManifest;
 use App\Support\Filesystem;
 
 /**
- * Lenient parser for addon manifests (addon.json)
+ * Lenient parser for addon manifests (addon.json, or the legacy module.json)
  * + composer.json.
  *
  * Returns a typed ManifestData on success, or null when the manifest is
@@ -19,9 +19,9 @@ use App\Support\Filesystem;
 class ManifestParser
 {
     /**
-     * Manifest file names, in lookup order.
+     * Manifest file names, in lookup order. module.json is the legacy name.
      */
-    public const MANIFEST_FILES = ['addon.json'];
+    public const MANIFEST_FILES = ['addon.json', 'module.json'];
 
     /**
      * The addon's manifest file. Null when there is none.

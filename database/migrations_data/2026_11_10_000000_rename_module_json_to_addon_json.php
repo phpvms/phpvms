@@ -7,14 +7,13 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Data migration: core reads addon.json only, so rename module.json to
- * addon.json in every installed addon directory.
+ * Data migration: addon.json is the manifest name, so rename module.json to
+ * addon.json in every installed addon directory. module.json is still read.
  *
  * A directory that already has addon.json is left alone. Safe to run again.
  *
- * Awards and widgets keep module.json so they stop loading: Awards is moving out of
- * core and its legacy awards become rule-based (VMS-200), and widgets move into
- * app/Features/Widgets.
+ * Awards and widgets are skipped: they are bundled, so their root entries are
+ * links into modules/, and a rename would edit the release's files.
  */
 return new class() extends Migration
 {

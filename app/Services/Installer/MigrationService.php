@@ -84,31 +84,57 @@ class MigrationService extends Service
 
     /**
      * Scan disk for addon directories, mirroring
-     * AddonDiscoveryService::scanLocation()'s conventions: immediate child
-     * directories of the addon root that contain an addon.json. Used only
+     * AddonDiscoveryService::scanRoot()'s conventions: immediate child
+     * directories of the addon root and modules/ that contain a manifest. Used only
      * pre-install, before the `addons` table exists to be the source of
      * truth (see getMigrationPaths()).
      *
      * Direct-child symlinks are permitted (the bundled links, or a dev
      * checkout linked in by hand); anything that isn't a direct child of the
-     * root, or has no addon.json, is skipped.
+     * directory it was found in, or has no manifest, is skipped.
      *
      * @return array<string, string> addon directory basename => absolute path
      */
     private function scanAddonPathsOnDisk(): array
     {
         $parser = app(ManifestParser::class);
-        $base = AddonRoots::root();
-        $realBase = is_dir($base) ? realpath($base) : false;
-
-        if ($realBase === false) {
-            return [];
-        }
 
         /** @var array<string, array{name: string, path: string}> $chosen */
         $chosen = [];
 
+        foreach (AddonRoots::scanned() as $base => $skip) {
+            $realBase = is_dir($base) ? realpath($base) : false;
+
+            if ($realBase === false) {
+                continue;
+            }
+
+            $this->scanAddonDirectory($parser, $base, $realBase, $skip, $chosen);
+        }
+
+        $paths = [];
+
+        foreach ($chosen as $entry) {
+            $paths[$entry['name']] = $entry['path'];
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Add the addons directly under $base to $chosen, passing over the entry
+     * names in $skip.
+     *
+     * @param list<string>                                     $skip
+     * @param array<string, array{name: string, path: string}> $chosen
+     */
+    private function scanAddonDirectory(ManifestParser $parser, string $base, string $realBase, array $skip, array &$chosen): void
+    {
         foreach (File::directories($base) as $subDir) {
+            if (in_array(basename((string) $subDir), $skip, true)) {
+                continue;
+            }
+
             $resolved = realpath($subDir);
 
             if ($resolved === false) {
@@ -141,14 +167,6 @@ class MigrationService extends Service
 
             $chosen[$key] ??= ['name' => $name, 'path' => $resolved];
         }
-
-        $paths = [];
-
-        foreach ($chosen as $entry) {
-            $paths[$entry['name']] = $entry['path'];
-        }
-
-        return $paths;
     }
 
     /**

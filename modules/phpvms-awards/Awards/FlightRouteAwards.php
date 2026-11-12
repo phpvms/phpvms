@@ -57,7 +57,7 @@ class FlightRouteAwards extends Award
 
         try {
             [$dpt_icao, $arr_icao] = explode(':', $dptarr);
-        } catch (ErrorException $e) {
+        } catch (ErrorException) {
             Log::error('FlightRouteAwards: Invalid departure/arrival, val="'.$dptarr.'\"');
 
             return false;

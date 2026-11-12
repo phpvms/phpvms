@@ -20,20 +20,24 @@ return [
     // Addons that ship with phpvms. Each one stays in modules/<name> and is
     // linked into the addon root as `<root>/<name> -> ../../../modules/<name>`
     // by `phpvms:addons-link-bundled`, so a new release updates it in place.
+    // Discovery skips these names in modules/, so each loads once, via its link.
     'bundled' => [
         'phpvms-addon-manager',
         'phpvms-airside-theme',
+        'phpvms-awards',
+        'phpvms-widgets',
     ],
 
     'paths' => [
-        // The one directory addons are discovered in: modules and themes, the
-        // bundled links and every addon installed at runtime. Under storage/
+        // Where addons are installed: modules and themes, the bundled links and
+        // every addon installed at runtime. Discovery scans it first. Under storage/
         // because that is the persistent writable volume in compose.deploy.yml,
         // so installs survive a redeploy.
         'root' => storage_path('app/addons'),
 
         // Where the bundled addons' files live. Part of the release, never
-        // written to at runtime.
+        // written to at runtime. Discovery scans it after the root, skipping
+        // the bundled names above.
         'bundled' => base_path('modules'),
 
         // Where each theme addon's public/ is linked, as themes/<name>. Inside

@@ -3,3 +3,5 @@
 !.gitignore
 !/phpvms-addon-manager
 !/phpvms-airside-theme
+!/phpvms-awards
+!/phpvms-widgets

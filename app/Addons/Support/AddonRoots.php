@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace App\Addons\Support;
 
 /**
- * The directory addons are discovered in, and where the bundled ones come from.
+ * The directories addons are discovered in, and where the bundled ones come from.
  *
- * - The ROOT (`addons.paths.root`, `storage/app/addons`) is the only directory
- *   discovery scans. It holds modules and themes alike: every addon installed
- *   at runtime, and a symlink for each bundled addon.
- * - The BUNDLED source (`addons.paths.bundled`, `modules/`) holds the files of
- *   the addons listed in `addons.bundled`. It ships with each release and is
- *   never written to at runtime. {@see BundledAddonLinker} links each one into
- *   the root.
+ * - The ROOT (`addons.paths.root`, `storage/app/addons`) holds modules and
+ *   themes alike: every addon installed at runtime, and a symlink for each
+ *   bundled addon.
+ * - The BUNDLED source (`addons.paths.bundled`, `modules/`) ships with each
+ *   release and is never written to at runtime. It holds the files of the
+ *   addons listed in `addons.bundled`, which {@see BundledAddonLinker} links
+ *   into the root, and any other addon placed there by hand.
+ *
+ * Discovery scans both ({@see scanned()}).
  *
  * Both are read from config on every call rather than cached, so tests that
  * point either one at a temp directory behave as expected.
@@ -44,6 +46,24 @@ final class AddonRoots
     public static function bundled(): array
     {
         return array_values(array_filter((array) config('addons.bundled', []), is_string(...)));
+    }
+
+    /**
+     * The directories discovery scans, in order, each mapped to the entry
+     * names it skips there.
+     *
+     * The root comes first, so a registry update in the root wins over the
+     * copy in modules/. The bundled names are skipped in modules/: they load
+     * through their link in the root, and would otherwise load twice.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function scanned(): array
+    {
+        return [
+            self::root()          => [],
+            self::bundledSource() => self::bundled(),
+        ];
     }
 
     /**

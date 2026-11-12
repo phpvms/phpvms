@@ -12,11 +12,12 @@ use App\Exceptions\AddonInstallException;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 /**
- * The single addon root: `addons.paths.root` is the only directory discovery
- * scans and the addon manager installs into. Bundled addons live in
- * `addons.paths.bundled` and are symlinked into the root.
+ * The addon root: `addons.paths.root` is where the addon manager installs.
+ * Bundled addons live in `addons.paths.bundled` and are symlinked into the
+ * root. Discovery scans both, skipping the bundled names in the bundled source.
  *
  * Both are pointed at temp directories here. tests/Pest.php already redirects
  * the root away from the working copy for every test; this suite additionally
@@ -127,6 +128,30 @@ it('invalidates the boot cache when an addon appears in the root', function (): 
     placeAddonInRoot($this->root, 'Added');
 
     expect($service->primeIfNeeded())->toBeTrue();
+});
+
+it('discovers an addon in modules/, and a bundled one only through its link', function (): void {
+    $handPlaced = placeAddonInRoot($this->bundled, 'HandPlaced');
+    placeBundledAddon('Shipped', 'acme/shipped', '1.0.0');
+    Log::spy();
+
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+
+    Log::shouldNotHaveReceived('warning', [Mockery::on(fn (string $message): bool => str_contains($message, 'twice'))]);
+    expect(Addon::query()->where('registry_id', 'acme/handplaced')->value('path'))->toBe(realpath($handPlaced))
+        ->and(Addon::query()->where('registry_id', 'acme/shipped')->count())->toBe(1)
+        ->and(AddonRoots::isLinked((string) Addon::query()->where('registry_id', 'acme/shipped')->value('path')))->toBeTrue();
+});
+
+it('loads the copy in the root when modules/ has the same addon', function (): void {
+    placeAddonInRoot($this->bundled, 'Twin', 'acme/twin', '1.0.0');
+    $installed = placeAddonInRoot($this->root, 'Twin', 'acme/twin', '1.1.0');
+    Log::spy();
+
+    app(AddonDiscoveryService::class)->discoverNewAddons();
+
+    Log::shouldNotHaveReceived('warning', [Mockery::on(fn (string $message): bool => str_contains($message, 'twice'))]);
+    expect(Addon::query()->where('registry_id', 'acme/twin')->sole()->path)->toBe(realpath($installed));
 });
 
 it('does not re-enable an addon the operator disabled', function (): void {

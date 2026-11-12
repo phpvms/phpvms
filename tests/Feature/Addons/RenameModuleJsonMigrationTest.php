@@ -47,13 +47,13 @@ it('leaves a directory that has both files alone', function (): void {
         ->and(File::get($dir.'/addon.json'))->toBe('{"new":true}');
 });
 
-it('does not treat a directory with only module.json as an addon', function (): void {
+it('reads a module.json addon before and after the rename', function (): void {
     $dir = $this->base.'/legacy';
     File::ensureDirectoryExists($dir);
     File::put($dir.'/module.json', json_encode(['registry_id' => 'acme/legacy']));
     File::put($dir.'/composer.json', '{}');
 
-    expect(new ManifestParser()->parse($dir))->toBeNull();
+    expect(new ManifestParser()->parse($dir)?->registryId)->toBe('acme/legacy');
 
     $this->migration->up();
 

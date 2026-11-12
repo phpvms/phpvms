@@ -142,6 +142,7 @@
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/",
       "Modules\\AddonManager\\": "modules/phpvms-addon-manager/app/",
+      "Modules\\Awards\\": "modules/phpvms-awards/",
       "Modules\\": "modules/"
     }
   },

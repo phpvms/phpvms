@@ -13,6 +13,7 @@
         "weather",
         "metar"
     ],
+    "bundled": true,
     "active": 0,
     "order": 0,
     "providers": [
