@@ -257,11 +257,8 @@ class AddonDiscoveryService
             if ($installed) {
                 $this->healLegacyIdentity($installed, $m);
 
-                // Re-point the existing row at the copy on disk. upsert() leaves
-                // `enabled` and `installed_at` alone for a row that already
-                // exists, so this only syncs path/version/namespace. It is also
-                // what moves a row written under an old path (modules/, or the
-                // old storage/addons) to the addon root after an upgrade.
+                // Syncs path/version/namespace only; `enabled` and
+                // `installed_at` are kept.
                 $this->upsert($m);
 
                 continue;

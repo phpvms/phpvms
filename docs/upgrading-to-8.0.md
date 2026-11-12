@@ -240,17 +240,11 @@ noted; resources are grouped by navigation group.
   registered through `AddonServiceProvider` from the `addons` table + boot
   cache. `module.json` manifest schema is validated (name, alias, providers,
   type, compat, registry_id, version).
-- **One addon directory**: addons are found only in `storage/app/addons`
-  (`addons.paths.root`), modules and themes alike. Runtime installs under the
-  old `storage/addons` and `storage/addon-themes` are moved there by a data
-  migration. `modules/` is no longer scanned for addons; it stays a PSR-4
-  directory (`Modules\`) for core extensions outside `app/`.
-- **Bundled addons are symlinks**: the addon manager and airside stay in
-  `modules/<name>`, and `storage/app/addons/<name>` links to them
-  (`../../../modules/<name>`). The links ship in the release;
-  `php artisan phpvms:addons-link-bundled` recreates missing ones and runs on
-  install, update, `phpvms:addons-prime` and Docker start. **Symlink support is
-  now required**; the installer checks for it.
+- **Addon directory**: addons live in `storage/app/addons`. `modules/` is
+  still scanned, for backwards compatibility.
+- **Bundled addons are symlinks** from `storage/app/addons/<name>` to
+  `modules/<name>`. `php artisan phpvms:addons-link-bundled` recreates them.
+  **Symlink support is now required.**
 - Bundled `Sample` and `Vacentral` modules are deleted from the repo (data
   migration removes the VaCentral module row).
 - **VaCentral integration removed**: `nabeel/vacentral` package,
