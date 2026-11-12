@@ -1,6 +1,7 @@
 
 [env]
 BUILDKIT_HOST = "docker-container://buildkit"
+PHPRC = "{% if os_family() == 'unix' %}{{ config_root }}/resources/mise{% else %}{{ env.PHPRC | default(value='') }}{% endif %}"
 PHP_PREBUILT_STATIC = "{{ os() != 'windows' }}"
 _.php = {
     prebuilt_static_flavor = "bulk",
