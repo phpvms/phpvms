@@ -98,6 +98,7 @@ class UserForm
                             ->label(__('common.country'))
                             ->options(collect(new ISO3166()->all())->mapWithKeys(fn (array $item, string $key): array => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
                             ->searchable()
+                            ->optionsLimit(300)
                             ->native(false),
 
                         Select::make('timezone')
