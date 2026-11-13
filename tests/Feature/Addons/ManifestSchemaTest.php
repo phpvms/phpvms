@@ -9,11 +9,15 @@ use App\Features\Addons\Sources\ZipSource;
 use App\Features\Addons\Support\ManifestSchema;
 use App\Features\Addons\Support\ManifestSchemaValidator;
 use App\Models\Addon;
+use App\Models\Role;
+use App\Models\User;
+use Filament\Notifications\DatabaseNotification;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 const SCHEMA_URL = 'https://addons.test/schema/addon.json';
 
@@ -180,5 +184,28 @@ describe('validation', function (): void {
         Log::shouldHaveReceived('warning')
             ->withArgs(fn (string $message): bool => str_contains($message, 'Bad') && str_contains($message, 'schema_version'))
             ->once();
+    });
+
+    it('disables an enabled addon whose addon.json fails the schema and notifies the super-admins', function (): void {
+        $base = $this->work.'/root';
+        Config::set('addons.paths.root', $base);
+        $manifest = validManifest(['name' => 'Bad', 'registry_id' => 'acme/bad']);
+        unset($manifest['schema_version']);
+        File::ensureDirectoryExists($base.'/bad');
+        File::put($base.'/bad/addon.json', json_encode($manifest));
+        File::put($base.'/bad/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Bad\\' => '']]]));
+        $addon = Addon::factory()->create(['name' => 'Bad', 'registry_id' => 'acme/bad', 'namespace' => 'Modules\\Bad', 'path' => $base.'/bad']);
+        $admin = User::factory()->create();
+        $admin->assignRole(Role::create(['name' => Role::superAdminName(), 'guard_name' => 'web']));
+        Notification::fake();
+
+        app(AddonDiscoveryService::class)->rebuildCache();
+
+        expect($addon->refresh()->enabled)->toBeFalse();
+        Notification::assertSentTo($admin, DatabaseNotification::class, function (DatabaseNotification $notification) use ($admin): bool {
+            $data = $notification->toDatabase($admin);
+
+            return str_contains((string) $data['title'], 'Bad') && str_contains((string) $data['body'], 'schema_version');
+        });
     });
 });

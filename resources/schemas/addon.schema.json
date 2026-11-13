@@ -4,7 +4,7 @@
   "title": "phpVMS Addon Manifest",
   "description": "Schema for a phpVMS addon/module manifest (module.json).",
   "type": "object",
-  "required": ["schema_version", "type", "description", "registry_id"],
+  "required": ["schema_version", "type", "registry_id"],
   "additionalProperties": true,
   "properties": {
     "$schema": {

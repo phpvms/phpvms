@@ -8,6 +8,7 @@ use App\Features\Addons\Models\AddonBootCache;
 use App\Features\Addons\Models\AddonManifest;
 use App\Features\Addons\Support\AddonAssetLinker;
 use App\Features\Addons\Support\AddonClassScanner;
+use App\Features\Addons\Support\AddonQuarantine;
 use App\Features\Addons\Support\AddonRoots;
 use App\Features\Addons\Support\BootCache;
 use App\Features\Addons\Support\ManifestParser;
@@ -19,6 +20,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -449,6 +451,7 @@ class AddonDiscoveryService
 
             if ($errors !== []) {
                 Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json does not match the manifest schema: %s", $manifest->name, implode('; ', $errors)));
+                $this->quarantineInvalid($manifest, $errors);
 
                 continue;
             }
@@ -457,6 +460,22 @@ class AddonDiscoveryService
         }
 
         return $results;
+    }
+
+    /**
+     * Disable an enabled addon whose addon.json fails the schema, and notify the admins.
+     *
+     * Only enabled rows: disabling rescans, and the rescan finds the row already off.
+     *
+     * @param list<string> $errors
+     */
+    private function quarantineInvalid(AddonManifest $manifest, array $errors): void
+    {
+        if (!installed() || !Addon::query()->where('namespace', $manifest->namespace)->where('enabled', true)->exists()) {
+            return;
+        }
+
+        app(AddonQuarantine::class)->handle($manifest->namespace, $manifest->name, 'addon.json', new RuntimeException(implode('; ', $errors)));
     }
 
     /**
