@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\Support\ManifestParser;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 

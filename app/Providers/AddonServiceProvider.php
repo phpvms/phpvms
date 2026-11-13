@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\AutoloadGuard;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\ManifestParser;
-use App\Addons\Support\ManifestSchema;
-use App\Addons\Support\ManifestSchemaValidator;
-use App\Addons\Support\ThemeAddonRegistrar;
-use App\Addons\Support\ThemeAssetLinker;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\AutoloadGuard;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\ManifestParser;
+use App\Features\Addons\Support\ManifestSchema;
+use App\Features\Addons\Support\ManifestSchemaValidator;
+use App\Features\Addons\Support\ThemeAddonRegistrar;
+use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Support\RegistersApiScopes;
 use Illuminate\Support\ServiceProvider;
 use Override;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Plugins;
 
-use App\Addons\Support\AddonIcon;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Support\AddonIcon;
+use App\Features\Addons\Support\BootCache;
 use App\Support\Branding;
 use Filament\Contracts\Plugin;
 use Filament\Facades\Filament;

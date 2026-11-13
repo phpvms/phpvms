@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\AddonManifest;
-use App\Addons\Support\AddonValidator;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\Models\AddonManifest;
+use App\Features\Addons\Support\AddonValidator;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {

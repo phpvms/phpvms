@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\AutoloadGuard;
 use App\Exceptions\AutoloadModeException;
+use App\Features\Addons\Support\AutoloadGuard;
 use Composer\Autoload\ClassLoader;
 
 it('isClassMapAuthoritative() returns true when loader is in classmap-authoritative mode', function (): void {

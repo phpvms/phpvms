@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\AddonRoots;
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\ManifestParser;
 use App\Contracts\Addons\AddonSettings;
+use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;

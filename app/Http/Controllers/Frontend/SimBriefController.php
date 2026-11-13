@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Addons\AddonRegistry;
 use App\Enums\AircraftState;
 use App\Enums\AircraftStatus;
 use App\Enums\AirframeSource;
 use App\Enums\FareType;
 use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
+use App\Features\Addons\AddonRegistry;
 use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;

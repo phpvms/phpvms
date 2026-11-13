@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;

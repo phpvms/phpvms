@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Sources\ZipSource;
-use App\Addons\Support\CoreTables;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Sources\ZipSource;
+use App\Features\Addons\Support\CoreTables;
 use App\Models\Addon;
 use App\Services\Installer\MigrationService;
 use Composer\Autoload\ClassLoader;

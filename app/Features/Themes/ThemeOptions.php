@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Themes;
 
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\Support\ManifestParser;
 use App\Http\Middleware\SetActiveTheme;
 use App\Services\VersionService;
 use BackedEnum;

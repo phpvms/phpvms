@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Addons\AddonRegistry;
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;

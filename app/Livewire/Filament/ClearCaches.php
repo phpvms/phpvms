@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Filament;
 
-use App\Addons\Support\OctaneReloader;
+use App\Features\Addons\Support\OctaneReloader;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;

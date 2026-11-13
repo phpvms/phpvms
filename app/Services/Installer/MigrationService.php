@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
-use App\Addons\AddonRegistry;
-use App\Addons\Models\AddonManifest;
-use App\Addons\Support\AddonRoots;
-use App\Addons\Support\ManifestParser;
 use App\Contracts\Service;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Models\AddonManifest;
+use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Closure;
 use Exception;

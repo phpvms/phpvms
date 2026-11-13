@@ -1,7 +1,7 @@
 <?php
 
-use App\Addons\Sources\ZipSource;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\Sources\ZipSource;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\AutoloadGuard;
-use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonServiceProvider;
 use App\Contracts\Addons\AddonSettings as AddonSettingsClass;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\AutoloadGuard;
+use App\Features\Addons\Support\BootCache;
 use App\Features\Themes\ThemeOptions;
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;

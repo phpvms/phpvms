@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\BundledAddonLinker;
+use App\Features\Addons\Support\BundledAddonLinker;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 

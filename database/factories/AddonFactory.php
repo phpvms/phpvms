@@ -6,8 +6,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Addons\Support\AddonRoots;
 use App\Contracts\Factory;
+use App\Features\Addons\Support\AddonRoots;
 use App\Models\Addon;
 use Illuminate\Support\Str;
 

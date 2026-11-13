@@ -1,7 +1,7 @@
 <?php
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonRoots;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\AddonRoots;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Sources\ZipSource;
-use App\Addons\Support\ManifestSchema;
-use App\Addons\Support\ManifestSchemaValidator;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Sources\ZipSource;
+use App\Features\Addons\Support\ManifestSchema;
+use App\Features\Addons\Support\ManifestSchemaValidator;
 use App\Models\Addon;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Config;

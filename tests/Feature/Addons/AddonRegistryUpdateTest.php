@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Sources\ZipSource;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Sources\ZipSource;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
-use App\Addons\Support\BundledAddonLinker;
 use App\Contracts\Service;
+use App\Features\Addons\Support\BundledAddonLinker;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Laravel\Passport\Passport;

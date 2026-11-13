@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonIcon;
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AddonIcon;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use App\Models\User;
 use Illuminate\Support\Facades\File;

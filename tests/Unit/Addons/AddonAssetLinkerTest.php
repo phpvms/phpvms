@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\AddonAssetLinker;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\AddonCacheRefresher;
 use App\Filament\System\Installer;
 use App\Models\User;
 use App\Services\Installer\InstallerService;

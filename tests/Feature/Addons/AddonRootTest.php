@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonDeleteOutcome;
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Sources\ZipSource;
-use App\Addons\Support\AddonRoots;
-use App\Addons\Support\BundledAddonLinker;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonDeleteOutcome;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Sources\ZipSource;
+use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\BundledAddonLinker;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;

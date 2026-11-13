@@ -2,9 +2,9 @@
 
 namespace App\Filament\Pages;
 
-use App\Addons\Support\OctaneReloader;
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Addons\Support\OctaneReloader;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Jobs\BackfillPirepsParentFlight;
 use App\Services\CronService;

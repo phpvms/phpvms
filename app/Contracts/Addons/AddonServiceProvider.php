@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Contracts\Addons;
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonClassScanner;
-use App\Addons\Support\AddonQuarantine;
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\AdminPanelBuilder;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\ManifestParser;
-use App\Addons\Support\ThemeAddonRegistrar;
 use App\Contracts\Addons\Attributes\AddonListener;
 use App\Contracts\Addons\Attributes\AddonModel;
 use App\Contracts\Addons\Attributes\PolicyFor;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AddonClassScanner;
+use App\Features\Addons\Support\AddonQuarantine;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\AdminPanelBuilder;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\ManifestParser;
+use App\Features\Addons\Support\ThemeAddonRegistrar;
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\FilterHook;
 use App\Features\Hooks\GateHook;

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
+use App\Features\Addons\AddonRegistry;
 use App\Features\Bids\Actions\LoadDispatch;
 use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Actions\RemoveBid;

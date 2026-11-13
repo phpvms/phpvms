@@ -2,9 +2,9 @@
 
 namespace App\Providers\Filament;
 
-use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonServiceProvider;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
+use App\Features\Addons\Support\BootCache;
 use App\Filament\Pages\Backups;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\Enums\Phosphor;

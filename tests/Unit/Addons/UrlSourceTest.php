@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\Sources\UrlSource;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\Sources\UrlSource;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 

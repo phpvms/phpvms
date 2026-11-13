@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use Illuminate\Support\Facades\File;
 

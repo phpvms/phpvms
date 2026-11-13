@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\AddonManager\Filament\Pages;
 
-use App\Addons\AddonDeleteOutcome;
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Sources\ZipSource;
-use App\Addons\Support\AddonIcon;
-use App\Addons\Support\ManifestParser;
 use App\Enums\NavigationGroup;
+use App\Features\Addons\AddonDeleteOutcome;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Sources\ZipSource;
+use App\Features\Addons\Support\AddonIcon;
+use App\Features\Addons\Support\ManifestParser;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
 use BackedEnum;

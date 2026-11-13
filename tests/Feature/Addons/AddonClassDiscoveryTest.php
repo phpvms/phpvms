@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonQuarantine;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\AddonQuarantine;
+use App\Features\Addons\Support\BootCache;
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
 use App\Models\Addon;

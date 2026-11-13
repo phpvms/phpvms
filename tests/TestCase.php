@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonRoots;
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\ManifestParser;
 use App\Services\SettingService;
 use App\Support\InstallMarker;
 use Illuminate\Foundation\Application;

@@ -2,7 +2,7 @@
 
 namespace App\Filament\System;
 
-use App\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\AddonCacheRefresher;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\Role;
 use App\Models\User;

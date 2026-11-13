@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\OctaneReloader;
+use App\Features\Addons\Support\OctaneReloader;
 use App\Filament\Pages\Maintenance;
 use App\Filament\System\Updater;
 use App\Livewire\Filament\ClearCaches;

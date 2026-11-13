@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
+use App\Features\Addons\AddonRegistry;
 use App\Features\Hooks\Points\App\Slots\SlotProfileCards;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;

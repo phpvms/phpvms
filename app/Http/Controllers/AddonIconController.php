@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Addons\AddonRegistry;
-use App\Addons\Support\AddonIcon;
-use App\Addons\Support\ManifestParser;
 use App\Contracts\Controller;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\AddonIcon;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;

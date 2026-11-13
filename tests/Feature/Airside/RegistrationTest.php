@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\AddonCacheRefresher;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\OctaneReloader;
-use App\Addons\Support\ThemeAssetLinker;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\OctaneReloader;
+use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;

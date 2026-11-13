@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonDeleteOutcome;
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Sources\ZipSource;
-use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\BundledAddonLinker;
-use App\Addons\Support\ThemeAddonRegistrar;
-use App\Addons\Support\ThemeAssetLinker;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonDeleteOutcome;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Sources\ZipSource;
+use App\Features\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\BundledAddonLinker;
+use App\Features\Addons\Support\ThemeAddonRegistrar;
+use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Http\Middleware\SetActiveTheme;
 use App\Models\Addon;
 use App\Services\Installer\InstallerService;

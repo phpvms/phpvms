@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Addons\AddonRegistry;
-use App\Addons\Support\AddonRoots;
-use App\Addons\Support\ManifestParser;
 use App\Contracts\Controller;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\View\View;
 use stdClass;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Addons\Models\AddonManifest;
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\Models\AddonManifest;
+use App\Features\Addons\Support\ManifestParser;
 
 it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();

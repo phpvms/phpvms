@@ -2,7 +2,7 @@
 
 namespace App\Filament\System;
 
-use App\Addons\Support\OctaneReloader;
+use App\Features\Addons\Support\OctaneReloader;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use App\Addons\Support\AddonSettingsRegistry;
 use App\Contracts\Addons\AddonSettings as AddonSettingsClass;
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Addons\Support\AddonSettingsRegistry;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\EditsSettings;
 use App\Models\Addon;

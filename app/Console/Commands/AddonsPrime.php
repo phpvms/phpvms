@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\BundledAddonLinker;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\BundledAddonLinker;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;

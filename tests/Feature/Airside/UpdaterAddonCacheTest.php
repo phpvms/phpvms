@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\OctaneReloader;
+use App\Features\Addons\Support\OctaneReloader;
 use App\Filament\System\Updater;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;

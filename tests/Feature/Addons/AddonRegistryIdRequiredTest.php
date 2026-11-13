@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use App\Services\AddonSettingService;
 use Illuminate\Support\Facades\DB;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\AddonRegistry;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\RegistrySignatureVerifier;
 use App\Events\AddonInstalled;
 use App\Events\AddonUpdated;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\RegistrySignatureVerifier;
 use App\Models\Addon;
 use App\Models\User;
 use App\Services\CronService;
