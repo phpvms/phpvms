@@ -2,7 +2,7 @@
 
 namespace App\Filament\System;
 
-use App\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\OctaneReloader;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
@@ -146,6 +146,10 @@ class Updater extends Page
             $streamCallback(__('installer.storage_link_failed'));
         }
 
+        if (!app(InstallerService::class)->linkBundledAddons()) {
+            $streamCallback(__('installer.bundled_link_failed'));
+        }
+
         if (count($dataMigrationsPending) !== 0) {
             if ($migrationSvc->runAllDataMigrationsWithStreaming($streamCallback) !== 0) {
                 $streamCallback(__('installer.failed'));
@@ -168,8 +172,8 @@ class Updater extends Page
             return;
         }
 
-        // After `optimize`, so the reload restarts the workers on the final caches.
-        app(AddonCacheRefresher::class)->refresh();
+        // `optimize` already rebuilt the addon boot cache; reload so workers boot from it.
+        app(OctaneReloader::class)->reload();
 
         $this->streamOutput(PHP_EOL.__('installer.update_completed').PHP_EOL);
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Service;
+use App\Features\Addons\AddonRegistry;
 use Deprecated;
 
 class ModuleService extends Service

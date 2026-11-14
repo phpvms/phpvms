@@ -6,13 +6,13 @@ require_once __DIR__.'/../Support.php';
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingPirepDetail;
+use App\Features\Hooks\Points\App\Slots\SlotPirepDetail;
 use App\Models\Pirep;
 use Illuminate\Support\Facades\View;
 
 final class PirepOutletProbe
 {
-    public function handle(RenderingPirepDetail $hook): void
+    public function handle(SlotPirepDetail $hook): void
     {
         $hook->add(Fill::view('pireptest::probe', ['pirep' => $hook->pirep]));
     }
@@ -38,7 +38,7 @@ it('renders the fills addons add to the pireps.detail.main hook', function (): v
     file_put_contents($dir.'/probe.blade.php', '<p id="pirep-outlet">outlet for {{ $pirep->ident }}</p>');
     View::addNamespace('pireptest', $dir);
 
-    Hooks::listen(RenderingPirepDetail::class, PirepOutletProbe::class);
+    Hooks::listen(SlotPirepDetail::class, PirepOutletProbe::class);
 
     $pirep = Pirep::factory()->create(['user_id' => $this->pilot->id]);
 

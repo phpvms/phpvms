@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\AddonRegistry;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\RegistrySignatureVerifier;
 use App\Events\AddonInstalled;
 use App\Events\AddonUpdated;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\RegistrySignatureVerifier;
 use App\Models\Addon;
 use App\Models\User;
 use App\Services\CronService;
@@ -30,15 +30,14 @@ beforeEach(function (): void {
 
     // …then redirect install targets to a scratch dir.
     $this->work = sys_get_temp_dir().'/addon-install-'.uniqid('', true);
-    File::ensureDirectoryExists($this->work.'/modules');
+    File::ensureDirectoryExists($this->work);
 
-    // install()/update() place files in the writable root, never in the image
-    // root, so that is where this suite's path assertions look.
-    $this->installed = $this->work.'/installed';
+    // install()/update() place files in the addon root, which is where this
+    // suite's path assertions look.
+    $this->installed = $this->work.'/addons';
 
     config([
-        'addons.paths.base'          => $this->work.'/modules',
-        'addons.paths.installed'     => $this->installed,
+        'addons.paths.root'          => $this->installed,
         'addons.paths.staging'       => $this->work.'/staging',
         'addon-manager.registry_url' => 'https://registry.test',
     ]);
@@ -66,13 +65,13 @@ function buildAddonZip(string $zipPath, string $registryId, string $version, boo
 {
     $zip = new ZipArchive();
     $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode([
+    $zip->addFromString('addon.json', json_encode(addonManifest([
         'name'        => 'Demo Addon',
         'registry_id' => $registryId,
         'version'     => $version,
         'providers'   => [],
         'database'    => ['tables' => ['demo_things']],
-    ]));
+    ])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
 
     if ($failingMigration) {
@@ -241,7 +240,7 @@ it('restores the previous version when an update migration fails', function (): 
     expect($addon)->not->toBeNull();
     expect($addon->version)->toBe('1.0.0');
     expect($addon->enabled)->toBeTrue();
-    expect(File::exists($this->installed.'/acme-demo/module.json'))->toBeTrue();
+    expect(File::exists($this->installed.'/acme-demo/addon.json'))->toBeTrue();
 });
 
 it('applies WithoutOverlapping per registry id', function (): void {

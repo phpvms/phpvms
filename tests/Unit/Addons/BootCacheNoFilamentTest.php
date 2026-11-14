@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\BootCache;
 
 it('no longer serializes a filament field in boot-cache rows', function (): void {
     $row = new AddonBootCache(

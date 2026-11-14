@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use PhpvmsAddonFixture\Events\AcmeFixtureEvent;
 use PhpvmsAddonFixture\Hooks\AcmeGate;
-use PhpvmsAddonFixture\Listeners\AcmeGateListener;
+use PhpvmsAddonFixture\Hooks\AcmeGateListener;
 use PhpvmsAddonFixture\Listeners\AcmeListener;
 use PhpvmsAddonFixture\Providers\AcmeServiceProvider;
 use PhpvmsBadHooksFixture\Listeners\MissingPointListener;

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "license": { "type": "string", "minLength": 1, "maxLength": 40 },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "php": { "type": "string", "minLength": 1 },
+        "phpvms": { "type": "string", "minLength": 1 }
+      },
+      "required": ["php", "phpvms"],
+      "additionalProperties": {}
+    },
+    "icon": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^(?![a-zA-Z][a-zA-Z0-9+.-]*:)(?![/\\\\])(?!.*\\.\\.)"
+    },
+    "readme": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "documentation_url": { "type": "string", "maxLength": 500, "pattern": "^https?:\\/\\/.+" },
+    "homepage": { "type": "string", "maxLength": 500, "pattern": "^https?:\\/\\/.+" },
+    "support_url": { "type": "string", "maxLength": 500, "pattern": "^https?:\\/\\/.+" },
+    "registry_id": {
+      "type": "string",
+      "pattern": "^[^/\\s]+\\/[^/\\s]+$",
+      "description": "The registry name, `author/addon`."
+    },
+    "schema_version": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "type": { "type": "string", "enum": ["module", "theme"] },
+    "description": { "type": "string", "minLength": 1 }
+  },
+  "required": ["registry_id", "schema_version", "type"],
+  "additionalProperties": {},
+  "$id": "https://addons.phpvms.net/schema/addon.json",
+  "title": "phpVMS addon manifest (addon.json)"
+}

@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Addons\AddonRegistry;
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -74,7 +74,7 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
             return self::FAILURE;
         }
 
-        // Step 2: Register in the addon manifest (addon.json, or an existing module.json)
+        // Step 2: Register in the addon manifest (addon.json)
         $this->components->task('Registering provider in addon.json', function () use ($addon, $providerClass): void {
             $this->updateJsonArray(
                 ManifestParser::manifestPath($addon->getPath()) ?? $addon->getExtraPath('addon.json'),
@@ -125,7 +125,7 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
     }
 
     /**
-     * Helper to safely append a value to a JSON file array (like module.json).
+     * Helper to safely append a value to a JSON file array (like addon.json).
      */
     protected function updateJsonArray(string $path, string $key, string $value): void
     {

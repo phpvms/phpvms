@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 
 // Boot-cache isolation is handled globally in tests/Pest.php (unique temp path
-// per test). This file additionally redirects addons.paths.base to a temp
+// per test). This file additionally redirects addons.paths.root to a temp
 // directory so it can freely add/remove/edit addon directories.
 
 beforeEach(function (): void {
@@ -17,7 +17,7 @@ beforeEach(function (): void {
 
     $this->base = sys_get_temp_dir().'/addon-disk-fingerprint-'.uniqid('', true);
     File::ensureDirectoryExists($this->base);
-    Config::set('addons.paths.base', $this->base);
+    Config::set('addons.paths.root', $this->base);
 });
 
 afterEach(function (): void {
@@ -34,7 +34,7 @@ function placeAddon(string $base, string $name): void
     File::ensureDirectoryExists($dir);
     $registryId = 'acme/'.strtolower($name);
 
-    File::put($dir.'/module.json', json_encode(['name' => $name, 'registry_id' => $registryId, 'providers' => []]));
+    File::put($dir.'/addon.json', json_encode(addonManifest(['name' => $name, 'registry_id' => $registryId, 'providers' => []])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => 'app/']]]));
 
     Addon::factory()->create([
@@ -46,7 +46,7 @@ function placeAddon(string $base, string $name): void
     ]);
 }
 
-it('rebuilds when a module.json is edited but the DB is untouched', function (): void {
+it('rebuilds when a addon.json is edited but the DB is untouched', function (): void {
     placeAddon($this->base, 'Alpha');
     $svc = app(AddonDiscoveryService::class);
     $svc->rebuildCache();
@@ -55,11 +55,11 @@ it('rebuilds when a module.json is edited but the DB is untouched', function ():
 
     // Edit the manifest name on disk only — the DB row and its updated_at are
     // untouched, so databaseFingerprint() alone would miss this.
-    $manifestPath = $this->base.'/alpha/module.json';
+    $manifestPath = $this->base.'/alpha/addon.json';
     // Force the mtime forward: some filesystems have 1-second mtime
     // resolution, and this edit can otherwise land in the same second as the
     // original write above.
-    File::put($manifestPath, json_encode(['name' => 'AlphaRenamed', 'registry_id' => 'acme/alpha', 'providers' => []]));
+    File::put($manifestPath, json_encode(addonManifest(['name' => 'AlphaRenamed', 'registry_id' => 'acme/alpha', 'providers' => []])));
     touch($manifestPath, time() + 1);
 
     expect($svc->primeIfNeeded())->toBeTrue();

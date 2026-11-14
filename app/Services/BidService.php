@@ -189,7 +189,7 @@ class BidService extends Service
     }
 
     /**
-     * Place a bid. Kept for existing callers; the logic and the `PlacingBid`
+     * Place a bid. Kept for existing callers; the logic and the `GatePlacingBid`
      * gate live in {@see PlaceBid}.
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null): Bid

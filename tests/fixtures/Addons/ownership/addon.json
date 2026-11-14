@@ -1,0 +1,16 @@
+{
+    "$schema": "https://addons.phpvms.net/schema/addon.json",
+    "schema_version": 1,
+    "name": "Ownership",
+    "alias": "own",
+    "registry_id": "acme/ownership",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Test fixture addon.",
+    "providers": [
+        "PhpvmsOwnershipFixture\\Providers\\OwnershipServiceProvider"
+    ],
+    "database": {
+        "tables": ["own_widget_tags"]
+    }
+}

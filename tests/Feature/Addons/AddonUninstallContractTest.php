@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
+use App\Features\Addons\AddonRegistry;
 use App\Models\Addon;
 use App\Models\Kvp;
 use Illuminate\Support\Facades\Artisan;
@@ -20,7 +20,7 @@ beforeEach(function (): void {
     File::ensureDirectoryExists($migrationDir);
 
     // Declared contract: the addon owns fixture_contract_things.
-    File::put($this->addonPath.'/module.json', json_encode([
+    File::put($this->addonPath.'/addon.json', json_encode(addonManifest([
         'name'        => 'FixtureContract',
         'registry_id' => 'acme/fixture-contract',
         'alias'       => 'fixturecontract',
@@ -28,9 +28,9 @@ beforeEach(function (): void {
         'database'    => [
             'tables' => ['fixture_contract_things'],
         ],
-    ]));
+    ])));
 
-    // A valid addon requires composer.json alongside module.json.
+    // A valid addon requires composer.json alongside addon.json.
     File::put($this->addonPath.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\FixtureContract\\' => 'app/']],
     ]));

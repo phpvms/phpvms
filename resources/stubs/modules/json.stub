@@ -1,8 +1,11 @@
 {
+    "$schema": "https://addons.phpvms.net/schema/addon.json",
+    "schema_version": 1,
     "name": "$STUDLY_NAME$",
     "alias": "$LOWER_NAME$",
     "registry_id": "",
-    "description": "",
+    "type": "module",
+    "description": "$STUDLY_NAME$ addon.",
     "keywords": [],
     "priority": 0,
     "providers": [

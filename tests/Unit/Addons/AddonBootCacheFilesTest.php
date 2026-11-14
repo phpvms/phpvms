@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\AddonBootCache;
+use App\Features\Addons\Models\AddonBootCache;
 
 it('round-trips the files list through toArray()/fromArray()', function (): void {
     $row = new AddonBootCache(

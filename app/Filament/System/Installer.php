@@ -2,7 +2,7 @@
 
 namespace App\Filament\System;
 
-use App\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\AddonCacheRefresher;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\Role;
 use App\Models\User;
@@ -302,8 +302,12 @@ class Installer extends Page
             $dirs[$extData['dir']] = $extData['passed'] ? 'OK' : __('installer.failed');
         }
 
+        // Shown with the directories, since it is a filesystem requirement too.
+        $symlinks = $reqSvc->checkSymlinks();
+        $dirs[__('installer.symlinks')] = $symlinks['passed'] ? 'OK' : __('installer.failed');
+
         $extensionsPassed = $this->allPassed($extensions);
-        $directoriesPassed = $this->allPassed($directories);
+        $directoriesPassed = $this->allPassed($directories) && $symlinks['passed'];
 
         try {
             DB::connection()->getPdo();
@@ -390,6 +394,12 @@ class Installer extends Page
 
         if (!app(InstallerService::class)->linkStorage()) {
             $message = __('installer.storage_link_failed').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+        }
+
+        if (!app(InstallerService::class)->linkBundledAddons()) {
+            $message = __('installer.bundled_link_failed').PHP_EOL;
             $output .= $message;
             $this->stream(content: $message, to: $this->stream);
         }

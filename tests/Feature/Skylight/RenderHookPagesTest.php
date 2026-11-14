@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingBidDrawerActions;
-use App\Features\Hooks\Points\RenderingBidRowActions;
-use App\Features\Hooks\Points\RenderingBriefingActions;
-use App\Features\Hooks\Points\RenderingFlightActions;
-use App\Features\Hooks\Points\RenderingFlightRowActions;
-use App\Features\Hooks\Points\RenderingPirepDetail;
-use App\Features\Hooks\Points\RenderingProfileCards;
+use App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions;
+use App\Features\Hooks\Points\App\Slots\SlotBidRowActions;
+use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightRowActions;
+use App\Features\Hooks\Points\App\Slots\SlotPirepDetail;
+use App\Features\Hooks\Points\App\Slots\SlotProfileCards;
 use App\Http\Data\BidData;
 use App\Models\Aircraft;
 use App\Models\Airport;
@@ -25,7 +25,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 final class PagesFlightActionsListener
 {
-    public function handle(RenderingFlightActions $hook): void
+    public function handle(SlotFlightActions $hook): void
     {
         $hook->add(Fill::vue('Foo', null, ['flight' => '@flight']));
     }
@@ -55,7 +55,7 @@ function pagesFixture(): array
 }
 
 it('shares a listener-added vue fill in the skylight slots prop of the flights page', function (): void {
-    Hooks::listen(RenderingFlightActions::class, PagesFlightActionsListener::class);
+    Hooks::listen(SlotFlightActions::class, PagesFlightActionsListener::class);
     $fixture = pagesFixture();
 
     $this->actingAs($fixture['user'])
@@ -78,16 +78,16 @@ it('dispatches the list hooks for the flights page, the flight page and the bids
     $fake = Hooks::fake();
 
     $this->actingAs($fixture['user'])->get('/flights')->assertOk();
-    $fake->assertDispatched(RenderingFlightActions::class, fn (RenderingFlightActions $hook): bool => $hook->isList() && $hook->user->is($fixture['user']));
-    $fake->assertDispatched(RenderingFlightRowActions::class, fn (RenderingFlightRowActions $hook): bool => $hook->isList());
+    $fake->assertDispatched(SlotFlightActions::class, fn (SlotFlightActions $hook): bool => $hook->isList() && $hook->user->is($fixture['user']));
+    $fake->assertDispatched(SlotFlightRowActions::class, fn (SlotFlightRowActions $hook): bool => $hook->isList());
 
-    $fake->assertNotDispatched(RenderingBidRowActions::class);
+    $fake->assertNotDispatched(SlotBidRowActions::class);
     $this->actingAs($fixture['user'])->get('/flights/bids')->assertOk();
-    $fake->assertDispatched(RenderingBidRowActions::class, fn (RenderingBidRowActions $hook): bool => $hook->isList());
-    $fake->assertDispatched(RenderingBidDrawerActions::class, fn (RenderingBidDrawerActions $hook): bool => $hook->isList());
+    $fake->assertDispatched(SlotBidRowActions::class, fn (SlotBidRowActions $hook): bool => $hook->isList());
+    $fake->assertDispatched(SlotBidDrawerActions::class, fn (SlotBidDrawerActions $hook): bool => $hook->isList());
 
     $this->actingAs($fixture['user'])->get('/flights/'.$fixture['flight']->id)->assertOk();
-    $fake->assertDispatched(RenderingFlightActions::class, fn (RenderingFlightActions $hook): bool => $hook->isList() && $hook->policy->requireCurrentAirport === false);
+    $fake->assertDispatched(SlotFlightActions::class, fn (SlotFlightActions $hook): bool => $hook->isList() && $hook->policy->requireCurrentAirport === false);
 });
 
 it('dispatches the PIREP detail hook with the viewed PIREP', function (): void {
@@ -97,7 +97,7 @@ it('dispatches the PIREP detail hook with the viewed PIREP', function (): void {
 
     $this->actingAs($user)->get('/pireps/'.$pirep->id)->assertOk();
 
-    $fake->assertDispatched(RenderingPirepDetail::class, fn (RenderingPirepDetail $hook): bool => $hook->pirep->is($pirep));
+    $fake->assertDispatched(SlotPirepDetail::class, fn (SlotPirepDetail $hook): bool => $hook->pirep->is($pirep));
 });
 
 it('dispatches the profile hook with the profile DTO', function (): void {
@@ -106,7 +106,7 @@ it('dispatches the profile hook with the profile DTO', function (): void {
 
     $this->actingAs($user)->get('/profile/'.$user->id)->assertOk();
 
-    $fake->assertDispatched(RenderingProfileCards::class, fn (RenderingProfileCards $hook): bool => $hook->profile->isOwnProfile);
+    $fake->assertDispatched(SlotProfileCards::class, fn (SlotProfileCards $hook): bool => $hook->profile->isOwnProfile);
 });
 
 it('dispatches the briefing hook with the briefing the page holds', function (): void {
@@ -120,7 +120,7 @@ it('dispatches the briefing hook with the briefing the page holds', function ():
 
     $this->actingAs($fixture['user'])->get('/ofp/briefings/'.$briefing->id)->assertOk();
 
-    $fake->assertDispatched(RenderingBriefingActions::class, fn (RenderingBriefingActions $hook): bool => $hook->briefing->id === (string) $briefing->id
+    $fake->assertDispatched(SlotBriefingActions::class, fn (SlotBriefingActions $hook): bool => $hook->briefing->id === (string) $briefing->id
         && $hook->flight->summary->id === $fixture['flight']->id
         && $hook->aircraft->id === $fixture['aircraft']->id
         && !$hook->bid instanceof BidData);

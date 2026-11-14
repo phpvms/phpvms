@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Create a fixture addon directory on disk (module.json, optionally a
+ * Create a fixture addon directory on disk (addon.json, optionally a
  * database/migrations directory with a real migration), so
  * MigrationService::getMigrationPaths() has something to discover. Mirrors
  * makeSeedableAddon() in AddonSeedMarkerTest.
@@ -21,7 +21,7 @@ function makeDiskAddon(string $base, string $dirName, array $options = []): stri
     File::ensureDirectoryExists($path);
 
     if ($options['module_json'] ?? true) {
-        File::put($path.'/module.json', json_encode(['name' => $dirName, 'providers' => []]));
+        File::put($path.'/addon.json', json_encode(['name' => $dirName, 'providers' => []]));
     }
 
     if ($options['migrations'] ?? false) {
@@ -91,7 +91,7 @@ function makeDbAddon(string $base, string $dirName, bool $enabled): Addon
 beforeEach(function (): void {
     $this->addonBase = sys_get_temp_dir().'/phpvms-addon-migration-ordering-'.uniqid('', true);
     File::ensureDirectoryExists($this->addonBase);
-    Config::set('addons.paths.base', $this->addonBase);
+    Config::set('addons.paths.root', $this->addonBase);
 
     // Bundled module rows seeded by the addons migration aren't relevant here
     // and would leak into the "DB is source of truth" assertions.
@@ -107,7 +107,7 @@ describe('pre-install (no addons table)', function (): void {
         dropAddonsTable();
     });
 
-    it('includes a disk addon with a module.json and a migrations directory', function (): void {
+    it('includes a disk addon with a addon.json and a migrations directory', function (): void {
         makeDiskAddon($this->addonBase, 'Demo', ['migrations' => true]);
 
         $paths = app(MigrationService::class)->getMigrationPaths();
@@ -116,7 +116,7 @@ describe('pre-install (no addons table)', function (): void {
             ->and($paths['Demo'])->toBe(realpath($this->addonBase).'/Demo/database/migrations');
     });
 
-    it('excludes a disk directory with no module.json', function (): void {
+    it('excludes a disk directory with no addon.json', function (): void {
         makeDiskAddon($this->addonBase, 'NoManifest', ['module_json' => false, 'migrations' => true]);
 
         $paths = app(MigrationService::class)->getMigrationPaths();

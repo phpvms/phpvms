@@ -1,5 +1,5 @@
 {
-    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "$schema": "https://addons.phpvms.net/schema/addon.json",
     "schema_version": 1,
     "name": "PhpvmsWidgets",
     "alias": "phpvms-widgets",
@@ -13,6 +13,7 @@
         "weather",
         "metar"
     ],
+    "bundled": true,
     "active": 0,
     "order": 0,
     "providers": [

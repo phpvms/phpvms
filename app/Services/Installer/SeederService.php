@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\AddonRegistry;
-use App\Addons\Models\AddonManifest;
-use App\Addons\Support\ManifestParser;
 use App\Contracts\Service;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Models\AddonManifest;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use App\Models\Kvp;
 use Carbon\Carbon;

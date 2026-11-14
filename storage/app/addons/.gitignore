@@ -1,0 +1,7 @@
+# Only the bundled addon links are tracked; addons installed at runtime are not.
+*
+!.gitignore
+!/phpvms-addon-manager
+!/phpvms-airside-theme
+!/phpvms-awards
+!/phpvms-widgets

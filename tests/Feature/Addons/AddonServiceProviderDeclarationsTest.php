@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\AutoloadGuard;
-use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonServiceProvider;
 use App\Contracts\Addons\AddonSettings as AddonSettingsClass;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\AutoloadGuard;
+use App\Features\Addons\Support\BootCache;
 use App\Features\Themes\ThemeOptions;
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
@@ -385,7 +385,7 @@ it('finds the addon root from the provider file when there is no boot cache entr
     $directory = $this->probeDir.'/'.$providerDirectory;
 
     File::ensureDirectoryExists($directory);
-    File::put($this->probeDir.'/module.json', json_encode(['name' => 'Probe', 'registry_id' => 'acme/probe']));
+    File::put($this->probeDir.'/addon.json', json_encode(addonManifest(['name' => 'Probe', 'registry_id' => 'acme/probe'])));
     File::put($this->probeDir.'/composer.json', json_encode(['autoload' => ['psr-4' => [$namespace.'\\' => $autoload]]]));
     File::put($directory.'/Rooted.php', '<?php
 namespace '.$namespace.'\\'.$namespaceSuffix.';

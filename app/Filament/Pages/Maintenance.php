@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Addons\Support\OctaneReloader;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Jobs\BackfillPirepsParentFlight;
 use App\Services\CronService;
@@ -208,6 +209,13 @@ class Maintenance extends Page
                         Process::env(['APP_RUNNING_IN_CONSOLE' => true])
                             ->run([$this->getPhpBinary(), base_path('artisan'), $call])->throw();
                     }
+
+                    // Local boots scan addon classes live, and a cached config would hide .env edits.
+                    if (!app()->isLocal()) {
+                        Process::env(['APP_RUNNING_IN_CONSOLE' => true])
+                            ->run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
+                        app(OctaneReloader::class)->reload();
+                    }
                 } else {
                     Artisan::call('cache:clear');
 
@@ -217,12 +225,15 @@ class Maintenance extends Page
                         Artisan::call('filament:optimize-clear');
 
                         Log::info('Clearing cache', [Artisan::output()]);
+
+                        if (!app()->isLocal() && Artisan::call('optimize') === 0) {
+                            app(OctaneReloader::class)->reload();
+                        }
                     });
                 }
 
                 Notification::make()
                     ->title(__('filament.maintenance_cache_cleared'))
-                    ->body(__('filament.maintenance_recommend_optimize'))
                     ->success()
                     ->send();
             });
@@ -276,11 +287,16 @@ class Maintenance extends Page
                 if (function_exists('proc_open')) {
                     Process::env(['APP_RUNNING_IN_CONSOLE' => true])
                         ->run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
+                    app(OctaneReloader::class)->reload();
                 } else {
                     // We have to defer it because it kills the livewire request, thus throwing errors.
                     defer(function (): void {
-                        Artisan::call('optimize');
+                        $optimized = Artisan::call('optimize') === 0;
                         Artisan::call('filament:optimize');
+
+                        if ($optimized) {
+                            app(OctaneReloader::class)->reload();
+                        }
                     });
                 }
 

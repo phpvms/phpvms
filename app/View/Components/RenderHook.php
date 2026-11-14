@@ -15,7 +15,7 @@ use Throwable;
 /**
  * Renders the fills addons added to a render hook point.
  *
- *     <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingBidRowActions($bid, $flight)" />
+ *     <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotBidRowActions($bid, $flight)" />
  *
  * `view` and `html` fills render in list order; `vue` fills are for SPA themes
  * and are skipped. A view that throws is logged and left out, so one broken

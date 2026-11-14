@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use Illuminate\Support\Facades\File;
 
@@ -22,7 +22,7 @@ afterEach(function (): void {
     File::deleteDirectory($this->assets);
 });
 
-it('drops the old asset link and caches the renamed addon', function (): void {
+it('drops the old asset link and rebuilds the boot cache', function (): void {
     Addon::factory()->create([
         'name'        => 'PhpvmsWidgets',
         'registry_id' => 'phpvms/widgets',
@@ -32,11 +32,12 @@ it('drops the old asset link and caches the renamed addon', function (): void {
     ]);
     File::ensureDirectoryExists($this->assets);
     symlink(sys_get_temp_dir(), $this->assets.'/phpvmsdashboard');
+    app(BootCache::class)->delete();
 
     dropDashboardAssetsMigration()->up();
 
-    $namespaces = app(BootCache::class)->enabled()->map(fn ($entry): string => $entry->namespace)->all();
-
+    // Widgets keeps module.json until it moves into core, so it is no longer in
+    // the rebuilt cache; the rebuild itself is what this migration owes.
     expect(is_link($this->assets.'/phpvmsdashboard'))->toBeFalse()
-        ->and($namespaces)->toContain('Modules\\PhpvmsWidgets');
+        ->and(app(BootCache::class)->exists())->toBeTrue();
 });

@@ -97,9 +97,9 @@ services:
       [
         "php",
         "/var/www/html/artisan",
-        "octane:start",
-        "--server=frankenphp",
+        "octane:frankenphp",
         "--port=8080",
+        "--admin-host=127.0.0.1",
         "--caddyfile=/etc/frankenphp/Caddyfile",
         "--workers=auto",
         "--max-requests=500",
@@ -118,8 +118,9 @@ services:
     # NOTE: /var/www/html/modules is deliberately NOT mounted. A named volume
     # is populated from the image only when it is first created, so mounting
     # one here freezes the bundled modules at that moment and no later image
-    # ever updates them. Addons installed at runtime go to storage/addons
-    # (config/addons.php), which the storage volume below already persists.
+    # ever updates them. Addons are found in storage/app/addons
+    # (config/addons.php), which the storage volume below already persists;
+    # the bundled ones are symlinks into modules/, so they follow the image.
     volumes:
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw

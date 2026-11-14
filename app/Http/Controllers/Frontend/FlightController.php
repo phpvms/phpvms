@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
+use App\Features\Addons\AddonRegistry;
 use App\Features\Bids\Actions\LoadDispatch;
 use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Actions\RemoveBid;
 use App\Features\Bids\Queries\EligibleAircraft;
 use App\Features\Flights\Queries\VisibleFlights;
 use App\Features\Hooks\Exceptions\HookDenied;
-use App\Features\Hooks\Points\RenderingBidDrawerActions;
-use App\Features\Hooks\Points\RenderingBidRowActions;
-use App\Features\Hooks\Points\RenderingFlightActions;
-use App\Features\Hooks\Points\RenderingFlightRowActions;
+use App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions;
+use App\Features\Hooks\Points\App\Slots\SlotBidRowActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
+use App\Features\Hooks\Points\App\Slots\SlotFlightRowActions;
 use App\Http\Data\BidRowData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
@@ -224,8 +224,8 @@ class FlightController extends Controller
                 ],
             ],
             renderHooks: fn (): array => [
-                RenderingFlightActions::forList($policy, $user),
-                RenderingFlightRowActions::forList($policy),
+                SlotFlightActions::forList($policy, $user),
+                SlotFlightRowActions::forList($policy),
             ],
         );
     }
@@ -301,8 +301,8 @@ class FlightController extends Controller
                 'policy' => $policy,
             ],
             renderHooks: fn (): array => [
-                RenderingBidRowActions::forList(),
-                RenderingBidDrawerActions::forList(),
+                SlotBidRowActions::forList(),
+                SlotBidDrawerActions::forList(),
             ],
         );
     }
@@ -369,7 +369,7 @@ class FlightController extends Controller
                 ),
                 'policy' => $policy,
             ],
-            renderHooks: fn (): array => [RenderingFlightActions::forList($policy, $user)],
+            renderHooks: fn (): array => [SlotFlightActions::forList($policy, $user)],
         );
     }
 

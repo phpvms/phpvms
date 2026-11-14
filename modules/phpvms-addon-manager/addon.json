@@ -1,0 +1,20 @@
+{
+    "$schema": "https://addons.phpvms.net/schema/addon.json",
+    "schema_version": 1,
+    "name": "Addon Manager",
+    "alias": "addon-manager",
+    "registry_id": "phpvms/addon-manager",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Browse, install, and update addons from the phpVMS registry.",
+    "keywords": [],
+    "bundled": true,
+    "providers": [
+        "Modules\\AddonManager\\Providers\\AddonManagerServiceProvider"
+    ],
+    "files": [],
+    "requires": [],
+    "database": {
+        "tables": []
+    }
+}

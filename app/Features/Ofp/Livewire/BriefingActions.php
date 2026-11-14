@@ -6,7 +6,7 @@ namespace App\Features\Ofp\Livewire;
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingBriefingActions;
+use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
 use App\Http\Data\SimBriefBriefingData;
 use App\Models\SimBrief;
 use App\Models\User;
@@ -64,7 +64,7 @@ class BriefingActions extends Component
     {
         $briefing = $this->briefing;
 
-        return Hooks::filter(new RenderingBriefingActions($briefing->flight, $briefing->bid, $briefing, $briefing->aircraft));
+        return Hooks::filter(new SlotBriefingActions($briefing->flight, $briefing->bid, $briefing, $briefing->aircraft));
     }
 
     /**

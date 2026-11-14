@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Sources\ZipSource;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Sources\ZipSource;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -13,13 +13,13 @@ beforeEach(function (): void {
     $this->work = sys_get_temp_dir().'/update-'.uniqid();
     $this->modules = $this->work.'/modules';
     File::ensureDirectoryExists($this->modules);
-    Config::set('addons.paths.base', $this->modules);
+    Config::set('addons.paths.root', $this->modules);
 
     $this->makeZip = function (string $version): string {
         $path = $this->work.'/demo-'.$version.'.zip';
         $zip = new ZipArchive();
         $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-        $zip->addFromString('module.json', json_encode(['name' => 'Demo', 'registry_id' => 'acme/demo', 'version' => $version, 'providers' => []]));
+        $zip->addFromString('addon.json', json_encode(addonManifest(['name' => 'Demo', 'registry_id' => 'acme/demo', 'version' => $version, 'providers' => []])));
         $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
         $zip->close();
 

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\AddonManager\Filament\Pages;
 
-use App\Addons\AddonDeleteOutcome;
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Sources\ZipSource;
 use App\Enums\NavigationGroup;
+use App\Features\Addons\AddonDeleteOutcome;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Sources\ZipSource;
+use App\Features\Addons\Support\AddonIcon;
+use App\Features\Addons\Support\ManifestParser;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
 use BackedEnum;
@@ -294,6 +296,24 @@ class Addons extends Page implements HasTable
     }
 
     /**
+     * The icon URL an installed addon declares in its manifest, or null.
+     */
+    private function manifestIcon(?Addon $addon): ?string
+    {
+        if (!$addon instanceof Addon) {
+            return null;
+        }
+
+        try {
+            $icon = new ManifestParser()->parse($addon->getPath())?->icon;
+        } catch (Throwable) {
+            return null;
+        }
+
+        return AddonIcon::url($addon->getName(), $addon->getPath(), $icon);
+    }
+
+    /**
      * Shape one merged listing row.
      *
      * @param  array<string, mixed> $entry
@@ -325,8 +345,9 @@ class Addons extends Page implements HasTable
             'product_url' => $this->safeUrl((string) ($entry['product_url'] ?? '')),
             // Not yet emitted by registry.phpvms.net — read defensively so the
             // row appears the moment the registry starts sending it.
-            'changelog_url'       => $this->safeUrl((string) ($entry['changelog_url'] ?? '')),
-            'icon'                => $this->safeUrl((string) ($entry['icon'] ?? '')) ?: null,
+            'changelog_url' => $this->safeUrl((string) ($entry['changelog_url'] ?? '')),
+            // The registry's listing icon, else the installed addon's manifest icon.
+            'icon'                => $this->safeUrl((string) ($entry['icon'] ?? '')) ?: $this->manifestIcon($addon),
             'monogram'            => $this->monogram((string) $entry['name']),
             'tint'                => $this->tint((string) ($entry['category'] ?? ''), (string) $entry['registry_id']),
             'installs'            => (int) ($entry['installs_total'] ?? 0),
@@ -831,8 +852,8 @@ class Addons extends Page implements HasTable
                 );
 
                 // Three outcomes, and they are genuinely different things: an
-                // uninstall, a disable (image files cannot be removed at
-                // runtime), and a revert to the bundled version. Reporting any
+                // uninstall, a disable (a linked addon's files are not in the
+                // addon root), and a revert to the bundled version. Reporting any
                 // of them as another misdescribes what just happened to the
                 // operator's install.
                 match ($outcome) {

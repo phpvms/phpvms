@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Model;
+use App\Features\Addons\AddonRegistry;
 use Deprecated;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Str;

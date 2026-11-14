@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Themes;
 
+use App\Features\Addons\Support\ManifestParser;
 use App\Http\Middleware\SetActiveTheme;
 use App\Services\VersionService;
 use BackedEnum;
@@ -197,7 +198,7 @@ final class ThemeOptions
     }
 
     /**
-     * A module theme's `module.json` version, else the phpvms version.
+     * A module theme's `addon.json` version, else the phpvms version.
      */
     private function versionOf(string $theme): string
     {
@@ -208,8 +209,8 @@ final class ThemeOptions
         }
 
         if (is_string($viewsPath)) {
-            $manifest = dirname($viewsPath, 2).'/module.json';
-            $version = is_file($manifest) ? (json_decode((string) file_get_contents($manifest), true)['version'] ?? null) : null;
+            $manifest = ManifestParser::manifestPath(dirname($viewsPath, 2));
+            $version = $manifest !== null ? (json_decode((string) file_get_contents($manifest), true)['version'] ?? null) : null;
 
             if (is_string($version) && $version !== '') {
                 return $version;

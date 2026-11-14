@@ -4,50 +4,73 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\ManifestParser;
 use App\Services\SettingService;
 use App\Support\InstallMarker;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\ParallelTesting;
 use Override;
+use ReflectionClass;
 use TallStackUi\Components\Icon\Component as IconComponent;
 
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * Whether this process already checked the boot cache for bundled themes.
+     * The boot cache files this process already primed.
+     *
+     * @var array<string, true>
      */
-    private static bool $bundledThemesPrimed = false;
+    private static array $primed = [];
 
     /**
-     * Boot the application with the bundled theme addons registered.
+     * The test boot cache phpunit.xml configures for core's own tests.
+     */
+    private static ?string $coreCache = null;
+
+    /**
+     * Boot the application from the test boot cache, with the bundled theme
+     * addons and the addon under test registered.
      *
-     * Theme addons register from the boot cache inside `register()`, and the
-     * cache is only ever written by a web boot or `addons:cache`. A fresh
-     * checkout (CI) has neither, so the bundled theme (airside) would be
-     * missing from every test. When the cache lacks a bundled theme, add it
-     * and boot again, once per process. Entries already in the cache stay.
+     * Addons register from the boot cache inside `register()`. phpunit.xml
+     * points it at a test-only file, so the suite never boots the addons
+     * enabled on the install it runs in. That file starts empty, so the
+     * bundled theme (airside) would be missing from every test. When an
+     * addon's own tests run (a test file inside an addon folder), they use a
+     * cache file of their own and the addon is enabled in it, so its routes,
+     * migrations and declarations exist; core tests never see it. A missing
+     * entry is added and the app booted again, once per process and file.
      */
     #[Override]
     public function createApplication(): Application
     {
-        $app = parent::createApplication();
+        $addon = $this->addonUnderTest();
 
-        if (self::$bundledThemesPrimed) {
+        // phpunit.xml's value, kept so a core test after an addon's test in the
+        // same process goes back to core's cache.
+        self::$coreCache ??= (string) ($_SERVER['ADDONS_BOOT_CACHE'] ?? 'bootstrap/cache/addons-phpunit.php');
+        $_SERVER['ADDONS_BOOT_CACHE'] = $_ENV['ADDONS_BOOT_CACHE'] = $addon === null
+            ? self::$coreCache
+            : 'bootstrap/cache/addons-phpunit-'.preg_replace('/[^a-z0-9]+/', '-', strtolower(basename($addon))).'.php';
+
+        $app = parent::createApplication();
+        $cachePath = $app->make(BootCache::class)->path();
+
+        if (isset(self::$primed[$cachePath])) {
             return $app;
         }
 
-        self::$bundledThemesPrimed = true;
+        self::$primed[$cachePath] = true;
 
         // Under --parallel another worker may write the cache between this
         // worker's first boot and its prime check, so the check alone can
-        // report nothing missing while the booted app still has no theme.
+        // report nothing missing while the booted app still lacks an addon.
         // Decide on the providers the first boot actually registered.
-        if ($this->primeBundledThemes($app) || !$this->bundledThemesRegistered($app)) {
+        if ($this->primeAddons($app, $addon) || !$this->enabledAddonsRegistered($app)) {
             $app = parent::createApplication();
         }
 
@@ -61,13 +84,39 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Whether every bundled theme now in the boot cache had its providers
+     * The folder of the addon whose tests are running: the nearest folder
+     * above the test file that holds a manifest. Null for core's own tests.
+     */
+    private function addonUnderTest(): ?string
+    {
+        // Pest declares the test file on each generated test class.
+        $reflection = new ReflectionClass(static::class);
+        $file = $reflection->hasProperty('__filename')
+            ? (string) $reflection->getStaticPropertyValue('__filename')
+            : (string) $reflection->getFileName();
+
+        $core = realpath(dirname(__DIR__));
+        $directory = realpath(dirname($file));
+
+        while ($directory !== false && $directory !== $core && $directory !== dirname($directory)) {
+            if (is_file($directory.'/addon.json') || is_file($directory.'/module.json')) {
+                return $directory;
+            }
+
+            $directory = dirname($directory);
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether every enabled addon now in the boot cache had its providers
      * registered by the given application.
      */
-    private function bundledThemesRegistered(Application $app): bool
+    private function enabledAddonsRegistered(Application $app): bool
     {
         foreach ($app->make(BootCache::class)->read() as $entry) {
-            if ($entry->type !== 'theme' || !$entry->enabled) {
+            if (!$entry->enabled) {
                 continue;
             }
 
@@ -82,25 +131,34 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Add every bundled theme addon missing from the boot cache.
+     * Add every bundled theme addon, and the addon under test, that is missing
+     * from the boot cache.
      *
      * @return bool Whether the cache was written
      */
-    private function primeBundledThemes(Application $app): bool
+    private function primeAddons(Application $app, ?string $addon): bool
     {
         $cache = $app->make(BootCache::class);
         $parser = $app->make(ManifestParser::class);
         $known = array_map(static fn (AddonBootCache $entry): string => $entry->registryId, $cache->read());
 
+        $directories = array_map(static fn (string $name): string => AddonRoots::bundledSource().'/'.$name, AddonRoots::bundled());
         $missing = [];
 
-        foreach (glob(rtrim((string) config('addons.paths.base'), '/').'/*', GLOB_ONLYDIR) ?: [] as $directory) {
+        foreach ([...$directories, ...($addon !== null ? [$addon] : [])] as $directory) {
             $manifest = $parser->parse(realpath($directory) ?: $directory);
 
-            if ($manifest === null || $manifest->type !== 'theme' || !$manifest->isBundled() || in_array($manifest->registryId, $known, true)) {
+            if ($manifest === null || in_array($manifest->registryId, $known, true)) {
                 continue;
             }
 
+            $bundledTheme = $manifest->type === 'theme' && $manifest->isBundled();
+
+            if (!$bundledTheme && $directory !== $addon) {
+                continue;
+            }
+
+            $known[] = $manifest->registryId;
             $missing[] = new AddonBootCache(
                 name: $manifest->name,
                 alias: $manifest->alias,
@@ -115,6 +173,7 @@ abstract class TestCase extends BaseTestCase
                 description: $manifest->description,
                 enabled: true,
                 files: $manifest->files,
+                icon: $manifest->icon,
             );
         }
 

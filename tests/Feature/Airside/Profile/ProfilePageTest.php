@@ -6,13 +6,13 @@ require_once __DIR__.'/../Support.php';
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingProfileCards;
+use App\Features\Hooks\Points\App\Slots\SlotProfileCards;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
 
 final class ProfileCardProbe
 {
-    public function handle(RenderingProfileCards $hook): void
+    public function handle(SlotProfileCards $hook): void
     {
         $hook->add(Fill::view('profileslot::card', ['profile' => $hook->profile]));
     }
@@ -31,7 +31,7 @@ it('renders addon fills in the profile.cards hook with the profile as data', fun
     File::ensureDirectoryExists($dir);
     File::put($dir.'/card.blade.php', 'ADDON-CARD for {{ $profile->name }} own={{ $profile->isOwnProfile ? "yes" : "no" }}');
     View::addNamespace('profileslot', $dir);
-    Hooks::listen(RenderingProfileCards::class, ProfileCardProbe::class);
+    Hooks::listen(SlotProfileCards::class, ProfileCardProbe::class);
 
     $this->pilot->update(['name' => 'Grace Hopper']);
 

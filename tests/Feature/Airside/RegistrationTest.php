@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\AddonCacheRefresher;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\OctaneReloader;
-use App\Addons\Support\ThemeAssetLinker;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\OctaneReloader;
+use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -20,13 +20,9 @@ beforeEach(function (): void {
     Addon::query()->delete();
 
     $this->work = sys_get_temp_dir().'/airside-registration-'.uniqid('', true);
-    File::ensureDirectoryExists($this->work.'/image');
-    File::ensureDirectoryExists($this->work.'/installed');
-    File::ensureDirectoryExists($this->work.'/themes');
+    File::ensureDirectoryExists($this->work.'/root');
 
-    Config::set('addons.paths.base', $this->work.'/image');
-    Config::set('addons.paths.installed', $this->work.'/installed');
-    Config::set('addons.paths.themes', $this->work.'/themes');
+    Config::set('addons.paths.root', $this->work.'/root');
     Config::set('addons.paths.theme_assets', $this->work.'/public-disk/themes');
     Config::set('addons.paths.assets', $this->work.'/ext');
 
@@ -39,22 +35,22 @@ afterEach(function (): void {
 });
 
 /**
- * A bundled theme in the image root, shaped like modules/phpvms-airside-theme.
+ * A bundled theme in the addon root, shaped like modules/phpvms-airside-theme.
  */
 function bundledThemeInImage(string $work, bool $bundled = true): string
 {
-    $dir = $work.'/image/phpvms-fixture-theme';
+    $dir = $work.'/root/phpvms-fixture-theme';
     File::ensureDirectoryExists($dir.'/public/build');
     File::ensureDirectoryExists($dir.'/resources/views');
 
-    File::put($dir.'/module.json', json_encode([
+    File::put($dir.'/addon.json', json_encode(addonManifest([
         'name'        => 'FixtureTheme',
         'registry_id' => 'phpvms/fixture-theme',
         'type'        => 'theme',
         'version'     => '1.0.0',
         'bundled'     => $bundled,
         'providers'   => [],
-    ]));
+    ])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\FixtureTheme\\' => 'app']]]));
     File::put($dir.'/theme.json', json_encode(['name' => 'fixture', 'kind' => 'blade']));
     File::put($dir.'/public/build/manifest.json', '{}');

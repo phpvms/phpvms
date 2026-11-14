@@ -6,7 +6,7 @@ require_once __DIR__.'/Support.php';
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\RenderingBriefingActions;
+use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
 use App\Features\Ofp\Livewire\BriefingActions;
 use App\Models\Pirep;
 use App\Models\SimBrief;
@@ -17,7 +17,7 @@ use Livewire\Livewire;
 
 final class BriefingSlotProbe
 {
-    public function handle(RenderingBriefingActions $hook): void
+    public function handle(SlotBriefingActions $hook): void
     {
         $hook->add(Fill::view('ofpslot::ofp-slot-'.getmypid(), ['flight' => $hook->flight, 'aircraft' => $hook->aircraft, 'briefing' => $hook->briefing]));
     }
@@ -46,7 +46,7 @@ it('renders the fills of the briefing actions hook with the briefing values', fu
         '<span id="slot-probe">{{ $flight->summary->callsign }}|{{ $aircraft->registration }}|{{ $briefing->id }}</span>',
     );
     View::addNamespace('ofpslot', sys_get_temp_dir());
-    Hooks::listen(RenderingBriefingActions::class, BriefingSlotProbe::class);
+    Hooks::listen(SlotBriefingActions::class, BriefingSlotProbe::class);
 
     $this->actingAs($this->fixture['user'])
         ->get(route('frontend.ofp.briefing', $this->briefing->id))
@@ -61,7 +61,7 @@ it('shows the separator only when a fill is added to the briefing actions hook',
 
     $component()->assertDontSeeHtml('<hr');
 
-    Hooks::listen(RenderingBriefingActions::class, BriefingSlotProbe::class);
+    Hooks::listen(SlotBriefingActions::class, BriefingSlotProbe::class);
     file_put_contents(sys_get_temp_dir().'/ofp-slot-'.getmypid().'.blade.php', '<span id="slot-probe"></span>');
     View::addNamespace('ofpslot', sys_get_temp_dir());
 

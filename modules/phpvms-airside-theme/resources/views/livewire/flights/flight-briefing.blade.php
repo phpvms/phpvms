@@ -12,18 +12,9 @@
     $ofp = $briefing->ofp;
     $action = $summary->primaryAction;
 
-    // Notices sit under the first row (not a notice) with their anchor; the rest go under the departure station.
-    $rows = collect($briefing->timeline)->reject(fn ($item) => $item->kind === BriefingItemKind::Notice)->values();
-    $departureIndex = $rows->search(fn ($item) => $item->role === BriefingStationRole::Departure) ?: 0;
-    $noticesUnder = [];
-    foreach ($briefing->timeline as $item) {
-        if ($item->kind !== BriefingItemKind::Notice) {
-            continue;
-        }
-        $index = $item->anchor === null ? false : $rows->search(fn ($row) => $row->anchor === $item->anchor);
-        $noticesUnder[$index === false ? $departureIndex : $index][] = $item;
-    }
-    $hasAlternate = $rows->contains(fn ($item) => $item->role === BriefingStationRole::Alternate);
+    // Items at the same offset from departure stack in one entry; items without an offset follow in list order.
+    $stacks = \Modules\PhpvmsAirsideTheme\Support\TimelineStack::stack($briefing->timeline, fn ($item) => $item->offsetMinutes);
+    $hasAlternate = collect($briefing->timeline)->contains(fn ($item) => $item->role === BriefingStationRole::Alternate);
 
     $clock = function (?\Carbon\CarbonImmutable $at): ?string {
         if ($at === null) {
@@ -34,7 +25,6 @@
         return ($at->isSameDay(now('UTC')) ? 'Today' : $at->format('j M')).' '.$at->format('H:i').'Z';
     };
     $level = fn (int $ft): string => $ft >= 18000 ? 'FL'.str_pad((string) intdiv($ft, 100), 3, '0', STR_PAD_LEFT) : number_format($ft).' ft';
-    $elapsed = fn (int $minutes): string => '+'.intdiv($minutes, 60).':'.str_pad((string) ($minutes % 60), 2, '0', STR_PAD_LEFT);
 
     $hasBid = $action === 'overview';
     $canPlanOfp = $policy->simbriefEnabled && (! $policy->simbriefRequiresBid || $hasBid);
@@ -95,40 +85,42 @@
             </section>
 
             <section class="vms-briefing-timeline rounded-(--vms-radius-lg) border border-gray-200 bg-white py-2 pr-4 pl-2 sm:pr-7 sm:pl-4.5 dark:border-dark-700 dark:bg-dark-800" aria-label="Flight timeline">
-                <ol class="m-0 list-none p-0">
-                    @foreach ($rows as $index => $item)
+                <x-vms::timeline>
+                    @foreach ($stacks as $stackIndex => $stack)
                         @php
-                            $kind = $item->kind;
-                            $isStation = $kind === BriefingItemKind::Station;
-                            $compact = $kind === BriefingItemKind::Fix || $kind === BriefingItemKind::Phase;
-                            $isAlternate = $isStation && $item->role === BriefingStationRole::Alternate;
-                            $timeText = match (true) {
-                                $isStation && $item->role === BriefingStationRole::Departure => [$flight->scheduledDeparture, 'departs'],
-                                $isStation && $item->role === BriefingStationRole::Arrival => [$flight->scheduledArrival, 'arrives'],
-                                $isAlternate => [null, 'alternate'],
-                                $kind === BriefingItemKind::Route => [$summary->blockTime, 'block'],
-                                $item->elapsedMinutes !== null => [$elapsed($item->elapsedMinutes), null],
-                                default => [null, null],
+                            // The first item of a stack sets the entry's time, node and density.
+                            $lead = $stack[0];
+                            $leadKind = $lead->kind;
+                            $leadIsStation = $leadKind === BriefingItemKind::Station;
+                            [$time, $caption, $offset] = match (true) {
+                                $leadIsStation && $lead->role === BriefingStationRole::Departure => [$flight->scheduledDeparture, 'departs', null],
+                                $leadIsStation && $lead->role === BriefingStationRole::Arrival => [$flight->scheduledArrival, 'arrives', null],
+                                $leadIsStation && $lead->role === BriefingStationRole::Alternate => [null, 'alternate', null],
+                                $leadKind === BriefingItemKind::Route => [$summary->blockTime, 'block', null],
+                                default => [null, null, $lead->offsetMinutes],
                             };
-                            $nodeClass = match (true) {
-                                $kind === BriefingItemKind::Phase => 'vms-timeline-node--phase',
-                                $kind === BriefingItemKind::Fix => 'vms-timeline-node--fix',
-                                $isAlternate => 'vms-timeline-node--alt',
-                                $kind === BriefingItemKind::Route => 'hidden',
-                                default => '',
+                            $node = match (true) {
+                                $leadKind === BriefingItemKind::Phase => 'phase',
+                                $leadKind === BriefingItemKind::Fix => 'fix',
+                                $leadIsStation && $lead->role === BriefingStationRole::Alternate => 'alt',
+                                $leadKind === BriefingItemKind::Route => 'hidden',
+                                default => null,
                             };
                         @endphp
-                        <li wire:key="timeline-{{ $index }}" @class(['vms-timeline-item grid grid-cols-[1.375rem_minmax(0,1fr)] gap-x-3.5 sm:grid-cols-[4.5rem_1.75rem_minmax(0,1fr)] sm:gap-x-4.5', 'vms-timeline-item--compact' => $compact])>
-                            <div @class(['vms-timeline-time whitespace-nowrap text-right max-sm:hidden', 'pt-5' => ! $compact, 'pt-2.5' => $compact])>
-                                @if ($timeText[0])
-                                    <b @class(['block tabular-nums', 'text-base font-extrabold' => ! $compact, 'text-[13px] font-bold text-dark-600 dark:text-dark-300' => $compact])>{{ $timeText[0] }}</b>
-                                @endif
-                                @if ($timeText[1])
-                                    <span class="mt-px block text-xs text-dark-500 dark:text-dark-400">{{ $timeText[1] }}</span>
-                                @endif
-                            </div>
-                            <div class="vms-timeline-spine relative flex justify-center"><span class="vms-timeline-node {{ $nodeClass }}"></span></div>
-                            <div @class(['vms-timeline-body grid min-w-0 gap-3', 'py-4 pb-5.5' => ! $compact, 'py-2' => $compact])>
+                        <x-vms::timeline.entry
+                            wire:key="timeline-{{ $stackIndex }}"
+                            :offset="$offset"
+                            :time="$time"
+                            :caption="$caption"
+                            :node="$node"
+                            :compact="$leadKind === BriefingItemKind::Fix || $leadKind === BriefingItemKind::Phase"
+                        >
+                            @foreach ($stack as $itemIndex => $item)
+                                @php
+                                    $kind = $item->kind;
+                                    $isStation = $kind === BriefingItemKind::Station;
+                                    $isAlternate = $isStation && $item->role === BriefingStationRole::Alternate;
+                                @endphp
                                 @if ($isStation)
                                     <h2 class="m-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                                         @if ($isAlternate && ! $item->anchor)
@@ -160,13 +152,33 @@
                                     @endif
 
                                     @if ($item->anchor)
-                                        <livewire:flights::airport-weather lazy :key="'briefing-weather-'.$index.'-'.$item->anchor" :icao="$item->anchor" />
+                                        <livewire:flights::airport-weather lazy :key="'briefing-weather-'.$stackIndex.'-'.$itemIndex.'-'.$item->anchor" :icao="$item->anchor" />
                                     @endif
                                 @elseif ($kind === BriefingItemKind::Route)
                                     <div class="vms-briefing-route flex flex-wrap items-center gap-x-0.5 gap-y-1" aria-label="Filed route {{ $item->title }}">
                                         @foreach (preg_split('/\s+/', trim($item->title)) ?: [] as $token)
                                             <span class="vms-flight-pill border border-gray-200 px-2.5 py-0.5 font-mono text-[11.5px] font-semibold dark:border-dark-700">{{ $token }}</span>
                                         @endforeach
+                                    </div>
+                                @elseif ($kind === BriefingItemKind::Notice)
+                                    @php
+                                        $tone = match ($item->severity->getColor()) {
+                                            'danger' => 'text-red-600 dark:text-red-400',
+                                            'warning' => 'text-amber-700 dark:text-amber-400',
+                                            default => 'text-dark-600 dark:text-dark-300',
+                                        };
+                                    @endphp
+                                    <div class="vms-briefing-notice flex items-start gap-2.5 overflow-hidden rounded-2xl border border-gray-200 px-3.5 py-2.5 dark:border-dark-700" data-severity="{{ $item->severity->value }}">
+                                        <x-vms::meteocon :name="$item->icon ?? 'not-available-fill'" class="-mt-1 -mr-0.5 -ml-1 size-9 shrink-0" />
+                                        <div class="min-w-0 flex-1">
+                                            <p class="m-0 text-[13.5px] font-bold {{ $tone }}">{{ $item->title }}</p>
+                                            @if ($item->detail)
+                                                <p class="m-0 mt-px text-[12.5px] leading-normal text-dark-500 dark:text-dark-400">{{ $item->detail }}</p>
+                                            @endif
+                                        </div>
+                                        @if ($item->at)
+                                            <span class="shrink-0 text-xs tabular-nums whitespace-nowrap text-dark-500 max-sm:hidden dark:text-dark-400">{{ $clock($item->at) }}</span>
+                                        @endif
                                     </div>
                                 @else
                                     <div class="flex flex-wrap items-center gap-2.5 text-[13px] text-dark-600 dark:text-dark-300">
@@ -186,40 +198,16 @@
                                         @endif
                                     </div>
                                 @endif
-
-                                @foreach ($noticesUnder[$index] ?? [] as $notice)
-                                    @php
-                                        $tone = match ($notice->severity->getColor()) {
-                                            'danger' => 'text-red-600 dark:text-red-400',
-                                            'warning' => 'text-amber-700 dark:text-amber-400',
-                                            default => 'text-dark-600 dark:text-dark-300',
-                                        };
-                                    @endphp
-                                    <div class="vms-briefing-notice flex items-start gap-2.5 overflow-hidden rounded-2xl border border-gray-200 px-3.5 py-2.5 dark:border-dark-700" data-severity="{{ $notice->severity->value }}">
-                                        <x-vms::meteocon :name="$notice->icon ?? 'not-available-fill'" class="-mt-1 -mr-0.5 -ml-1 size-9 shrink-0" />
-                                        <div class="min-w-0 flex-1">
-                                            <p class="m-0 text-[13.5px] font-bold {{ $tone }}">{{ $notice->title }}</p>
-                                            @if ($notice->detail)
-                                                <p class="m-0 mt-px text-[12.5px] leading-normal text-dark-500 dark:text-dark-400">{{ $notice->detail }}</p>
-                                            @endif
-                                        </div>
-                                        @if ($notice->at)
-                                            <span class="shrink-0 text-xs tabular-nums whitespace-nowrap text-dark-500 max-sm:hidden dark:text-dark-400">{{ $clock($notice->at) }}</span>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </li>
+                            @endforeach
+                        </x-vms::timeline.entry>
                     @endforeach
 
                     @unless ($hasAlternate)
-                        <li class="vms-timeline-item grid grid-cols-[1.375rem_minmax(0,1fr)] gap-x-3.5 sm:grid-cols-[4.5rem_1.75rem_minmax(0,1fr)] sm:gap-x-4.5">
-                            <div class="vms-timeline-time pt-5 text-right max-sm:hidden"><span class="block text-xs text-dark-500 dark:text-dark-400">alternate</span></div>
-                            <div class="vms-timeline-spine relative flex justify-center"><span class="vms-timeline-node vms-timeline-node--alt"></span></div>
-                            <div class="vms-timeline-body py-4 pb-5.5"><p class="m-0 text-[13.5px] text-dark-500 dark:text-dark-400">No alternate airport on this flight.</p></div>
-                        </li>
+                        <x-vms::timeline.entry caption="alternate" node="alt">
+                            <p class="m-0 text-[13.5px] text-dark-500 dark:text-dark-400">No alternate airport on this flight.</p>
+                        </x-vms::timeline.entry>
                     @endunless
-                </ol>
+                </x-vms::timeline>
             </section>
         </div>
 
@@ -319,7 +307,7 @@
                                 <div class="vms-briefing-fly grid gap-2.5">
                                     <p class="m-0 text-[13px] text-dark-500 dark:text-dark-400">Start the flight from your client when the steps above are done.</p>
                                     <div class="flex flex-wrap items-center gap-2.5 not-has-[*]:hidden">
-                                        <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingFlightActions($summary, $policy, auth()->user(), $bid, null)" />
+                                        <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotFlightActions($summary, $policy, auth()->user(), $bid, null)" />
                                     </div>
                                 </div>
                             @endif

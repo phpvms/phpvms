@@ -24,7 +24,7 @@ class OwnershipServiceProvider extends AddonServiceProvider
     public static ?string $throwOn = null;
 
     /**
-     * Directory whose module.json is checked when onUninstall() runs.
+     * Directory whose addon.json is checked when onUninstall() runs.
      */
     public static ?string $watchPath = null;
 
@@ -47,7 +47,7 @@ class OwnershipServiceProvider extends AddonServiceProvider
     #[Override]
     public function onUninstall(bool $removeData): void
     {
-        $this->record('onUninstall', $removeData, self::$watchPath !== null && is_file(self::$watchPath.'/module.json'));
+        $this->record('onUninstall', $removeData, self::$watchPath !== null && is_file(self::$watchPath.'/addon.json'));
     }
 
     private function record(string $method, mixed ...$arguments): void

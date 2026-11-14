@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -13,7 +13,7 @@ beforeEach(function (): void {
 
     $this->base = sys_get_temp_dir().'/addon-reconcile-'.uniqid('', true);
     File::ensureDirectoryExists($this->base);
-    Config::set('addons.paths.base', $this->base);
+    Config::set('addons.paths.root', $this->base);
 });
 
 afterEach(function (): void {
@@ -28,7 +28,7 @@ function placeEnabledAddon(string $base, string $name): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/module.json', json_encode(['name' => $name, 'registry_id' => 'acme/'.strtolower($name), 'providers' => []]));
+    File::put($dir.'/addon.json', json_encode(addonManifest(['name' => $name, 'registry_id' => 'acme/'.strtolower($name), 'providers' => []])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => 'app/']]]));
 
     Addon::factory()->create([

@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\AddonManager\Jobs;
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\AddonRegistry;
-use App\Addons\Sources\UrlSource;
-use App\Addons\Support\ManifestParser;
-use App\Addons\Support\RegistrySignatureVerifier;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Sources\UrlSource;
+use App\Features\Addons\Support\ManifestParser;
+use App\Features\Addons\Support\RegistrySignatureVerifier;
 use App\Models\Addon;
 use App\Models\User;
 use App\Services\CronService;
 use App\Services\Installer\MigrationService;
 use Closure;
 use Filament\Notifications\Notification;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\File;
@@ -42,10 +39,7 @@ use Throwable;
  */
 class InstallAddonJob implements ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     public function __construct(
         public readonly string $registryId,

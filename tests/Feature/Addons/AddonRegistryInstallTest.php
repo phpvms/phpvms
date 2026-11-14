@@ -2,28 +2,23 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Sources\ZipSource;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Sources\ZipSource;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {
     $this->work = sys_get_temp_dir().'/install-'.uniqid();
-    $this->modules = $this->work.'/modules';
-    File::ensureDirectoryExists($this->modules);
-    Config::set('addons.paths.base', $this->modules);
-
-    // install() places files in the writable root, never in the image root,
-    // so that is where this suite asserts they land.
-    $this->installed = $this->work.'/installed';
-    Config::set('addons.paths.installed', $this->installed);
+    File::ensureDirectoryExists($this->work);
+    $this->installed = $this->work.'/addons';
+    Config::set('addons.paths.root', $this->installed);
 
     $this->zip = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []]));
+    $zip->addFromString('addon.json', json_encode(addonManifest(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
     $zip->close();
 });
@@ -84,11 +79,11 @@ it('install() leaves no staging directory behind when the fetch fails', function
     expect(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
 });
 
-it('install() places the addon when it cannot be renamed into the installed root', function (): void {
+it('install() places the addon when it cannot be renamed into the addon root', function (): void {
     $staging = $this->work.'/staging';
     Config::set('addons.paths.staging', $staging);
 
-    // Stands in for the installed root being on its own filesystem, which is
+    // Stands in for the addon root being on its own filesystem, which is
     // what config/addons.php documents it as: rename(2) refuses to move a
     // directory across a mount point (EXDEV), so placement has to copy instead.
     // Forcing the return value is the only portable way to get there — a test
@@ -98,7 +93,7 @@ it('install() places the addon when it cannot be renamed into the installed root
     $addon = app(AddonRegistry::class)->install(new ZipSource($this->zip));
 
     expect($addon->getName())->toBe('Demo')
-        ->and(File::isFile($this->installed.'/acme-demo/module.json'))->toBeTrue()
+        ->and(File::isFile($this->installed.'/acme-demo/addon.json'))->toBeTrue()
         // The copy is not a leak: the staged original is gone either way.
         ->and(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
 });

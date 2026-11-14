@@ -1,7 +1,7 @@
 <?php
 
-use App\Addons\Support\AddonAssetLinker;
 use App\Exceptions\SettingNotFound;
+use App\Features\Addons\Support\AddonAssetLinker;
 use App\Features\Themes\ThemeFields;
 use App\Models\Addon;
 use App\Services\AddonSettingService;

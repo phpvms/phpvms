@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
+use App\Features\Addons\AddonAutoLoader;
 use App\Filament\Pages\AddonSettings;
 use App\Models\Permission;
 use App\Models\User;

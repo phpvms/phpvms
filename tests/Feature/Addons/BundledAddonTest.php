@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -13,7 +13,7 @@ beforeEach(function (): void {
 
     $this->modules = sys_get_temp_dir().'/bundled-addon-'.uniqid();
     File::ensureDirectoryExists($this->modules);
-    Config::set('addons.paths.base', $this->modules);
+    Config::set('addons.paths.root', $this->modules);
 });
 
 afterEach(function (): void {
@@ -21,18 +21,18 @@ afterEach(function (): void {
 });
 
 /**
- * Drop a valid addon on disk, optionally flagged bundled in its module.json.
+ * Drop a valid addon on disk, optionally flagged bundled in its addon.json.
  */
 function placeBundledAddonOnDisk(string $base, string $name, bool $bundled): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/module.json', json_encode([
+    File::put($dir.'/addon.json', json_encode(addonManifest([
         'name'        => $name,
         'registry_id' => 'acme/'.strtolower($name),
         'providers'   => [],
         'bundled'     => $bundled,
-    ]));
+    ])));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => '']]]));
 }
 

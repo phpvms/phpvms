@@ -240,6 +240,11 @@ noted; resources are grouped by navigation group.
   registered through `AddonServiceProvider` from the `addons` table + boot
   cache. `module.json` manifest schema is validated (name, alias, providers,
   type, compat, registry_id, version).
+- **Addon directory**: addons live in `storage/app/addons`. `modules/` is
+  still scanned, for backwards compatibility.
+- **Bundled addons are symlinks** from `storage/app/addons/<name>` to
+  `modules/<name>`. `php artisan phpvms:addons-link-bundled` recreates them.
+  **Symlink support is now required.**
 - Bundled `Sample` and `Vacentral` modules are deleted from the repo (data
   migration removes the VaCentral module row).
 - **VaCentral integration removed**: `nabeel/vacentral` package,

@@ -95,7 +95,7 @@
                     </div>
 
                     <div class="vms-flight-row-actions col-span-full flex items-center gap-2 not-has-[*]:hidden" x-on:click.stop x-on:keydown.stop>
-                        <x-render-hook :hook="new \App\Features\Hooks\Points\RenderingFlightRowActions($flight, $policy)" />
+                        <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotFlightRowActions($flight, $policy)" />
                     </div>
 
                     @if ($flight->availabilityReason)

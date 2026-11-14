@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonDeleteOutcome;
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Sources\ZipSource;
-use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\ThemeAddonRegistrar;
-use App\Addons\Support\ThemeAssetLinker;
 use App\Exceptions\AddonInstallException;
+use App\Features\Addons\AddonDeleteOutcome;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Sources\ZipSource;
+use App\Features\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\BundledAddonLinker;
+use App\Features\Addons\Support\ThemeAddonRegistrar;
+use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Http\Middleware\SetActiveTheme;
 use App\Models\Addon;
 use App\Services\Installer\InstallerService;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 
 /**
- * Addons of type "theme": installed into their own writable root, registered
+ * Addons of type "theme": installed into the addon root alongside modules, registered
  * with the theme engine from the boot cache, and served from the public disk
  * through a link inside the storage volume.
  */
@@ -29,13 +30,12 @@ beforeEach(function (): void {
     Addon::query()->delete();
 
     $this->work = sys_get_temp_dir().'/addon-themes-'.uniqid('', true);
-    File::ensureDirectoryExists($this->work.'/image');
-    File::ensureDirectoryExists($this->work.'/installed');
-    File::ensureDirectoryExists($this->work.'/themes');
+    File::ensureDirectoryExists($this->work.'/bundled');
+    File::ensureDirectoryExists($this->work.'/addons');
 
-    Config::set('addons.paths.base', $this->work.'/image');
-    Config::set('addons.paths.installed', $this->work.'/installed');
-    Config::set('addons.paths.themes', $this->work.'/themes');
+    Config::set('addons.paths.root', $this->work.'/addons');
+    Config::set('addons.paths.bundled', $this->work.'/bundled');
+    Config::set('addons.bundled', []);
     Config::set('addons.paths.theme_assets', $this->work.'/public-disk/themes');
     Config::set('addons.paths.assets', $this->work.'/ext');
 
@@ -68,13 +68,13 @@ function themeAddonZip(
 
     $zip = new ZipArchive();
     $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode([
+    $zip->addFromString('addon.json', json_encode(addonManifest([
         'name'        => 'Testsky',
         'registry_id' => 'acme/testsky',
         'type'        => $type,
         'version'     => $version,
         'providers'   => [],
-    ]));
+    ])));
     $zip->addFromString('composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']],
     ]));
@@ -101,12 +101,11 @@ function installThemeAddon(string $workDir, array $extraFiles = []): Addon
 
 // ── Placement ───────────────────────────────────────────────────────────────
 
-it('installs a theme addon into the themes root, not the addons root', function (): void {
+it('installs a theme addon into the addon root', function (): void {
     $addon = installThemeAddon($this->work);
 
     expect($addon->type)->toBe('theme')
-        ->and(realpath($addon->getPath()))->toBe(realpath($this->work.'/themes/acme-testsky'))
-        ->and(File::isDirectory($this->work.'/installed/acme-testsky'))->toBeFalse();
+        ->and(realpath($addon->getPath()))->toBe(realpath($this->work.'/addons/acme-testsky'));
 });
 
 // ── Asset link ──────────────────────────────────────────────────────────────
@@ -148,7 +147,7 @@ it('refuses an addon with a PHP file in public/', function (string $file): void 
         ->toThrow(AddonInstallException::class, 'must not contain PHP or server config files');
 
     expect(Addon::query()->count())->toBe(0)
-        ->and(File::isDirectory($this->work.'/themes/acme-testsky'))->toBeFalse();
+        ->and(File::isDirectory($this->work.'/addons/acme-testsky'))->toBeFalse();
 })->with([
     'nested'        => 'public/js/vendor/x.phtml',
     'double ext'    => 'public/img/a.php.png',
@@ -272,9 +271,9 @@ it('refuses a second theme addon with the same theme name', function (): void {
     $other = $this->work.'/other.zip';
     $zip = new ZipArchive();
     $zip->open($other, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode([
+    $zip->addFromString('addon.json', json_encode(addonManifest([
         'name' => 'Other', 'registry_id' => 'acme/other', 'type' => 'theme', 'version' => '1.0.0', 'providers' => [],
-    ]));
+    ])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Other\\' => '']]]));
     $zip->addFromString('theme.json', json_encode(['name' => 'testsky']));
     $zip->addFromString('resources/views/home.blade.php', 'other');
@@ -314,12 +313,12 @@ it('records the new type when an update turns a module into a theme', function (
     $moduleZip = $this->work.'/module.zip';
     $zip = new ZipArchive();
     $zip->open($moduleZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode([
+    $zip->addFromString('addon.json', json_encode(addonManifest([
         'name'        => 'Testsky',
         'registry_id' => 'acme/testsky',
         'version'     => '0.9.0',
         'providers'   => [],
-    ]));
+    ])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']]]));
     $zip->close();
 
@@ -330,10 +329,11 @@ it('records the new type when an update turns a module into a theme', function (
     $updated = $registry->update('Testsky', new ZipSource(themeAddonZip($this->work)));
 
     expect($updated->type)->toBe('theme')
-        ->and(realpath($updated->getPath()))->toBe(realpath($this->work.'/themes/acme-testsky'))
+        ->and(realpath($updated->getPath()))->toBe(realpath($this->work.'/addons/acme-testsky'))
         ->and(is_link($this->work.'/public-disk/themes/testsky'))->toBeTrue()
-        // The module copy is gone, so deleting the theme cannot resurrect it.
-        ->and(File::isDirectory($this->work.'/installed/acme-testsky'))->toBeFalse();
+        // Updated in place: the root holds one copy, so deleting the theme
+        // cannot resurrect an older module copy.
+        ->and(File::directories($this->work.'/addons'))->toHaveCount(1);
 });
 
 it('computes relative paths between directories', function (string $from, string $to, string $expected): void {
@@ -379,16 +379,18 @@ it('rebuilds the addon boot cache from the command line', function (): void {
 // ── PR review fixes ─────────────────────────────────────────────────────────
 
 it('restores the type and the theme link when reverting to the bundled copy', function (): void {
-    // The bundled theme, as the image ships it.
-    $bundled = $this->work.'/image/testsky';
+    // The bundled theme, as the release ships it, linked into the root.
+    Config::set('addons.bundled', ['testsky']);
+    $bundled = $this->work.'/bundled/testsky';
     File::ensureDirectoryExists($bundled.'/resources/views');
     File::ensureDirectoryExists($bundled.'/public/css');
-    File::put($bundled.'/module.json', json_encode([
+    File::put($bundled.'/addon.json', json_encode(addonManifest([
         'name' => 'Testsky', 'registry_id' => 'acme/testsky', 'type' => 'theme', 'version' => '1.0.0', 'providers' => [],
-    ]));
+    ])));
     File::put($bundled.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']]]));
     File::put($bundled.'/theme.json', json_encode(['name' => 'testsky']));
     File::put($bundled.'/public/css/app.css', 'bundled');
+    app(BundledAddonLinker::class)->link();
     app(AddonDiscoveryService::class)->discoverNewAddons();
     updateSetting('general.theme', 'seven');
 
@@ -437,7 +439,7 @@ it('points the boot cache at the new copy after a same-version type change', fun
     app(AddonRegistry::class)->update('Testsky', new ZipSource(themeAddonZip($this->work)));
 
     $entry = app(BootCache::class)->enabled()->firstWhere('name', 'Testsky');
-    expect(realpath($entry->path))->toBe(realpath($this->work.'/themes/acme-testsky'))
+    expect(realpath($entry->path))->toBe(realpath($this->work.'/addons/acme-testsky'))
         ->and($entry->type)->toBe('theme');
 });
 

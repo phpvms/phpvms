@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Facades\Artisan;
@@ -35,7 +35,7 @@ beforeEach(function (): void {
     // Empty addons dir so on-disk bundled modules aren't discovered as rows.
     $dir = sys_get_temp_dir().'/addons-check-'.uniqid();
     File::ensureDirectoryExists($dir);
-    Config::set('addons.paths.base', $dir);
+    Config::set('addons.paths.root', $dir);
 
     Addon::query()->delete();
     Addon::factory()->create([

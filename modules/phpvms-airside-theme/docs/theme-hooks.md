@@ -1643,20 +1643,31 @@ The route map card of the flight page: just the map.
 
 ### `vms-briefing-timeline`
 
-The timeline card of the flight page: one row per station, route, fix or phase.
+The timeline card of the flight page. Its entries are ordered by offset from departure; items at the same offset stack in one entry.
 
 - **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
 - **Element:** the `<section>`.
-- **Parts:** `vms-timeline-item`, `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`, `vms-briefing-facts`, `vms-briefing-route`, `vms-briefing-notice`.
+- **Parts:** `vms-timeline`, `vms-timeline-item`, `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`, `vms-briefing-facts`, `vms-briefing-route`, `vms-briefing-notice`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-timeline`
+
+A vertical timeline: the list that holds the entries. Shared by every page that draws one.
+
+- **View:** `resources/views/components/timeline/index.blade.php` (`<x-vms::timeline>`)
+- **Element:** the `<ol>`.
+- **Parts:** `vms-timeline-item`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-timeline-item`
 
-One timeline row: a time column, the spine with its node, and the body. Compact rows (fixes, phases) also carry `vms-timeline-item--compact`.
+One timeline entry: a time column, the spine with its node, and the body, which stacks the items at one offset. Compact entries (fixes, phases) also carry `vms-timeline-item--compact`.
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<li>`.
 - **Parts:** `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`.
 - **State:** none.
@@ -1667,7 +1678,7 @@ One timeline row: a time column, the spine with its node, and the body. Compact 
 
 The time column of a timeline row: the scheduled time, the elapsed time (`+0:14`) or a word (block, alternate).
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -1678,7 +1689,7 @@ The time column of a timeline row: the scheduled time, the elapsed time (`+0:14`
 
 The line that joins the timeline rows. It is a `::before` rule: the first row starts it at the node and the last row ends it there.
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<div>` that holds the node.
 - **Parts:** `vms-timeline-node`.
 - **State:** none.
@@ -1689,7 +1700,7 @@ The line that joins the timeline rows. It is a `::before` rule: the first row st
 
 The dot on the spine. Variants: `vms-timeline-node--fix` (small), `vms-timeline-node--phase` (a diamond, for top of climb and descent) and `vms-timeline-node--alt` (dashed, for the alternate).
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<span>`.
 - **Parts:** none.
 - **State:** none.
@@ -1698,9 +1709,9 @@ The dot on the spine. Variants: `vms-timeline-node--fix` (small), `vms-timeline-
 
 ### `vms-timeline-body`
 
-The content of a timeline row; rows after the first have a top border.
+The content of a timeline entry, its stacked items one under another; entries after the first have a top border.
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -1731,7 +1742,7 @@ The route string of the Route row, one mono pill per token.
 
 ### `vms-briefing-notice`
 
-An addon notice under a timeline row: icon, title coloured by severity, detail and time.
+An addon notice on the timeline, stacked with the other items at its offset: icon, title coloured by severity, detail and time.
 
 - **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
 - **Element:** the `<div>`.
