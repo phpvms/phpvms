@@ -21,7 +21,7 @@ services:
   # collations, so a schema change can pass on one and fail on the other. Most
   # phpVMS installs run MariaDB. 11.4 is the current LTS, matching CI.
   mariadb:
-    image: mariadb:11.4
+    image: mariadb:11.7
     ports:
       - "13307:3306"
     environment:

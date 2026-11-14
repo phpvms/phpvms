@@ -50,7 +50,7 @@
     "esbuild": "^0.28.2",
     "happy-dom": "^21.0.0",
     "laravel-vite-plugin": "^3.2.0",
-    "oxfmt": "^0.75.0",
+    "oxfmt": "^0.78.0",
     "oxlint": "^1.89.0",
     "sass": "^1.105.2",
     "tailwindcss": "^4.3.3",
@@ -58,5 +58,5 @@
     "vite": "^8.3.4",
     "vitest": "^4.1.12"
   },
-  "packageManager": "pnpm@11.9.0"
+  "packageManager": "pnpm@11.28.11"
 }

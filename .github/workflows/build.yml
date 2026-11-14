@@ -146,7 +146,7 @@ jobs:
       # On 3307 because the MySQL service above already holds 3306 on the
       # runner, and both start for every shard.
       mariadb:
-        image: mariadb:11.4
+        image: mariadb:11.7
         env:
           MARIADB_ROOT_PASSWORD: root
           MARIADB_DATABASE: phpvms
@@ -161,7 +161,7 @@ jobs:
           --health-retries=5
 
       postgres:
-        image: postgres:18.0-alpine
+        image: postgres:18.6-alpine
         env:
           POSTGRES_DB: phpvms
           POSTGRES_USER: phpvms
@@ -387,7 +387,7 @@ jobs:
             --endpoint-url https://ny-s3.storage.bunnycdn.com
 
       - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
+        uses: Ilshidur/action-discord@0.4.0
         env:
           DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
         with:
