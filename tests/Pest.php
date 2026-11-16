@@ -73,7 +73,7 @@ pest()
 
             // The addon manifest schema comes from a committed copy and never goes stale,
             // so no test downloads it. A test of the download path overrides these.
-            'addons.schema.path' => base_path('tests/fixtures/Addons/addon.schema.json'),
+            'addons.schema.path' => base_path('tests/fixtures/Addons/manifest.schema.json'),
             'addons.schema.ttl'  => PHP_INT_MAX,
         ]);
 

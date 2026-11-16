@@ -42,8 +42,8 @@ beforeEach(function (): void {
     $this->work = sys_get_temp_dir().'/manifest-schema-'.uniqid();
     File::ensureDirectoryExists($this->work);
 
-    $this->schemaBody = (string) file_get_contents(base_path('tests/fixtures/Addons/addon.schema.json'));
-    $this->schemaPath = $this->work.'/schema/addon.schema.json';
+    $this->schemaBody = (string) file_get_contents(base_path('tests/fixtures/Addons/manifest.schema.json'));
+    $this->schemaPath = $this->work.'/schema/manifest.schema.json';
 
     // Cache path in a temp dir with the real TTL logic, so the download path is exercised.
     Config::set('addons.schema.url', SCHEMA_URL);
@@ -61,7 +61,7 @@ describe('schema cache', function (): void {
         Http::fake([SCHEMA_URL => Http::response($this->schemaBody)]);
         // A regular file where the cache directory should be makes every write fail.
         File::put($this->work.'/blocker', '');
-        Config::set('addons.schema.path', $this->work.'/blocker/addon.schema.json');
+        Config::set('addons.schema.path', $this->work.'/blocker/manifest.schema.json');
 
         expect(new ManifestSchema()->schema())->toBeNull();
         Log::shouldHaveReceived('warning')->withArgs(fn (string $message): bool => str_contains($message, 'could not write'))->once();
@@ -131,8 +131,7 @@ describe('validation', function (): void {
     });
 
     it('names the property of each failure', function (): void {
-        $manifest = validManifest(['description' => '', 'registry_id' => 'no-slash']);
-        unset($manifest['schema_version']);
+        $manifest = validManifest(['description' => '', 'registry_id' => 'no-slash', 'schema_version' => 0]);
 
         $errors = implode("\n", app(ManifestSchemaValidator::class)->errors($manifest));
 
@@ -160,16 +159,11 @@ describe('validation', function (): void {
         expect(Addon::query()->where('registry_id', 'acme/demo')->exists())->toBeFalse();
     });
 
-    it('skips a local addon without schema_version and warns naming it', function (): void {
+    it('skips a local addon with an invalid schema_version and warns naming it', function (): void {
         $base = $this->work.'/root';
         Config::set('addons.paths.root', $base);
 
-        foreach (['good' => validManifest(['name' => 'Good', 'registry_id' => 'acme/good']), 'bad' => (static function (): array {
-            $manifest = validManifest(['name' => 'Bad', 'registry_id' => 'acme/bad']);
-            unset($manifest['schema_version']);
-
-            return $manifest;
-        })()] as $dir => $manifest) {
+        foreach (['good' => validManifest(['name' => 'Good', 'registry_id' => 'acme/good']), 'bad' => validManifest(['name' => 'Bad', 'registry_id' => 'acme/bad', 'schema_version' => 0])] as $dir => $manifest) {
             File::ensureDirectoryExists($base.'/'.$dir);
             File::put($base.'/'.$dir.'/manifest.json', json_encode($manifest));
             File::put($base.'/'.$dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.ucfirst($dir).'\\' => '']]]));
@@ -189,8 +183,7 @@ describe('validation', function (): void {
     it('disables an enabled addon whose manifest.json fails the schema and notifies the super-admins', function (): void {
         $base = $this->work.'/root';
         Config::set('addons.paths.root', $base);
-        $manifest = validManifest(['name' => 'Bad', 'registry_id' => 'acme/bad']);
-        unset($manifest['schema_version']);
+        $manifest = validManifest(['name' => 'Bad', 'registry_id' => 'acme/bad', 'schema_version' => 0]);
         File::ensureDirectoryExists($base.'/bad');
         File::put($base.'/bad/manifest.json', json_encode($manifest));
         File::put($base.'/bad/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Bad\\' => '']]]));
@@ -215,8 +208,7 @@ describe('validation', function (): void {
         Config::set('addons.paths.root', $root);
         Config::set('addons.paths.bundled', $modules);
         Config::set('addons.bundled', []);
-        $stale = validManifest(['name' => 'Twin', 'registry_id' => 'acme/twin']);
-        unset($stale['schema_version']);
+        $stale = validManifest(['name' => 'Twin', 'registry_id' => 'acme/twin', 'schema_version' => 0]);
 
         foreach ([$root => validManifest(['name' => 'Twin', 'registry_id' => 'acme/twin']), $modules => $stale] as $dir => $manifest) {
             File::ensureDirectoryExists($dir.'/twin');

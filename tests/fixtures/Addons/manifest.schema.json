@@ -9,7 +9,6 @@
         "php": { "type": "string", "minLength": 1 },
         "phpvms": { "type": "string", "minLength": 1 }
       },
-      "required": ["php", "phpvms"],
       "additionalProperties": {}
     },
     "icon": {
@@ -31,7 +30,7 @@
     "type": { "type": "string", "enum": ["module", "theme"] },
     "description": { "type": "string", "minLength": 1 }
   },
-  "required": ["registry_id", "schema_version", "type"],
+  "required": ["registry_id"],
   "additionalProperties": {},
   "$id": "https://phpvms.net/schema/manifest.schema.v1.json",
   "title": "phpVMS addon manifest (manifest.json)"

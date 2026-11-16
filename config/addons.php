@@ -13,7 +13,7 @@ return [
     // re-downloaded once it is older than `ttl` seconds.
     'schema' => [
         'url'  => 'https://phpvms.net/schema/manifest.schema.v1.json',
-        'path' => storage_path('app/addons/addon.schema.json'),
+        'path' => storage_path('app/addons/manifest.schema.json'),
         'ttl'  => 86400,
     ],
 
