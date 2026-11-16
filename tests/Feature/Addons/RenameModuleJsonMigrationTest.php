@@ -12,14 +12,14 @@ beforeEach(function (): void {
     File::ensureDirectoryExists($this->base);
     Config::set('addons.paths.root', $this->base);
 
-    $this->migration = require database_path('migrations_data/2026_11_10_000000_rename_module_json_to_addon_json.php');
+    $this->migration = require database_path('migrations_data/2026_11_10_000000_rename_module_json_to_manifest_json.php');
 });
 
 afterEach(function (): void {
     File::deleteDirectory($this->work);
 });
 
-it('renames module.json to addon.json in the addon root', function (): void {
+it('renames module.json to manifest.json in the addon root', function (): void {
     foreach ([$this->base.'/legacy', $this->base.'/acme-legacy', $this->base.'/acme-theme'] as $dir) {
         File::ensureDirectoryExists($dir);
         File::put($dir.'/module.json', '{"name":"Legacy"}');
@@ -31,7 +31,7 @@ it('renames module.json to addon.json in the addon root', function (): void {
 
     foreach ([$this->base.'/legacy', $this->base.'/acme-legacy', $this->base.'/acme-theme'] as $dir) {
         expect(File::exists($dir.'/module.json'))->toBeFalse()
-            ->and(File::get($dir.'/addon.json'))->toBe('{"name":"Legacy"}');
+            ->and(File::get($dir.'/manifest.json'))->toBe('{"name":"Legacy"}');
     }
 });
 
@@ -39,12 +39,12 @@ it('leaves a directory that has both files alone', function (): void {
     $dir = $this->base.'/both';
     File::ensureDirectoryExists($dir);
     File::put($dir.'/module.json', '{"old":true}');
-    File::put($dir.'/addon.json', '{"new":true}');
+    File::put($dir.'/manifest.json', '{"new":true}');
 
     $this->migration->up();
 
     expect(File::get($dir.'/module.json'))->toBe('{"old":true}')
-        ->and(File::get($dir.'/addon.json'))->toBe('{"new":true}');
+        ->and(File::get($dir.'/manifest.json'))->toBe('{"new":true}');
 });
 
 it('reads a module.json addon before and after the rename', function (): void {
@@ -68,6 +68,6 @@ it('leaves the retired awards and widgets manifests as module.json', function ()
 
     $this->migration->up();
 
-    expect(File::exists($this->base.'/Awards/addon.json'))->toBeFalse()
-        ->and(File::exists($this->base.'/phpvms-widgets/addon.json'))->toBeFalse();
+    expect(File::exists($this->base.'/Awards/manifest.json'))->toBeFalse()
+        ->and(File::exists($this->base.'/phpvms-widgets/manifest.json'))->toBeFalse();
 });

@@ -27,7 +27,7 @@ afterEach(function (): void {
 
 function addonIconManifest(string $dir, mixed $icon): void
 {
-    File::put($dir.'/addon.json', json_encode([
+    File::put($dir.'/manifest.json', json_encode([
         'name'        => 'IconDemo',
         'registry_id' => 'acme/icon-demo',
         'providers'   => [],

@@ -21,13 +21,13 @@ afterEach(function (): void {
 });
 
 /**
- * Drop a valid addon on disk, optionally flagged bundled in its addon.json.
+ * Drop a valid addon on disk, optionally flagged bundled in its manifest.json.
  */
 function placeBundledAddonOnDisk(string $base, string $name, bool $bundled): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/addon.json', json_encode(addonManifest([
+    File::put($dir.'/manifest.json', json_encode(addonManifest([
         'name'        => $name,
         'registry_id' => 'acme/'.strtolower($name),
         'providers'   => [],

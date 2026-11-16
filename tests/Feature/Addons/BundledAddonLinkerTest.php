@@ -29,7 +29,7 @@ afterEach(function (): void {
 function linkerAddon(string $dir, string $version): void
 {
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/addon.json', json_encode(addonManifest([
+    File::put($dir.'/manifest.json', json_encode(addonManifest([
         'name'        => 'Shipped',
         'registry_id' => 'acme/shipped',
         'version'     => $version,
@@ -67,7 +67,7 @@ it('replaces a registry update with the link once the bundled copy catches up', 
 
     expect(app(BundledAddonLinker::class)->link())->toBe(['shipped' => BundledAddonLinker::RESTORED])
         ->and(is_link($this->root.'/shipped'))->toBeTrue()
-        ->and(File::exists($this->source.'/shipped/addon.json'))->toBeTrue()
+        ->and(File::exists($this->source.'/shipped/manifest.json'))->toBeTrue()
         // The replaced copy is not left in the root for discovery to find.
         ->and(array_values(array_diff(scandir($this->root), ['.', '..'])))->toBe(['shipped']);
 })->with(['equal version' => '1.1.0', 'older version' => '1.0.0']);

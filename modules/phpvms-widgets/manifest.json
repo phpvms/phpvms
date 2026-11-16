@@ -1,5 +1,5 @@
 {
-    "$schema": "https://addons.phpvms.net/schema/addon.json",
+    "$schema": "https://addons.phpvms.net/schema/manifest.json",
     "schema_version": 1,
     "name": "PhpvmsWidgets",
     "alias": "phpvms-widgets",

@@ -65,7 +65,7 @@ function buildAddonZip(string $zipPath, string $registryId, string $version, boo
 {
     $zip = new ZipArchive();
     $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('addon.json', json_encode(addonManifest([
+    $zip->addFromString('manifest.json', json_encode(addonManifest([
         'name'        => 'Demo Addon',
         'registry_id' => $registryId,
         'version'     => $version,
@@ -240,7 +240,7 @@ it('restores the previous version when an update migration fails', function (): 
     expect($addon)->not->toBeNull();
     expect($addon->version)->toBe('1.0.0');
     expect($addon->enabled)->toBeTrue();
-    expect(File::exists($this->installed.'/acme-demo/addon.json'))->toBeTrue();
+    expect(File::exists($this->installed.'/acme-demo/manifest.json'))->toBeTrue();
 });
 
 it('applies WithoutOverlapping per registry id', function (): void {

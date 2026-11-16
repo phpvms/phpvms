@@ -47,7 +47,7 @@ beforeEach(function (): void {
         File::copyDirectory($this->fixture, $dir);
 
         if ($manifest !== []) {
-            File::put($dir.'/addon.json', json_encode([...json_decode((string) file_get_contents($dir.'/addon.json'), true), ...$manifest]));
+            File::put($dir.'/manifest.json', json_encode([...json_decode((string) file_get_contents($dir.'/manifest.json'), true), ...$manifest]));
         }
 
         Artisan::call('migrate', ['--force' => true, '--realpath' => true, '--path' => [$dir.'/database/migrations']]);
@@ -113,7 +113,7 @@ it('puts the files back and keeps the addon when dropping the tables fails', fun
 
     expect(fn () => app(AddonRegistry::class)->delete('Ownership', true))->toThrow(RuntimeException::class, 'drop failed');
 
-    expect(is_file($dir.'/addon.json'))->toBeTrue()
+    expect(is_file($dir.'/manifest.json'))->toBeTrue()
         ->and(array_map(basename(...), File::directories($this->root)))->toBe(['acme-ownership'])
         ->and(Addon::query()->where('name', 'Ownership')->exists())->toBeTrue();
 });
@@ -230,7 +230,7 @@ function zipOwnershipFixture(string $directory, string $version, string $namespa
         $relative = $file->getRelativePathname();
         $contents = (string) file_get_contents($file->getPathname());
 
-        if ($relative === 'addon.json') {
+        if ($relative === 'manifest.json') {
             $contents = json_encode([...json_decode($contents, true), 'version' => $version]);
         }
 

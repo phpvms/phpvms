@@ -8,7 +8,7 @@ use App\Features\Addons\Models\AddonManifest;
 use App\Support\Filesystem;
 
 /**
- * Lenient parser for addon manifests (addon.json, or the legacy module.json)
+ * Lenient parser for addon manifests (manifest.json, or the legacy module.json)
  * + composer.json.
  *
  * Returns a typed ManifestData on success, or null when the manifest is
@@ -21,7 +21,7 @@ class ManifestParser
     /**
      * Manifest file names, in lookup order. module.json is the legacy name.
      */
-    public const MANIFEST_FILES = ['addon.json', 'module.json'];
+    public const MANIFEST_FILES = ['manifest.json', 'module.json'];
 
     /**
      * The addon's manifest file. Null when there is none.
@@ -40,7 +40,7 @@ class ManifestParser
     /**
      * Parse a module directory's manifest files into a typed ManifestData.
      *
-     * Returns null when the manifest (addon.json) OR composer.json
+     * Returns null when the manifest (manifest.json) OR composer.json
      * is absent or contains invalid JSON (both are required) so the caller can
      * skip-and-log rather than crashing boot (D-15).
      */
@@ -175,14 +175,14 @@ class ManifestParser
     }
 
     /**
-     * Resolve the addon-owned database tables from addon.json `database.tables`.
+     * Resolve the addon-owned database tables from manifest.json `database.tables`.
      *
      * Returns a de-duplicated list of non-blank table names, or an empty list
      * when the key is absent or malformed (D-16). Drives table removal on
      * uninstall; an empty list means the addon declares no contract and the
      * caller falls back to rolling back its migrations.
      *
-     * @param  array<string, mixed> $data Decoded addon.json data.
+     * @param  array<string, mixed> $data Decoded manifest.json data.
      * @return list<string>
      */
     private function resolveTables(array $data): array
@@ -251,9 +251,9 @@ class ManifestParser
     /**
      * Resolve the addon version (D-07).
      *
-     * Preference order: addon.json 'version' → composer.json 'version' → null.
+     * Preference order: manifest.json 'version' → composer.json 'version' → null.
      *
-     * @param array<string, mixed> $data         Decoded addon.json data.
+     * @param array<string, mixed> $data         Decoded manifest.json data.
      * @param array<string, mixed> $composerData Pre-decoded composer.json data.
      */
     private function resolveVersion(array $data, array $composerData): ?string

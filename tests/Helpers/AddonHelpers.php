@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\File;
  * ->skip(sampleAddonMissing(...), ...) rather than failing the suite.
  *
  * Matched on the manifest, never on the directory name: the addon engine reads
- * each addon's own addon.json/composer.json and is directory-name agnostic, so
+ * each addon's own manifest.json/composer.json and is directory-name agnostic, so
  * the sample may sit in "Sample", "phpvms-sample", or anything else.
  */
 function sampleAddonPath(): ?string
@@ -91,7 +91,7 @@ function addonSettingRowsExist(string $registryId): bool
 }
 
 /**
- * An addon.json payload that passes the registry's manifest schema.
+ * A manifest.json payload that passes the registry's manifest schema.
  *
  * The caller supplies at least `registry_id`; any key can be overridden.
  *

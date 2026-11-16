@@ -99,7 +99,7 @@ abstract class TestCase extends BaseTestCase
         $directory = realpath(dirname($file));
 
         while ($directory !== false && $directory !== $core && $directory !== dirname($directory)) {
-            if (is_file($directory.'/addon.json') || is_file($directory.'/module.json')) {
+            if (is_file($directory.'/manifest.json') || is_file($directory.'/module.json')) {
                 return $directory;
             }
 

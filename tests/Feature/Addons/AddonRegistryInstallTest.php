@@ -18,7 +18,7 @@ beforeEach(function (): void {
     $this->zip = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('addon.json', json_encode(addonManifest(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []])));
+    $zip->addFromString('manifest.json', json_encode(addonManifest(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
     $zip->close();
 });
@@ -93,7 +93,7 @@ it('install() places the addon when it cannot be renamed into the addon root', f
     $addon = app(AddonRegistry::class)->install(new ZipSource($this->zip));
 
     expect($addon->getName())->toBe('Demo')
-        ->and(File::isFile($this->installed.'/acme-demo/addon.json'))->toBeTrue()
+        ->and(File::isFile($this->installed.'/acme-demo/manifest.json'))->toBeTrue()
         // The copy is not a leak: the staged original is gone either way.
         ->and(File::isDirectory($staging) ? File::directories($staging) : [])->toBe([]);
 });

@@ -18,7 +18,7 @@ afterEach(function (): void {
 });
 
 it('returns the manifest for a valid addon', function (): void {
-    File::put($this->dir.'/addon.json', json_encode(addonManifest([
+    File::put($this->dir.'/manifest.json', json_encode(addonManifest([
         'name'        => 'Demo',
         'registry_id' => 'acme/demo',
         'providers'   => [],
@@ -30,6 +30,6 @@ it('returns the manifest for a valid addon', function (): void {
     expect($this->validator->validate($this->dir))->toBeInstanceOf(AddonManifest::class);
 });
 
-it('throws when addon.json is missing', function (): void {
+it('throws when manifest.json is missing', function (): void {
     $this->validator->validate($this->dir);
 })->throws(AddonInstallException::class);

@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Data migration: addon.json is the manifest name, so rename module.json to
- * addon.json in every installed addon directory. module.json is still read.
+ * Data migration: manifest.json is the manifest name, so rename module.json to
+ * manifest.json in every installed addon directory. module.json is still read.
  *
- * A directory that already has addon.json is left alone. Safe to run again.
+ * A directory that already has manifest.json is left alone. Safe to run again.
  *
  * Awards and widgets are skipped: they are bundled, so their root entries are
  * links into modules/, and a rename would edit the release's files.
@@ -31,8 +31,8 @@ return new class() extends Migration
         foreach (is_dir($root) ? File::directories($root) : [] as $dir) {
             $legacy = $dir.'/module.json';
 
-            if (is_file($legacy) && !file_exists($dir.'/addon.json') && !$this->isRetired($legacy)) {
-                $renamed = rename($legacy, $dir.'/addon.json') || $renamed;
+            if (is_file($legacy) && !file_exists($dir.'/manifest.json') && !$this->isRetired($legacy)) {
+                $renamed = rename($legacy, $dir.'/manifest.json') || $renamed;
             }
         }
 

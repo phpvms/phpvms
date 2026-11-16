@@ -33,6 +33,6 @@
   },
   "required": ["registry_id", "schema_version", "type"],
   "additionalProperties": {},
-  "$id": "https://addons.phpvms.net/schema/addon.json",
-  "title": "phpVMS addon manifest (addon.json)"
+  "$id": "https://addons.phpvms.net/schema/manifest.json",
+  "title": "phpVMS addon manifest (manifest.json)"
 }

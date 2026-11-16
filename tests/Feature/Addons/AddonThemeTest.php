@@ -68,7 +68,7 @@ function themeAddonZip(
 
     $zip = new ZipArchive();
     $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('addon.json', json_encode(addonManifest([
+    $zip->addFromString('manifest.json', json_encode(addonManifest([
         'name'        => 'Testsky',
         'registry_id' => 'acme/testsky',
         'type'        => $type,
@@ -271,7 +271,7 @@ it('refuses a second theme addon with the same theme name', function (): void {
     $other = $this->work.'/other.zip';
     $zip = new ZipArchive();
     $zip->open($other, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('addon.json', json_encode(addonManifest([
+    $zip->addFromString('manifest.json', json_encode(addonManifest([
         'name' => 'Other', 'registry_id' => 'acme/other', 'type' => 'theme', 'version' => '1.0.0', 'providers' => [],
     ])));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Other\\' => '']]]));
@@ -313,7 +313,7 @@ it('records the new type when an update turns a module into a theme', function (
     $moduleZip = $this->work.'/module.zip';
     $zip = new ZipArchive();
     $zip->open($moduleZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('addon.json', json_encode(addonManifest([
+    $zip->addFromString('manifest.json', json_encode(addonManifest([
         'name'        => 'Testsky',
         'registry_id' => 'acme/testsky',
         'version'     => '0.9.0',
@@ -384,7 +384,7 @@ it('restores the type and the theme link when reverting to the bundled copy', fu
     $bundled = $this->work.'/bundled/testsky';
     File::ensureDirectoryExists($bundled.'/resources/views');
     File::ensureDirectoryExists($bundled.'/public/css');
-    File::put($bundled.'/addon.json', json_encode(addonManifest([
+    File::put($bundled.'/manifest.json', json_encode(addonManifest([
         'name' => 'Testsky', 'registry_id' => 'acme/testsky', 'type' => 'theme', 'version' => '1.0.0', 'providers' => [],
     ])));
     File::put($bundled.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Testsky\\' => '']]]));

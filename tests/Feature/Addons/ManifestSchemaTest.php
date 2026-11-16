@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-const SCHEMA_URL = 'https://addons.test/schema/addon.json';
+const SCHEMA_URL = 'https://addons.test/schema/manifest.json';
 
 /**
  * @return array<string, mixed>
@@ -141,11 +141,11 @@ describe('validation', function (): void {
             ->and($errors)->toContain('schema_version');
     });
 
-    it('rejects an install whose addon.json has an empty description', function (): void {
+    it('rejects an install whose manifest.json has an empty description', function (): void {
         $zipPath = $this->work.'/demo.zip';
         $zip = new ZipArchive();
         $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-        $zip->addFromString('addon.json', json_encode(validManifest(['description' => ''])));
+        $zip->addFromString('manifest.json', json_encode(validManifest(['description' => ''])));
         $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
         $zip->close();
         Config::set('addons.paths.root', $this->work.'/root');
@@ -171,7 +171,7 @@ describe('validation', function (): void {
             return $manifest;
         })()] as $dir => $manifest) {
             File::ensureDirectoryExists($base.'/'.$dir);
-            File::put($base.'/'.$dir.'/addon.json', json_encode($manifest));
+            File::put($base.'/'.$dir.'/manifest.json', json_encode($manifest));
             File::put($base.'/'.$dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.ucfirst($dir).'\\' => '']]]));
         }
 
@@ -186,13 +186,13 @@ describe('validation', function (): void {
             ->once();
     });
 
-    it('disables an enabled addon whose addon.json fails the schema and notifies the super-admins', function (): void {
+    it('disables an enabled addon whose manifest.json fails the schema and notifies the super-admins', function (): void {
         $base = $this->work.'/root';
         Config::set('addons.paths.root', $base);
         $manifest = validManifest(['name' => 'Bad', 'registry_id' => 'acme/bad']);
         unset($manifest['schema_version']);
         File::ensureDirectoryExists($base.'/bad');
-        File::put($base.'/bad/addon.json', json_encode($manifest));
+        File::put($base.'/bad/manifest.json', json_encode($manifest));
         File::put($base.'/bad/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Bad\\' => '']]]));
         $addon = Addon::factory()->create(['name' => 'Bad', 'registry_id' => 'acme/bad', 'namespace' => 'Modules\\Bad', 'path' => $base.'/bad']);
         $admin = User::factory()->create();
@@ -220,7 +220,7 @@ describe('validation', function (): void {
 
         foreach ([$root => validManifest(['name' => 'Twin', 'registry_id' => 'acme/twin']), $modules => $stale] as $dir => $manifest) {
             File::ensureDirectoryExists($dir.'/twin');
-            File::put($dir.'/twin/addon.json', json_encode($manifest));
+            File::put($dir.'/twin/manifest.json', json_encode($manifest));
             File::put($dir.'/twin/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Twin\\' => '']]]));
         }
 

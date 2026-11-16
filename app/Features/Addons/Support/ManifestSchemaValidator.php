@@ -7,7 +7,7 @@ namespace App\Features\Addons\Support;
 use JsonSchema\Validator;
 
 /**
- * Checks a decoded addon.json against the registry's published manifest schema.
+ * Checks a decoded manifest.json against the registry's published manifest schema.
  */
 class ManifestSchemaValidator
 {
@@ -16,7 +16,7 @@ class ManifestSchemaValidator
     ) {}
 
     /**
-     * @param  array<string, mixed> $manifest The decoded addon.json.
+     * @param  array<string, mixed> $manifest The decoded manifest.json.
      * @return list<string>         "<property>: <message>" lines; empty when valid or no schema is available.
      */
     public function errors(array $manifest): array

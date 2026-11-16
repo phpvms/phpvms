@@ -177,13 +177,13 @@ class AddonDiscoveryService
 
     /**
      * A fingerprint of the addon manifests on disk: for each immediate child
-     * directory of the addons base path, the mtime+size of addon.json and
+     * directory of the addons base path, the mtime+size of manifest.json and
      * composer.json (both feed a boot-cache entry — namespace and version
      * derive from composer.json). Hashing the sorted set means an added or
      * removed addon directory, or an edited manifest, changes the hash.
      *
      * databaseFingerprint() cannot see any of this: renaming an addon in its
-     * addon.json leaves the addons table untouched, so without a disk
+     * manifest.json leaves the addons table untouched, so without a disk
      * dimension the cache serves the old manifest values forever.
      */
     private function diskFingerprint(): string
@@ -451,7 +451,7 @@ class AddonDiscoveryService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof AddonManifest) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json is missing or invalid", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — manifest.json is missing or invalid", $resolved));
 
                 continue;
             }
@@ -460,7 +460,7 @@ class AddonDiscoveryService
             $errors = app(ManifestSchemaValidator::class)->errors($manifest->raw);
 
             if ($errors !== []) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json does not match the manifest schema: %s", $manifest->name, implode('; ', $errors)));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — manifest.json does not match the manifest schema: %s", $manifest->name, implode('; ', $errors)));
                 $invalid[$manifest->registryId] ??= [$manifest, $errors];
 
                 continue;
@@ -473,7 +473,7 @@ class AddonDiscoveryService
     }
 
     /**
-     * Disable an enabled addon whose addon.json fails the schema, and notify the admins.
+     * Disable an enabled addon whose manifest.json fails the schema, and notify the admins.
      *
      * Only enabled rows: disabling rescans, and the rescan finds the row already off.
      *
@@ -485,7 +485,7 @@ class AddonDiscoveryService
             return;
         }
 
-        app(AddonQuarantine::class)->handle($manifest->namespace, $manifest->name, 'addon.json', new RuntimeException(implode('; ', $errors)));
+        app(AddonQuarantine::class)->handle($manifest->namespace, $manifest->name, 'manifest.json', new RuntimeException(implode('; ', $errors)));
     }
 
     /**

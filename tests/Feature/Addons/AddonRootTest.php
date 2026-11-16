@@ -68,7 +68,7 @@ function placeAddonInRoot(string $root, string $name, ?string $registryId = null
         $manifest['version'] = $version;
     }
 
-    File::put($dir.'/addon.json', json_encode(addonManifest($manifest)));
+    File::put($dir.'/manifest.json', json_encode(addonManifest($manifest)));
     File::put($dir.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => 'app/']],
     ]));
@@ -85,7 +85,7 @@ function addonZip(string $workDir, string $name, string $registryId, ?string $ve
 
     $zip = new ZipArchive();
     $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('addon.json', json_encode(addonManifest(array_filter([
+    $zip->addFromString('manifest.json', json_encode(addonManifest(array_filter([
         'name'        => $name,
         'registry_id' => $registryId,
         'version'     => $version,
@@ -205,25 +205,25 @@ it('updating a bundled addon never touches the files in its bundled source', fun
     // The hazard: File::deleteDirectory() on a symlink empties its target,
     // which for a bundled link is modules/<name>.
     $source = placeBundledAddon('Shipped', 'acme/shipped', '1.0.0');
-    $manifest = File::get($source.'/addon.json');
+    $manifest = File::get($source.'/manifest.json');
     app(AddonDiscoveryService::class)->discoverNewAddons();
 
     app(AddonRegistry::class)->update('Shipped', new ZipSource(addonZip($this->work, 'Shipped', 'acme/shipped', '1.1.0')));
 
-    expect(File::get($source.'/addon.json'))->toBe($manifest)
+    expect(File::get($source.'/manifest.json'))->toBe($manifest)
         ->and(File::get($source.'/resources/views/keep.blade.php'))->toBe('keep me');
 
     // And a second update, which now moves a real directory aside, still
     // leaves the bundled source alone.
     app(AddonRegistry::class)->update('Shipped', new ZipSource(addonZip($this->work, 'Shipped', 'acme/shipped', '1.2.0')));
 
-    expect(File::get($source.'/addon.json'))->toBe($manifest)
+    expect(File::get($source.'/manifest.json'))->toBe($manifest)
         ->and(File::get($source.'/resources/views/keep.blade.php'))->toBe('keep me');
 });
 
 it('a failed update of a bundled addon restores the link and leaves its source intact', function (): void {
     $source = placeBundledAddon('Shipped', 'acme/shipped', '1.0.0');
-    $manifest = File::get($source.'/addon.json');
+    $manifest = File::get($source.'/manifest.json');
     app(AddonDiscoveryService::class)->discoverNewAddons();
     $path = Addon::query()->where('registry_id', 'acme/shipped')->value('path');
 
@@ -237,7 +237,7 @@ it('a failed update of a bundled addon restores the link and leaves its source i
 
     expect(is_link($this->root.'/shipped'))->toBeTrue()
         ->and(realpath($this->root.'/shipped'))->toBe(realpath($source))
-        ->and(File::get($source.'/addon.json'))->toBe($manifest)
+        ->and(File::get($source.'/manifest.json'))->toBe($manifest)
         ->and(File::get($source.'/resources/views/keep.blade.php'))->toBe('keep me')
         ->and(Addon::query()->where('registry_id', 'acme/shipped')->value('path'))->toBe($path)
         ->and(Addon::query()->where('registry_id', 'acme/shipped')->value('version'))->toBe('1.0.0')
@@ -259,7 +259,7 @@ it('delete() disables a bundled addon and keeps its row and files', function ():
     expect($addon)->not->toBeNull()
         ->and($addon->enabled)->toBeFalse()
         ->and(is_link($this->root.'/shipped'))->toBeTrue()
-        ->and(File::exists($source.'/addon.json'))->toBeTrue();
+        ->and(File::exists($source.'/manifest.json'))->toBeTrue();
 });
 
 it('delete() removes the files of an addon in the root', function (): void {
@@ -310,7 +310,7 @@ it('delete() disables a symlinked dev checkout and keeps its files', function ()
     // business touching.
     $target = $this->work.'/external-checkout';
     File::ensureDirectoryExists($target);
-    File::put($target.'/addon.json', json_encode(addonManifest([
+    File::put($target.'/manifest.json', json_encode(addonManifest([
         'name'        => 'Linked',
         'registry_id' => 'acme/linked',
         'version'     => '1.0.0',
@@ -331,7 +331,7 @@ it('delete() disables a symlinked dev checkout and keeps its files', function ()
 
     expect($outcome)->toBe(AddonDeleteOutcome::Disabled)
         ->and(Addon::query()->where('registry_id', 'acme/linked')->value('enabled'))->toBeFalsy()
-        ->and(File::exists($target.'/addon.json'))->toBeTrue();
+        ->and(File::exists($target.'/manifest.json'))->toBeTrue();
 });
 
 it('delete() of a registry update of a bundled addon reverts to the bundled link', function (): void {
@@ -348,7 +348,7 @@ it('delete() of a registry update of a bundled addon reverts to the bundled link
 
     expect($outcome)->toBe(AddonDeleteOutcome::Reverted)
         ->and(is_link($this->root.'/twin'))->toBeTrue()
-        ->and(File::exists($source.'/addon.json'))->toBeTrue()
+        ->and(File::exists($source.'/manifest.json'))->toBeTrue()
         ->and(Addon::query()->where('registry_id', 'acme/twin')->exists())->toBeTrue()
         ->and(Addon::query()->where('registry_id', 'acme/twin')->value('path'))->toBe(realpath($source))
         ->and(Addon::query()->where('registry_id', 'acme/twin')->value('version'))->toBe('1.0.0');

@@ -198,7 +198,7 @@ final class ThemeOptions
     }
 
     /**
-     * A module theme's `addon.json` version, else the phpvms version.
+     * A module theme's `manifest.json` version, else the phpvms version.
      */
     private function versionOf(string $theme): string
     {

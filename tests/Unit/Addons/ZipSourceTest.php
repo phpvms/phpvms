@@ -28,25 +28,25 @@ function makeZip(string $path, array $files): void
 it('extracts a zip into the staging dir and returns the addon root', function (): void {
     $zipPath = $this->work.'/demo.zip';
     makeZip($zipPath, [
-        'addon.json'    => '{"name":"Demo"}',
+        'manifest.json' => '{"name":"Demo"}',
         'composer.json' => '{}',
     ]);
 
     $root = new ZipSource($zipPath)->fetch($this->staging);
 
-    expect(File::exists($root.'/addon.json'))->toBeTrue();
+    expect(File::exists($root.'/manifest.json'))->toBeTrue();
 });
 
 it('unwraps a single top-level directory', function (): void {
     $zipPath = $this->work.'/demo.zip';
     makeZip($zipPath, [
-        'Demo/addon.json'    => '{"name":"Demo"}',
+        'Demo/manifest.json' => '{"name":"Demo"}',
         'Demo/composer.json' => '{}',
     ]);
 
     $root = new ZipSource($zipPath)->fetch($this->staging);
 
-    expect(File::exists($root.'/addon.json'))->toBeTrue();
+    expect(File::exists($root.'/manifest.json'))->toBeTrue();
 });
 
 it('rejects a zip-slip entry', function (): void {

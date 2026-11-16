@@ -43,7 +43,7 @@ function bundledThemeInImage(string $work, bool $bundled = true): string
     File::ensureDirectoryExists($dir.'/public/build');
     File::ensureDirectoryExists($dir.'/resources/views');
 
-    File::put($dir.'/addon.json', json_encode(addonManifest([
+    File::put($dir.'/manifest.json', json_encode(addonManifest([
         'name'        => 'FixtureTheme',
         'registry_id' => 'phpvms/fixture-theme',
         'type'        => 'theme',

@@ -20,7 +20,7 @@ beforeEach(function (): void {
     File::ensureDirectoryExists($migrationDir);
 
     // Declared contract: the addon owns fixture_contract_things.
-    File::put($this->addonPath.'/addon.json', json_encode(addonManifest([
+    File::put($this->addonPath.'/manifest.json', json_encode(addonManifest([
         'name'        => 'FixtureContract',
         'registry_id' => 'acme/fixture-contract',
         'alias'       => 'fixturecontract',
@@ -30,7 +30,7 @@ beforeEach(function (): void {
         ],
     ])));
 
-    // A valid addon requires composer.json alongside addon.json.
+    // A valid addon requires composer.json alongside manifest.json.
     File::put($this->addonPath.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\FixtureContract\\' => 'app/']],
     ]));

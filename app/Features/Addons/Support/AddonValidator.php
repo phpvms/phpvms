@@ -39,14 +39,14 @@ class AddonValidator
         $manifest = $this->parser->parse($dir);
 
         if (!$manifest instanceof AddonManifest) {
-            throw new AddonInstallException('Invalid or missing addon.json.');
+            throw new AddonInstallException('Invalid or missing manifest.json.');
         }
 
         // Resolved per call: the schema validator is scoped and this may live in a singleton.
         $errors = app(ManifestSchemaValidator::class)->errors($manifest->raw);
 
         if ($errors !== []) {
-            throw new AddonInstallException('addon.json does not match the manifest schema: '.implode('; ', $errors));
+            throw new AddonInstallException('manifest.json does not match the manifest schema: '.implode('; ', $errors));
         }
 
         if (!is_dir($manifest->autoloadPath)) {
