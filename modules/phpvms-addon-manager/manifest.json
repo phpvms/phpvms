@@ -1,5 +1,5 @@
 {
-    "$schema": "https://addons.phpvms.net/schema/manifest.json",
+    "$schema": "https://phpvms.net/schema/manifest.schema.v1.json",
     "schema_version": 1,
     "name": "Addon Manager",
     "alias": "addon-manager",

@@ -12,7 +12,7 @@ return [
     // The registry's published addon manifest schema, kept as a local file and
     // re-downloaded once it is older than `ttl` seconds.
     'schema' => [
-        'url'  => 'https://addons.phpvms.net/schema/manifest.json',
+        'url'  => 'https://phpvms.net/schema/manifest.schema.v1.json',
         'path' => storage_path('app/addons/addon.schema.json'),
         'ttl'  => 86400,
     ],
