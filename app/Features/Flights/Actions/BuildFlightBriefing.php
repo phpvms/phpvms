@@ -7,7 +7,7 @@ namespace App\Features\Flights\Actions;
 use App\Enums\BriefingItemKind;
 use App\Enums\BriefingStationRole;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\App\Filters\FilterBriefingTimeline;
+use App\Hooks\Filters\FilterBriefingTimeline;
 use App\Http\Data\BriefingTimelineItemData;
 use App\Http\Data\FlightBriefingData;
 use App\Http\Data\FlightBriefingOfpData;

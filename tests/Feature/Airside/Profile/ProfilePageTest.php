@@ -6,7 +6,7 @@ require_once __DIR__.'/../Support.php';
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\App\Slots\SlotProfileCards;
+use App\Hooks\Slots\SlotProfileCards;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
 

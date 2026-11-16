@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Contracts\Factory;
-use App\Features\Addons\Support\AddonRoots;
 use App\Models\Addon;
 use Illuminate\Support\Str;
 
@@ -28,7 +27,7 @@ class AddonFactory extends Factory
             'type'         => 'module',
             'version'      => fake()->optional()->semver(),
             'namespace'    => 'Modules\\'.$name,
-            'path'         => AddonRoots::root().'/'.$name,
+            'path'         => addon_path($name),
             'enabled'      => true,
             'installed_at' => now(),
         ];

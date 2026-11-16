@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
 use App\Features\Addons\AddonRegistry;
-use App\Features\Addons\Support\AddonRoots;
 use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\View\View;
@@ -43,7 +42,7 @@ class CreditsController extends Controller
     // Return laravel collection
     public function ReadModuleJson($module_name = null, ?Addon $module = null): ?stdClass
     {
-        $path = $module?->getPath() ?? (isset($module_name) ? AddonRoots::root().'/'.$module_name : null);
+        $path = $module?->getPath() ?? (isset($module_name) ? addon_path($module_name) : null);
         $file = $path !== null ? ManifestParser::manifestPath($path) : null;
 
         if ($file === null || !is_file($file)) {

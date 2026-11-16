@@ -116,10 +116,6 @@ abstract class TestCase extends BaseTestCase
     private function enabledAddonsRegistered(Application $app): bool
     {
         foreach ($app->make(BootCache::class)->read() as $entry) {
-            if (!$entry->enabled) {
-                continue;
-            }
-
             foreach ($entry->providers as $provider) {
                 if ($app->getProvider($provider) === null) {
                     return false;
@@ -164,14 +160,10 @@ abstract class TestCase extends BaseTestCase
                 alias: $manifest->alias,
                 type: $manifest->type,
                 registryId: $manifest->registryId,
-                version: $manifest->version,
                 namespace: $manifest->namespace,
                 providers: $manifest->providers,
                 path: $manifest->path,
                 autoloadPath: $manifest->autoloadPath,
-                layout: $manifest->layout,
-                description: $manifest->description,
-                enabled: true,
                 files: $manifest->files,
                 icon: $manifest->icon,
             );

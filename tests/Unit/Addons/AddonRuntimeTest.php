@@ -205,21 +205,6 @@ it('leaves no leftover temp files after write()', function (): void {
 // enabled() filtering
 // ---------------------------------------------------------------------------
 
-it('enabled() returns only enabled rows as a Collection', function (): void {
-    $runtime = new BootCache();
-
-    $enabledAddon = makeAddonBootCache(['name' => 'Enabled',  'namespace' => 'Modules\\Enabled',  'enabled' => true]);
-    $disabledAddon = makeAddonBootCache(['name' => 'Disabled', 'namespace' => 'Modules\\Disabled', 'enabled' => false]);
-
-    $runtime->write([$enabledAddon, $disabledAddon]);
-
-    $result = $runtime->enabled();
-
-    expect($result)->toBeInstanceOf(Collection::class)
-        ->and($result)->toHaveCount(1)
-        ->and($result->first()->name)->toBe('Enabled');
-});
-
 it('enabled() returns empty Collection when cache is absent', function (): void {
     $runtime = new BootCache();
 

@@ -161,25 +161,7 @@
                                         @endforeach
                                     </div>
                                 @elseif ($kind === BriefingItemKind::Notice)
-                                    @php
-                                        $tone = match ($item->severity->getColor()) {
-                                            'danger' => 'text-red-600 dark:text-red-400',
-                                            'warning' => 'text-amber-700 dark:text-amber-400',
-                                            default => 'text-dark-600 dark:text-dark-300',
-                                        };
-                                    @endphp
-                                    <div class="vms-briefing-notice flex items-start gap-2.5 overflow-hidden rounded-2xl border border-gray-200 px-3.5 py-2.5 dark:border-dark-700" data-severity="{{ $item->severity->value }}">
-                                        <x-vms::meteocon :name="$item->icon ?? 'not-available-fill'" class="-mt-1 -mr-0.5 -ml-1 size-9 shrink-0" />
-                                        <div class="min-w-0 flex-1">
-                                            <p class="m-0 text-[13.5px] font-bold {{ $tone }}">{{ $item->title }}</p>
-                                            @if ($item->detail)
-                                                <p class="m-0 mt-px text-[12.5px] leading-normal text-dark-500 dark:text-dark-400">{{ $item->detail }}</p>
-                                            @endif
-                                        </div>
-                                        @if ($item->at)
-                                            <span class="shrink-0 text-xs tabular-nums whitespace-nowrap text-dark-500 max-sm:hidden dark:text-dark-400">{{ $clock($item->at) }}</span>
-                                        @endif
-                                    </div>
+                                    <x-vms::briefing.notice :item="$item" :time="$item->at ? $clock($item->at) : null" />
                                 @else
                                     <div class="flex flex-wrap items-center gap-2.5 text-[13px] text-dark-600 dark:text-dark-300">
                                         @if ($kind === BriefingItemKind::Fix)
@@ -307,7 +289,7 @@
                                 <div class="vms-briefing-fly grid gap-2.5">
                                     <p class="m-0 text-[13px] text-dark-500 dark:text-dark-400">Start the flight from your client when the steps above are done.</p>
                                     <div class="flex flex-wrap items-center gap-2.5 not-has-[*]:hidden">
-                                        <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotFlightActions($summary, $policy, auth()->user(), $bid, null)" />
+                                        <x-render-hook :hook="new \App\Hooks\Slots\SlotFlightActions($summary, $policy, auth()->user(), $bid, null)" />
                                     </div>
                                 </div>
                             @endif

@@ -11,14 +11,10 @@ it('no longer serializes a filament field in boot-cache rows', function (): void
         alias: 'sample',
         type: 'module',
         registryId: 'acme/sample',
-        version: '1.0.0',
         namespace: 'Modules\\Sample',
         providers: [],
         path: '/modules/Sample',
         autoloadPath: '/modules/Sample',
-        layout: 'root',
-        description: null,
-        enabled: true,
     );
 
     expect($row->toArray())->not->toHaveKey('filament');

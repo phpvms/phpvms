@@ -7,15 +7,14 @@ namespace App\Features\Addons\Support;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
+use Symfony\Component\Filesystem\Path;
 
 /**
  * Links each bundled addon into the addon root, as a relative symlink
  * `<root>/<name> -> ../../../modules/<name>`.
  *
- * The links are committed, so a git checkout or a release archive already has
- * them. This puts back the ones that are missing: a Docker volume over storage/
- * is filled from the image only once, so an addon bundled by a later release
- * has no link in it until this runs.
+ * The links are not committed, so they work on Windows. They are made after
+ * migrate, by the installer and updater, and on each Docker container start.
  *
  * An entry that is a real directory is a registry update of a bundled addon.
  * It stays while it is strictly newer than the bundled copy, and is replaced
@@ -123,23 +122,10 @@ final readonly class BundledAddonLinker
     }
 
     /**
-     * $to as a path relative to the directory $from, so the link survives the
-     * install being moved.
+     * $to relative to the directory $from, so the link survives the install being moved.
      */
     public static function relativePath(string $from, string $to): string
     {
-        $fromParts = array_values(array_filter(explode('/', realpath($from) ?: $from), static fn (string $part): bool => $part !== ''));
-        $toParts = array_values(array_filter(explode('/', realpath($to) ?: $to), static fn (string $part): bool => $part !== ''));
-
-        $common = 0;
-
-        while (isset($fromParts[$common], $toParts[$common]) && $fromParts[$common] === $toParts[$common]) {
-            $common++;
-        }
-
-        return implode('/', [
-            ...array_fill(0, count($fromParts) - $common, '..'),
-            ...array_slice($toParts, $common),
-        ]);
+        return Path::makeRelative(realpath($to) ?: $to, realpath($from) ?: $from);
     }
 }

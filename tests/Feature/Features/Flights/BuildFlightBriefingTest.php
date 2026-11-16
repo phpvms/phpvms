@@ -6,7 +6,7 @@ use App\Enums\BriefingItemKind;
 use App\Enums\BriefingStationRole;
 use App\Features\Flights\Actions\BuildFlightBriefing;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\App\Filters\FilterBriefingTimeline;
+use App\Hooks\Filters\FilterBriefingTimeline;
 use App\Http\Data\BriefingTimelineItemData;
 use App\Models\Airport;
 use App\Models\Flight;

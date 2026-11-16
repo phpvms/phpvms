@@ -10,14 +10,10 @@ it('round-trips the files list through toArray()/fromArray()', function (): void
         alias: 'sample',
         type: 'module',
         registryId: 'acme/sample',
-        version: '1.0.0',
         namespace: 'Modules\\Sample',
         providers: [],
         path: '/modules/Sample',
         autoloadPath: '/modules/Sample',
-        layout: 'root',
-        description: null,
-        enabled: true,
         files: ['/modules/Sample/helpers.php'],
     );
 

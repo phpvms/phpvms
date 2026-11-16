@@ -77,7 +77,7 @@ class AddonDiscoveryService
         $rows = [];
 
         foreach ($manifests as $m) {
-            $rows[] = $this->buildBootCacheRow($m, true);
+            $rows[] = $this->buildBootCacheRow($m);
         }
 
         $this->bootCache->write($rows, null, $this->diskFingerprint());
@@ -324,7 +324,7 @@ class AddonDiscoveryService
                 || $this->isLegacyRowFor($a, $m));
 
             if ($addon !== null) {
-                $cacheRows[] = $this->buildBootCacheRow($m, true);
+                $cacheRows[] = $this->buildBootCacheRow($m);
             }
         }
 
@@ -349,12 +349,14 @@ class AddonDiscoveryService
     {
         /** @var array<string, AddonManifest> $chosen */
         $chosen = [];
+        /** @var array<string, array{AddonManifest, list<string>}> $invalid */
+        $invalid = [];
 
         foreach (AddonRoots::scanned() as $dir => $skip) {
             /** @var array<string, AddonManifest> $found */
             $found = [];
 
-            foreach ($this->scanLocation($dir, $skip) as $manifest) {
+            foreach ($this->scanLocation($dir, $skip, $invalid) as $manifest) {
                 if (isset($chosen[$manifest->registryId])) {
                     continue;
                 }
@@ -377,6 +379,13 @@ class AddonDiscoveryService
             $chosen = [...$chosen, ...$found];
         }
 
+        // After de-duplication, so an invalid copy that a valid one replaces is not quarantined.
+        foreach ($invalid as $registryId => [$manifest, $errors]) {
+            if (!isset($chosen[$registryId])) {
+                $this->quarantineInvalid($manifest, $errors);
+            }
+        }
+
         return array_values($chosen);
     }
 
@@ -393,10 +402,11 @@ class AddonDiscoveryService
      * symlinked local-module dev). Broken symlinks and non-direct-child entries
      * are skipped and logged.
      *
-     * @param  list<string>    $skip
+     * @param  list<string>                                      $skip
+     * @param  array<string, array{AddonManifest, list<string>}> $invalid schema-invalid manifests, by registry_id
      * @return AddonManifest[]
      */
-    private function scanLocation(string $dir, array $skip = []): array
+    private function scanLocation(string $dir, array $skip, array &$invalid): array
     {
         if (!is_dir($dir)) {
             return [];
@@ -451,7 +461,7 @@ class AddonDiscoveryService
 
             if ($errors !== []) {
                 Log::warning(sprintf("AddonRuntimeService: skipping '%s' — addon.json does not match the manifest schema: %s", $manifest->name, implode('; ', $errors)));
-                $this->quarantineInvalid($manifest, $errors);
+                $invalid[$manifest->registryId] ??= [$manifest, $errors];
 
                 continue;
             }
@@ -471,7 +481,7 @@ class AddonDiscoveryService
      */
     private function quarantineInvalid(AddonManifest $manifest, array $errors): void
     {
-        if (!installed() || !Addon::query()->where('namespace', $manifest->namespace)->where('enabled', true)->exists()) {
+        if (!$this->isInstalled() || !Addon::query()->where('namespace', $manifest->namespace)->where('enabled', true)->exists()) {
             return;
         }
 
@@ -479,23 +489,19 @@ class AddonDiscoveryService
     }
 
     /**
-     * Build an AddonCacheEntry from a manifest and an explicit enabled flag.
+     * Build a boot cache row from a manifest.
      */
-    private function buildBootCacheRow(AddonManifest $m, bool $enabled): AddonBootCache
+    private function buildBootCacheRow(AddonManifest $m): AddonBootCache
     {
         return new AddonBootCache(
             name: $m->name,
             alias: $m->alias,
             type: $m->type,
             registryId: $m->registryId,
-            version: $m->version,
             namespace: $m->namespace,
             providers: $m->providers,
             path: $m->path,
             autoloadPath: $m->autoloadPath,
-            layout: $m->layout,
-            description: $m->description,
-            enabled: $enabled,
             files: $m->files,
             discovered: $this->discoverClasses($m),
             icon: $m->icon,

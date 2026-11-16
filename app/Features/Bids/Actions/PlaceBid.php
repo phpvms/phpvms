@@ -8,10 +8,10 @@ use App\Enums\BundleType;
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
-use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Hooks\Exceptions\DeniedByHook;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\App\Gates\GatePlacingBid;
 use App\Features\Tour\TourService;
+use App\Hooks\Gates\GatePlacingBid;
 use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Flight;
@@ -36,7 +36,7 @@ final readonly class PlaceBid
     ) {}
 
     /**
-     * @throws HookDenied           when an addon gate refuses the bid
+     * @throws DeniedByHook         when an addon gate refuses the bid
      * @throws UserBidLimit
      * @throws BidExistsForFlight
      * @throws BidExistsForAircraft
@@ -56,7 +56,7 @@ final readonly class PlaceBid
 
         // Outside the row locks below, so addon code never holds them.
         if (!$holdsBid) {
-            Hooks::gate(new GatePlacingBid($user, $flight, $aircraft, $startsTour));
+            Hooks::gate(new GatePlacingBid($user, $flight, $aircraft, $startsTour))->authorize();
         }
 
         // A tour is bid as a unit, so the whole chain is created at once and the

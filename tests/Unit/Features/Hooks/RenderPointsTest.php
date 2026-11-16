@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions;
-use App\Features\Hooks\Points\App\Slots\SlotBidRowActions;
-use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
-use App\Features\Hooks\Points\App\Slots\SlotDashboardReadyActions;
-use App\Features\Hooks\Points\App\Slots\SlotDashboardReadyDetails;
-use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
-use App\Features\Hooks\Points\App\Slots\SlotFlightRowActions;
-use App\Features\Hooks\Points\App\Slots\SlotPirepDetail;
-use App\Features\Hooks\Points\App\Slots\SlotProfileCards;
+use App\Hooks\Slots\SlotBidDrawerActions;
+use App\Hooks\Slots\SlotBidRowActions;
+use App\Hooks\Slots\SlotBriefingActions;
+use App\Hooks\Slots\SlotDashboardReadyActions;
+use App\Hooks\Slots\SlotDashboardReadyDetails;
+use App\Hooks\Slots\SlotFlightActions;
+use App\Hooks\Slots\SlotFlightRowActions;
+use App\Hooks\Slots\SlotPirepDetail;
+use App\Hooks\Slots\SlotProfileCards;
 use App\Http\Data\BidData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;

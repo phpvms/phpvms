@@ -6,7 +6,7 @@ namespace App\Features\Ofp\Livewire;
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
+use App\Hooks\Slots\SlotBriefingActions;
 use App\Http\Data\SimBriefBriefingData;
 use App\Models\SimBrief;
 use App\Models\User;

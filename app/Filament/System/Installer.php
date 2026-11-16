@@ -362,6 +362,13 @@ class Installer extends Page
             to: $this->stream
         );
 
+        // Before migrating: the migration paths of the bundled addons go through their links.
+        if (!app(InstallerService::class)->linkBundledAddons()) {
+            $message = __('installer.bundled_link_failed').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+        }
+
         app(MigrationService::class)
             ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output): void {
                 $output .= $buffer;
@@ -394,12 +401,6 @@ class Installer extends Page
 
         if (!app(InstallerService::class)->linkStorage()) {
             $message = __('installer.storage_link_failed').PHP_EOL;
-            $output .= $message;
-            $this->stream(content: $message, to: $this->stream);
-        }
-
-        if (!app(InstallerService::class)->linkBundledAddons()) {
-            $message = __('installer.bundled_link_failed').PHP_EOL;
             $output .= $message;
             $this->stream(content: $message, to: $this->stream);
         }

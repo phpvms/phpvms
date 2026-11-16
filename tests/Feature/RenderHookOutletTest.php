@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\App\Slots\SlotPirepDetail;
+use App\Hooks\Slots\SlotPirepDetail;
 use App\Models\Pirep;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;

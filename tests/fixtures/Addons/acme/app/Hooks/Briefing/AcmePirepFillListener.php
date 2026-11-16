@@ -7,7 +7,7 @@ namespace PhpvmsAddonFixture\Hooks\Briefing;
 use App\Contracts\Addons\Attributes\AddonListener;
 use App\Features\Hooks\Fill;
 use App\Features\Hooks\Listeners\RenderListener;
-use App\Features\Hooks\Points\App\Slots\SlotPirepDetail;
+use App\Hooks\Slots\SlotPirepDetail;
 
 #[AddonListener]
 class AcmePirepFillListener extends RenderListener

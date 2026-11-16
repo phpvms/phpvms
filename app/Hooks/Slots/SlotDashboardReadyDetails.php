@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points\App\Slots;
+namespace App\Hooks\Slots;
 
 use App\Features\Hooks\RenderHook;
 use App\Models\Airport;

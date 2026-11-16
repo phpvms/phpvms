@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions;
-use App\Features\Hooks\Points\App\Slots\SlotBidRowActions;
+use App\Hooks\Slots\SlotBidDrawerActions;
+use App\Hooks\Slots\SlotBidRowActions;
 use App\Support\Extensions\Facades\Extensions;
 use Igaster\LaravelTheme\Facades\Theme;
 

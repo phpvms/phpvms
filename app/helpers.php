@@ -2,6 +2,7 @@
 
 use App\Exceptions\SettingNotFound;
 use App\Features\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\AddonRoots;
 use App\Features\Themes\ThemeFields;
 use App\Models\Addon;
 use App\Services\AddonSettingService;
@@ -14,6 +15,8 @@ use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
+
+use function Illuminate\Filesystem\join_paths;
 
 /*
  * array_key_first only exists in PHP 7.3+
@@ -514,6 +517,16 @@ if (!function_exists('installed')) {
         } catch (Throwable) {
             return false;
         }
+    }
+}
+
+if (!function_exists('addon_path')) {
+    /**
+     * Get the path to the addon root, or to a path inside it.
+     */
+    function addon_path(string $path = ''): string
+    {
+        return join_paths(AddonRoots::root(), $path);
     }
 }
 

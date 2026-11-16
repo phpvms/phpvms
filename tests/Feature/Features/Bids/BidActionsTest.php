@@ -5,10 +5,10 @@ declare(strict_types=1);
 use App\Features\Bids\Actions\LoadDispatch;
 use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Actions\RemoveBid;
-use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Hooks\Exceptions\DeniedByHook;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\App\Gates\GatePlacingBid;
 use App\Features\Tour\Models\UserTour;
+use App\Hooks\Gates\GatePlacingBid;
 use App\Models\Aircraft;
 use App\Models\Airport;
 use App\Models\Bid;
@@ -53,7 +53,7 @@ it('creates no bid when a gate denies it', function (): void {
     ['user' => $user, 'flight' => $flight] = bidActionFixture();
 
     expect(fn () => app(PlaceBid::class)->handle($flight, $user))
-        ->toThrow(HookDenied::class, 'Complete your checkride first');
+        ->toThrow(DeniedByHook::class, 'Complete your checkride first');
     expect(Bid::query()->count())->toBe(0);
 });
 
@@ -72,7 +72,7 @@ it('gates a tour start once, before any leg bid is written', function (): void {
     $hooks = Hooks::fake()->deny(GatePlacingBid::class, 'No tours today');
     ['user' => $user, 'flights' => $flights, 'aircraft' => $aircraft] = makeTour(3);
 
-    expect(fn () => app(PlaceBid::class)->handle($flights[0], $user, $aircraft))->toThrow(HookDenied::class);
+    expect(fn () => app(PlaceBid::class)->handle($flights[0], $user, $aircraft))->toThrow(DeniedByHook::class);
     expect(Bid::query()->count())->toBe(0)
         ->and(UserTour::query()->count())->toBe(0);
     $hooks->assertDispatched(GatePlacingBid::class, fn (GatePlacingBid $gate): bool => $gate->startsTour);

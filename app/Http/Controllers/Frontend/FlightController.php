@@ -12,11 +12,11 @@ use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Actions\RemoveBid;
 use App\Features\Bids\Queries\EligibleAircraft;
 use App\Features\Flights\Queries\VisibleFlights;
-use App\Features\Hooks\Exceptions\HookDenied;
-use App\Features\Hooks\Points\App\Slots\SlotBidDrawerActions;
-use App\Features\Hooks\Points\App\Slots\SlotBidRowActions;
-use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
-use App\Features\Hooks\Points\App\Slots\SlotFlightRowActions;
+use App\Features\Hooks\Exceptions\DeniedByHook;
+use App\Hooks\Slots\SlotBidDrawerActions;
+use App\Hooks\Slots\SlotBidRowActions;
+use App\Hooks\Slots\SlotFlightActions;
+use App\Hooks\Slots\SlotFlightRowActions;
 use App\Http\Data\BidRowData;
 use App\Http\Data\BidSelectionData;
 use App\Http\Data\EligibleAircraftData;
@@ -417,7 +417,7 @@ class FlightController extends Controller
 
         try {
             $bid = $this->placeBid->handle($flight, $user, $aircraft);
-        } catch (HookDenied $exception) {
+        } catch (DeniedByHook $exception) {
             return response()->json([
                 'type'    => 'hook-denied',
                 'message' => $exception->getMessage(),

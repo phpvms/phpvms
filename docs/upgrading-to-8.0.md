@@ -244,7 +244,7 @@ noted; resources are grouped by navigation group.
   still scanned, for backwards compatibility.
 - **Bundled addons are symlinks** from `storage/app/addons/<name>` to
   `modules/<name>`. `php artisan phpvms:addons-link-bundled` recreates them.
-  **Symlink support is now required.**
+  **Symlink support is now enforced.**
 - Bundled `Sample` and `Vacentral` modules are deleted from the repo (data
   migration removes the VaCentral module row).
 - **VaCentral integration removed**: `nabeel/vacentral` package,

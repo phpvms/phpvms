@@ -6,8 +6,8 @@ require_once __DIR__.'/Support.php';
 
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\Fill;
-use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
 use App\Features\Ofp\Livewire\BriefingActions;
+use App\Hooks\Slots\SlotBriefingActions;
 use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;

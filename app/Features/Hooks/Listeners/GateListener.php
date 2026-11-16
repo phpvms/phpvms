@@ -9,7 +9,8 @@ use App\Features\Hooks\GateHook;
 /**
  * Base class of an addon's check hook listeners in `app/Hooks`.
  *
- * Define `public function check(SomePoint $hook): void`. The type of its
+ * Define `public function check(SomePoint $hook): GateResponse` and return
+ * `$hook->allow()` or `$hook->deny(...)`. The type of its
  * parameter names the hook point; core reads it when the addon boots and
  * quarantines the addon when it is missing or not a gate hook point.
  *
@@ -18,9 +19,9 @@ use App\Features\Hooks\GateHook;
  */
 abstract class GateListener
 {
-    final public function handle(GateHook $hook): void
+    final public function handle(GateHook $hook): mixed
     {
         // @phpstan-ignore method.notFound (declared by the child; see the class docblock)
-        $this->check($hook);
+        return $this->check($hook);
     }
 }

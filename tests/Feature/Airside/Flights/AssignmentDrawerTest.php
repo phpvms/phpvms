@@ -7,7 +7,7 @@ require_once __DIR__.'/Support.php';
 use App\Enums\AircraftStatus;
 use App\Features\Bids\Livewire\AssignmentDrawer;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\App\Gates\GatePlacingBid;
+use App\Hooks\Gates\GatePlacingBid;
 use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Flight;

@@ -115,6 +115,11 @@ class Updater extends Page
             $this->streamOutput($buffer.PHP_EOL);
         };
 
+        // Before migrating: the migration paths of the bundled addons go through their links.
+        if (!app(InstallerService::class)->linkBundledAddons()) {
+            $streamCallback(__('installer.bundled_link_failed'));
+        }
+
         if (count($migrationsPending) !== 0) {
             if ($migrationSvc->runAllMigrationsWithStreaming($streamCallback) !== 0) {
                 $streamCallback(__('installer.failed'));
@@ -144,10 +149,6 @@ class Updater extends Page
 
         if (!app(InstallerService::class)->linkStorage()) {
             $streamCallback(__('installer.storage_link_failed'));
-        }
-
-        if (!app(InstallerService::class)->linkBundledAddons()) {
-            $streamCallback(__('installer.bundled_link_failed'));
         }
 
         if (count($dataMigrationsPending) !== 0) {

@@ -7,6 +7,7 @@ namespace App\Features\Addons\Support;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 use stdClass;
 use Throwable;
 
@@ -96,7 +97,13 @@ class ManifestSchema
             return null;
         }
 
-        $schema = json_decode((string) file_get_contents($path));
+        try {
+            $schema = json_decode((string) file_get_contents($path), flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException $jsonException) {
+            Log::warning(sprintf('ManifestSchema: %s is not valid JSON, skipping schema validation: %s', $path, $jsonException->getMessage()));
+
+            return null;
+        }
 
         if (!$schema instanceof stdClass) {
             Log::warning(sprintf('ManifestSchema: %s is not a JSON object, skipping schema validation', $path));

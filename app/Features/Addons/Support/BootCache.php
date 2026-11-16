@@ -26,10 +26,11 @@ class BootCache
      * Cache schema version. Increment when the on-disk shape changes
      * so stale-schema files are treated as absent (D2-09).
      */
-    public const int SCHEMA = 6;
+    public const int SCHEMA = 8;
 
     /**
      * Return enabled addons from the boot cache (DB-free hot path, D-10).
+     * The cache holds enabled addons only.
      *
      * Returns an empty collection when the cache is absent.
      *
@@ -37,9 +38,7 @@ class BootCache
      */
     public function enabled(): Collection
     {
-        return collect($this->read())
-            ->filter(fn (AddonBootCache $entry): bool => $entry->enabled)
-            ->values();
+        return collect($this->read());
     }
 
     /**

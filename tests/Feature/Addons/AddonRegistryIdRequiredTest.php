@@ -23,14 +23,10 @@ function sampleBootCacheEntry(string $registryId, Addon $addon): AddonBootCache
         alias: 'sample',
         type: 'module',
         registryId: $registryId,
-        version: null,
         namespace: $addon->namespace,
         providers: [SampleServiceProvider::class],
         path: $addon->path,
         autoloadPath: $addon->path,
-        layout: 'app',
-        description: null,
-        enabled: true,
     );
 }
 

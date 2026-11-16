@@ -7,7 +7,7 @@ use App\Features\Addons\Services\AddonDiscoveryService;
 use App\Features\Addons\Support\AddonQuarantine;
 use App\Features\Addons\Support\BootCache;
 use App\Features\Hooks\Facades\Hooks;
-use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
+use App\Hooks\Slots\SlotFlightActions;
 use App\Models\Addon;
 use App\Models\Pirep;
 use App\Models\User;
@@ -64,7 +64,7 @@ namespace {$namespace};
 
 use App\Contracts\Addons\Attributes\AddonListener;
 use App\Features\Hooks\Listeners\RenderListener;
-use App\Features\Hooks\Points\App\Slots\SlotFlightActions;
+use App\Hooks\Slots\SlotFlightActions;
 
 #[AddonListener]
 class {$name} extends RenderListener
@@ -137,7 +137,7 @@ it('does not register a scanned listener without #[AddonListener]', function ():
 
 it('quarantines an addon whose listener breaks the hook directory rules', function (string $path, string $namespace, string $class, string $source, string $expected): void {
     Log::spy();
-    $addon = makeDiscoveryAddon($this, [$path => "<?php\nnamespace {NS}\\{$namespace};\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Listeners\\FilterListener;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Features\\Hooks\\Points\\App\\Gates\\GatePlacingBid;\nuse App\\Features\\Hooks\\Points\\App\\Slots\\SlotFlightActions;\nuse App\\Events\\PirepAccepted;\n#[AddonListener]\n{$source}"]);
+    $addon = makeDiscoveryAddon($this, [$path => "<?php\nnamespace {NS}\\{$namespace};\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Listeners\\FilterListener;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Hooks\\Gates\\GatePlacingBid;\nuse App\\Hooks\\Slots\\SlotFlightActions;\nuse App\\Events\\PirepAccepted;\n#[AddonListener]\n{$source}"]);
 
     app()->register($addon['provider']);
 
@@ -164,7 +164,7 @@ it('quarantines instead of failing the boot when addon attributes are invalid', 
         ->withArgs(fn (string $message): bool => str_contains($message, 'quarantined'))
         ->once();
 })->with([
-    'bad hook priority'    => ['Hooks/BadPriority.php', "<?php\nnamespace {NS}\\Hooks;\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Attributes\\HookPriority;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Features\\Hooks\\Points\\App\\Gates\\GatePlacingBid;\n#[AddonListener]\n#[HookPriority('high')]\nclass BadPriority extends GateListener { public function check(GatePlacingBid \$hook): void {} }"],
+    'bad hook priority'    => ['Hooks/BadPriority.php', "<?php\nnamespace {NS}\\Hooks;\nuse App\\Contracts\\Addons\\Attributes\\AddonListener;\nuse App\\Features\\Hooks\\Attributes\\HookPriority;\nuse App\\Features\\Hooks\\Listeners\\GateListener;\nuse App\\Hooks\\Gates\\GatePlacingBid;\n#[AddonListener]\n#[HookPriority('high')]\nclass BadPriority extends GateListener { public function check(GatePlacingBid \$hook): void {} }"],
     'policy with no model' => ['Policies/EmptyPolicy.php', "<?php\nnamespace {NS}\\Policies;\nuse App\\Contracts\\Addons\\Attributes\\PolicyFor;\n#[PolicyFor]\nclass EmptyPolicy {}"],
 ]);
 

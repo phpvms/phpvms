@@ -7,6 +7,7 @@ namespace App\Features\Addons\Support;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Symfony\Component\Filesystem\Path;
 
 /**
  * Links a theme addon's public/ into the public storage disk:
@@ -91,20 +92,7 @@ class ThemeAssetLinker
      */
     public static function relativePath(string $from, string $to): string
     {
-        $fromParts = array_values(array_filter(explode('/', $from), static fn (string $part): bool => $part !== ''));
-        $toParts = array_values(array_filter(explode('/', $to), static fn (string $part): bool => $part !== ''));
-
-        $common = 0;
-        $max = min(count($fromParts), count($toParts));
-
-        while ($common < $max && $fromParts[$common] === $toParts[$common]) {
-            $common++;
-        }
-
-        $up = array_fill(0, count($fromParts) - $common, '..');
-        $relative = implode('/', [...$up, ...array_slice($toParts, $common)]);
-
-        return $relative === '' ? '.' : $relative;
+        return Path::makeRelative($to, $from) ?: '.';
     }
 
     private function target(string $themeName): string

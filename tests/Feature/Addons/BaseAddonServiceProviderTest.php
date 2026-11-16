@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Features\Hooks\Exceptions\HookDenied;
 use App\Features\Hooks\Facades\Hooks;
 use App\Models\Addon;
 use App\Models\Role;
@@ -154,7 +153,7 @@ it('registers a gate hook listener with the dispatcher, with its priority and ad
     ]])
         ->and(Event::getListeners(AcmeGate::class))->toBe([]);
 
-    expect(fn () => Hooks::gate(new AcmeGate()))->toThrow(HookDenied::class, 'Acme says no');
+    expect(Hooks::gate(new AcmeGate())->message())->toBe('Acme says no');
 });
 
 function registerBadHooksPsr4(): void

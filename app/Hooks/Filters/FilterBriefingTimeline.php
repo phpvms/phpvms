@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points\App\Filters;
+namespace App\Hooks\Filters;
 
 use App\Features\Hooks\FilterHook;
 use App\Http\Data\BriefingTimelineItemData;

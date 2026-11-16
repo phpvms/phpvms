@@ -208,4 +208,26 @@ describe('validation', function (): void {
             return str_contains((string) $data['title'], 'Bad') && str_contains((string) $data['body'], 'schema_version');
         });
     });
+
+    it('keeps an addon enabled when only a copy that a valid one replaces fails the schema', function (): void {
+        $root = $this->work.'/root';
+        $modules = $this->work.'/modules';
+        Config::set('addons.paths.root', $root);
+        Config::set('addons.paths.bundled', $modules);
+        Config::set('addons.bundled', []);
+        $stale = validManifest(['name' => 'Twin', 'registry_id' => 'acme/twin']);
+        unset($stale['schema_version']);
+
+        foreach ([$root => validManifest(['name' => 'Twin', 'registry_id' => 'acme/twin']), $modules => $stale] as $dir => $manifest) {
+            File::ensureDirectoryExists($dir.'/twin');
+            File::put($dir.'/twin/addon.json', json_encode($manifest));
+            File::put($dir.'/twin/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Twin\\' => '']]]));
+        }
+
+        $addon = Addon::factory()->create(['name' => 'Twin', 'registry_id' => 'acme/twin', 'namespace' => 'Modules\\Twin', 'path' => $root.'/twin']);
+
+        app(AddonDiscoveryService::class)->rebuildCache();
+
+        expect($addon->refresh()->enabled)->toBeTrue();
+    });
 });

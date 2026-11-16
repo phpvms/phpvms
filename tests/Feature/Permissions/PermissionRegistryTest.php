@@ -82,14 +82,10 @@ it('uses registry_id slug as module key when the boot cache has a registry_id', 
         alias: 'acme',
         type: 'module',
         registryId: 'acme/my-addon',
-        version: null,
         namespace: 'Modules\\Acme',
         providers: [],
         path: '/modules/Acme',
         autoloadPath: '/modules/Acme/app',
-        layout: 'app',
-        description: null,
-        enabled: true,
     );
 
     $fakeCache = mock(BootCache::class);

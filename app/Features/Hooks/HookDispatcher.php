@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Features\Hooks;
 
 use App\Features\Hooks\Attributes\HookPriority;
-use App\Features\Hooks\Exceptions\HookDenied;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -106,30 +105,33 @@ class HookDispatcher
 
     /**
      * Consult every gate listener until one denies.
-     *
-     * @throws HookDenied
      */
-    public function gate(GateHook $hook): void
+    public function gate(GateHook $hook): GateResponse
     {
         foreach ($this->listenersFor($hook::class) as $entry) {
             try {
-                $this->call($entry['listener'], $hook);
-            } catch (HookDenied $denied) {
-                throw $denied;
+                $result = $this->call($entry['listener'], $hook);
+
+                // A listener may return a denial it built itself instead of calling deny().
+                if ($result instanceof GateResponse && $result->denied()) {
+                    $hook->deny((string) $result->message(), $result->status());
+                }
             } catch (Throwable $throwable) {
                 $this->report('error', $hook, $entry, 'threw: '.$throwable->getMessage());
 
                 // A listener that denied before it threw still denied; fall through
                 // so the denial is reported against this listener, not the next.
                 if ($hook->failsClosed() && !$hook->denied()) {
-                    throw new HookDenied(__('This action is not available right now.'), $hook::name(), $entry['listener'], $entry['addon']);
+                    return GateResponse::deny($hook::name(), __('This action is not available right now.'), $entry['listener'], $entry['addon']);
                 }
             }
 
             if ($hook->denied()) {
-                throw new HookDenied((string) $hook->denialMessage(), $hook::name(), $entry['listener'], $entry['addon']);
+                return GateResponse::deny($hook::name(), (string) $hook->denialMessage(), $entry['listener'], $entry['addon'], $hook->denialStatus());
             }
         }
+
+        return GateResponse::allow($hook::name());
     }
 
     private function call(string $listener, Hook $hook): mixed

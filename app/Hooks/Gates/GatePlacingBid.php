@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Hooks\Points\App\Gates;
+namespace App\Hooks\Gates;
 
 use App\Features\Hooks\GateHook;
 use App\Models\Aircraft;

@@ -9,7 +9,7 @@ use App\Enums\FareType;
 use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
 use App\Features\Addons\AddonRegistry;
-use App\Features\Hooks\Points\App\Slots\SlotBriefingActions;
+use App\Hooks\Slots\SlotBriefingActions;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDetailData;
 use App\Http\Data\OFPPlanningSelectionData;

@@ -28,7 +28,7 @@
         <x-vms::shell.sidebar-item :item="$item" :key="(string) $index" :active-keys="$activeKeys" />
     @endforeach
 
-    <x-render-hook :hook="new \App\Features\Hooks\Points\App\Slots\SlotMenuItems(\App\Features\Hooks\Points\App\Slots\SlotMenuItems::SIDEBAR, auth()->user())" />
+    <x-render-hook :hook="new \App\Hooks\Slots\SlotMenuItems(\App\Hooks\Slots\SlotMenuItems::SIDEBAR, auth()->user())" />
 
     <x-slot:footer>
         <x-vms::shell.pilot-menu :shell="$shell" />

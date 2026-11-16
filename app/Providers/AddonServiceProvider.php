@@ -10,14 +10,17 @@ use App\Features\Addons\Services\AddonDiscoveryService;
 use App\Features\Addons\Support\AddonAssetLinker;
 use App\Features\Addons\Support\AutoloadGuard;
 use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\BundledAddonLinker;
 use App\Features\Addons\Support\ManifestParser;
 use App\Features\Addons\Support\ManifestSchema;
 use App\Features\Addons\Support\ManifestSchemaValidator;
 use App\Features\Addons\Support\ThemeAddonRegistrar;
 use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Support\RegistersApiScopes;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Override;
+use Throwable;
 
 /**
  * Wires the addon engine into application boot.
@@ -79,6 +82,16 @@ class AddonServiceProvider extends ServiceProvider
             // internal guard re-checks the resolved ClassLoader instance; this provider-level
             // call is the boot-halt fence that fires BEFORE the loader runs at all.
             $this->app->make(AutoloadGuard::class)->assertRuntimeAutoloadSupported();
+        }
+
+        // The links are not committed. Made before the loader, so a console run
+        // such as `migrate` boots the bundled addons and finds their migrations.
+        if ($this->app->runningInConsole()) {
+            try {
+                $this->app->make(BundledAddonLinker::class)->link();
+            } catch (Throwable $throwable) {
+                Log::error('Linking the bundled addons failed: '.$throwable->getMessage());
+            }
         }
 
         // ── Loader: runs in ALL contexts (D2-11) ────────────────────────────
