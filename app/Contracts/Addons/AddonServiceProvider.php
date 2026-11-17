@@ -1257,7 +1257,7 @@ abstract class AddonServiceProvider extends ServiceProvider
 
         // A hook point binds by class, so a typo must fail here rather
         // than register an event listener that never fires.
-        if (!class_exists($eventClass) && str_starts_with($eventClass, 'App\\Features\\Hooks\\')) {
+        if (!class_exists($eventClass) && str_starts_with($eventClass, 'App\\Hooks\\')) {
             throw new LogicException(sprintf(
                 'Addon "%s": listener %s targets hook point %s, which does not exist.',
                 $this->addonNamespace(),

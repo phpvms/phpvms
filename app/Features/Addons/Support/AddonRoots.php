@@ -54,12 +54,19 @@ final class AddonRoots
      *
      * The root comes first, so a registry update in the root wins over the
      * copy in modules/. The bundled names are skipped in modules/: they load
-     * through their link in the root, and would otherwise load twice.
+     * through their link in the root, and would otherwise load twice. When
+     * both are one directory, it is scanned once and skips nothing.
      *
      * @return array<string, list<string>>
      */
     public static function scanned(): array
     {
+        $root = self::root();
+
+        if ((realpath($root) ?: $root) === (realpath(self::bundledSource()) ?: self::bundledSource())) {
+            return [$root => []];
+        }
+
         return [
             self::root()          => [],
             self::bundledSource() => self::bundled(),

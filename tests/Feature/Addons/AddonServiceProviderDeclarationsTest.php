@@ -310,7 +310,7 @@ function superAdmin(): User
 }
 
 beforeEach(function (): void {
-    $this->probeDir = sys_get_temp_dir().'/asp-probe-'.uniqid('', true);
+    $this->probeDir = realpath(sys_get_temp_dir()).'/asp-probe-'.uniqid('', true);
     File::ensureDirectoryExists($this->probeDir);
     Config::set('probe.base_path', $this->probeDir);
     Config::set('addons.paths.boot_cache', $this->probeDir.'/addons.php');
