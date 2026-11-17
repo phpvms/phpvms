@@ -52,9 +52,15 @@ class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
         // Search $paths array and remap paths that start with a key of $pathsMap array.
         // replace with the value of $pathsMap array
         $themeSubPaths = [];
+        $basePath = str_replace('\\', '/', base_path()).'/';
         foreach ($paths as $path) {
-            $pathRelativeToApp = substr((string) $path, strlen(base_path()) + 1);
-            $pathRelativeToApp = str_replace('\\', '/', $pathRelativeToApp);
+            $path = str_replace('\\', '/', (string) $path);
+            // Realpath'd hints can sit outside base_path(); they only load from their own folder
+            if (!str_starts_with($path, $basePath)) {
+                continue;
+            }
+
+            $pathRelativeToApp = substr($path, strlen($basePath));
             // Ignore paths in composer installed packages (paths inside vendor folder)
             if (!str_starts_with($pathRelativeToApp, 'vendor')) {
                 // Remap paths definded int $pathsMap array
