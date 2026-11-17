@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace App\Features\Themes\Support;
 
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
