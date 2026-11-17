@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\AddonSettingsRegistry;
 use App\Contracts\Addons\AddonSettings;
 use App\Enums\WeightUnit;
+use App\Features\Addons\Support\AddonSettingsRegistry;
 use App\Settings\CaptchaSettings;
 use App\Settings\UnitsSettings;
 use App\Support\Settings\SettingsRegistry;

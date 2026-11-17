@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Plugins;
 
+use App\Features\Addons\Support\AddonIcon;
+use App\Features\Addons\Support\BootCache;
 use App\Support\Branding;
 use Filament\Contracts\Plugin;
 use Filament\Facades\Filament;
@@ -89,8 +91,39 @@ final class PanelSwitcherPlugin implements Plugin
             'brandMark' => app(Branding::class)->hasLogo()
                 ? app(Branding::class)->logo(64)
                 : null,
-            'addonsUrl' => $this->addonsUrl(),
+            'addonsUrl'  => $this->addonsUrl(),
+            'panelIcons' => $this->panelIcons($panels),
         ]);
+    }
+
+    /**
+     * The manifest icon URL of each addon panel, keyed by panel id. An addon's
+     * panel id is its manifest alias, else its lowercased folder name. Read
+     * from the boot cache, so it costs no query.
+     *
+     * @param  list<Panel>           $panels
+     * @return array<string, string>
+     */
+    private function panelIcons(array $panels): array
+    {
+        $ids = array_map(static fn (Panel $panel): string => $panel->getId(), $panels);
+        $icons = [];
+
+        foreach (app(BootCache::class)->enabled() as $entry) {
+            $id = $entry->alias !== null && $entry->alias !== '' ? $entry->alias : strtolower(basename($entry->path));
+
+            if (!in_array($id, $ids, true)) {
+                continue;
+            }
+
+            $url = AddonIcon::url($entry->name, $entry->path, $entry->icon);
+
+            if ($url !== null) {
+                $icons[$id] = $url;
+            }
+        }
+
+        return $icons;
     }
 
     /**

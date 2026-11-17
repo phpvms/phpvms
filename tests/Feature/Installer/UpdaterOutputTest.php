@@ -28,6 +28,7 @@ it('keeps the streamed update log in component state after the run', function ()
         $mock->shouldReceive('isUpgradePending')->andReturnTrue();
         $mock->shouldReceive('ensurePassportKeys');
         $mock->shouldReceive('linkStorage')->andReturnTrue();
+        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
     });
 
     $this->mock(MigrationService::class, function (MockInterface $mock): void {
@@ -71,6 +72,8 @@ it('stops the update when a streamed command fails', function (string $failedCom
         }
 
         $mock->shouldReceive('linkStorage')->andReturnTrue();
+
+        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
     });
 
     $this->partialMock(MigrationService::class, function (MockInterface $mock): void {
@@ -120,6 +123,7 @@ it('writes the install marker for a site that pre-dates it', function (): void {
         $mock->shouldReceive('isUpgradePending')->andReturnTrue();
         $mock->shouldReceive('ensurePassportKeys');
         $mock->shouldReceive('linkStorage')->andReturnTrue();
+        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
     });
 
     $this->mock(MigrationService::class, function (MockInterface $mock): void {

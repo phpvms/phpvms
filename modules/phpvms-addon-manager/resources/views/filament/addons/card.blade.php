@@ -13,7 +13,7 @@
 
 <div @class(['addon-card', 'addon-card--dim' => $row['installed'] && ! $row['enabled']])>
     <div class="addon-card__head">
-        <span class="addon-plate addon-plate--{{ $row['tint'] }}">
+        <span @class(['addon-plate', 'addon-plate--'.$row['tint'] => ! $row['icon'], 'addon-plate--icon' => $row['icon']])>
             @if ($row['icon'])
                 <img src="{{ $row['icon'] }}" alt="">
             @else

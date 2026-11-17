@@ -2,8 +2,9 @@
 
 namespace App\Providers\Filament;
 
-use App\Addons\Support\BootCache;
+use App\Contracts\Addons\AddonServiceProvider;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
+use App\Features\Addons\Support\BootCache;
 use App\Filament\Pages\Backups;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -112,7 +113,8 @@ class AdminPanelProvider extends BasePanelProvider
      * baked into `filament:cache-components` like the core paths above.
      *
      * Modules that ship their OWN Filament panel (they declare a `*PanelProvider`
-     * in their manifest — e.g. ACARS, VACentral) are skipped: that provider
+     * in their manifest, or their addon provider overrides
+     * `registerAdminFilamentPanel()` — e.g. ACARS, VACentral) are skipped: that provider
      * already discovers the same `app/Filament/*` directories into its own
      * gated sub-panel, so contributing them to the main panel too would
      * duplicate the nav and, worse, bypass the sub-panel's `access:{moduleKey}`
@@ -133,7 +135,8 @@ class AdminPanelProvider extends BasePanelProvider
             }
 
             $shipsOwnPanel = collect($entry->providers)
-                ->contains(fn (string $provider): bool => str_ends_with($provider, 'PanelProvider'));
+                ->contains(fn (string $provider): bool => str_ends_with($provider, 'PanelProvider')
+                    || AddonServiceProvider::declaresAdminPanel($provider));
 
             if ($shipsOwnPanel) {
                 continue;

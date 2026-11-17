@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\ManifestParser;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\ManifestParser;
 
 // Boot-cache isolation + cleanup is handled globally in tests/Pest.php, which
 // redirects addons.paths.boot_cache to a unique temp file per test. Do not

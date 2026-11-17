@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use App\Services\CronService;
 use Database\Seeders\RolesPermissionsSeeder;
@@ -103,7 +103,7 @@ beforeEach(function (): void {
     // installed rows and pollute the counts.
     $this->modules = sys_get_temp_dir().'/addons-page-'.uniqid();
     File::ensureDirectoryExists($this->modules);
-    Config::set('addons.paths.base', $this->modules);
+    Config::set('addons.paths.root', $this->modules);
 
     // Only acars is installed (at 2.1.0 — one minor behind the catalog's 2.2.0).
     Addon::query()->delete();

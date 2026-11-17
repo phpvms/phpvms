@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\AddonRegistry;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\AutoloadGuard;
-use App\Addons\Support\BootCache;
-use App\Addons\Support\ManifestParser;
-use App\Addons\Support\ThemeAddonRegistrar;
-use App\Addons\Support\ThemeAssetLinker;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Support\AutoloadGuard;
+use App\Features\Addons\Support\BootCache;
+use App\Features\Addons\Support\BundledAddonLinker;
+use App\Features\Addons\Support\ManifestParser;
+use App\Features\Addons\Support\ManifestSchema;
+use App\Features\Addons\Support\ManifestSchemaValidator;
+use App\Features\Addons\Support\ThemeAddonRegistrar;
+use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Support\RegistersApiScopes;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Override;
+use Throwable;
 
 /**
  * Wires the addon engine into application boot.
@@ -50,9 +55,15 @@ class AddonServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        // Rebuilds only on `optimize`; `optimize:clear` leaves the boot cache alone.
+        $this->optimizes(optimize: 'addons:cache');
+
         // ── Phase 1 singletons ──────────────────────────────────────────────
         $this->app->singleton(BootCache::class);
         $this->app->singleton(ManifestParser::class);
+        // Scoped: memoises the decoded schema, which Octane must not carry across requests.
+        $this->app->scoped(ManifestSchema::class);
+        $this->app->scoped(ManifestSchemaValidator::class);
         $this->app->singleton(AutoloadGuard::class);
         $this->app->singleton(AddonDiscoveryService::class);
 
@@ -71,6 +82,16 @@ class AddonServiceProvider extends ServiceProvider
             // internal guard re-checks the resolved ClassLoader instance; this provider-level
             // call is the boot-halt fence that fires BEFORE the loader runs at all.
             $this->app->make(AutoloadGuard::class)->assertRuntimeAutoloadSupported();
+        }
+
+        // The links are not committed. Made before the loader, so a console run
+        // such as `migrate` boots the bundled addons and finds their migrations.
+        if ($this->app->runningInConsole()) {
+            try {
+                $this->app->make(BundledAddonLinker::class)->link();
+            } catch (Throwable $throwable) {
+                Log::error('Linking the bundled addons failed: '.$throwable->getMessage());
+            }
         }
 
         // ── Loader: runs in ALL contexts (D2-11) ────────────────────────────

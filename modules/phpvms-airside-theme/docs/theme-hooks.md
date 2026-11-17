@@ -746,7 +746,7 @@ The callsign, flight type and route code pills of the Next flight widget. Each p
 
 ### `vms-next-flight-metar`
 
-The weather card in the Next flight widget (the `airport-weather` component, loaded lazily): the departure airport when there is a bid, the current airport in the Ready to fly state (in the location card's `details` slot, above `dashboard.ready.details`).
+The weather card in the Next flight widget (the `airport-weather` component, loaded lazily): the departure airport when there is a bid, the current airport in the Ready to fly state (in the location card's `details` slot, above `dashboard.ready.details` (`SlotDashboardReadyDetails`)).
 
 - **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
 - **Element:** the wrapping `<div>`.
@@ -1120,7 +1120,7 @@ Why a flight is unavailable. Also used in the flight overview drawer.
 
 ### `vms-flight-row-actions`
 
-Wraps the `flights.row.actions` slot on a card.
+Wraps the `flights.row.actions` (`SlotFlightRowActions`) slot on a card.
 
 - **View:** `resources/views/livewire/flights/flight-manifest.blade.php`
 - **Element:** the `<div>`.
@@ -1230,7 +1230,7 @@ The filed route between the departure and the arrival, in mono. Shown only when 
 
 ### `vms-detail-actions`
 
-The Add to bids (View bid when the pilot has one) and Generate OFP buttons, the reason line and the `flights.detail.actions` slot.
+The Add to bids (View bid when the pilot has one) and Generate OFP buttons, the reason line and the `flights.detail.actions` (`SlotFlightActions`) slot.
 
 - **View:** `resources/views/livewire/flights/flight-overview-drawer.blade.php`
 - **Element:** the `<div>`.
@@ -1252,7 +1252,7 @@ A place (ICAO and country) beside a map with one pin: `<x-vms::location-card>`. 
 
 Props: `icao`, `country` (strings or null); `lat`, `lon` (floats or null; the pin is drawn when both are set); `scope` (`country`, `continent` or `world`, default `country`; the map falls back country, then continent, then world); `variant` (`outline` or `dotted`, default `dotted`); `size` (`compact` or `hero`, default `compact`). Without an `icao` the card shows "—" and the world map with no pin.
 
-Slots: the default slot holds action buttons laid over the map (rendered in `vms-location-card-actions`, omitted when empty); `aside` is optional and sits under the country (the Ready state puts the last flight block there); `details` is optional and sits after `aside`, for extra blocks (the Ready state holds the `dashboard.ready.details` outlet). The place column has its own `p-5.5` padding and is top-aligned; the actions row is inset `bottom-4 right-4` from the map corner.
+Slots: the default slot holds action buttons laid over the map (rendered in `vms-location-card-actions`, omitted when empty); `aside` is optional and sits under the country (the Ready state puts the last flight block there); `details` is optional and sits after `aside`, for extra blocks (the Ready state holds the `dashboard.ready.details` (`SlotDashboardReadyDetails`) outlet). The place column has its own `p-5.5` padding and is top-aligned; the actions row is inset `bottom-4 right-4` from the map corner.
 
 The map is the core `<x-map.svg>`: land is `.land`, the focus country `.land--focus`, the airport `.map-pin`. In the dotted variant the land paths are sent hidden and the browser lays whole dots on a grid over them (the `mapDots` Alpine component, `resources/js/airside/map-dots.ts`): each set of dots is one stroked `<path>`, `.map-dot` for the land and `.map-dot map-dot--focus` for the focus country, so its colour is the `stroke`. `<x-map.svg grid="diagonal">` offsets every other row. Colours are set under `vms-location-card` in `airside.css`: grey dots on land, a darker grey on the focus country, and the brand pin with a halo as the only colour. For a country with regions (the United States), the map shows the region holding the point: Alaska and Hawaii get their own maps, every other point the contiguous states.
 
@@ -1324,7 +1324,7 @@ The default slot of the location card, centred near the bottom of the map.
 
 ### `vms-next-flight-empty`
 
-The Next flight widget when there is no bid: a `vms-location-card` for the pilot's current airport (else home airport). Its default slot holds the Find a flight button and the `dashboard.ready.actions` slot (context: `airport`, the `Airport` or null; `user`). Its `details` slot holds the `dashboard.ready.details` slot (context: `airport`, the `Airport` or null; `user`; `pirep`, the pilot's last `Pirep` or null). The `aside` slot holds the `vms-last-flight` block when the pilot has a last PIREP. The map follows the theme options `ready_map_scope` (`country`, `continent`, `world`; default `country`), `ready_map_style` (`outline`, `dotted`; default `dotted`) and `ready_map_size` (`compact`, `hero`; default `compact`); an unknown value falls back to the default.
+The Next flight widget when there is no bid: a `vms-location-card` for the pilot's current airport (else home airport). Its default slot holds the Find a flight button and the `dashboard.ready.actions` (`SlotDashboardReadyActions`) slot (context: `airport`, the `Airport` or null; `user`). Its `details` slot holds the `dashboard.ready.details` (`SlotDashboardReadyDetails`) slot (context: `airport`, the `Airport` or null; `user`; `pirep`, the pilot's last `Pirep` or null). The `aside` slot holds the `vms-last-flight` block when the pilot has a last PIREP. The map follows the theme options `ready_map_scope` (`country`, `continent`, `world`; default `country`), `ready_map_style` (`outline`, `dotted`; default `dotted`) and `ready_map_size` (`compact`, `hero`; default `compact`); an unknown value falls back to the default.
 
 - **View:** `resources/views/livewire/dashboard/next-flight.blade.php`
 - **Element:** the wrapping `<div>` around the `vms-location-card`.
@@ -1643,20 +1643,31 @@ The route map card of the flight page: just the map.
 
 ### `vms-briefing-timeline`
 
-The timeline card of the flight page: one row per station, route, fix or phase.
+The timeline card of the flight page. Its entries are ordered by offset from departure; items at the same offset stack in one entry.
 
 - **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
 - **Element:** the `<section>`.
-- **Parts:** `vms-timeline-item`, `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`, `vms-briefing-facts`, `vms-briefing-route`, `vms-briefing-notice`.
+- **Parts:** `vms-timeline`, `vms-timeline-item`, `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`, `vms-briefing-facts`, `vms-briefing-route`, `vms-briefing-notice`.
+- **State:** none.
+- **Variables:** none.
+- **Stability:** draft.
+
+### `vms-timeline`
+
+A vertical timeline: the list that holds the entries. Shared by every page that draws one.
+
+- **View:** `resources/views/components/timeline/index.blade.php` (`<x-vms::timeline>`)
+- **Element:** the `<ol>`.
+- **Parts:** `vms-timeline-item`.
 - **State:** none.
 - **Variables:** none.
 - **Stability:** draft.
 
 ### `vms-timeline-item`
 
-One timeline row: a time column, the spine with its node, and the body. Compact rows (fixes, phases) also carry `vms-timeline-item--compact`.
+One timeline entry: a time column, the spine with its node, and the body, which stacks the items at one offset. Compact entries (fixes, phases) also carry `vms-timeline-item--compact`.
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<li>`.
 - **Parts:** `vms-timeline-time`, `vms-timeline-spine`, `vms-timeline-node`, `vms-timeline-body`.
 - **State:** none.
@@ -1667,7 +1678,7 @@ One timeline row: a time column, the spine with its node, and the body. Compact 
 
 The time column of a timeline row: the scheduled time, the elapsed time (`+0:14`) or a word (block, alternate).
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -1678,7 +1689,7 @@ The time column of a timeline row: the scheduled time, the elapsed time (`+0:14`
 
 The line that joins the timeline rows. It is a `::before` rule: the first row starts it at the node and the last row ends it there.
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<div>` that holds the node.
 - **Parts:** `vms-timeline-node`.
 - **State:** none.
@@ -1689,7 +1700,7 @@ The line that joins the timeline rows. It is a `::before` rule: the first row st
 
 The dot on the spine. Variants: `vms-timeline-node--fix` (small), `vms-timeline-node--phase` (a diamond, for top of climb and descent) and `vms-timeline-node--alt` (dashed, for the alternate).
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<span>`.
 - **Parts:** none.
 - **State:** none.
@@ -1698,9 +1709,9 @@ The dot on the spine. Variants: `vms-timeline-node--fix` (small), `vms-timeline-
 
 ### `vms-timeline-body`
 
-The content of a timeline row; rows after the first have a top border.
+The content of a timeline entry, its stacked items one under another; entries after the first have a top border.
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/timeline/entry.blade.php` (`<x-vms::timeline.entry>`)
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -1731,9 +1742,9 @@ The route string of the Route row, one mono pill per token.
 
 ### `vms-briefing-notice`
 
-An addon notice under a timeline row: icon, title coloured by severity, detail and time.
+An addon notice on the timeline, stacked with the other items at its offset: icon, title coloured by severity, detail and time.
 
-- **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
+- **View:** `resources/views/components/briefing/notice.blade.php` (`<x-vms::briefing.notice>`)
 - **Element:** the `<div>`.
 - **Parts:** none.
 - **State:** none.
@@ -1775,7 +1786,7 @@ The OFP summary in the rail: block fuel, air time, ZFW, runways and aircraft.
 
 ### `vms-briefing-fly`
 
-The Fly step body: the hint and the `flights.detail.actions` outlet.
+The Fly step body: the hint and the `flights.detail.actions` (`SlotFlightActions`) outlet.
 
 - **View:** `resources/views/livewire/flights/flight-briefing.blade.php`
 - **Element:** the `<div>`.

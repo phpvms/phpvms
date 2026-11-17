@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AddonIconController;
 use App\Http\Controllers\Admin\RouteForgeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OAuthController;
@@ -31,6 +32,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::get('addon-icons/{addon}', AddonIconController::class)
+    ->middleware(['web', 'auth'])
+    ->name('addons.icon');
 
 Route::get('theme-assets/{themeName}/{revision}/{asset}', ThemeAssetController::class)
     ->where('themeName', '[A-Za-z0-9][A-Za-z0-9._-]*')

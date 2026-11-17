@@ -11,6 +11,8 @@
 
     $brandName ??= 'phpvms';
     $addonsUrl ??= null;
+    // Addon icon URLs keyed by panel id; a panel without one shows initials.
+    $panelIcons ??= [];
     // Null means no airline logo uploaded: both marks below keep their
     // built-in artwork.
     $brandMark ??= null;
@@ -65,6 +67,10 @@
                 @if ($isAdmin)
                     <span @class(['fi-brandmenu-item-mark', 'fi-brandmark-custom' => $brandMark !== null])>
                         <img src="{{ $brandMark ?? asset('/assets/img/logo_blue.svg') }}" alt="" />
+                    </span>
+                @elseif (isset($panelIcons[$panel->getId()]))
+                    <span class="fi-brandmenu-item-mark fi-brandmark-custom">
+                        <img src="{{ $panelIcons[$panel->getId()] }}" alt="" />
                     </span>
                 @else
                     <span class="fi-brandmenu-item-mark" style="background-color: {{ $markColors[$nonAdminIndex++ % count($markColors)] }}">

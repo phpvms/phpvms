@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\OctaneReloader;
+use App\Features\Addons\Support\OctaneReloader;
 
 it('does not run when not under octane', function (): void {
     $ran = false;

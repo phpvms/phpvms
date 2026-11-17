@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
-use App\Features\Hooks\Points\RenderingProfileCards;
+use App\Features\Addons\AddonRegistry;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
 use App\Features\Profile\Actions\CreatePersonalToken;
@@ -13,6 +12,7 @@ use App\Features\Profile\Actions\RevokeAuthorizedApp;
 use App\Features\Profile\Actions\RevokeToken;
 use App\Features\Profile\Actions\UpdateProfile;
 use App\Features\Tour\Enums\TourStatus;
+use App\Hooks\Slots\SlotProfileCards;
 use App\Http\Data\ApiConnectionsData;
 use App\Http\Data\ProfileConnectionData;
 use App\Http\Data\ProfileData;
@@ -157,7 +157,7 @@ class ProfileController extends Controller
                         : null,
                 ),
             ],
-            renderHooks: fn (): array => [new RenderingProfileCards($profile())],
+            renderHooks: fn (): array => [new SlotProfileCards($profile())],
         );
     }
 

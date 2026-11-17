@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Addons\Support\AddonSettingsRegistry;
-use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonSettings;
 use App\Contracts\Service;
 use App\Exceptions\SettingNotFound;
+use App\Features\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Addon;
 use App\Support\Settings\SettingDefinition;
 use App\Support\Settings\SettingsWriter;

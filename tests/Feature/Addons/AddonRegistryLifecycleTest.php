@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
+use App\Features\Addons\AddonRegistry;
 use App\Models\Addon;
 
 beforeEach(function (): void {

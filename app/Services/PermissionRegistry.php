@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\BootCache;
 use App\Contracts\Filament\ProvidesPermissions;
 use App\Enums\Ability;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\BootCache;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Illuminate\Support\Str;

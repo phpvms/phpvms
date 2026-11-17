@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Models\AddonBootCache;
-use App\Addons\Support\AutoloadGuard;
-use App\Addons\Support\BootCache;
 use App\Contracts\Addons\AddonServiceProvider;
 use App\Exceptions\AutoloadModeException;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Models\AddonBootCache;
+use App\Features\Addons\Support\AutoloadGuard;
+use App\Features\Addons\Support\BootCache;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Collection;
 
@@ -80,7 +80,7 @@ it('classLoader() returns a ClassLoader instance from the real autoload stack', 
 
 it('register() adds the PSR-4 prefix to the injected loader for an enabled addon', function (): void {
     // Use a real existing directory so addPsr4 receives a valid path.
-    $autoloadPath = app_path('Addons');
+    $autoloadPath = app_path('Features/Addons');
     $namespace = 'Modules\\TestSample';
 
     $injectedLoader = new ClassLoader();
@@ -97,7 +97,7 @@ it('register() adds the PSR-4 prefix to the injected loader for an enabled addon
 it('register() registers declared service providers on the application', function (): void {
     // Inline test provider — class is defined here so no autoloading needed.
     $providerClass = AddonLoaderTestServiceProvider::class;
-    $autoloadPath = app_path('Addons');
+    $autoloadPath = app_path('Features/Addons');
     $namespace = 'Modules\\TestProvider';
 
     $injectedLoader = new ClassLoader();
@@ -119,7 +119,7 @@ it('register() returns early when no enabled addons are present', function (): v
 });
 
 it('register() propagates the guard exception and adds no PSR-4 prefix', function (): void {
-    $autoloadPath = app_path('Addons');
+    $autoloadPath = app_path('Features/Addons');
     $namespace = 'Modules\\Guarded';
 
     // Stub guard that always throws.
@@ -159,7 +159,7 @@ it('register() propagates the guard exception and adds no PSR-4 prefix', functio
 
 it('register() normalises a namespace already ending with a trailing backslash to exactly one backslash key', function (): void {
     // Namespace supplied WITH trailing backslash — must not produce a double-backslash key.
-    $autoloadPath = app_path('Addons');
+    $autoloadPath = app_path('Features/Addons');
     $namespace = 'Modules\\AlreadySlashed\\';
 
     $injectedLoader = new ClassLoader();
@@ -175,7 +175,7 @@ it('register() normalises a namespace already ending with a trailing backslash t
 });
 
 it('register() registers all providers when a row declares two service providers', function (): void {
-    $autoloadPath = app_path('Addons');
+    $autoloadPath = app_path('Features/Addons');
     $namespace = 'Modules\\TwoProviders';
 
     $injectedLoader = new ClassLoader();
@@ -196,7 +196,7 @@ it('register() registers all providers when a row declares two service providers
 });
 
 it('register() requires declared autoload.files so module helpers become callable', function (): void {
-    $autoloadPath = app_path('Addons');
+    $autoloadPath = app_path('Features/Addons');
     $namespace = 'Modules\\FilesAddon';
 
     // A unique global function name so this test is order-independent.
@@ -226,7 +226,7 @@ it('register() requires declared autoload.files so module helpers become callabl
 });
 
 it('register() skips autoload.files paths that do not exist', function (): void {
-    $autoloadPath = app_path('Addons');
+    $autoloadPath = app_path('Features/Addons');
     $namespace = 'Modules\\MissingFiles';
 
     $injectedLoader = new ClassLoader();
@@ -286,7 +286,7 @@ it('does not report authoritative mode when only a foreign loader is authoritati
 
     try {
         // Would throw AutoloadModeException if the foreign loader were picked.
-        loaderWithRows([addonRow('Modules\\ForeignProbe', app_path('Addons'))])
+        loaderWithRows([addonRow('Modules\\ForeignProbe', app_path('Features/Addons'))])
             ->register(app());
     } finally {
         $foreign->unregister();

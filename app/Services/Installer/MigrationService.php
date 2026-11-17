@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
-use App\Addons\AddonRegistry;
-use App\Addons\Models\AddonManifest;
-use App\Addons\Support\AddonRoots;
-use App\Addons\Support\AddonVersions;
-use App\Addons\Support\ManifestParser;
 use App\Contracts\Service;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Models\AddonManifest;
+use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Closure;
 use Exception;
@@ -85,104 +84,32 @@ class MigrationService extends Service
 
     /**
      * Scan disk for addon directories, mirroring
-     * AddonDiscoveryService::scanLocation()'s conventions: immediate child
-     * directories of the addon base that contain a module.json. Used only
+     * AddonDiscoveryService::scanRoot()'s conventions: immediate child
+     * directories of the addon root and modules/ that contain a manifest. Used only
      * pre-install, before the `addons` table exists to be the source of
      * truth (see getMigrationPaths()).
      *
-     * Direct-child symlinks are permitted (e.g. modules/phpvms-acars
-     * symlinked to an external checkout); anything that isn't a direct
-     * child of the base, or has no module.json, is skipped.
-     *
-     * Scans both addon roots and picks the same copy discovery would load, so
-     * the migrations that run belong to the code that will be running.
+     * Direct-child symlinks are permitted (the bundled links, or a dev
+     * checkout linked in by hand); anything that isn't a direct child of the
+     * directory it was found in, or has no manifest, is skipped.
      *
      * @return array<string, string> addon directory basename => absolute path
      */
     private function scanAddonPathsOnDisk(): array
     {
         $parser = app(ManifestParser::class);
-        $image = AddonRoots::image();
 
-        /** @var array<string, array{name: string, path: string, version: ?string, fromImage: bool}> $chosen */
+        /** @var array<string, array{name: string, path: string}> $chosen */
         $chosen = [];
 
-        foreach (AddonRoots::all() as $base) {
-            if (!is_dir($base)) {
-                continue;
-            }
-
-            $realBase = realpath($base);
+        foreach (AddonRoots::scanned() as $base => $skip) {
+            $realBase = is_dir($base) ? realpath($base) : false;
 
             if ($realBase === false) {
                 continue;
             }
 
-            $fromImage = $base === $image;
-
-            foreach (File::directories($base) as $subDir) {
-                $resolved = realpath($subDir);
-
-                if ($resolved === false) {
-                    continue;
-                }
-
-                if (realpath(dirname((string) $subDir)) !== $realBase) {
-                    continue;
-                }
-
-                if (ManifestParser::manifestPath($resolved) === null) {
-                    continue;
-                }
-
-                $manifest = $parser->parse($resolved);
-
-                // `name` is the basename as it appears in the root, NOT of the
-                // resolved path: for a symlinked module (modules/Linked -> an
-                // external checkout) the caller keys migration paths by the name
-                // in the root, while the path itself has to be the resolved one.
-                $incoming = [
-                    'name'      => basename((string) $subDir),
-                    'path'      => $resolved,
-                    'version'   => $manifest?->version,
-                    'fromImage' => $fromImage,
-                ];
-
-                // Keyed on registry_id when there is one, so the same addon in
-                // both roots resolves exactly as
-                // AddonDiscoveryService::scanAllRoots() resolves it: higher
-                // version wins, ties to the image. Keying on directory basename
-                // instead would run the wrong copy's migrations, since the roots
-                // can name one addon differently (modules/Twin vs
-                // storage/addons/acme-twin) — that runs both — and where the
-                // names do match it would run the image copy's even though
-                // discovery loads the newer installed one.
-                //
-                // A manifest with no registry_id has no identity to compare, so
-                // it falls back to its basename and the first root wins. Such a
-                // directory is still included: this scan runs pre-install, where
-                // a manifest predating the registry_id requirement is exactly
-                // what turns up, and dropping it would silently skip its
-                // migrations.
-                $key = $manifest instanceof AddonManifest
-                    ? 'id:'.$manifest->registryId
-                    : 'dir:'.$incoming['name'];
-
-                $held = $chosen[$key] ?? null;
-
-                if ($held === null) {
-                    $chosen[$key] = $incoming;
-
-                    continue;
-                }
-
-                [$imageCopy, $installedCopy] = $held['fromImage'] ? [$held, $incoming] : [$incoming, $held];
-
-                $chosen[$key] = AddonVersions::installedSupersedesImage(
-                    $installedCopy['version'],
-                    $imageCopy['version'],
-                ) ? $installedCopy : $imageCopy;
-            }
+            $this->scanAddonDirectory($parser, $base, $realBase, $skip, $chosen);
         }
 
         $paths = [];
@@ -192,6 +119,54 @@ class MigrationService extends Service
         }
 
         return $paths;
+    }
+
+    /**
+     * Add the addons directly under $base to $chosen, passing over the entry
+     * names in $skip.
+     *
+     * @param list<string>                                     $skip
+     * @param array<string, array{name: string, path: string}> $chosen
+     */
+    private function scanAddonDirectory(ManifestParser $parser, string $base, string $realBase, array $skip, array &$chosen): void
+    {
+        foreach (File::directories($base) as $subDir) {
+            if (in_array(basename((string) $subDir), $skip, true)) {
+                continue;
+            }
+
+            $resolved = realpath($subDir);
+
+            if ($resolved === false) {
+                continue;
+            }
+
+            if (realpath(dirname((string) $subDir)) !== $realBase) {
+                continue;
+            }
+
+            if (ManifestParser::manifestPath($resolved) === null) {
+                continue;
+            }
+
+            $manifest = $parser->parse($resolved);
+
+            // `name` is the basename as it appears in the root, NOT of the
+            // resolved path: for a linked addon the caller keys migration paths
+            // by the name in the root, while the path itself has to be the
+            // resolved one.
+            $name = basename((string) $subDir);
+
+            // Keyed on registry_id when there is one, so two directories of one
+            // addon run one set of migrations, as discovery loads one. A
+            // manifest with no registry_id falls back to its basename; it is
+            // still included, since this scan runs pre-install, where a
+            // manifest predating the registry_id requirement is exactly what
+            // turns up.
+            $key = $manifest instanceof AddonManifest ? 'id:'.$manifest->registryId : 'dir:'.$name;
+
+            $chosen[$key] ??= ['name' => $name, 'path' => $resolved];
+        }
     }
 
     /**

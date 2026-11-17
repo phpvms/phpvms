@@ -8,6 +8,7 @@ use App\Filament\Resources\Awards\Pages\EditAward;
 use App\Filament\Resources\Awards\Pages\ListAwards;
 use App\Filament\Resources\Awards\Schemas\AwardForm;
 use App\Filament\Resources\AwardSnippets\Pages\ManageAwardSnippets;
+use App\Models\Addon;
 use App\Models\Award;
 use App\Models\AwardSnippet;
 use App\Models\User;
@@ -111,6 +112,14 @@ it('edits award info, type and trigger through the overview drawer', function ()
 });
 
 it('switches a rules award to legacy through the drawer, clearing the ruleset', function (): void {
+    // The legacy award classes are found through the awards addon's row.
+    Addon::factory()->create([
+        'name'        => 'Awards',
+        'registry_id' => 'phpvms/awards',
+        'namespace'   => 'Modules\\Awards',
+        'path'        => base_path('modules/phpvms-awards'),
+    ]);
+
     $award = Award::factory()->rules()->create();
 
     Livewire::test(EditAward::class, ['record' => $award->getRouteKey()])

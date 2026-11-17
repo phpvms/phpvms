@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\RegistrySignatureVerifier;
+use App\Features\Addons\Support\RegistrySignatureVerifier;
 use App\Services\SettingService;
 
 /**

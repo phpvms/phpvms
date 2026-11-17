@@ -106,7 +106,8 @@
     "filafly/filament-phosphor-icons": "^2.2",
     "socialiteproviders/openidconnect": "^1.0",
     "tallstackui/tallstackui": "^4",
-    "spatie/laravel-settings": "^3.10"
+    "spatie/laravel-settings": "^3.10",
+    "justinrainbow/json-schema": "^6.13"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",
@@ -141,6 +142,7 @@
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/",
       "Modules\\AddonManager\\": "modules/phpvms-addon-manager/app/",
+      "Modules\\Awards\\": "modules/phpvms-awards/",
       "Modules\\": "modules/"
     }
   },
@@ -154,11 +156,11 @@
       "phpvms-module"
     ],
     "installer-paths": {
-      "modules/{$name}/": [
+      "storage/app/addons/{$name}/": [
         "type:phpvms-module"
       ]
     },
-    "module-dir": "modules"
+    "module-dir": "storage/app/addons"
   },
   "scripts": {
     "post-autoload-dump": [
@@ -224,7 +226,7 @@
     "dev": [
       "Composer\\Config::disableProcessTimeout",
       "@php artisan optimize:clear @no_additional_args",
-      "sh -c 'port=${1:-7474}; exec pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#f9a8d4,#fb7185,#fdba74,#86efac\" \"php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$port --watch\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"pnpm run dev\" \"pnpm --filter @phpvms/skylight run dev\" --names=server,queue,scheduler,logs,admin-vite,pilot-vite --kill-others' -- @additional_args"
+      "sh -c 'port=${1:-7474}; exec pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#f9a8d4,#fb7185,#fdba74,#86efac\" \"php artisan octane:frankenphp --host=0.0.0.0 --port=$port --admin-host=127.0.0.1 --watch\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"pnpm run dev\" \"pnpm --filter @phpvms/skylight run dev\" --names=server,queue,scheduler,logs,admin-vite,pilot-vite --kill-others' -- @additional_args"
     ]
   },
   "config": {

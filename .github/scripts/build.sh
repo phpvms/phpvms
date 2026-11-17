@@ -69,7 +69,9 @@ clean_dir() {
 }
 
 clean_dir bootstrap/cache
-clean_dir storage/app public import
+clean_dir storage/app public import addons
+# The install and update steps link the bundled addons, so no links ship.
+clean_dir storage/app/addons
 clean_dir storage/app/public avatars uploads
 clean_dir storage/app/public/avatars
 clean_dir storage/app/public/uploads

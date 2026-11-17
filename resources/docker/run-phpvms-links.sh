@@ -6,6 +6,10 @@
 # - public/storage -> storage/app/public: the public disk, and theme addon
 #   assets under storage/app/public/themes. serversideup's AUTORUN also runs
 #   storage:link, but only when AUTORUN_ENABLED is true.
+# - storage/app/addons/<name> -> ../../../modules/<name>: the bundled addons
+#   (phpvms:addons-link-bundled). The storage volume is filled from the image
+#   only once, so an addon bundled by a later image has no link until this
+#   runs. It runs before addons:cache so the cache finds it.
 # - bootstrap/cache/addons.php: the addon boot cache (addons:cache). It is not
 #   in the image, and Octane workers read it before they would build it, so
 #   without this the first workers start with no addons or theme addons.
@@ -17,5 +21,6 @@
 # No step may stop the container: a missing link or cache costs assets or
 # addons, not the app, and the admin can still fix it.
 php artisan storage:link --relative || echo "phpvms: storage:link failed"
+php artisan phpvms:addons-link-bundled || echo "phpvms: phpvms:addons-link-bundled failed"
 php artisan addons:cache || echo "phpvms: addons:cache failed"
 php artisan addons:relink || echo "phpvms: addons:relink failed"

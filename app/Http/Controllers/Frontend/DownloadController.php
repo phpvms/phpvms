@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
+use App\Features\Addons\AddonRegistry;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;

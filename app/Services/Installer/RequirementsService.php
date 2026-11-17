@@ -70,4 +70,23 @@ class RequirementsService extends Service
 
         return $directories;
     }
+
+    /**
+     * Check that PHP can create a symlink. The addon root links each bundled
+     * addon from modules/, and `storage:link` serves the public disk, so
+     * phpvms cannot run without them.
+     *
+     * @return array{passed: bool}
+     */
+    public function checkSymlinks(): array
+    {
+        $link = storage_path('app/.symlink-check-'.uniqid());
+        $passed = @symlink('.', $link) && is_link($link);
+
+        if (is_link($link)) {
+            @unlink($link);
+        }
+
+        return ['passed' => $passed];
+    }
 }

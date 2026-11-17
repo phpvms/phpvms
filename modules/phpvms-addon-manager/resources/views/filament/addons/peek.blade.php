@@ -31,7 +31,7 @@
 
 <div class="pp addon-peek">
     <header class="pp-strip">
-        <span class="addon-plate addon-plate--{{ $row['tint'] }}">
+        <span @class(['addon-plate', 'addon-plate--'.$row['tint'] => ! $row['icon'], 'addon-plate--icon' => $row['icon']])>
             @if ($row['icon'])
                 <img src="{{ $row['icon'] }}" alt="">
             @else
