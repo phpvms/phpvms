@@ -227,6 +227,7 @@ return [
             base_path('bootstrap/cache'),
             public_path('uploads'),
             storage_path(),
+            storage_path('app/addons'),
             storage_path('app/public'),
             storage_path('app/public/avatars'),
             storage_path('app/public/uploads'),

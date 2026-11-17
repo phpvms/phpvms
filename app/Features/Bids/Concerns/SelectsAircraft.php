@@ -10,7 +10,7 @@ use App\Exceptions\UserBidLimit;
 use App\Features\Bids\Actions\PlaceBid;
 use App\Features\Bids\Queries\EligibleAircraft;
 use App\Features\Flights\Queries\VisibleFlights;
-use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Hooks\Exceptions\DeniedByHook;
 use App\Http\Data\EligibleAircraftData;
 use App\Http\Data\EligibleSubfleetData;
 use App\Http\Data\FlightDispatchPolicyData;
@@ -186,7 +186,7 @@ trait SelectsAircraft
 
         try {
             app(PlaceBid::class)->handle($flight, $user, $aircraft);
-        } catch (HookDenied $exception) {
+        } catch (DeniedByHook $exception) {
             $this->fail('hook-denied', $exception->getMessage());
 
             return false;

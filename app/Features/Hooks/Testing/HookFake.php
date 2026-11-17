@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Features\Hooks\Testing;
 
-use App\Features\Hooks\Exceptions\HookDenied;
 use App\Features\Hooks\FilterHook;
 use App\Features\Hooks\GateHook;
+use App\Features\Hooks\GateResponse;
 use App\Features\Hooks\Hook;
 use App\Features\Hooks\HookDispatcher;
 use Closure;
@@ -49,13 +49,13 @@ class HookFake extends HookDispatcher
         return $hook->value;
     }
 
-    public function gate(GateHook $hook): void
+    public function gate(GateHook $hook): GateResponse
     {
         $this->dispatched[] = $hook;
 
-        if (isset($this->denials[$hook::class])) {
-            throw new HookDenied($this->denials[$hook::class], $hook::name());
-        }
+        return isset($this->denials[$hook::class])
+            ? GateResponse::deny($hook::name(), $this->denials[$hook::class])
+            : GateResponse::allow($hook::name());
     }
 
     /**

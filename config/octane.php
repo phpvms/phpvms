@@ -191,9 +191,9 @@ return [
     | files are changed, Octane will automatically reload your workers.
     |
     | The list below reflects the phpVMS layout: app/, bootstrap/, config/,
-    | database/, modules/, resources/views/, and routes/ are the directories
-    | a code change can land in. composer.lock and .env are watched so worker
-    | reload picks up dependency and env changes too.
+    | database/, modules/, storage/app/addons/, resources/views/, and routes/
+    | are the directories a code change can land in. composer.lock and .env
+    | are watched so worker reload picks up dependency and env changes too.
     |
     */
 
@@ -203,6 +203,7 @@ return [
         'config/**/*.php',
         'database/**/*.php',
         'modules/**/*.php',
+        'storage/app/addons/**/*.php',
         'resources/views/**/*.php',
         'resources/views/**/*.blade.php',
         'routes',

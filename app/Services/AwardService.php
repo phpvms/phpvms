@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Addons\AddonRegistry;
 use App\Contracts\Award;
 use App\Contracts\Service;
+use App\Features\Addons\AddonRegistry;
 use App\Support\ClassLoader;
 
 class AwardService extends Service

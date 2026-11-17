@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Addons;
 
-use App\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\AddonSettingsRegistry;
 use App\Support\Settings\SettingField;
 use Illuminate\Support\Str;
 use Override;

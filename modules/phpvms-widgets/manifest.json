@@ -1,0 +1,28 @@
+{
+    "$schema": "https://phpvms.net/schema/manifest.schema.v1.json",
+    "schema_version": 1,
+    "name": "PhpvmsWidgets",
+    "alias": "phpvms-widgets",
+    "registry_id": "phpvms/widgets",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "First-party phpvms tiles for Blade themes: hours, flights, balance, rank progress, last flight and weather (METAR).",
+    "keywords": [
+        "dashboard",
+        "tile",
+        "weather",
+        "metar"
+    ],
+    "bundled": true,
+    "active": 0,
+    "order": 0,
+    "providers": [
+        "Modules\\PhpvmsWidgets\\Providers\\PhpvmsWidgetsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "database": {
+        "tables": []
+    }
+}

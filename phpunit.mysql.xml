@@ -59,6 +59,11 @@
         <env name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
         <server name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
         <env name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
+        <!-- And for a cached bootstrap/cache/events.php: a cache written before a
+             new listener or subscriber landed leaves it unregistered for the
+             whole suite. -->
+        <server name="APP_EVENTS_CACHE" value="cache/events-phpunit-never-cached.php" force="true"/>
+        <env name="APP_EVENTS_CACHE" value="cache/events-phpunit-never-cached.php" force="true"/>
         <!-- Both blocks are required. Laravel resolves env() through a repository
              that reads $_SERVER before $_ENV, and the CLI SAPI copies exported
              shell variables into $_SERVER, so an exported DB_CONNECTION silently

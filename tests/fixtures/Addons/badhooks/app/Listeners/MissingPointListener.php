@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpvmsBadHooksFixture\Listeners;
 
 use App\Contracts\Addons\Attributes\AddonListener;
-use App\Features\Hooks\Points\DoesNotExist;
+use App\Hooks\Gates\DoesNotExist;
 
 #[AddonListener]
 class MissingPointListener

@@ -124,3 +124,6 @@ public/css/phpvms/**
 
 # OpenSpec working artifacts - local only
 openspec/
+
+# Agent skills are local, not shipped
+.github/skills/

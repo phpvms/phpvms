@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\AddonSettingsRegistry;
 use App\Services\AddonSettingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;

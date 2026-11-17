@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Support\BootCache;
 
 beforeEach(function (): void {
     app(BootCache::class)->delete();

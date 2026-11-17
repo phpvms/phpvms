@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Support\BootCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Modules\AddonManager\Services\RegistryClient;

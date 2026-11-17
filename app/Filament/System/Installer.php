@@ -2,7 +2,7 @@
 
 namespace App\Filament\System;
 
-use App\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\AddonCacheRefresher;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\Role;
 use App\Models\User;
@@ -302,8 +302,12 @@ class Installer extends Page
             $dirs[$extData['dir']] = $extData['passed'] ? 'OK' : __('installer.failed');
         }
 
+        // Shown with the directories, since it is a filesystem requirement too.
+        $symlinks = $reqSvc->checkSymlinks();
+        $dirs[__('installer.symlinks')] = $symlinks['passed'] ? 'OK' : __('installer.failed');
+
         $extensionsPassed = $this->allPassed($extensions);
-        $directoriesPassed = $this->allPassed($directories);
+        $directoriesPassed = $this->allPassed($directories) && $symlinks['passed'];
 
         try {
             DB::connection()->getPdo();
@@ -357,6 +361,13 @@ class Installer extends Page
             content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL,
             to: $this->stream
         );
+
+        // Before migrating: the migration paths of the bundled addons go through their links.
+        if (!app(InstallerService::class)->linkBundledAddons()) {
+            $message = __('installer.bundled_link_failed').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+        }
 
         app(MigrationService::class)
             ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output): void {

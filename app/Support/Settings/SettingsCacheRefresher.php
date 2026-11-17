@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Settings;
 
-use App\Addons\Support\AddonSettingsRegistry;
+use App\Features\Addons\Support\AddonSettingsRegistry;
 use Illuminate\Support\Facades\Log;
 use Spatie\LaravelSettings\Settings;
 use Throwable;

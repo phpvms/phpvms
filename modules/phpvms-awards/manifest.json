@@ -1,0 +1,23 @@
+{
+    "$schema": "https://phpvms.net/schema/manifest.schema.v1.json",
+    "schema_version": 1,
+    "name": "Awards",
+    "alias": "awards",
+    "registry_id": "phpvms/awards",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Awards for pilots, granted by rules or by hand.",
+    "keywords": [],
+    "bundled": true,
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "Modules\\Awards\\Providers\\AwardServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "database": {
+        "tables": []
+    }
+}

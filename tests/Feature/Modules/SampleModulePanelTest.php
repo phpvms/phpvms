@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonAutoLoader;
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\BootCache;
+use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\BootCache;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Addons\Services\AddonDiscoveryService;
-use App\Addons\Support\AddonAssetLinker;
+use App\Features\Addons\Services\AddonDiscoveryService;
+use App\Features\Addons\Support\AddonAssetLinker;
 use App\Models\Addon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;

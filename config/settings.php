@@ -33,7 +33,7 @@ return [
      * The core settings classes, one per settings group. Listed explicitly
      * (auto-discovery is off below), so `settings:discover` / `optimize`
      * produce the same list and nothing scans the filesystem at boot. Addon
-     * settings classes are registered by App\Addons\Support\AddonSettingsRegistry.
+     * settings classes are registered by App\Features\Addons\Support\AddonSettingsRegistry.
      */
     'settings' => [
         GeneralSettings::class,

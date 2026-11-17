@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Addons\Models\AddonManifest;
 use App\Contracts\Model;
+use App\Features\Addons\Models\AddonManifest;
 use Database\Factories\AddonFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\AddonManager\Console\Commands;
 
-use App\Addons\AddonRegistry;
+use App\Features\Addons\AddonRegistry;
 use App\Models\Addon;
 use App\Models\Role;
 use App\Models\User;

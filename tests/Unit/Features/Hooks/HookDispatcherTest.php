@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Features\Hooks;
 
 use App\Features\Hooks\Attributes\HookPriority;
-use App\Features\Hooks\Exceptions\HookDenied;
+use App\Features\Hooks\Exceptions\DeniedByHook;
 use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\FilterHook;
 use App\Features\Hooks\GateHook;
+use App\Features\Hooks\GateResponse;
 use App\Features\Hooks\HookDispatcher;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -100,6 +101,24 @@ final class Denies
     }
 }
 
+final class ExplicitlyAllows
+{
+    public function __invoke(ActionGate $gate): GateResponse
+    {
+        CallLog::$calls[] = 'allow';
+
+        return $gate->allow();
+    }
+}
+
+final class ReturnsDenial
+{
+    public function __invoke(ActionGate $gate): GateResponse
+    {
+        return GateResponse::deny($gate::name(), 'Returned denial', status: 403);
+    }
+}
+
 final class DeniesThenThrows
 {
     public function handle(ActionGate|ClosedGate $gate): never
@@ -167,8 +186,11 @@ it('stops at the first denial and reports its message', function (): void {
     $this->hooks->listen(ActionGate::class, Denies::class);
     $this->hooks->listen(ActionGate::class, Allows::class);
 
-    expect(fn () => $this->hooks->gate(new ActionGate()))
-        ->toThrow(HookDenied::class, 'Complete your checkride first');
+    $response = $this->hooks->gate(new ActionGate());
+
+    expect($response->denied())->toBeTrue()
+        ->and($response->message())->toBe('Complete your checkride first')
+        ->and($response->listener())->toBe(Denies::class);
     expect(CallLog::$calls)->toBe(['deny']);
 });
 
@@ -176,15 +198,35 @@ it('composes gates from several listeners', function (): void {
     $this->hooks->listen(ActionGate::class, Allows::class);
     $this->hooks->listen(ActionGate::class, Denies::class);
 
-    expect(fn () => $this->hooks->gate(new ActionGate()))->toThrow(HookDenied::class);
+    expect($this->hooks->gate(new ActionGate())->denied())->toBeTrue();
     expect(CallLog::$calls)->toBe(['allow', 'deny']);
+});
+
+it('lets a later denial win over an explicit allow', function (): void {
+    $this->hooks->listen(ActionGate::class, ExplicitlyAllows::class);
+    $this->hooks->listen(ActionGate::class, Denies::class);
+
+    $response = $this->hooks->gate(new ActionGate());
+
+    expect($response->denied())->toBeTrue()
+        ->and($response->message())->toBe('Complete your checkride first');
+    expect(CallLog::$calls)->toBe(['allow', 'deny']);
+});
+
+it('honours a denial a listener returns without calling deny()', function (): void {
+    $this->hooks->listen(ActionGate::class, ReturnsDenial::class);
+
+    $response = $this->hooks->gate(new ActionGate());
+
+    expect($response->message())->toBe('Returned denial')
+        ->and($response->status())->toBe(403)
+        ->and($response->listener())->toBe(ReturnsDenial::class);
 });
 
 it('allows when every gate listener allows', function (): void {
     $this->hooks->listen(ActionGate::class, Allows::class);
 
-    $this->hooks->gate(new ActionGate());
-
+    expect($this->hooks->gate(new ActionGate())->allowed())->toBeTrue();
     expect(CallLog::$calls)->toBe(['allow']);
 });
 
@@ -192,8 +234,7 @@ it('allows past a throwing listener on a fail-open gate', function (): void {
     Log::spy();
     $this->hooks->listen(ActionGate::class, Throws::class);
 
-    $this->hooks->gate(new ActionGate());
-
+    expect($this->hooks->gate(new ActionGate())->allowed())->toBeTrue();
     Log::shouldHaveReceived('log')->withArgs(fn (string $level): bool => $level === 'error')->once();
 });
 
@@ -201,11 +242,11 @@ it('denies when a listener throws on a fail-closed gate', function (): void {
     Log::spy();
     $this->hooks->listen(ClosedGate::class, Throws::class);
 
-    expect(fn () => $this->hooks->gate(new ClosedGate()))->toThrow(HookDenied::class);
+    expect($this->hooks->gate(new ClosedGate())->denied())->toBeTrue();
 });
 
 it('renders a denial as a 422 hook-denied problem', function (): void {
-    $denied = new HookDenied('No', ActionGate::name());
+    $denied = new DeniedByHook(GateResponse::deny(ActionGate::name(), 'No'));
 
     expect($denied->getStatusCode())->toBe(422)
         ->and($denied->getJson()['type'])->toEndWith('/hook-denied')
@@ -220,7 +261,7 @@ it('refuses a listener for a class that is not a hook point', function (): void 
 it('fakes a denial and records dispatches', function (): void {
     $fake = Hooks::fake()->deny(ActionGate::class, 'Faked');
 
-    expect(fn () => Hooks::gate(new ActionGate()))->toThrow(HookDenied::class, 'Faked');
+    expect(Hooks::gate(new ActionGate())->message())->toBe('Faked');
     $fake->assertDispatched(ActionGate::class);
     $fake->assertNotDispatched(ListFilter::class);
 });
@@ -229,14 +270,12 @@ it('keeps a denial from a listener that throws after denying', function (): void
     Log::spy();
     $this->hooks->listen(ActionGate::class, DeniesThenThrows::class);
 
-    expect(fn () => $this->hooks->gate(new ActionGate()))
-        ->toThrow(HookDenied::class, 'Complete your checkride first');
+    expect($this->hooks->gate(new ActionGate())->message())->toBe('Complete your checkride first');
 });
 
 it('reports the listener denial, not the generic one, on a fail-closed gate', function (): void {
     Log::spy();
     $this->hooks->listen(ClosedGate::class, DeniesThenThrows::class);
 
-    expect(fn () => $this->hooks->gate(new ClosedGate()))
-        ->toThrow(HookDenied::class, 'Complete your checkride first');
+    expect($this->hooks->gate(new ClosedGate())->message())->toBe('Complete your checkride first');
 });

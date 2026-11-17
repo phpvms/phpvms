@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\Support\AddonCacheRefresher;
+use App\Features\Addons\Support\AddonCacheRefresher;
 use App\Filament\System\Installer;
 use App\Models\User;
 use App\Services\Installer\InstallerService;
@@ -26,6 +26,7 @@ function mockInstallRun(bool $seedCreatesUser): void
         $mock->shouldReceive('isUpgradePending')->andReturnTrue();
         $mock->shouldReceive('ensurePassportKeys');
         $mock->shouldReceive('linkStorage')->andReturnTrue();
+        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
     });
 
     test()->mock(MigrationService::class, function (MockInterface $mock): void {
