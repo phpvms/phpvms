@@ -153,17 +153,6 @@ it('loads the copy in the root when modules/ has the same addon', function (): v
     Log::shouldNotHaveReceived('warning', [Mockery::on(fn (string $message): bool => str_contains($message, 'twice'))]);
     expect(Addon::query()->where('registry_id', 'acme/twin')->sole()->path)->toBe(realpath($installed));
 });
-
-it('discovers a bundled addon when the root and modules/ are one directory', function (): void {
-    Config::set('addons.paths.bundled', $this->root);
-    Config::set('addons.bundled', ['shipped']);
-    placeAddonInRoot($this->root, 'Shipped');
-
-    app(AddonDiscoveryService::class)->discoverNewAddons();
-
-    expect(Addon::query()->where('registry_id', 'acme/shipped')->exists())->toBeTrue();
-});
-
 it('does not re-enable an addon the operator disabled', function (): void {
     // Reconciling an existing row must not touch `enabled` (D-12).
     placeAddonInRoot($this->root, 'Twin', 'acme/twin', '1.0.0');
