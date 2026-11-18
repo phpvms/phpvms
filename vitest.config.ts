@@ -33,6 +33,7 @@ export default defineConfig({
       "resources/js/apps/admin/*.test.js",
       "resources/js/apps/admin/components/*.test.js",
       "resources/js/packages/map/**/*.test.ts",
+      "resources/js/packages/infinite-select/**/*.test.ts",
       "bin/*.test.mjs",
     ],
     environment: "happy-dom",
