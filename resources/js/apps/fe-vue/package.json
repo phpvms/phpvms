@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@inertiajs/vue3": "^3.9.1",
-    "@nuxt/ui": "4.10.0",
+    "@nuxt/ui": "4.12.0",
     "@phpvms/map": "workspace:*",
     "@phpvms/simbrief": "workspace:*",
     "@vueuse/core": "^14.4.0",
