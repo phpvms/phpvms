@@ -95,7 +95,7 @@ jobs:
             --endpoint-url https://ny-s3.storage.bunnycdn.com
 
       - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
+        uses: Ilshidur/action-discord@0.4.0
         env:
           DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
         with:

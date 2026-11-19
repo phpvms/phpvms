@@ -28,3 +28,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - maplibre-gl@6.7.0
+  - "@nuxt/ui@4.13.0"

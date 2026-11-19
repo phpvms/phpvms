@@ -98,9 +98,7 @@ const ete = computed(() => {
   >
     <div class="nd-h">
       <span class="t">ND · MAPLIBRE · GLOBE</span>
-      <span class="m"
-        >{{ fromIcao }} <template v-if="toIcao">▸ {{ toIcao }}</template></span
-      >
+      <span class="m">{{ fromIcao }} <template v-if="toIcao">▸ {{ toIcao }}</template></span>
     </div>
     <div ref="mapEl" class="map" />
     <div class="readout">
