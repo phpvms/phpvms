@@ -62,8 +62,8 @@ function selectFlight(flightId: string): void {
           <div class="flight-select">
             <span class="callsign">{{ flight.callsign }}</span>
             <span class="route"
-              ><strong>{{ flight.dpt ?? "—" }}</strong
-              ><span>→</span><strong>{{ flight.arr ?? "—" }}</strong></span
+              ><strong>{{ flight.dpt ?? "—" }}</strong><span>→</span
+              ><strong>{{ flight.arr ?? "—" }}</strong></span
             >
           </div>
           <dl class="row-facts">

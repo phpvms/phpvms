@@ -12,7 +12,7 @@
     "dev": "vite harness --open"
   },
   "dependencies": {
-    "maplibre-gl": "^6.15.0",
+    "maplibre-gl": "^6.19.0",
     "three": "^0.187.0",
     "troika-three-text": "^0.53.0"
   },
