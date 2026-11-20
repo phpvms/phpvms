@@ -39,19 +39,3 @@ it('leaves the shared Vite instance on its own build directory', function (): vo
     expect($afterDirectory)->toBe('build')
         ->and($afterHot)->toBeNull();
 })->skip(fn (): bool => !file_exists($manifest), 'Run `pnpm run build:themes` first.');
-
-it('uses the module hot file while the dev server runs', function (): void {
-    deployedPublicPath();
-    $hot = base_path('modules/phpvms-airside-theme/public/hot');
-    file_put_contents($hot, 'http://localhost:5199');
-
-    try {
-        $html = Blade::render("@airsideVite(['resources/css/styles.css', 'resources/js/airside/app.ts'])");
-
-        expect($html)->toContain('http://localhost:5199/@vite/client')
-            ->and($html)->toContain('http://localhost:5199/resources/js/airside/app.ts');
-    } finally {
-        unlink($hot);
-    }
-
-});

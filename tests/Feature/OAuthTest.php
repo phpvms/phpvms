@@ -957,6 +957,7 @@ test('a social login connection can render its configured logo', function (): vo
 });
 
 test('a disabled linked connection remains visible and unlinkable', function (): void {
+    updateSetting('general.theme', 'seven');
     $connection = oauthConnection([
         'enabled'         => false,
         'linking_enabled' => false,
@@ -982,6 +983,7 @@ test('a disabled linked connection remains visible and unlinkable', function ():
 });
 
 test('an unavailable linked connection remains visible and unlinkable', function (): void {
+    updateSetting('general.theme', 'seven');
     $connection = oauthConnection();
     app()->instance(
         SocialiteProviderRegistry::class,
@@ -1007,6 +1009,7 @@ test('an unavailable linked connection remains visible and unlinkable', function
 });
 
 test('an unavailable unlinked connection cannot be connected', function (): void {
+    updateSetting('general.theme', 'seven');
     oauthConnection();
     app()->instance(
         SocialiteProviderRegistry::class,

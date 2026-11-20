@@ -230,7 +230,7 @@ it('refuses a theme name that cannot be a path segment', function (string $name)
 })->with(['slash' => 'acme/sky', 'dot dot' => '..']);
 
 it('treats theme names that differ only by case as the same name', function (): void {
-    expect(fn (): Addon => app(AddonRegistry::class)->install(new ZipSource(themeAddonZip($this->work, 'Skylight'))))
+    expect(fn (): Addon => app(AddonRegistry::class)->install(new ZipSource(themeAddonZip($this->work, 'Seven'))))
         ->toThrow(AddonInstallException::class, 'already exists');
 });
 

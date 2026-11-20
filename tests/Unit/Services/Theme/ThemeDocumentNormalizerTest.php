@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 function rawThemeFixture(): array
 {
     return json_decode(
-        file_get_contents(resource_path('js/apps/fe-vue/tests/fixtures/nuxt-ui-themes-b3b334c4.json')),
+        file_get_contents(base_path('tests/fixtures/nuxt-ui-themes-b3b334c4.json')),
         true,
         512,
         JSON_THROW_ON_ERROR,
@@ -22,7 +22,7 @@ it('normalizes the verified raw builder fixture without persisting a draft', fun
     $normalizer = app(ThemeDocumentNormalizer::class);
 
     $document = $normalizer->normalizeJson(
-        file_get_contents(resource_path('js/apps/fe-vue/tests/fixtures/nuxt-ui-themes-b3b334c4.json')),
+        file_get_contents(base_path('tests/fixtures/nuxt-ui-themes-b3b334c4.json')),
     );
 
     expect($document)->toBe($normalizer->defaults())

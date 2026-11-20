@@ -21,7 +21,6 @@ use App\Providers\Filament\SystemPanelProvider;
 use App\Providers\FirstPartyMetricsServiceProvider;
 use App\Providers\MetricsServiceProvider;
 use App\Providers\PassportServiceProvider;
-use App\Providers\TypeScriptTransformerServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider;
 
 return [
@@ -68,9 +67,6 @@ return [
 
     AdminPanelProvider::class,
     SystemPanelProvider::class,
-
-    // Generates TypeScript types from PHP DTOs for the skylight SPA.
-    TypeScriptTransformerServiceProvider::class,
 
     /**
      * Package Service Providers

@@ -3,23 +3,12 @@
  * openspec/changes/tailwind-utility-safelist/proposal.md: a bare Tailwind
  * utility resolves even when no file `@source` scans contains it (the
  * `modules/` and database-content cases), a safelisted utility beats a
- * component default the way D4 says it must, and both real Tailwind builds
- * in the repo share the same covered surface.
+ * component default the way D4 says it must.
  *
  * These compile the REAL `resources/css/filament/admin/theme.css` — the
  * actual `@source` roots, the actual vendor Filament import, the actual
  * safelist import wired in by this change — through the same
  * `@tailwindcss/vite` plugin the app builds with. Not mocked.
- *
- * The SPA side (`resources/js/apps/fe-vue/src/app/app.css`) is NOT compiled
- * here: `resources/js/apps/fe-vue` is a separate pnpm workspace member with
- * its own dependencies (`@nuxt/ui`, `@vitejs/plugin-vue`, …), and those are
- * not installed in this environment — running an install was out of scope
- * for this change. The SPA-side assertion below instead verifies the D2
- * mechanism that guarantees a shared surface: both entry files resolve the
- * exact same partial file. That is what makes drift between the two builds
- * structurally impossible, rather than something that happens to be true
- * today because both were built and diffed once.
  */
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -32,7 +21,6 @@ import { describe, expect, it } from "vitest";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = pathResolve(__dirname, "..");
 const THEME_CSS = pathResolve(REPO_ROOT, "resources/css/filament/admin/theme.css");
-const APP_CSS = pathResolve(REPO_ROOT, "resources/js/apps/fe-vue/src/app/app.css");
 const SAFELIST_CSS = pathResolve(REPO_ROOT, "resources/css/tailwind-safelist.css");
 
 /** Compile a real CSS entry point through the app's own Tailwind plugin. */
@@ -128,9 +116,7 @@ describe("tailwind-safelist fixes unscanned-author cases (real admin build)", ()
 
   it("a safelisted utility overrides a components-layer default with no !important (3.3)", async () => {
     // Same layer mechanism D4 relies on (`@layer theme, base, components,
-    // utilities;`, utilities last) — proven directly rather than via the SPA
-    // build, since @nuxt/ui itself is just one components-layer author among
-    // many and isn't installed in this environment (see file header).
+    // utilities;`, utilities last) — proven directly on a minimal entry.
     const outDir = mkdtempSync(join(REPO_ROOT, ".tailwind-safelist-layer-"));
     try {
       const entry = join(outDir, "entry.css");
@@ -183,7 +169,7 @@ describe("tailwind-safelist fixes unscanned-author cases (real admin build)", ()
   }, 30_000);
 });
 
-describe("tailwind-safelist covers both builds identically (3.4)", () => {
+describe("tailwind-safelist covers the admin build (3.4)", () => {
   it("the admin build's compiled CSS contains the full covered surface", async () => {
     const css = await compileEntry(THEME_CSS);
     // One representative class per family declared in tailwind-safelist.css —
@@ -205,25 +191,4 @@ describe("tailwind-safelist covers both builds identically (3.4)", () => {
       expect(css).toContain(rule);
     }
   }, 30_000);
-
-  it("app.css and theme.css import the exact same shared safelist partial (D2)", () => {
-    // This is what actually guarantees "both bundles cover the same
-    // vocabulary" — one file, two imports resolving to the same path — not
-    // a coincidence that would need re-verifying every time either file
-    // changes.
-    const appCssDir = dirname(APP_CSS);
-    const themeCssDir = dirname(THEME_CSS);
-    const appCssSource = readFileSync(APP_CSS, "utf8");
-    const themeCssSource = readFileSync(THEME_CSS, "utf8");
-
-    const appImport = appCssSource.match(/@import\s+"([^"]*tailwind-safelist\.css)"/);
-    const themeImport = themeCssSource.match(/@import\s+"([^"]*tailwind-safelist\.css)"/);
-    expect(appImport, "app.css must import tailwind-safelist.css").not.toBeNull();
-    expect(themeImport, "theme.css must import tailwind-safelist.css").not.toBeNull();
-
-    const appResolved = pathResolve(appCssDir, appImport[1]);
-    const themeResolved = pathResolve(themeCssDir, themeImport[1]);
-    expect(appResolved).toBe(SAFELIST_CSS);
-    expect(themeResolved).toBe(SAFELIST_CSS);
-  });
 });
