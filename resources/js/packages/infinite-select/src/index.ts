@@ -80,6 +80,8 @@ export function createInfiniteSelect(
         self.setNextUrl(query, page);
         delete self.loadedSearches[query];
         settle();
+        // Nothing else re-renders, so the loading spinner would linger.
+        self.refreshOptions(false);
         return;
       }
 
