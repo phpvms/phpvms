@@ -10,7 +10,10 @@ type Deferred = {
 
 const opt = (value: string) => ({ value, label: value });
 
-function setup(initial?: { value: string; label: string }) {
+function setup(
+  initial?: { value: string; label: string },
+  resolveLabel?: (value: string) => Promise<string | null>,
+) {
   const calls: Deferred[] = [];
   const getPage = vi.fn((query: string, page: number) => {
     return new Promise<InfiniteSelectPage>((resolve, reject) => {
@@ -21,7 +24,7 @@ function setup(initial?: { value: string; label: string }) {
   const onError = vi.fn();
   const el = document.createElement("select");
   document.body.appendChild(el);
-  const handle = createInfiniteSelect(el, { getPage, onChange, onError, initial });
+  const handle = createInfiniteSelect(el, { getPage, onChange, onError, initial, resolveLabel });
   const tom = (el as any).tomselect;
 
   // Past tom-select's refresh and load throttles, then flush the promise chain.
@@ -63,16 +66,31 @@ describe("createInfiniteSelect", () => {
     document.body.innerHTML = "";
   });
 
-  it("ignores a response that settles after destroy", async () => {
+  it("ignores a rejected page response after destroy", async () => {
     const t = setup();
     t.tom.focus();
     await t.settle();
-    expect(t.args()).toEqual([["", 1]]);
 
     t.handle.destroy();
     t.last().reject(new Error("late"));
     await t.settle();
 
+    expect(t.onError).not.toHaveBeenCalled();
+    expect(t.onChange).not.toHaveBeenCalled();
+  });
+
+  it("ignores a resolved page response after destroy", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.tom.settings.shouldLoadMore = () => true;
+
+    t.handle.destroy();
+    t.last().resolve({ options: [opt("z1")], hasMore: true });
+    await t.settle();
+
+    expect(t.args()).toEqual([["", 1]]);
+    expect(t.optionValues()).toEqual([]);
     expect(t.onError).not.toHaveBeenCalled();
     expect(t.onChange).not.toHaveBeenCalled();
   });
@@ -110,6 +128,28 @@ describe("createInfiniteSelect", () => {
     await t.type("");
 
     expect(t.tom.dropdown_content.querySelector(".spinner")).toBeNull();
+  });
+
+  it("still treats a debounced load as typed back when another load call is refused", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [opt("x1"), opt("x2")], hasMore: true });
+    await t.settle();
+
+    t.tom.control_input.value = "a";
+    t.tom.control_input.dispatchEvent(new Event("input"));
+    await vi.advanceTimersByTimeAsync(350);
+
+    t.tom.control_input.value = "";
+    t.tom.control_input.dispatchEvent(new Event("input"));
+    await vi.advanceTimersByTimeAsync(100);
+    t.tom.loadedSearches.refused = true;
+    t.tom.load("refused");
+    await t.settle();
+
+    expect(t.args()).toEqual([["", 1]]);
+    expect(t.optionValues()).toEqual(["x1", "x2"]);
   });
 
   it("keeps the page-2 cursor when typing back so a scroll fetches it", async () => {
@@ -161,36 +201,7 @@ describe("createInfiniteSelect", () => {
     expect(t.tom.loading).toBe(0);
   });
 
-  it("does not fetch the next page from a frame queued before destroy", async () => {
-    const t = setup();
-    t.tom.focus();
-    await t.settle();
-    t.last().resolve({ options: [opt("z1")], hasMore: true });
-    // Flush the .then only: its animation frame is queued but has not run.
-    for (let i = 0; i < 5; i++) {
-      await Promise.resolve();
-    }
-
-    t.handle.destroy();
-    await t.settle();
-
-    expect(t.args()).toEqual([["", 1]]);
-  });
-
-  it("does not fetch more after destroy when page 1 resolves late", async () => {
-    const t = setup();
-    t.tom.focus();
-    await t.settle();
-
-    // Passes if only the .then guard goes: the rAF guard still catches it.
-    t.handle.destroy();
-    t.last().resolve({ options: [opt("z1")], hasMore: true });
-    await t.settle();
-
-    expect(t.args()).toEqual([["", 1]]);
-  });
-
-  it("refetches the current query after its own response was discarded", async () => {
+  it("never shows a response for a query the user has left, and refetches it on return", async () => {
     const t = setup();
     t.tom.focus();
     await t.settle();
@@ -198,41 +209,75 @@ describe("createInfiniteSelect", () => {
     await t.settle();
 
     await t.type("a");
-    const first = t.last();
-    expect(first.query).toBe("a");
-
-    // "ab" supersedes "a" while "a" is still in flight.
+    const a1 = t.last();
     await t.type("ab");
-    const second = t.last();
-    expect(second.query).toBe("ab");
+    const ab1 = t.last();
+    expect([a1.query, ab1.query]).toEqual(["a", "ab"]);
 
-    // Back to "a" while its first request is pending: tom-select refuses to
-    // load it again, so only the stale response can trigger the refetch.
+    a1.resolve({ options: [opt("a-old")], hasMore: false });
+    await t.settle();
+    expect(t.optionValues()).toEqual([]);
+    expect(t.tom.loading).toBe(1);
+
     await t.type("a");
     expect(t.args()).toEqual([
       ["", 1],
       ["a", 1],
       ["ab", 1],
-    ]);
-
-    first.resolve({ options: [opt("old")], hasMore: false });
-    await t.settle();
-    expect(t.args()).toEqual([
-      ["", 1],
-      ["a", 1],
-      ["ab", 1],
       ["a", 1],
     ]);
-    expect(t.optionValues()).toEqual([]);
 
-    second.resolve({ options: [opt("ab1")], hasMore: false });
+    ab1.resolve({ options: [opt("ab1")], hasMore: false });
     await t.settle();
     expect(t.optionValues()).toEqual([]);
 
-    const third = t.last();
-    third.resolve({ options: [opt("a1")], hasMore: false });
+    t.last().resolve({ options: [opt("a1")], hasMore: false });
     await t.settle();
     expect(t.optionValues()).toEqual(["a1"]);
+    expect(t.tom.loading).toBe(0);
+  });
+
+  it("keeps the rows on screen when a response for a left query arrives late", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [], hasMore: false });
+    await t.settle();
+
+    await t.type("a");
+    const a1 = t.last();
+    await t.type("ab");
+    t.last().resolve({ options: [opt("ab1")], hasMore: false });
+    await t.settle();
+
+    a1.resolve({ options: [opt("a-old")], hasMore: false });
+    await t.settle();
+    expect(t.optionValues()).toEqual(["ab1"]);
+    expect(t.tom.loading).toBe(0);
+  });
+
+  it("settles quietly when a left query's request fails, and refetches it on return", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [], hasMore: false });
+    await t.settle();
+
+    await t.type("a");
+    const a1 = t.last();
+    await t.type("ab");
+    a1.reject(new Error("late"));
+    await t.settle();
+    expect(t.onError).not.toHaveBeenCalled();
+    expect(t.tom.loading).toBe(1);
+
+    t.last().resolve({ options: [opt("ab1")], hasMore: false });
+    await t.settle();
+    expect(t.tom.loading).toBe(0);
+
+    await t.type("a");
+    expect(t.last().query).toBe("a");
+    expect(t.getPage).toHaveBeenCalledTimes(4);
   });
 
   it("clears the previous query's options and keeps the selection when page 1 fails", async () => {
@@ -249,6 +294,8 @@ describe("createInfiniteSelect", () => {
     await t.settle();
 
     expect(t.optionValues()).toEqual(["sel"]);
+    expect(t.tom.dropdown_content.querySelector('[data-value="x1"]')).toBeNull();
+    expect(t.tom.loading).toBe(0);
     expect(t.tom.items).toEqual(["sel"]);
     expect(t.onError).toHaveBeenCalledTimes(1);
     expect(t.onError).toHaveBeenCalledWith(err);
@@ -293,5 +340,90 @@ describe("createInfiniteSelect", () => {
     t.last().resolve({ options: [opt("p2a")], hasMore: false });
     await t.settle();
     expect(t.optionValues()).toEqual(["p1a", "p1b", "p2a"]);
+  });
+
+  it("fetches the next page when a page is too short to scroll", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.tom.settings.shouldLoadMore = () => true;
+
+    t.last().resolve({ options: [opt("p1a")], hasMore: true });
+    await t.settle();
+    expect(t.args()).toEqual([
+      ["", 1],
+      ["", 2],
+    ]);
+
+    t.last().resolve({ options: [opt("p2a")], hasMore: false });
+    await t.settle();
+    expect(t.optionValues()).toEqual(["p1a", "p2a"]);
+  });
+
+  it("reports a failed page 2 once and retries it only on the next scroll", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [opt("p1a")], hasMore: true });
+    await t.settle();
+
+    t.tom.settings.shouldLoadMore = () => true;
+    t.tom.dropdown_content.dispatchEvent(new Event("scroll"));
+    await t.settle();
+    t.last().reject(new Error("boom"));
+    await t.settle();
+
+    expect(t.onError).toHaveBeenCalledTimes(1);
+    expect(t.args()).toEqual([
+      ["", 1],
+      ["", 2],
+    ]);
+    expect(t.optionValues()).toEqual(["p1a"]);
+    expect(t.tom.loading).toBe(0);
+    expect(t.tom.dropdown_content.querySelector(".loading-more-results")).not.toBeNull();
+
+    t.tom.dropdown_content.dispatchEvent(new Event("scroll"));
+    await t.settle();
+    expect(t.args()).toEqual([
+      ["", 1],
+      ["", 2],
+      ["", 2],
+    ]);
+  });
+
+  it("reports onChange with null for a cleared selection", async () => {
+    const t = setup();
+    t.tom.addOption(opt("x"));
+    t.tom.addItem("x");
+    expect(t.onChange).toHaveBeenLastCalledWith("x");
+
+    t.tom.clear();
+    expect(t.onChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it("setValue selects silently, resolves the label of an unknown value, and clears", async () => {
+    const resolveLabel = vi.fn(async (_value: string) => "Resolved");
+    const t = setup(undefined, resolveLabel);
+
+    t.handle.setValue("7");
+    await t.settle();
+    expect(t.tom.items).toEqual(["7"]);
+    expect(t.tom.options["7"].label).toBe("Resolved");
+    expect(resolveLabel).toHaveBeenCalledWith("7");
+
+    t.handle.setValue(null);
+    expect(t.tom.items).toEqual([]);
+    expect(t.onChange).not.toHaveBeenCalled();
+  });
+
+  it("setValue does not resolve a label it already has", async () => {
+    const resolveLabel = vi.fn(async (_value: string) => "Other");
+    const t = setup(opt("sel"), resolveLabel);
+
+    t.handle.setValue("sel");
+    await t.settle();
+
+    expect(resolveLabel).not.toHaveBeenCalled();
+    expect(t.tom.options.sel.label).toBe("sel");
   });
 });
