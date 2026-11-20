@@ -17,6 +17,31 @@ use App\Features\Hooks\Facades\Hooks;
 use App\Features\Hooks\RenderHook;
 use App\Features\OAuth\Helpers\OAuthConnectionService;
 use App\Features\OAuth\Helpers\SocialiteProviderRegistry;
+use App\Features\Setup\Actions\RunPostUpgradeTasks;
+use App\Features\Setup\Actions\RunSetup;
+use App\Features\Setup\Events\CollectingPostUpgradeTasks;
+use App\Features\Setup\PostUpgrade\BackfillPirepEvents;
+use App\Features\Setup\Steps\ConvertToInnodb;
+use App\Features\Setup\Steps\LinkBundledAddons;
+use App\Features\Setup\Steps\MaintenanceDown;
+use App\Features\Setup\Steps\MaintenanceUp;
+use App\Features\Setup\Steps\Optimize;
+use App\Features\Setup\Steps\PassportKeys;
+use App\Features\Setup\Steps\Preflight;
+use App\Features\Setup\Steps\PrepareCacheTables;
+use App\Features\Setup\Steps\RefreshAddonCache;
+use App\Features\Setup\Steps\ReloadOctane;
+use App\Features\Setup\Steps\RunDataMigrations;
+use App\Features\Setup\Steps\RunDataTasks;
+use App\Features\Setup\Steps\RunMigrations;
+use App\Features\Setup\Steps\SeedCore;
+use App\Features\Setup\Steps\StorageLink;
+use App\Features\Setup\Steps\WriteMarkers;
+use App\Features\Setup\Support\PostUpgradeTaskState;
+use App\Features\Setup\Support\SetupCache;
+use App\Features\Setup\Support\SetupLock;
+use App\Features\Setup\Support\SetupRunState;
+use App\Features\Setup\Support\UpgradeCompleted;
 use App\Features\Themes\Support\ThemeViewFinder;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
@@ -357,6 +382,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(MigrationsEnded::class, static function (): void {
             app(SettingsCacheRefresher::class)->refreshAll();
         });
+
+        // Post-upgrade tasks run in the order added; listeners only add().
+        Event::listen(CollectingPostUpgradeTasks::class, static function (CollectingPostUpgradeTasks $event): void {
+            $event->add(app(BackfillPirepEvents::class));
+        });
     }
 
     /**
@@ -365,6 +395,12 @@ class AppServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        // The cache store may be missing mid-setup, yet schedule:run and Livewire need one.
+        // Skipped while a config cache is built, so the swap is never baked in.
+        if (SetupCache::active() && !SetupCache::$buildingConfig && !$this->app->runningConsoleCommand('config:cache', 'optimize')) {
+            config(['cache.default' => 'array']);
+        }
+
         $this->app->singleton('igaster.themes', fn (): Themes => new Themes());
 
         $this->app->singleton('view.finder', fn (Application $app): ThemeViewFinder => new ThemeViewFinder(
@@ -398,6 +434,26 @@ class AppServiceProvider extends ServiceProvider
         // The "this site is installed" marker file. Stateless/Octane-safe;
         // bound as a singleton so tests can swap the path.
         $this->app->singleton(InstallMarker::class, fn (): InstallMarker => new InstallMarker(InstallMarker::defaultPath()));
+
+        // The unfinished-run file and the run lock of the update procedure.
+        // The lock is bound per resolution: each holder needs its own file handle.
+        $this->app->singleton(SetupRunState::class, fn (): SetupRunState => new SetupRunState(SetupRunState::defaultPath()));
+        $this->app->bind(SetupLock::class, fn (): SetupLock => new SetupLock(SetupLock::defaultPath()));
+        $this->app->singleton(UpgradeCompleted::class, fn (): UpgradeCompleted => new UpgradeCompleted(UpgradeCompleted::defaultPath()));
+
+        $this->app->tag([Preflight::class, MaintenanceDown::class, MaintenanceUp::class, ConvertToInnodb::class, PrepareCacheTables::class, LinkBundledAddons::class, RunMigrations::class, RunDataMigrations::class, RunDataTasks::class, SeedCore::class, PassportKeys::class, StorageLink::class, WriteMarkers::class, RefreshAddonCache::class, Optimize::class, ReloadOctane::class], 'setup.steps');
+        $this->app->bind(RunSetup::class, fn (Application $app): RunSetup => new RunSetup(
+            $app->make(SetupRunState::class),
+            $app->make(SetupLock::class),
+            $app->tagged('setup.steps'),
+            $app->make(UpgradeCompleted::class),
+        ));
+        // Its own lock: `phpvms:backfill-pirep-events` runs the same task outside a setup run.
+        $this->app->bind(RunPostUpgradeTasks::class, fn (Application $app): RunPostUpgradeTasks => new RunPostUpgradeTasks(
+            $app->make(PostUpgradeTaskState::class),
+            new SetupLock(RunPostUpgradeTasks::lockPath()),
+            $app->make('events'),
+        ));
 
         // Core settings by key. Stateless (values live in the scoped settings
         // classes); bound as a singleton purely for reuse.

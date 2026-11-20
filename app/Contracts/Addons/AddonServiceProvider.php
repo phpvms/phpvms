@@ -10,6 +10,7 @@ use App\Contracts\Addons\Attributes\PolicyFor;
 use App\Features\Addons\Models\AddonBootCache;
 use App\Features\Addons\Support\AddonClassScanner;
 use App\Features\Addons\Support\AddonQuarantine;
+use App\Features\Addons\Support\AddonSeeders;
 use App\Features\Addons\Support\AddonSettingsRegistry;
 use App\Features\Addons\Support\AdminPanelBuilder;
 use App\Features\Addons\Support\BootCache;
@@ -76,6 +77,7 @@ use Throwable;
  *  - resources/views  → loadViewsFrom
  *  - lang/            → loadTranslationsFrom
  *  - database/migrations → loadMigrationsFrom
+ *  - database/seeders    → AddonSeeders (run by RunAddonSetup)
  *  - app/Console/Commands/*.php → commands() (top-level dir only; no subdirectory scan)
  *  - app/Listeners/**   → Event::listen (event listeners only; any depth)
  *  - app/Hooks/**       → the hook dispatcher: each class extends FilterListener,
@@ -187,6 +189,7 @@ abstract class AddonServiceProvider extends ServiceProvider
             $this->registerViews();
             $this->registerTranslations();
             $this->registerMigrations();
+            $this->registerSeeders();
             $this->registerCommands();
             $this->registerListeners();
         }
@@ -922,6 +925,21 @@ abstract class AddonServiceProvider extends ServiceProvider
 
         if (is_dir($migrationsPath)) {
             $this->loadMigrationsFrom($migrationsPath);
+        }
+    }
+
+    /**
+     * Register the addon's seeders so RunAddonSetup runs them after its
+     * migrations.
+     *
+     * Convention: `{root}/database/seeders/*DatabaseSeeder.php`.
+     */
+    private function registerSeeders(): void
+    {
+        $seedersPath = $this->addonBasePath().'/database/seeders';
+
+        if (is_dir($seedersPath)) {
+            AddonSeeders::register($this->addonBasePath(), $seedersPath);
         }
     }
 

@@ -18,12 +18,13 @@ return new class() extends Migration
         }
 
         Schema::create('pirep_positions', function (Blueprint $table): void {
-            // Matching `pireps`: MySQL rejects an FK across mismatched collations.
-            $table->collation = 'utf8mb4_unicode_ci';
-            $table->charset = 'utf8mb4';
-
             // The parent key is the primary key - one row per PIREP is the point.
-            $table->string('pirep_id', 36)->primary();
+            $pirepId = $table->string('pirep_id', 36)->primary();
+
+            // Only the FK column takes `pireps`.`id`'s collation; the table keeps utf8mb4.
+            if (($parent = $this->parentCollation('pireps', 'id')) !== null) {
+                $pirepId->charset($parent[0])->collation($parent[1]);
+            }
 
             // Denormalised for pilot-scoped queries. Safe while a PIREP's owner
             // cannot change.
@@ -61,5 +62,29 @@ return new class() extends Migration
     public function down(): void
     {
         Schema::dropIfExists('pirep_positions');
+    }
+
+    /**
+     * The parent key's charset and collation: v7 sites never pinned one, and
+     * MySQL rejects an FK across mismatched collations. Null off MySQL/MariaDB.
+     *
+     * @return array{string, string}|null
+     */
+    private function parentCollation(string $table, string $column): ?array
+    {
+        $connection = Schema::getConnection();
+
+        if (!in_array($connection->getDriverName(), ['mysql', 'mariadb'], true)) {
+            return null;
+        }
+
+        $row = $connection->selectOne(
+            'select CHARACTER_SET_NAME as charset, COLLATION_NAME as collation
+            from information_schema.COLUMNS
+            where TABLE_SCHEMA = ? and TABLE_NAME = ? and COLUMN_NAME = ?',
+            [$connection->getDatabaseName(), $connection->getTablePrefix().$table, $column]
+        );
+
+        return $row?->collation !== null ? [$row->charset, $row->collation] : null;
     }
 };

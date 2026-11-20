@@ -11,6 +11,7 @@ use App\Http\Middleware\ApiAuth;
 use App\Http\Middleware\CheckApiScope;
 use App\Http\Middleware\DisableActivityLoggingByDefault;
 use App\Http\Middleware\InstalledCheck;
+use App\Http\Middleware\PreventRequestsDuringSetup;
 use App\Http\Middleware\RespectAlternateVerbs;
 use App\Http\Middleware\SetActiveLanguage;
 use App\Http\Middleware\SetActiveTheme;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
@@ -58,6 +60,9 @@ return Application::configure(basePath: dirname(__DIR__))
             SetActiveTheme::class,
             SetActiveLanguage::class,
         ]);
+
+        // Keeps the update page reachable while setup has the site down.
+        $middleware->replace(PreventRequestsDuringMaintenance::class, PreventRequestsDuringSetup::class);
 
         $middleware->alias([
             'api.auth'           => ApiAuth::class,

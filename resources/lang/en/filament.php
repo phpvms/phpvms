@@ -243,6 +243,7 @@ return [
     'maintenance_failed_jobs_flushed'           => 'Failed jobs flushed',
     'maintenance_resync_all_seeds'              => 'Resync all seeds',
     'maintenance_seeds_resynced'                => 'All seeds resynced',
+    'maintenance_addon_setup_failed'            => 'These add-ons failed and were skipped: :addons',
     'maintenance_update_database'               => 'Update database',
     'maintenance_database_is_up_to_date'        => 'Your database is up to date',
     'maintenance_archive_pirep_flights'         => 'Backfill PIREP flight data',

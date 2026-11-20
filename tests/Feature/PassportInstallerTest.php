@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Services\Installer\InstallerService;
+use App\Features\Setup\Steps\PassportKeys;
+use App\Features\Setup\Support\StepContext;
 use Illuminate\Support\Facades\Artisan;
 
 /*
- * InstallerService::ensurePassportKeys() — the installer/updater hook that
+ * The PassportKeys setup step — the installer/updater hook that
  * provisions Passport signing keys automatically. Artisan is mocked and a temp
  * storage path is used, so the real storage/oauth-*.key files are never touched.
  */
@@ -20,6 +21,11 @@ function useEmptyStoragePath(): string
     return $tmp;
 }
 
+function passportContext(): StepContext
+{
+    return new StepContext(false, function (string $line): void {}, function (int $done, int $total, ?string $label): void {});
+}
+
 it('generates keys when none are configured or present', function (): void {
     config(['passport.private_key' => null, 'passport.public_key' => null]);
     $tmp = useEmptyStoragePath();
@@ -28,7 +34,7 @@ it('generates keys when none are configured or present', function (): void {
     // that command is unregistered outside console and the installer runs on the web.
     Artisan::shouldReceive('call')->with('passport:keys', Mockery::any())->never();
 
-    app(InstallerService::class)->ensurePassportKeys();
+    new PassportKeys()->run(passportContext());
 
     expect(file_exists($tmp.'/oauth-private.key'))->toBeTrue()
         ->and(file_exists($tmp.'/oauth-public.key'))->toBeTrue()
@@ -41,7 +47,7 @@ it('does not generate keys when provided via env', function (): void {
 
     Artisan::shouldReceive('call')->never();
 
-    app(InstallerService::class)->ensurePassportKeys();
+    new PassportKeys()->run(passportContext());
 });
 
 it('does not regenerate keys that already exist on disk', function (): void {
@@ -52,5 +58,5 @@ it('does not regenerate keys that already exist on disk', function (): void {
 
     Artisan::shouldReceive('call')->never();
 
-    app(InstallerService::class)->ensurePassportKeys();
+    new PassportKeys()->run(passportContext());
 });

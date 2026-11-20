@@ -9,11 +9,16 @@ use App\Events\AddonInstalled;
 use App\Events\AddonUpdated;
 use App\Exceptions\AddonInstallException;
 use App\Exceptions\AddonNotFoundException;
+use App\Features\Addons\Actions\DropAddonTables;
+use App\Features\Addons\Actions\PurgeAddonMigrationRecords;
+use App\Features\Addons\Actions\RollbackAddonMigrations;
+use App\Features\Addons\Actions\RunAddonSetup;
 use App\Features\Addons\Models\AddonManifest;
 use App\Features\Addons\Services\AddonDiscoveryService;
 use App\Features\Addons\Sources\AddonSource;
 use App\Features\Addons\Support\AddonAssetLinker;
 use App\Features\Addons\Support\AddonRoots;
+use App\Features\Addons\Support\AddonSeedMarkers;
 use App\Features\Addons\Support\AddonValidator;
 use App\Features\Addons\Support\BundledAddonLinker;
 use App\Features\Addons\Support\CoreTables;
@@ -23,8 +28,6 @@ use App\Features\Addons\Support\ThemeAddonRegistrar;
 use App\Features\Addons\Support\ThemeAssetLinker;
 use App\Models\Addon;
 use App\Services\AddonSettingService;
-use App\Services\Installer\MigrationService;
-use App\Services\Installer\SeederService;
 use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -110,11 +113,20 @@ class AddonRegistry
     }
 
     /**
-     * Enable an addon: flip the DB flag and regenerate the boot cache.
-     * No-op when the addon is unknown.
+     * Enable an addon: run its migrations and seeders, then flip the DB flag
+     * and regenerate the boot cache. No-op when the addon is unknown.
      */
     public function enable(string $name): void
     {
+        $addon = $this->find($name);
+
+        if (!$addon instanceof Addon) {
+            return;
+        }
+
+        // Before the flag flips: a failed migration leaves the addon disabled.
+        app(RunAddonSetup::class)->handle($addon);
+
         $this->setEnabled($name, true);
     }
 
@@ -272,7 +284,7 @@ class AddonRegistry
         }
 
         if ($removeTables) {
-            app(SeederService::class)->clearAddonSeedMarkers($addon);
+            app(AddonSeedMarkers::class)->clear($addon);
             app(AddonSettingService::class)->deleteFor($addon->registry_id);
         }
 
@@ -466,8 +478,6 @@ class AddonRegistry
      */
     private function removeAddonTables(Addon $addon, array $tables, string $addonPath): void
     {
-        $migrationSvc = app(MigrationService::class);
-
         if ($tables !== []) {
             $core = CoreTables::all();
             $droppable = [];
@@ -482,13 +492,13 @@ class AddonRegistry
                 $droppable[] = $table;
             }
 
-            $migrationSvc->dropAddonTables($droppable);
-            $migrationSvc->purgeAddonMigrationRecords($addon, $addonPath);
+            app(DropAddonTables::class)->handle($droppable);
+            app(PurgeAddonMigrationRecords::class)->handle($addon, $addonPath);
 
             return;
         }
 
-        $migrationSvc->rollbackAddonMigrations($addon, $addonPath);
+        app(RollbackAddonMigrations::class)->handle($addon, $addonPath);
     }
 
     /**

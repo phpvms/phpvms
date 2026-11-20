@@ -7,7 +7,6 @@ namespace App\Providers\Filament;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Http\Middleware\SetActiveLanguage;
 use Filament\Enums\ThemeMode;
-use Filament\Facades\Filament;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
@@ -53,16 +52,11 @@ class SystemPanelProvider extends PanelProvider
             ->plugins([
                 LanguageSwitcherPlugin::make(),
             ])
-            // The console brand button, in its static single-panel form — no
-            // switcher dropdown, so an install/update in progress offers no
-            // way to wander off to another panel. Replaces the vendor logo,
-            // which the admin theme hides.
+            // The full wordmark replaces the vendor logo (hidden by the admin
+            // theme); no switcher, so an install/update can't wander off.
             ->renderHook(
                 PanelsRenderHook::TOPBAR_LOGO_AFTER,
-                fn (): View => view('filament.plugins.panel-switcher', [
-                    'panels'  => [],
-                    'current' => Filament::getCurrentOrDefaultPanel(),
-                ]),
+                fn (): View => view('filament.system.topbar-logo'),
             )
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('phpvms')
@@ -70,7 +64,8 @@ class SystemPanelProvider extends PanelProvider
             // one, which owns the typeface via --font-sans.
             ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
             ->brandLogoHeight('3rem')
-            ->favicon(asset('assets/img/favicon.png'))
+            // A closure so the URL uses the request's host, not the one at boot (Octane).
+            ->favicon(fn (): string => asset('assets/img/favicon.png'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->unsavedChangesAlerts()
             ->navigation(false)

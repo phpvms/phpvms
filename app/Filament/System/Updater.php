@@ -1,201 +1,192 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\System;
 
-use App\Features\Addons\Support\OctaneReloader;
-use App\Filament\Infolists\Components\StreamEntry;
-use App\Services\Installer\InstallerService;
-use App\Services\Installer\MigrationService;
-use App\Services\Installer\SeederService;
-use App\Services\Installer\StreamedCommandsService;
-use App\Support\InstallMarker;
+use App\Features\Setup\Actions\DetectPendingWork;
+use App\Features\Setup\Actions\RunSetup;
+use App\Features\Setup\Enums\RunStatus;
+use App\Features\Setup\Enums\SetupStep;
+use App\Features\Setup\Enums\StepStatus;
+use App\Features\Setup\Support\CronHealth;
+use App\Features\Setup\Support\RunSnapshot;
+use App\Features\Setup\Support\SetupRunState;
+use App\Features\Setup\Support\UpgradeCompleted;
+use App\Services\CronService;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema as FilamentSchema;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
+use Filament\Schemas\Components\View as ViewComponent;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Schema;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Override;
-use Throwable;
 
+/**
+ * Starts the 7.0 -> 8.0 update and follows its progress. The cron task does
+ * the work; this page only requests a run and reads the state file.
+ */
 class Updater extends Page
 {
-    protected static ?string $slug = 'update';
+    protected static ?string $slug = 'upgrade';
 
-    private string $stream = 'console_output';
+    protected string $view = 'filament.system.updater';
 
-    public bool $updateStarted = false;
+    public bool $confirmed = false;
 
-    public string $updateOutput = '';
+    // A page that watched a run may show its done screen after the completion file appears.
+    #[Locked]
+    public ?string $watchedRunId = null;
 
-    #[Override]
-    public function content(FilamentSchema $schema): FilamentSchema
-    {
-        return $schema->components([
-            StreamEntry::make('output')
-                ->state(fn (): string => $this->updateOutput)
-                ->hiddenLabel()
-                ->extraAttributes($this->updateStarted ? [] : ['wire:init' => 'runUpdate'])
-                ->viewData([
-                    'stream' => $this->stream,
-                ]),
-        ]);
-    }
-
-    /**
-     * Called whenever the component is loaded
-     */
     public function mount(): void
     {
-        // We do this when the component is loaded instead of in canAccess()
-        // That's because canAccess() is called whenever a component of the panel is called (for navigation)
-        // Or we can't connect to the db when loading the installer
-
-        $this->authorizeUpdate();
-
-        if (!app(InstallerService::class)->isUpgradePending()) {
-            Notification::make()
-                ->title(__('filament.maintenance_database_is_up_to_date'))
-                ->danger()
-                ->send();
-
-            $this->redirect(Filament::getDefaultPanel()->getUrl());
-        }
+        $this->abortUnlessOpen();
     }
 
-    /**
-     * Admin permission check (supports both v7 and v8 schemas).
-     *
-     * Lives outside mount() so public Livewire actions can re-assert it — mount()
-     * only runs on initial page load, not on subsequent wire calls.
-     */
-    private function authorizeUpdate(): void
+    // Polls and later actions must hit the guard too, not just the first load.
+    public function hydrate(): void
     {
-        // The v8 permission tables are the discriminator, not role_user: the
-        // baseline migration creates an (empty) legacy role_user table on
-        // fresh installs too, so its presence alone would 403 every admin.
-        if (Schema::hasTable('model_has_roles')) { // v8
-            abort_if(!Auth::user()?->can('access_admin'), 403);
-        } else { // v7, mid-upgrade — spatie tables don't exist yet
-            $result = DB::table('role_user')
-                ->where('user_id', Auth::id())
-                ->where('roles.name', 'LIKE', '%admin%')
-                ->join('roles', 'role_user.role_id', '=', 'roles.id')
-                ->count();
-
-            abort_if($result === 0, 403);
-        }
+        $this->abortUnlessOpen();
     }
 
-    /**
-     * Runs migrations, seeds, data migrations, and cache rebuild — streaming output.
-     * Idempotent within a single Livewire lifecycle via $updateStarted.
-     */
-    public function runUpdate(): void
+    // Computed so $wire cannot call view helpers; cronLine exposes server paths.
+    #[Computed]
+    public function run(): ?RunSnapshot
     {
-        $this->authorizeUpdate();
+        return app(SetupRunState::class)->read();
+    }
 
-        if ($this->updateStarted) {
-            return;
-        }
-
-        $this->updateStarted = true;
-
-        $this->streamOutput(PHP_EOL.__('installer.starting_migration_process').PHP_EOL);
-
-        $migrationSvc = app(MigrationService::class);
-        $seederSvc = app(SeederService::class);
-
-        $migrationsPending = $migrationSvc->migrationsAvailable();
-        $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
-
-        $streamCallback = function (string $buffer): void {
-            $this->streamOutput($buffer.PHP_EOL);
+    #[Computed]
+    public function screen(): string
+    {
+        return match ($this->run()?->status) {
+            RunStatus::Requested, RunStatus::Running => 'progress',
+            RunStatus::Failed                        => 'failed',
+            RunStatus::Done                          => 'done',
+            null                                     => 'warning',
         };
-
-        // Before migrating: the migration paths of the bundled addons go through their links.
-        if (!app(InstallerService::class)->linkBundledAddons()) {
-            $streamCallback(__('installer.bundled_link_failed'));
-        }
-
-        if (count($migrationsPending) !== 0) {
-            if ($migrationSvc->runAllMigrationsWithStreaming($streamCallback) !== 0) {
-                $streamCallback(__('installer.failed'));
-
-                return;
-            }
-        }
-
-        // These run in-process, after streaming has begun. An uncaught throw
-        // here would try to render an error response after output was flushed,
-        // fataling with "headers already sent". Contain it: stream the failure
-        // and let the update finish.
-        try {
-            $seederSvc->syncAllSeeds();
-
-            // Existing installs upgrading to Passport won't have signing keys yet;
-            // generate them (idempotent) so the API keeps working post-upgrade.
-            app(InstallerService::class)->ensurePassportKeys();
-        } catch (Throwable $throwable) {
-            Log::error('Update seeding/key generation failed', ['exception' => $throwable]);
-            $streamCallback(__('installer.update_step_failed'));
-        }
-
-        // Sites installed before the installer made the link, or wrote the
-        // install marker, get them here.
-        app(InstallMarker::class)->write();
-
-        if (!app(InstallerService::class)->linkStorage()) {
-            $streamCallback(__('installer.storage_link_failed'));
-        }
-
-        if (count($dataMigrationsPending) !== 0) {
-            if ($migrationSvc->runAllDataMigrationsWithStreaming($streamCallback) !== 0) {
-                $streamCallback(__('installer.failed'));
-
-                return;
-            }
-        }
-
-        $this->streamOutput(__('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
-
-        if (app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback) !== 0) {
-            $streamCallback(__('installer.failed'));
-
-            return;
-        }
-
-        if (app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback) !== 0) {
-            $streamCallback(__('installer.failed'));
-
-            return;
-        }
-
-        // `optimize` already rebuilt the addon boot cache; reload so workers boot from it.
-        app(OctaneReloader::class)->reload();
-
-        $this->streamOutput(PHP_EOL.__('installer.update_completed').PHP_EOL);
-
-        $panelUrl = Filament::getDefaultPanel()->getUrl();
-        $this->js('setTimeout(() => window.location.href = '.json_encode($panelUrl).', 3000)');
     }
 
-    /**
-     * Streams a chunk to the browser AND accumulates it in $updateOutput —
-     * wire:stream content only lives until the request's re-render, which
-     * would otherwise morph the log back to the (empty) component state.
-     */
-    private function streamOutput(string $content): void
+    #[Computed]
+    public function canStart(): bool
     {
-        $this->updateOutput .= $content;
-        $this->stream(content: $content, to: $this->stream);
+        return $this->screen() === 'warning'
+            && !app(UpgradeCompleted::class)->exists()
+            && app(CronHealth::class)->isFresh();
+    }
+
+    #[Computed]
+    public function cronLine(): string
+    {
+        return app(CronService::class)->getCronExecString();
+    }
+
+    #[Computed]
+    public function cronFresh(): bool
+    {
+        return app(CronHealth::class)->isFresh();
+    }
+
+    #[Computed]
+    public function failedStep(): ?string
+    {
+        foreach ($this->run()->steps ?? [] as $step => $state) {
+            if ($state['status'] === StepStatus::Failed) {
+                return SetupStep::tryFrom($step)?->label() ?? $step;
+            }
+        }
+
+        return null;
+    }
+
+    #[Computed]
+    public function adminUrl(): string
+    {
+        return Filament::getPanel('admin')->getUrl();
+    }
+
+    public function start(): void
+    {
+        if (app(UpgradeCompleted::class)->exists() || !$this->confirmed || !app(CronHealth::class)->isFresh()) {
+            return;
+        }
+
+        $pending = app(DetectPendingWork::class)->handle();
+
+        if (!$pending->blocksPanel() || $pending->freshInstall) {
+            Notification::make()->title(__('installer.updater.nothing_to_update'))->warning()->send();
+
+            return;
+        }
+
+        $this->request();
+    }
+
+    public function retry(): void
+    {
+        if ($this->run()?->status !== RunStatus::Failed) {
+            return;
+        }
+
+        $this->request();
+    }
+
+    #[Override]
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([
+            Wizard::make([
+                Step::make(__('installer.updater.steps.backup'))
+                    ->schema([ViewComponent::make('filament.system.updater.backup')]),
+                Step::make(__('installer.updater.steps.upgrade'))
+                    ->schema([ViewComponent::make('filament.system.updater.progress')]),
+            ])
+                // The wizard keeps its step in Alpine; a per-screen key makes Livewire
+                // replace it, so startOnStep applies again when the run moves on.
+                ->key(fn (): string => 'updater-wizard-'.$this->screen())
+                ->startOnStep(fn (): int => $this->screen() === 'warning' ? 1 : 2)
+                ->nextAction(fn (Action $action): Action => $action->hidden())
+                ->previousAction(fn (Action $action): Action => $action->hidden())
+                ->extraAttributes(['class' => 'updater-wizard']),
+        ]);
     }
 
     #[Override]
     public function getTitle(): string
     {
-        return __('installer.update_phpvms');
+        return __('installer.upgrade_phpvms');
+    }
+
+    private function request(): void
+    {
+        if (!app(RunSetup::class)->request('web', fresh: false)) {
+            Notification::make()->title(__('installer.update_in_progress'))->warning()->send();
+        }
+    }
+
+    /**
+     * Open before the update completes, and while a run is still live or failed
+     * so 8.x runs and Retry keep working with the site down.
+     */
+    private function abortUnlessOpen(): void
+    {
+        $run = $this->run();
+
+        if ($run instanceof RunSnapshot && $run->status !== RunStatus::Done) {
+            $this->watchedRunId = $run->id;
+        }
+
+        if (!app(UpgradeCompleted::class)->exists()) {
+            return;
+        }
+
+        $open = in_array($run?->status, [RunStatus::Requested, RunStatus::Running, RunStatus::Failed], true)
+            || ($run?->status === RunStatus::Done && $run->id === $this->watchedRunId);
+
+        abort_unless($open, 404);
     }
 }

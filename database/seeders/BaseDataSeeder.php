@@ -10,6 +10,7 @@ use App\Models\Kvp;
 use App\Models\Rank;
 use App\Models\Typerating;
 use Carbon\Carbon;
+use Closure;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -17,12 +18,26 @@ class BaseDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->createInitialRanks();
-        $this->createInitialFares();
-        $this->createInitialTypeRatings();
+        foreach ($this->groups() as $group) {
+            $group();
+        }
     }
 
-    private function createInitialTypeRatings(): void
+    /**
+     * Seed groups in run order, so callers can wrap each in its own transaction.
+     *
+     * @return array<string, Closure(): void>
+     */
+    public function groups(): array
+    {
+        return [
+            'ranks'        => $this->createInitialRanks(...),
+            'fares'        => $this->createInitialFares(...),
+            'type ratings' => $this->createInitialTypeRatings(...),
+        ];
+    }
+
+    public function createInitialTypeRatings(): void
     {
         if ($this->isSeeded('typeratings') || Typerating::query()->exists()) {
             return;
@@ -63,7 +78,7 @@ class BaseDataSeeder extends Seeder
         $this->setSeeded('typeratings');
     }
 
-    private function createInitialFares(): void
+    public function createInitialFares(): void
     {
         if ($this->isSeeded('fares') || Fare::withTrashed()->exists()) {
             return;
@@ -157,7 +172,7 @@ class BaseDataSeeder extends Seeder
     /**
      * Create initial ranks if they don't exist
      */
-    private function createInitialRanks(): void
+    public function createInitialRanks(): void
     {
         // Seems like they added ranks, so we don't need to do anything
         // This is mainly a check for updates

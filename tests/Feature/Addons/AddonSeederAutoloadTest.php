@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Features\Addons\Actions\RunAddonSetup;
+use App\Features\Addons\AddonRegistry;
 use App\Models\Addon;
 use App\Models\Kvp;
-use App\Services\Installer\SeederService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 
@@ -19,7 +20,7 @@ beforeEach(function (): void {
 
     // manifest.json + composer.json: PSR-4 Modules\SeedFixture\ => app/. This path
     // is NOT in Composer's autoload map, so the class below is only loadable if
-    // SeederService registers the addon's namespace before running the seeder.
+    // RunAddonSetup registers the addon's namespace before running the seeder.
     File::put($this->addonDir.'/manifest.json', json_encode(addonManifest(['name' => 'SeedFixture', 'registry_id' => 'acme/seed-fixture', 'providers' => []])));
     File::put($this->addonDir.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\SeedFixture\\' => 'app/']],
@@ -71,7 +72,9 @@ afterEach(function (): void {
 });
 
 it("registers an enabled addon's namespace so its seeder can load the addon's own classes", function (): void {
-    app(SeederService::class)->seedAddons();
+    foreach (app(AddonRegistry::class)->enabled() as $addon) {
+        app(RunAddonSetup::class)->handle($addon);
+    }
 
     // The seeder ran to completion (it could only construct Widget if the addon
     // PSR-4 namespace was registered first).

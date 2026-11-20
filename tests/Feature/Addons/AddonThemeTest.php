@@ -12,9 +12,10 @@ use App\Features\Addons\Support\BootCache;
 use App\Features\Addons\Support\BundledAddonLinker;
 use App\Features\Addons\Support\ThemeAddonRegistrar;
 use App\Features\Addons\Support\ThemeAssetLinker;
+use App\Features\Setup\Steps\StorageLink;
+use App\Features\Setup\Support\StepContext;
 use App\Http\Middleware\SetActiveTheme;
 use App\Models\Addon;
-use App\Services\Installer\InstallerService;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -359,10 +360,14 @@ it('falls back to the configured default theme when the active one is gone', fun
 
 // ── storage:link ────────────────────────────────────────────────────────────
 
-it('reports a storage link that cannot be made instead of throwing', function (): void {
+it('fails the storage link step with the storage:link error when no link is made', function (): void {
     Artisan::shouldReceive('call')->once()->andThrow(new ErrorException('symlink() has been disabled'));
+    // An empty public path, so a real public/storage link cannot satisfy the check.
+    File::ensureDirectoryExists($this->work.'/public');
+    app()->usePublicPath($this->work.'/public');
 
-    expect(app(InstallerService::class)->linkStorage())->toBeFalse();
+    expect(fn () => new StorageLink()->run(storageLinkContext()))
+        ->toThrow(RuntimeException::class, 'symlink() has been disabled');
 });
 
 // ── Boot cache ──────────────────────────────────────────────────────────────
@@ -451,9 +456,14 @@ it('reports a storage link only when it reaches the public disk', function (): v
 
     // A leftover real directory, which storage:link refuses to replace.
     File::ensureDirectoryExists($public.'/storage');
-    expect(app(InstallerService::class)->linkStorage())->toBeFalse();
+    expect(fn () => new StorageLink()->run(storageLinkContext()))->toThrow(RuntimeException::class);
 
     File::deleteDirectory($public.'/storage');
     symlink(storage_path('app/public'), $public.'/storage');
-    expect(app(InstallerService::class)->linkStorage())->toBeTrue();
+    expect(fn () => new StorageLink()->run(storageLinkContext()))->not->toThrow(RuntimeException::class);
 });
+
+function storageLinkContext(): StepContext
+{
+    return new StepContext(false, function (string $line): void {}, function (int $done, int $total, ?string $label): void {});
+}

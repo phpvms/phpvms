@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Features\Addons\Actions\DropAddonTables;
 use App\Features\Addons\AddonRegistry;
 use App\Features\Addons\Sources\ZipSource;
 use App\Features\Addons\Support\CoreTables;
 use App\Models\Addon;
-use App\Services\Installer\MigrationService;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
@@ -108,8 +108,8 @@ it('rolls the migrations back when the addon declares no tables and no models', 
 
 it('puts the files back and keeps the addon when dropping the tables fails', function (): void {
     $dir = ($this->installFixture)();
-    $this->mock(MigrationService::class)
-        ->shouldReceive('dropAddonTables')->andThrow(new RuntimeException('drop failed'));
+    $this->mock(DropAddonTables::class)
+        ->shouldReceive('handle')->andThrow(new RuntimeException('drop failed'));
 
     expect(fn () => app(AddonRegistry::class)->delete('Ownership', true))->toThrow(RuntimeException::class, 'drop failed');
 

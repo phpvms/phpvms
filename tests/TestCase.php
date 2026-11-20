@@ -9,6 +9,12 @@ use App\Features\Addons\Support\AddonRoots;
 use App\Features\Addons\Support\AddonSettingsRegistry;
 use App\Features\Addons\Support\BootCache;
 use App\Features\Addons\Support\ManifestParser;
+use App\Features\Setup\Actions\RunPostUpgradeTasks;
+use App\Features\Setup\Support\PostUpgradeTaskState;
+use App\Features\Setup\Support\SetupLock;
+use App\Features\Setup\Support\SetupRunState;
+use App\Features\Setup\Support\UpgradeCompleted;
+use App\Http\Middleware\UpdatePending;
 use App\Services\SettingService;
 use App\Support\InstallMarker;
 use Illuminate\Foundation\Application;
@@ -200,12 +206,34 @@ abstract class TestCase extends BaseTestCase
 
         parent::setUp();
 
+        // The sqlite test DB never records data migrations, so the update gate
+        // would redirect every admin request; tests that cover it opt back in.
+        $this->withoutMiddleware(UpdatePending::class);
+
         // Keep the install marker out of storage/framework: tests must neither
         // read a marker the host wrote nor leave one behind. One file per
         // parallel worker, or workers race on each other's marker.
         $marker = new InstallMarker(storage_path('framework/testing/installed-'.(ParallelTesting::token() ?: '0')));
         $marker->remove();
         $this->instance(InstallMarker::class, $marker);
+
+        // Same for the update run state and lock, per parallel worker.
+        $token = ParallelTesting::token() ?: '0';
+        $runState = new SetupRunState(storage_path('framework/testing/phpvms-update-'.$token.'.json'));
+        $runState->clear();
+        $this->instance(SetupRunState::class, $runState);
+        $this->app->bind(SetupLock::class, fn (): SetupLock => new SetupLock(storage_path('framework/testing/phpvms-update-'.$token.'.lock')));
+        $this->app->bind(RunPostUpgradeTasks::class, fn (): RunPostUpgradeTasks => new RunPostUpgradeTasks(
+            app(PostUpgradeTaskState::class),
+            new SetupLock(storage_path('framework/testing/phpvms-post-upgrade-'.$token.'.lock')),
+            app('events'),
+        ));
+
+        // The completed marker must never reach the real storage/framework.
+        $completedPath = storage_path('framework/testing/update-7.0-completed-'.$token);
+        @unlink($completedPath);
+        // Every test DB records the 8.x schema, so only the file decides here.
+        $this->instance(UpgradeCompleted::class, new UpgradeCompleted($completedPath, databaseSignal: false));
 
         // The default for `airports.auto_airport_lookup` is ON, which makes
         // AirportService::lookupAirport() issue a LIVE HTTP request to

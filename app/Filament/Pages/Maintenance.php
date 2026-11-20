@@ -4,12 +4,14 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Addons\Actions\RunAddonSetup;
+use App\Features\Addons\AddonRegistry;
 use App\Features\Addons\Support\OctaneReloader;
+use App\Features\Setup\Actions\DetectPendingWork;
+use App\Features\Setup\Support\CoreSeeds;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Jobs\BackfillPirepsParentFlight;
 use App\Services\CronService;
-use App\Services\Installer\InstallerService;
-use App\Services\Installer\SeederService;
 use App\Services\KvpService;
 use App\Services\VersionService;
 use BackedEnum;
@@ -29,6 +31,7 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Override;
 use Symfony\Component\Process\PhpExecutableFinder;
+use Throwable;
 use UnitEnum;
 
 use function Illuminate\Support\defer;
@@ -268,7 +271,36 @@ class Maintenance extends Page
             ->color('warning')
             ->label(__('filament.maintenance_resync_all_seeds'))
             ->action(function (): void {
-                app(SeederService::class)->syncAllSeeds();
+                app(CoreSeeds::class)->sync();
+
+                $registry = app(AddonRegistry::class);
+                $failed = [];
+
+                foreach ($registry->enabled() as $addon) {
+                    if (!is_dir($addon->getPath())) {
+                        $registry->disableMissing($addon);
+
+                        continue;
+                    }
+
+                    // One broken addon must not stop the others.
+                    try {
+                        app(RunAddonSetup::class)->handle($addon);
+                    } catch (Throwable $throwable) {
+                        Log::error(sprintf('Addon "%s" setup failed during seed resync: %s', $addon->getName(), $throwable->getMessage()), ['exception' => $throwable]);
+                        $failed[] = $addon->getName();
+                    }
+                }
+
+                if ($failed !== []) {
+                    Notification::make()
+                        ->title(__('filament.maintenance_seeds_resynced'))
+                        ->body(__('filament.maintenance_addon_setup_failed', ['addons' => implode(', ', $failed)]))
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
 
                 Notification::make()
                     ->title(__('filament.maintenance_seeds_resynced'))
@@ -327,8 +359,7 @@ class Maintenance extends Page
 
     public function updateDatabase(): Action
     {
-        $upgradePending = app(InstallerService::class)
-            ->isUpgradePending();
+        $upgradePending = app(DetectPendingWork::class)->handle()->blocksPanel();
 
         return Action::make('updateDatabase')
             ->icon(Phosphor::ArrowsClockwiseLight)

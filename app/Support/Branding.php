@@ -10,6 +10,7 @@ use App\Jobs\GenerateBrandingSizes;
 use App\Models\Asset;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Owns airline-supplied branding — name, logo, favicon, banner and brand
@@ -99,9 +100,20 @@ final class Branding
             app()->scoped(BrandingData::class, function (): BrandingData {
                 $cache = config('cache.keys.BRANDING');
 
-                return BrandingData::from(
-                    Cache::remember($cache['key'], $cache['time'], fn (): array => $this->assemble()->toArray())
-                );
+                $cached = Cache::get($cache['key']);
+                if (is_array($cached)) {
+                    return BrandingData::from($cached);
+                }
+
+                // A v7 schema has no assets table; not cached so real branding shows after migrate.
+                if (!Schema::hasTable('assets')) {
+                    return $this->withoutAssets();
+                }
+
+                $branding = $this->assemble()->toArray();
+                Cache::put($cache['key'], $branding, $cache['time']);
+
+                return BrandingData::from($branding);
             });
         }
 
@@ -116,6 +128,23 @@ final class Branding
     {
         Cache::forget(config('cache.keys.BRANDING.key'));
         app()->forgetInstance(BrandingData::class);
+    }
+
+    /** No logos and the default colour, without touching settings either. */
+    private function withoutAssets(): BrandingData
+    {
+        return new BrandingData(
+            siteName: '',
+            brandColor: '',
+            logo: null,
+            logoDark: null,
+            favicon: null,
+            banner: null,
+            logoSizes: [],
+            hasLogo: false,
+            hasDarkLogo: false,
+            hasFavicon: false,
+        );
     }
 
     /**

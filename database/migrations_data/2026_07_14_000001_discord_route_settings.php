@@ -66,10 +66,11 @@ return new class() extends Migration
      * Recreate a setting under a new key, preserving the admin's value and the
      * row's position within its group, then drop the old key.
      *
-     * The target usually exists already: Updater runs SeederService::syncAllSeeds()
-     * before the data migrations, so the seeder has just inserted the new key with
-     * an empty value. Carry the old value onto it rather than dropping it, which
-     * would silently unconfigure Discord on every install that had it working.
+     * The target usually exists already: the setup engine's seed step runs
+     * CoreSeeds::sync() before the data migrations, so the seeder has just
+     * inserted the new key with an empty value. Carry the old value onto it
+     * rather than dropping it, which would silently unconfigure Discord on
+     * every install that had it working.
      *
      * Idempotent, and never clobbers a value an admin has since set on the new key.
      */
