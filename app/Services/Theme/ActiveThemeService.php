@@ -14,8 +14,6 @@ final class ActiveThemeService
 
     public function __construct(
         private readonly ThemeAssetService $assets,
-        private readonly ThemeDocumentNormalizer $normalizer,
-        private readonly ThemePublicationService $publications,
     ) {}
 
     /**
@@ -42,34 +40,10 @@ final class ActiveThemeService
 
     private function resolveRevision(string $themeName): ?PublishedThemeRevision
     {
-        $revision = ActiveThemePublication::query()
+        return ActiveThemePublication::query()
             ->with('revision')
             ->find($themeName)
             ?->revision;
-
-        if (!$this->usesSourceDefaults($themeName)) {
-            return $revision;
-        }
-
-        $document = $this->normalizer->defaults();
-        $preview = $this->publications->preview($document);
-        $customCss = $revision?->custom_css;
-        $sourceRevision = $this->publications->contentRevision(
-            $preview['document'],
-            $customCss,
-            $preview['css'],
-        );
-
-        return $revision?->revision === $sourceRevision
-            ? $revision
-            : $this->publications->publish($themeName, $document, $customCss);
-    }
-
-    private function usesSourceDefaults(string $themeName): bool
-    {
-        return $themeName === 'skylight'
-            && !app()->environment(['production', 'testing'])
-            && is_file(public_path('build/skylight/hot'));
     }
 
     /**

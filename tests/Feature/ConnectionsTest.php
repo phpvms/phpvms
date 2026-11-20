@@ -13,6 +13,7 @@ beforeEach(function (): void {
 });
 
 it('renders the connections page', function (): void {
+    updateSetting('general.theme', 'seven');
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -65,6 +66,7 @@ it('lets a user revoke a personal access token', function (): void {
 });
 
 it('lets a user revoke an authorized third-party application', function (): void {
+    updateSetting('general.theme', 'seven');
     $user = User::factory()->create();
 
     $client = app(ClientRepository::class)

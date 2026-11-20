@@ -10,7 +10,11 @@ _.php = {
 }
 
 [tools]
-php = "8.5.8"
+# static-php.dev prebuilt binaries (unix) stop at 8.5.8
+php = [
+    { version = "8.5.8", os = ["unix"] },
+    { version = "8.5.12", os = ["windows"] },
+]
 
 [plugins]
 php = "https://github.com/verzly/mise-php#latest"

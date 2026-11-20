@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\Notification;
 const WEBHOOK = 'https://discord.com/api/webhooks/123/abc';
 const CHANNEL_ID = '987654321098765432';
 
+// Sends now parse Discord's reply and reject a body without a message id.
+const DISCORD_MESSAGE = ['id' => '1', 'channel_id' => CHANNEL_ID];
+
 beforeEach(function (): void {
     loadYamlIntoDb('fleet');
 });
@@ -92,16 +95,17 @@ test('a short news body is not truncated', function (): void {
 // --- Routing -----------------------------------------------------------------
 
 test('a webhook route is delivered over the webhook transport', function (): void {
-    Http::fake();
+    Http::fake(['*' => Http::response(DISCORD_MESSAGE)]);
     updateSetting('notifications.discord_public_route', WEBHOOK);
 
     Notification::send([app(PublicBroadcast::class)], new PirepFiled(Pirep::factory()->create()));
 
-    Http::assertSent(fn ($request): bool => $request->url() === WEBHOOK);
+    // Webhook sends carry ?wait=true so Discord returns the message.
+    Http::assertSent(fn ($request): bool => str_starts_with($request->url(), WEBHOOK.'?'));
 });
 
 test('a channel id route is delivered over the bot transport', function (): void {
-    Http::fake();
+    Http::fake(['*' => Http::response(DISCORD_MESSAGE)]);
     config()->set('discord-notifier.bot.token', 'test-token');
     updateSetting('notifications.discord_public_route', CHANNEL_ID);
 
@@ -162,7 +166,7 @@ test('an announcement renders in the app locale, not the triggering visitor loca
     Lang::addLines(['notifications.discord.pirep_filed' => 'VOL :ident deposé'], 'fr');
     config()->set('phpvms.default_locale', 'en');
 
-    Http::fake();
+    Http::fake(['*' => Http::response(DISCORD_MESSAGE)]);
     updateSetting('notifications.discord_public_route', WEBHOOK);
 
     // A French-speaking pilot files a flight: SetActiveLanguage has already put

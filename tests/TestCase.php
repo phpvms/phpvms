@@ -247,11 +247,8 @@ abstract class TestCase extends BaseTestCase
         // turns it back on itself AND fakes the HTTP response.
         app(SettingService::class)->store('general.auto_airport_lookup', false);
 
-        // The default for `general.theme` is airside (the default for fresh
-        // installs). The suite predates that and most theme-dependent tests
-        // assume skylight, so every test starts on it. A test that wants
-        // airside activates it itself (`useAirside()`), and the fresh-install
-        // test resets the row to what the seeder ships.
-        app(SettingService::class)->store('general.theme', 'skylight');
+        // Tests run on airside, whose pages load the built theme assets. The
+        // suite must not depend on a build or on the theme's storage link.
+        $this->withoutVite();
     }
 }

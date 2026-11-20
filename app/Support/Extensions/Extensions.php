@@ -9,7 +9,7 @@ namespace App\Support\Extensions;
  *
  * It is a singleton, so it holds no per-request state: the slot list lives in
  * the request-scoped {@see SlotRegistry}, resolved from the container on each
- * call. The SPA gets it as the shared `skylight` Inertia prop.
+ * call. The SPA gets it as the shared `extensions` Inertia prop.
  */
 final readonly class Extensions
 {
@@ -23,7 +23,7 @@ final readonly class Extensions
 
     /**
      * The extension surface, JSON-serializable — the shape shared to SPA
-     * themes under the `skylight` Inertia prop. `widgets` stays as an empty
+     * themes under the `extensions` Inertia prop. `widgets` stays as an empty
      * list for the SPA's sake.
      *
      * @return array{widgets: list<never>, slots: list<array<string, mixed>>}

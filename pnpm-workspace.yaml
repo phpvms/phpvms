@@ -3,10 +3,8 @@
 # Members:
 #   - the repo root itself — admin/seven build tooling (vite, preact, esbuild,
 #     oxlint/oxfmt, tailwind) driven by the root vite.config.js + bin/build.js.
-#   - resources/js/apps/fe-vue — the Vue SPA (@phpvms/skylight) + its @phpvms/skylight-tests
-#     package. Builds itself via its own vite.config.ts → public/build/skylight.
-#   - resources/js/packages/* — shared packages consumed by both the root pipeline
-#     and fe-vue (e.g. @phpvms/simbrief, @phpvms/map).
+#   - resources/js/packages/* — shared packages consumed by the root pipeline
+#     (e.g. @phpvms/simbrief, @phpvms/map).
 #   - modules/phpvms-airside-theme — the bundled airside theme (Blade + Livewire +
 #     TallStackUI). Listed by explicit path, never `modules/*`: modules/ also holds
 #     dev symlinks (e.g. phpvms-acars) that pnpm must not walk. Builds into the
@@ -15,8 +13,6 @@
 # admin/ and seven/ under resources/js/apps have no package.json, so they are NOT
 # workspace packages — just source built by the root pipeline.
 packages:
-  - "resources/js/apps/fe-vue"
-  - "resources/js/apps/fe-vue/tests"
   - "resources/js/packages/*"
   - "modules/phpvms-airside-theme"
 
@@ -28,3 +24,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - maplibre-gl@6.7.0
+  - "@nuxt/ui@4.13.0"

@@ -111,7 +111,7 @@ final class ThemeDocumentNormalizer
      */
     public function defaults(): array
     {
-        return $this->readJson(resource_path('js/apps/fe-vue/schemas/skylight-theme-v1.defaults.json'));
+        return $this->readJson(resource_path('schemas/skylight-theme-v1.defaults.json'));
     }
 
     /**
@@ -146,7 +146,7 @@ final class ThemeDocumentNormalizer
             }
         }
 
-        $schema = json_decode(File::get(resource_path('js/apps/fe-vue/schemas/skylight-theme-v1.schema.json')));
+        $schema = json_decode(File::get(resource_path('schemas/skylight-theme-v1.schema.json')));
         $validator = new Validator();
         $validator->validate($data, $schema);
 

@@ -87,12 +87,6 @@ jobs:
           cp .github/scripts/env.test .env
           .github/scripts/version.sh
 
-      # Regenerate the SPA types from the PHP DTOs and fail if the committed
-      # generated.d.ts is out of date (someone changed a #[TypeScript] DTO
-      # without running `composer types`).
-      - name: Check generated TypeScript types are up to date
-        run: composer test:types-drift
-
       # Larastan boots the app to resolve view names and addon classes, and
       # both come from the addon boot cache, which a fresh checkout lacks and
       # which is only rebuilt from a provider's boot(). Without it the bundled
@@ -146,7 +140,7 @@ jobs:
       # On 3307 because the MySQL service above already holds 3306 on the
       # runner, and both start for every shard.
       mariadb:
-        image: mariadb:11.4
+        image: mariadb:11.8
         env:
           MARIADB_ROOT_PASSWORD: root
           MARIADB_DATABASE: phpvms
@@ -161,7 +155,7 @@ jobs:
           --health-retries=5
 
       postgres:
-        image: postgres:18.0-alpine
+        image: postgres:18.6-alpine
         env:
           POSTGRES_DB: phpvms
           POSTGRES_USER: phpvms
@@ -387,7 +381,7 @@ jobs:
             --endpoint-url https://ny-s3.storage.bunnycdn.com
 
       - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
+        uses: Ilshidur/action-discord@0.4.0
         env:
           DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
         with:

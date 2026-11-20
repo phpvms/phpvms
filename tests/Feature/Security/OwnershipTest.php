@@ -82,6 +82,7 @@ it('blocks adding or removing bids for another user', function (): void {
 });
 
 it('scopes simbrief briefings to their owner', function (): void {
+    updateSetting('general.theme', 'seven');
     Storage::fake();
     Storage::put('ofp/victim.json', '{"secret":true}');
     $flight = Flight::factory()->create();
