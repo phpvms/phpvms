@@ -97,6 +97,99 @@ describe("createInfiniteSelect", () => {
     expect(t.tom.loading).toBe(0);
   });
 
+  it("removes the loading spinner when typing back to the query on screen", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [opt("x1"), opt("x2")], hasMore: true });
+    await t.settle();
+
+    t.tom.control_input.value = "a";
+    t.tom.control_input.dispatchEvent(new Event("input"));
+    await vi.advanceTimersByTimeAsync(350);
+    await t.type("");
+
+    expect(t.tom.dropdown_content.querySelector(".spinner")).toBeNull();
+  });
+
+  it("keeps the page-2 cursor when typing back so a scroll fetches it", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [opt("x1"), opt("x2")], hasMore: true });
+    await t.settle();
+
+    t.tom.control_input.value = "a";
+    t.tom.control_input.dispatchEvent(new Event("input"));
+    await vi.advanceTimersByTimeAsync(350);
+    await t.type("");
+
+    t.tom.settings.shouldLoadMore = () => true;
+    t.tom.dropdown_content.dispatchEvent(new Event("scroll"));
+    await t.settle();
+
+    expect(t.args()).toEqual([
+      ["", 1],
+      ["", 2],
+    ]);
+  });
+
+  it("does not let a stale page 2 of the old query leak into a new query's results", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [opt("x1"), opt("x2")], hasMore: true });
+    await t.settle();
+
+    t.tom.settings.shouldLoadMore = () => true;
+    t.tom.dropdown_content.dispatchEvent(new Event("scroll"));
+    await t.settle();
+    const stalePage2 = t.last();
+    expect([stalePage2.query, stalePage2.page]).toEqual(["", 2]);
+
+    await t.type("a");
+    const a1 = t.last();
+    expect([a1.query, a1.page]).toEqual(["a", 1]);
+
+    a1.resolve({ options: [opt("a1")], hasMore: false });
+    await t.settle();
+    expect(t.optionValues()).toEqual(["a1"]);
+
+    stalePage2.resolve({ options: [opt("x2")], hasMore: false });
+    await t.settle();
+    expect(t.optionValues()).toEqual(["a1"]);
+    expect(t.tom.loading).toBe(0);
+  });
+
+  it("does not fetch the next page from a frame queued before destroy", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+    t.last().resolve({ options: [opt("z1")], hasMore: true });
+    // Flush the .then only: its animation frame is queued but has not run.
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+    }
+
+    t.handle.destroy();
+    await t.settle();
+
+    expect(t.args()).toEqual([["", 1]]);
+  });
+
+  it("does not fetch more after destroy when page 1 resolves late", async () => {
+    const t = setup();
+    t.tom.focus();
+    await t.settle();
+
+    // Passes if only the .then guard goes: the rAF guard still catches it.
+    t.handle.destroy();
+    t.last().resolve({ options: [opt("z1")], hasMore: true });
+    await t.settle();
+
+    expect(t.args()).toEqual([["", 1]]);
+  });
+
   it("refetches the current query after its own response was discarded", async () => {
     const t = setup();
     t.tom.focus();
