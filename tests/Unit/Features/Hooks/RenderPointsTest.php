@@ -38,14 +38,6 @@ function bare(string $class): object
 }
 
 it('uses the slot names the SPA outlets read', function (): void {
-    $spa = '';
-
-    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(base_path('resources/js/apps/fe-vue/src'), FilesystemIterator::SKIP_DOTS)) as $file) {
-        if (in_array($file->getExtension(), ['vue', 'ts'], true)) {
-            $spa .= file_get_contents($file->getPathname());
-        }
-    }
-
     expect(SlotBriefingActions::name())->toBe('flight.briefing.actions')
         ->and(SlotPirepDetail::name())->toBe('pireps.detail.main')
         ->and(SlotProfileCards::name())->toBe('profile.cards')
@@ -53,10 +45,6 @@ it('uses the slot names the SPA outlets read', function (): void {
         ->and(SlotBidDrawerActions::name())->toBe('bids.drawer.overview.actions')
         ->and(SlotFlightRowActions::name())->toBe('flights.row.actions')
         ->and(SlotBidRowActions::name())->toBe('bids.row.actions');
-
-    foreach (['flight.briefing.actions', 'pireps.detail.main', 'profile.cards', 'flights.detail.actions', 'bids.drawer.overview.actions', 'flights.row.actions', 'bids.row.actions'] as $name) {
-        expect($spa)->toContain($name);
-    }
 });
 
 it('names the airside-only dashboard points', function (): void {

@@ -41,6 +41,7 @@ it('leaves the shared Vite instance on its own build directory', function (): vo
 })->skip(fn (): bool => !file_exists($manifest), 'Run `pnpm run build:themes` first.');
 
 it('uses the module hot file while the dev server runs', function (): void {
+    $this->withVite();
     deployedPublicPath();
     $hot = base_path('modules/phpvms-airside-theme/public/hot');
     file_put_contents($hot, 'http://localhost:5199');
@@ -53,5 +54,4 @@ it('uses the module hot file while the dev server runs', function (): void {
     } finally {
         unlink($hot);
     }
-
 });

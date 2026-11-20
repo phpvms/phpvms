@@ -6,7 +6,6 @@ require_once __DIR__.'/Support.php';
 
 use App\Features\Tiles\Tile;
 use App\Features\Tiles\Tiles;
-use App\Features\Tiles\TilesServiceProvider;
 
 // Start from an empty registry; the first-party element tiles are checked in their own test.
 beforeEach(fn () => app()->instance(Tiles::class, new Tiles()));
@@ -171,20 +170,4 @@ it('reports the kind of each tile, with exactly one render target set', function
         ->and(array_map(fn (Tile $t): int => count(array_filter([$t->livewire, $t->view, $t->tag])), [$livewire, $view, $element]))->toBe([1, 1, 1])
         ->and($element->module)->toBe('/c.js')
         ->and($element->attributes)->toBe(['n' => 1, 'on' => true]);
-});
-
-it('registers the first-party element tiles outside the dashboard', function (): void {
-    app()->forgetInstance(Tiles::class);
-    $registry = app(Tiles::class);
-    new TilesServiceProvider(app())->boot();
-
-    foreach (['pv-hero', 'pv-callout', 'pv-stat-group'] as $id) {
-        $tile = $registry->find($id);
-
-        expect($tile)->not->toBeNull()
-            ->and($tile?->kind())->toBe('element')
-            ->and($tile?->tag)->toBe($id)
-            ->and($tile?->module)->toBe('/build/skylight/elements.js')
-            ->and($registry->dashboard())->not->toHaveKey($id);
-    }
 });

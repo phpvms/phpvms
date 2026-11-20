@@ -36,23 +36,26 @@ class HandleInertiaRequests extends Middleware
     ) {}
 
     /**
-     * The Inertia root template. A dedicated view that points to the Skylight
-     * theme's spa.blade.php — deliberately not 'app', so it doesn't
-     * shadow the Blade `app` layout that non-ported pages (home/login) extend.
-     * Those fall back to seven's app layout; only SPA responses use this shell.
+     * The Inertia root template: the active theme's `root_view` (theme.json),
+     * else the core `app` view.
      */
-    protected $rootView = 'layouts.skylight.spa';
+    #[Override]
+    public function rootView(Request $request): string
+    {
+        return (string) theme_setting('root_view', 'app');
+    }
 
     /**
-     * Asset version — busts the client cache when the skylight build changes so
-     * Inertia forces a hard reload on a stale bundle.
+     * Asset version — busts the client cache when the active theme's build
+     * changes so Inertia forces a hard reload on a stale bundle.
      */
     #[Override]
     public function version(Request $request): ?string
     {
-        $manifest = public_path('build/skylight/manifest.json');
-        $manifestVersion = is_file($manifest) ? (string) filemtime($manifest) : parent::version($request);
-        $themeName = Theme::get() ?: 'skylight';
+        $themeName = Theme::get() ?: (string) config('themes.default');
+        $manifestName = theme_setting('manifest');
+        $manifest = $manifestName ? public_path(Theme::current()->assetPath.'/build/'.$manifestName) : null;
+        $manifestVersion = $manifest !== null && is_file($manifest) ? (string) filemtime($manifest) : parent::version($request);
         $themeVersion = $this->themes->revision($themeName)?->revision;
 
         return hash('sha256', ($manifestVersion ?? '').'|'.($themeVersion ?? ''));
@@ -68,7 +71,7 @@ class HandleInertiaRequests extends Middleware
     {
         /** @var User|null $user */
         $user = $request->user();
-        $themeName = Theme::get() ?: 'skylight';
+        $themeName = Theme::get() ?: (string) config('themes.default');
 
         return [
             ...parent::share($request),
@@ -88,10 +91,10 @@ class HandleInertiaRequests extends Middleware
                 'messages' => $this->spaMessages(),
             ],
 
-            // The skylight extension surface: this request's page slot entries
+            // The extension surface: this request's page slot entries
             // (the `vue` fills of the render hooks the controller dispatched).
             // Lazy, so it is read after the controller has filled the slots.
-            'skylight' => fn (): array => Extensions::toArray(),
+            'extensions' => fn (): array => Extensions::toArray(),
 
             'auth' => [
                 'user' => $user ? [
