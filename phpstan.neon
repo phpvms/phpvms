@@ -43,14 +43,10 @@ parameters:
         - identifier: class.notFound
           path: tests/fixtures/Addons/badhooks/app/Listeners/MissingPointListener.php
 
-        # The legacy Blade-theme controllers name views that only the seven theme
-        # supplies (`flights.simbrief_*`, `profile.*`), and the default theme is now
-        # airside, so no analysed view path contains them and the literal is not a
-        # view-string. The airside tests name theme views too.
+        # The airside tests name theme views that no analysed view path contains.
         - identifier: argument.type
           message: '#Parameter \#1 \$view of function view expects view-string\|null, string given#'
           paths:
-              - app/Http/Controllers/Frontend/*
               - tests/Feature/Airside/
 
         # PHPStan is not able to understand the pivot attributes at the moment

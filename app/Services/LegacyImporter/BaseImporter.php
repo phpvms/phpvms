@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\LegacyImporter;
 
-use App\Services\Installer\LoggerTrait;
 use App\Services\LegacyImporterService;
 use App\Utils\IdMapper;
 use App\Utils\ImporterDB;

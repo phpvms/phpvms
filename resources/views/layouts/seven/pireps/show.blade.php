@@ -288,7 +288,7 @@
     </div>
   @endif
 
-  @if(!empty($pirep->simbrief))
+  @if($pirep->simbrief?->ofp)
     <div class="separator"></div>
     <div class="row mt-5">
       <div class="col-12">
@@ -298,7 +298,7 @@
           </h6>
           <div class="form-container-body border border-dark">
             <div class="overflow-auto" style="height: 600px;">
-              {!! $pirep->simbrief->xml->text->plan_html !!}
+              {!! $pirep->simbrief->ofp->text->plan_html !!}
             </div>
           </div>
         </div>

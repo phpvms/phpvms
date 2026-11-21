@@ -17,14 +17,28 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasColumn('bids', 'user_tour_id')) {
-            return;
-        }
+        // Column, index and foreign key are separate statements on MySQL; add whichever a cut-short run left out.
+        $hasColumn = Schema::hasColumn('bids', 'user_tour_id');
+        $hasIndex = $hasColumn && Schema::hasIndex('bids', ['user_tour_id']);
+        $hasForeign = $hasColumn && collect(Schema::getForeignKeys('bids'))->contains(fn (array $fk): bool => $fk['columns'] === ['user_tour_id']);
 
-        Schema::table('bids', function (Blueprint $table): void {
-            $table->string('user_tour_id', 36)->nullable()->after('aircraft_id')->index();
+        Schema::table('bids', function (Blueprint $table) use ($hasColumn, $hasIndex, $hasForeign): void {
+            if (!$hasColumn) {
+                $column = $table->string('user_tour_id', 36)->nullable()->after('aircraft_id');
 
-            $table->foreign('user_tour_id')->references('id')->on('user_tours')->cascadeOnDelete();
+                // v7 `bids` carries the server default collation; the FK needs `user_tours`.`id`'s.
+                if (($parent = $this->parentCollation('user_tours', 'id')) !== null) {
+                    $column->charset($parent[0])->collation($parent[1]);
+                }
+            }
+
+            if (!$hasIndex) {
+                $table->index('user_tour_id');
+            }
+
+            if (!$hasForeign) {
+                $table->foreign('user_tour_id')->references('id')->on('user_tours')->cascadeOnDelete();
+            }
         });
     }
 
@@ -34,5 +48,24 @@ return new class() extends Migration
             $table->dropForeign(['user_tour_id']);
             $table->dropColumn('user_tour_id');
         });
+    }
+
+    /** @return array{string, string}|null */
+    private function parentCollation(string $table, string $column): ?array
+    {
+        $connection = Schema::getConnection();
+
+        if (!in_array($connection->getDriverName(), ['mysql', 'mariadb'], true)) {
+            return null;
+        }
+
+        $row = $connection->selectOne(
+            'select CHARACTER_SET_NAME as charset, COLLATION_NAME as collation
+            from information_schema.COLUMNS
+            where TABLE_SCHEMA = ? and TABLE_NAME = ? and COLUMN_NAME = ?',
+            [$connection->getDatabaseName(), $connection->getTablePrefix().$table, $column]
+        );
+
+        return $row?->collation !== null ? [$row->charset, $row->collation] : null;
     }
 };

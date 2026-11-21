@@ -8,7 +8,7 @@ return new class() extends Migration
 {
     /**
      * Data migration: rekey `addon_seeded:%` kvp markers from the display name to
-     * `registry_id ?? namespace`. SeederService::seedMarkerKey() used to build
+     * `registry_id ?? namespace`. The seed-marker key (now AddonSeedMarkers::key()) used to build
      * the marker from the addon's display name, which is nullable, non-unique
      * and mutable — an addon rebrand moves the name, stranding the old marker and
      * leaving addonSeedsPending() permanently true for that addon.
@@ -35,11 +35,11 @@ return new class() extends Migration
 
         $addons = DB::table('addons')->get(['name', 'namespace', 'registry_id']);
 
-        // Both identities go in the skip set, not just the one seedMarkerKey()
+        // Both identities go in the skip set, not just the one AddonSeedMarkers::key()
         // would pick today: a marker written on an addon's namespace before its
         // registry_id was populated is still new-format and must not be treated
         // as an unresolvable display name and deleted. Slugified the same way
-        // SeederService::seedMarkerIdentity() does, since that is the form the
+        // AddonSeedMarkers::identity() does, since that is the form the
         // keys actually carry.
         $identities = $addons
             ->flatMap(fn (object $addon): array => array_map(
@@ -79,7 +79,7 @@ return new class() extends Migration
 
                 // filled(), not ??, so an empty-string registry_id falls back to
                 // namespace rather than producing `addon_seeded::{version}`, then
-                // keyed_str() to match SeederService::seedMarkerIdentity() exactly.
+                // keyed_str() to match AddonSeedMarkers::identity() exactly.
                 $identityValue = filled($addon->registry_id) ? $addon->registry_id : $addon->namespace;
 
                 $newKey = 'addon_seeded:'.keyed_str(strtolower((string) $identityValue)).':'.$version;

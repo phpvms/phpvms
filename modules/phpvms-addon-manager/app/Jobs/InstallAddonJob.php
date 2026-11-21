@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\AddonManager\Jobs;
 
 use App\Exceptions\AddonInstallException;
-use App\Features\Addons\AddonAutoLoader;
+use App\Features\Addons\Actions\DropAddonTables;
+use App\Features\Addons\Actions\PurgeAddonMigrationRecords;
+use App\Features\Addons\Actions\RunAddonSetup;
 use App\Features\Addons\AddonRegistry;
 use App\Features\Addons\Sources\UrlSource;
 use App\Features\Addons\Support\ManifestParser;
@@ -13,13 +15,11 @@ use App\Features\Addons\Support\RegistrySignatureVerifier;
 use App\Models\Addon;
 use App\Models\User;
 use App\Services\CronService;
-use App\Services\Installer\MigrationService;
 use Closure;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -172,7 +172,7 @@ class InstallAddonJob implements ShouldQueue
 
         try {
             InstallProgress::set($this->registryId, 'migrating', 85, 'Running migrations…');
-            $this->runAddonMigrations($addon);
+            $this->runAddonSetup($addon);
         } catch (Throwable $throwable) {
             $this->rollbackFreshInstall($registry, $addon, $tablesBefore);
 
@@ -197,13 +197,11 @@ class InstallAddonJob implements ShouldQueue
         $created = array_diff(Schema::getTableListing(), $tablesBefore);
         $toDrop = array_values(array_intersect($declared, $created));
 
-        $migrations = app(MigrationService::class);
-
         if ($toDrop !== []) {
-            $migrations->dropAddonTables($toDrop);
+            app(DropAddonTables::class)->handle($toDrop);
         }
 
-        $migrations->purgeAddonMigrationRecords($addon);
+        app(PurgeAddonMigrationRecords::class)->handle($addon);
 
         // removeTables:false — we already dropped exactly the new tables above;
         // delete() only removes the row + asset links here.
@@ -222,33 +220,15 @@ class InstallAddonJob implements ShouldQueue
     {
         return function (Addon $addon): void {
             InstallProgress::set($this->registryId, 'migrating', 85, 'Running migrations…');
-            $this->runAddonMigrations($addon);
+            $this->runAddonSetup($addon);
         };
     }
 
-    private function runAddonMigrations(Addon $addon): void
+    private function runAddonSetup(Addon $addon): void
     {
-        $path = $addon->getPath().'/database/migrations';
-
-        if (!is_dir($path)) {
-            return;
-        }
-
-        $manifest = app(ManifestParser::class)->parse($addon->getPath());
-
-        if ($manifest !== null) {
-            app(AddonAutoLoader::class)->registerClasses($manifest);
-        }
-
-        $exit = Artisan::call('migrate', [
-            '--force'    => true,
-            '--realpath' => true,
-            '--path'     => [$path],
-        ]);
-
-        if ($exit !== 0) {
-            throw new AddonInstallException(sprintf('Migrations exited with code %d: %s', $exit, trim(Artisan::output())));
-        }
+        app(RunAddonSetup::class)->handle($addon, function (string $line): void {
+            InstallProgress::set($this->registryId, 'migrating', 85, $line);
+        });
     }
 
     private function mintErrorMessage(int $status): string

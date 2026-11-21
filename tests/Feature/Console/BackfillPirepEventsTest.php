@@ -144,6 +144,21 @@ it('purges LOG rows with --delete when confirmed, leaving other types untouched'
     expect(Acars::find($flightPath->id))->not->toBeNull();
 });
 
+it('keeps a LOG row the copy skipped when purging', function (): void {
+    $pirep = Pirep::factory()->create();
+    $copied = Acars::factory()->create(['pirep_id' => $pirep->id, 'type' => AcarsType::LOG, 'log' => 'Flaps set to 15']);
+    $this->artisan('phpvms:backfill-pirep-events')->assertExitCode(0);
+
+    // Added after the copy finished, so it was never copied: its acars row is the only record.
+    $skipped = Acars::factory()->create(['pirep_id' => $pirep->id, 'type' => AcarsType::LOG, 'log' => 'Gear down']);
+
+    $this->artisan('phpvms:backfill-pirep-events', ['--delete' => true, '--no-interaction' => true])->assertExitCode(0);
+
+    expect(Acars::find($copied->id))->toBeNull()
+        ->and(Acars::find($skipped->id))->not->toBeNull()
+        ->and(PirepEvent::find($skipped->id))->toBeNull();
+});
+
 it('skips the purge when declined interactively', function (): void {
     $pirep = Pirep::factory()->create();
     Acars::factory()->create(['pirep_id' => $pirep->id, 'type' => AcarsType::LOG, 'log' => 'Flaps set to 15']);

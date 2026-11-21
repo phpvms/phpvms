@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Features\Setup\Support\MigrationPaths;
 use App\Filament\System\Installer;
-use App\Services\Installer\MigrationService;
 use Livewire\Livewire;
 
 /**
@@ -26,8 +26,17 @@ it('replaces the wizard back button with the pause control', function (): void {
 });
 
 it('restarts the wizard when the snapshot says done but the database has pending migrations', function (): void {
-    $this->partialMock(MigrationService::class, function ($mock): void {
-        $mock->shouldReceive('migrationsAvailable')->andReturn(['2099_01_01_000000_pending']);
+    app()->instance(MigrationPaths::class, new class() extends MigrationPaths
+    {
+        public function pendingSchema(): array
+        {
+            return ['2099_01_01_000000_pending'];
+        }
+
+        public function pendingData(): array
+        {
+            return [];
+        }
     });
 
     // A tab that ran the migrations before the database was dropped carries
@@ -41,8 +50,17 @@ it('restarts the wizard when the snapshot says done but the database has pending
 });
 
 it('leaves a finished migration run alone when nothing is pending', function (): void {
-    $this->partialMock(MigrationService::class, function ($mock): void {
-        $mock->shouldReceive('migrationsAvailable')->andReturn([]);
+    app()->instance(MigrationPaths::class, new class() extends MigrationPaths
+    {
+        public function pendingSchema(): array
+        {
+            return [];
+        }
+
+        public function pendingData(): array
+        {
+            return [];
+        }
     });
 
     Livewire::test(Installer::class)
@@ -53,10 +71,7 @@ it('leaves a finished migration run alone when nothing is pending', function ():
         ->assertDontSeeHtml('wire:init="runMigrations"');
 });
 
-// Deliberately not covered here: calling runMigrations(). It shells out to
-// `php artisan migrate` through StreamedCommandsService, and the subprocess
-// reads .env rather than phpunit's forced sqlite connection -- so the assertion
-// would run migrations and DatabaseSeeder against the development database.
+// Calling runMigrations() is covered by InstallerEngineTest, which binds fake engine steps.
 
 it('does not persist the wizard step in the query string', function (): void {
     // A stale `?step=form.migrations::wizard-step` would otherwise pin a fresh

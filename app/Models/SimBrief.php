@@ -35,6 +35,7 @@ use Override;
  * @property-read SimBriefOfp|null $ofp
  * @property-read Pirep|null $pirep
  * @property-read User|null $user
+ * @property-read SimBriefOfp|null $xml deprecated, use $ofp
  *
  * @method static SimBriefFactory          factory($count = null, $state = [])
  * @method static Builder<static>|SimBrief newModelQuery()
@@ -96,6 +97,14 @@ class SimBrief extends Model
 
             return SimBriefOfp::from($ofp);
         });
+    }
+
+    /**
+     * @deprecated 7.x themes read `$simbrief->xml`; use `ofp`.
+     */
+    protected function xml(): Attribute
+    {
+        return Attribute::make(get: fn (): ?SimBriefOfp => $this->ofp);
     }
 
     /**

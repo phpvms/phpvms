@@ -214,7 +214,9 @@ Route::middleware(['web', 'auth', 'permission:edit:page', HandleInertiaRequests:
     ->get('admin/pages/{page}/preview', [PageController::class, 'preview'])
     ->name('frontend.pages.preview');
 
-Route::get('/update', fn (): Redirector|RedirectResponse => redirect('/system/update'));
+Route::get('/update', fn (): Redirector|RedirectResponse => redirect('/system/upgrade'));
+// The page was /system/update before; keep old bookmarks and docs working.
+Route::permanentRedirect('/system/update', '/system/upgrade');
 
 /*
  * Pages claim their own paths, so the last word on an unmatched URL belongs to

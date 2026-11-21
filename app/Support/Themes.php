@@ -21,6 +21,31 @@ use RuntimeException;
  */
 class Themes extends BaseThemes
 {
+    // Last stop for any view a theme lacks, e.g. 8.x pages a 7.x theme never had.
+    private const string FALLBACK = 'seven';
+
+    #[Override]
+    public function set($themeName)
+    {
+        $theme = parent::set($themeName);
+
+        if ($themeName === self::FALLBACK || !$this->exists(self::FALLBACK)) {
+            return $theme;
+        }
+
+        $paths = config('view.paths');
+        foreach ($this->find(self::FALLBACK)->getViewPaths() as $path) {
+            if (!in_array($path, $paths, true)) {
+                $paths[] = $path;
+            }
+        }
+
+        config(['view.paths' => $paths]);
+        app('view.finder')->setPaths($paths);
+
+        return $theme;
+    }
+
     #[Override]
     public function rebuildCache(): void
     {

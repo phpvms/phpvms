@@ -16,6 +16,8 @@ use App\Features\Addons\Support\ManifestSchema;
 use App\Features\Addons\Support\ManifestSchemaValidator;
 use App\Features\Addons\Support\ThemeAddonRegistrar;
 use App\Features\Addons\Support\ThemeAssetLinker;
+use App\Features\Setup\Enums\RunStatus;
+use App\Features\Setup\Support\SetupRunState;
 use App\Support\RegistersApiScopes;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -114,8 +116,23 @@ class AddonServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!$this->app->runningInConsole()) {
+        if (!$this->app->runningInConsole() && !$this->setupRunActive()) {
             $this->app->make(AddonDiscoveryService::class)->primeIfNeeded();
         }
+    }
+
+    /**
+     * The engine's addon_cache step rebuilds the cache; a mid-migrate upsert
+     * would write columns that do not exist yet. A corrupt state file never blocks boot.
+     */
+    private function setupRunActive(): bool
+    {
+        try {
+            $status = $this->app->make(SetupRunState::class)->read()?->status;
+        } catch (Throwable) {
+            return false;
+        }
+
+        return $status !== null && $status !== RunStatus::Done;
     }
 }

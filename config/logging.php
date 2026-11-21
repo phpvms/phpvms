@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -87,6 +88,9 @@ return [
             'path'   => storage_path('logs/cron.log'),
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => env('LOG_DAILY_DAYS', 7),
+            // One JSON object per line; the exception and its trace stay structured.
+            'formatter'      => JsonFormatter::class,
+            'formatter_with' => ['includeStacktraces' => true],
         ],
 
         'single' => [
@@ -94,6 +98,8 @@ return [
             'path'                 => storage_path('logs/laravel.log'),
             'level'                => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'formatter'            => JsonFormatter::class,
+            'formatter_with'       => ['includeStacktraces' => true],
         ],
 
         'daily' => [
@@ -102,6 +108,8 @@ return [
             'level'                => env('LOG_LEVEL', 'debug'),
             'days'                 => env('LOG_DAILY_DAYS', 7),
             'replace_placeholders' => true,
+            'formatter'            => JsonFormatter::class,
+            'formatter_with'       => ['includeStacktraces' => true],
         ],
 
         'slack' => [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\AdminLogin;
 use App\Filament\GlobalSearch\CommandPaletteSearchProvider;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
@@ -45,7 +46,7 @@ abstract class BasePanelProvider extends FilamentPanelProvider
     protected function applyConsoleChrome(Panel $panel): Panel
     {
         return $panel
-            ->login()
+            ->login(AdminLogin::class)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

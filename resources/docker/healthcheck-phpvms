@@ -1,0 +1,10 @@
+#!/bin/sh
+# Healthy while phpvms:update holds its lock: the run migrates for minutes and Octane is not up yet.
+# A missing lock file means no run yet, so fall through to the Octane check.
+lock="${PHPVMS_UPDATE_LOCK:-/var/www/html/storage/framework/phpvms-update.lock}"
+
+if [ -f "$lock" ] && ! flock -n "$lock" true; then
+    exit 0
+fi
+
+exec healthcheck-octane

@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 use App\Features\Addons\Support\OctaneReloader;
 use App\Filament\Pages\Maintenance;
-use App\Filament\System\Updater;
 use App\Livewire\Filament\ClearCaches;
-use App\Services\Installer\InstallerService;
-use App\Services\Installer\MigrationService;
-use App\Services\Installer\SeederService;
-use App\Services\Installer\StreamedCommandsService;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Process\PendingProcess;
@@ -84,35 +79,4 @@ it('reloads workers once after the Optimize action', function (): void {
     $this->mock(OctaneReloader::class, fn (MockInterface $mock) => $mock->shouldReceive('reload')->once());
 
     Livewire::test(Maintenance::class)->callAction('optimizeApp');
-});
-
-it('reloads workers once and does not rebuild the cache again after an update', function (): void {
-    $this->seed(RolesPermissionsSeeder::class);
-    $this->actingAs(createAdminUser());
-
-    $this->mock(InstallerService::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('isUpgradePending')->andReturnTrue();
-        $mock->shouldReceive('ensurePassportKeys');
-        $mock->shouldReceive('linkStorage')->andReturnTrue();
-        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
-    });
-    $this->mock(MigrationService::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('migrationsAvailable')->andReturn([]);
-        $mock->shouldReceive('dataMigrationsAvailable')->andReturn([]);
-    });
-    $this->mock(SeederService::class, fn (MockInterface $mock) => $mock->shouldReceive('syncAllSeeds'));
-
-    $commands = [];
-    $this->mock(StreamedCommandsService::class, function (MockInterface $mock) use (&$commands): void {
-        $mock->shouldReceive('streamArtisanCommand')->andReturnUsing(function (array $command) use (&$commands): int {
-            $commands[] = $command[0];
-
-            return 0;
-        });
-    });
-    $this->mock(OctaneReloader::class, fn (MockInterface $mock) => $mock->shouldReceive('reload')->once());
-
-    Livewire::test(Updater::class)->call('runUpdate');
-
-    expect($commands)->not->toContain('addons:cache');
 });

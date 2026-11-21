@@ -3,203 +3,115 @@
 namespace App\Console\Commands;
 
 use App\Enums\AcarsType;
+use App\Features\Setup\Actions\RunPostUpgradeTasks;
+use App\Features\Setup\Contracts\PostUpgradeTask;
+use App\Features\Setup\Enums\PostUpgradeOutcome;
+use App\Features\Setup\Enums\PostUpgradeStatus;
+use App\Features\Setup\PostUpgrade\BackfillPirepEvents as BackfillTask;
 use App\Models\Acars;
 use App\Models\PirepEvent;
-use App\Services\Pirep\EventClassifier;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Throwable;
 
+/**
+ * Runs the flight-log post-upgrade task to completion; the update run's data_tasks step runs it too.
+ */
 #[AsCommand(name: 'phpvms:backfill-pirep-events', description: 'Backfill acars LOG rows into the pirep_events table')]
 #[Signature('phpvms:backfill-pirep-events
                             {--delete : Purge the migrated acars LOG rows after a successful backfill}')]
 class BackfillPirepEvents extends Command
 {
-    private const int CHUNK_SIZE = 500;
-
-    private int $migrated = 0;
-
-    private int $missingTelemetry = 0;
-
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(RunPostUpgradeTasks $runner, BackfillTask $task): int
     {
-        Acars::query()
-            ->ofType(AcarsType::LOG)
-            ->chunkById(self::CHUNK_SIZE, function (Collection $rows): void {
-                $this->migrateChunk($rows);
-            });
+        // Runs on every container start: a finished copy must not touch acars.
+        if ($runner->status(BackfillTask::KEY) === PostUpgradeStatus::Done) {
+            $this->components->info('Flight logs already copied.');
+
+            return $this->option('delete') ? $this->purge() : self::SUCCESS;
+        }
+
+        $before = $task->load();
+        $bar = null;
+
+        $error = null;
+
+        try {
+            $outcome = $runner->handle(
+                progress: function (PostUpgradeTask $task, int $done, int $total) use (&$bar): void {
+                    $bar ??= $this->output->createProgressBar();
+                    $bar->setMaxSteps($total);
+                    $bar->setProgress($done);
+                },
+                only: BackfillTask::KEY,
+            );
+        } catch (Throwable $throwable) {
+            $outcome = null;
+            $error = $throwable->getMessage();
+        }
+
+        if ($bar instanceof ProgressBar) {
+            $bar->finish();
+            $this->newLine();
+        }
+
+        if ($outcome === PostUpgradeOutcome::Busy) {
+            $this->components->error('The flight log copy is already running in another process.');
+
+            return self::FAILURE;
+        }
+
+        $after = $task->load();
 
         $this->components->info(sprintf(
-            'Migrated %d row(s); %d referenced a missing telemetry row.',
-            $this->migrated,
-            $this->missingTelemetry
+            'Migrated %d row(s); %d referenced a missing telemetry row; %d row(s) skipped.',
+            $after['copied'] - $before['copied'],
+            $after['missing_telemetry'] - $before['missing_telemetry'],
+            $after['skipped_count'] - $before['skipped_count'],
         ));
 
-        $purged = $this->purgeIfRequested();
+        if ($error !== null) {
+            $this->components->error('The flight log copy failed: '.$error);
 
-        if ($purged === null) {
-            $this->components->warn('Purge skipped.');
-        } else {
-            $this->components->info(sprintf('Purged %d acars LOG row(s).', $purged));
+            return self::FAILURE;
         }
+
+        return $this->option('delete') ? $this->purge() : $this->skipPurge();
+    }
+
+    private function skipPurge(): int
+    {
+        $this->components->warn('Purge skipped.');
 
         return self::SUCCESS;
     }
 
     /**
-     * @param Collection<int, Acars> $rows
+     * Purges the copied acars LOG rows, only once the copy is done.
      */
-    private function migrateChunk(Collection $rows): void
+    private function purge(): int
     {
-        $telemetryIds = $rows
-            ->pluck('log')
-            ->map(fn (?string $log): ?array => $this->decodeBlob($log))
-            ->filter()
-            ->pluck('telemetry_id')
-            ->filter()
-            ->unique()
-            ->values();
+        if (app(RunPostUpgradeTasks::class)->status(BackfillTask::KEY) !== PostUpgradeStatus::Done) {
+            $this->components->error('The flight log copy is not done; the acars LOG rows are kept.');
 
-        $existingTelemetryIds = $telemetryIds->isEmpty()
-            ? collect()
-            : Acars::query()->whereIn('id', $telemetryIds)->pluck('id');
-
-        $events = $rows->map(fn (Acars $acars): array => $this->toEventRow($acars, $existingTelemetryIds));
-
-        PirepEvent::query()->upsert(
-            $events->all(),
-            ['id'],
-            ['pirep_id', 'acars_id', 'type', 'category', 'phase', 'lat', 'lon', 'altitude_msl', 'log', 'details', 'sim_time', 'created_at']
-        );
-
-        $this->migrated += $events->count();
-    }
-
-    /**
-     * @param  Collection<int, string> $existingTelemetryIds
-     * @return array<string, mixed>
-     */
-    private function toEventRow(Acars $acars, Collection $existingTelemetryIds): array
-    {
-        $blob = $this->decodeBlob($acars->log);
-
-        if ($blob !== null) {
-            $telemetryId = $blob['telemetry_id'] ?? null;
-            $acarsId = null;
-
-            if ($telemetryId !== null) {
-                if ($existingTelemetryIds->contains($telemetryId)) {
-                    $acarsId = $telemetryId;
-                } else {
-                    $this->missingTelemetry++;
-                }
-            }
-
-            $category = $blob['category'] ?? EventClassifier::classify($blob['log'] ?? null)['category'];
-            $details = $blob['payload'] ?? null;
-
-            return [
-                'id'              => $acars->id,
-                'pirep_id'        => $acars->pirep_id,
-                'acars_id'        => $acarsId,
-                'client_event_id' => null,
-                'type'            => $blob['type'] ?? null,
-                'category'        => $category,
-                'phase'           => $blob['phase'] ?? null,
-                'lat'             => $blob['lat'] ?? $this->position($acars)['lat'],
-                'lon'             => $blob['lon'] ?? $this->position($acars)['lon'],
-                'altitude_msl'    => $blob['altitude_msl_ft'] ?? null,
-                'log'             => $blob['log'] ?? null,
-                'details'         => $details === null ? null : json_encode($details),
-                'sim_time'        => $acars->sim_time,
-                'created_at'      => $acars->created_at,
-            ];
-        }
-
-        $classified = EventClassifier::classify($acars->log);
-
-        return [
-            'id'              => $acars->id,
-            'pirep_id'        => $acars->pirep_id,
-            'acars_id'        => null,
-            'client_event_id' => null,
-            'type'            => $classified['type'],
-            'category'        => $classified['category'],
-            'phase'           => $classified['phase'],
-            'lat'             => $this->position($acars)['lat'],
-            'lon'             => $this->position($acars)['lon'],
-            'altitude_msl'    => null,
-            'log'             => $acars->log,
-            'details'         => $classified['details'] === null ? null : json_encode($classified['details']),
-            'sim_time'        => $acars->sim_time,
-            'created_at'      => $acars->created_at,
-        ];
-    }
-
-    /**
-     * The source row's position, or nulls when it never reported one.
-     *
-     * `acars.lat`/`lon` are `->default(0)`, so a log row that carried no
-     * position reads back as 0,0 rather than null. Copying that verbatim
-     * would drop every positionless legacy log at Null Island, so the pair
-     * is treated as unset when both halves are zero.
-     *
-     * @return array{lat: ?float, lon: ?float}
-     */
-    private function position(Acars $acars): array
-    {
-        $lat = (float) $acars->lat;
-        $lon = (float) $acars->lon;
-
-        if ($lat === 0.0 && $lon === 0.0) {
-            return ['lat' => null, 'lon' => null];
-        }
-
-        return ['lat' => $lat, 'lon' => $lon];
-    }
-
-    /**
-     * Decodes `log` as a TelemetryWriter JSON blob. Returns null for plain
-     * strings, scalars, JSON arrays, or invalid JSON.
-     *
-     * @return array<string, mixed>|null
-     */
-    private function decodeBlob(?string $log): ?array
-    {
-        if ($log === null || $log === '') {
-            return null;
-        }
-
-        $decoded = json_decode($log, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded) || array_is_list($decoded)) {
-            return null;
-        }
-
-        return $decoded;
-    }
-
-    /**
-     * Purges migrated acars LOG rows when `--delete` is passed. Returns the
-     * number of rows purged, or null if the purge was skipped (declined or
-     * not requested).
-     */
-    private function purgeIfRequested(): ?int
-    {
-        if (!$this->option('delete')) {
-            return null;
+            return self::FAILURE;
         }
 
         if ($this->input->isInteractive() && !$this->confirm(
             'This will permanently delete the migrated acars LOG rows. This cannot be undone. Continue?'
         )) {
-            return null;
+            return $this->skipPurge();
         }
 
-        return Acars::query()->ofType(AcarsType::LOG)->delete();
+        // Only rows with a copy: a skipped row's acars LOG is its only record.
+        $purged = Acars::query()->ofType(AcarsType::LOG)->whereIn('id', PirepEvent::query()->select('id'))->delete();
+        $this->components->info(sprintf('Purged %d acars LOG row(s).', $purged));
+
+        return self::SUCCESS;
     }
 }

@@ -339,6 +339,35 @@
   @apply items-center;
 }
 
+/* System panel: taller bar carrying the full wordmark. */
+.fi-body.fi-panel-system {
+  --topbar-height: 72px;
+}
+
+.fi-body.fi-panel-system .fi-topbar {
+  height: 72px;
+  min-height: 72px;
+  padding-inline: 24px;
+}
+
+/* Keeps the band height but centres the title: the eyebrow reserve (26px) and
+ * the 22px bottom padding otherwise leave it 12px low. */
+.fi-body.fi-panel-system .fi-header .fi-header-heading {
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+.fi-system-logo {
+  display: flex;
+  align-items: center;
+  padding-block: 16px;
+}
+
+.fi-system-logo img {
+  height: 40px;
+  width: auto;
+}
+
 /* The vendor logo and its home link — the brand button (panel switcher)
  * replaces them. Scoped to the topbar so the login page keeps its logo. */
 .fi-topbar-start > a:has(> .fi-logo),
@@ -6027,4 +6056,14 @@ html.fi-editor-expanded-lock {
 #customize .fi-fo-field.fi-editor-expanded .cm-editor {
   height: 100%;
   max-height: none;
+}
+
+/* The updater's wizard is server-driven; its step headers are status only. */
+.updater-wizard .fi-sc-wizard-header-step-btn {
+  pointer-events: none;
+}
+
+/* No next/back actions here, so the footer would be an empty strip. */
+.updater-wizard .fi-sc-wizard-footer {
+  display: none;
 }

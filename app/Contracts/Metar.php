@@ -43,7 +43,7 @@ abstract class Metar
             $raw_metar = $this->get_metar($icao);
         } catch (Exception $exception) {
             // Not cached: the report shows again as soon as the provider answers.
-            Log::error('Error getting METAR: '.$exception->getMessage(), $exception->getTrace());
+            Log::error('Error getting METAR: '.$exception->getMessage(), ['exception' => $exception]);
 
             return '';
         }
@@ -71,7 +71,7 @@ abstract class Metar
             $taf = $this->get_taf($icao);
         } catch (Exception $exception) {
             // Not cached: the report shows again as soon as the provider answers.
-            Log::error('Error getting TAF: '.$exception->getMessage(), $exception->getTrace());
+            Log::error('Error getting TAF: '.$exception->getMessage(), ['exception' => $exception]);
 
             return '';
         }

@@ -11,15 +11,19 @@ use App\Http\Middleware\ApiAuth;
 use App\Http\Middleware\CheckApiScope;
 use App\Http\Middleware\DisableActivityLoggingByDefault;
 use App\Http\Middleware\InstalledCheck;
+use App\Http\Middleware\PreventRequestsDuringSetup;
 use App\Http\Middleware\RespectAlternateVerbs;
 use App\Http\Middleware\SetActiveLanguage;
 use App\Http\Middleware\SetActiveTheme;
 use App\Http\Middleware\UpdatePending;
+use App\Http\Middleware\UpgradeRequired;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
@@ -29,6 +33,9 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpKernel\Exception\HttpException as SymfonyHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+// Keep argument values out of exception traces, so request data and tokens never reach a log.
+ini_set('zend.exception_ignore_args', '1');
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -58,6 +65,12 @@ return Application::configure(basePath: dirname(__DIR__))
             SetActiveTheme::class,
             SetActiveLanguage::class,
         ]);
+
+        // Ahead of panel auth, whose access check reads roles tables a 7.x database lacks.
+        $middleware->prependToPriorityList(AuthenticatesRequests::class, UpgradeRequired::class);
+
+        // Keeps the update page reachable while setup has the site down.
+        $middleware->replace(PreventRequestsDuringMaintenance::class, PreventRequestsDuringSetup::class);
 
         $middleware->alias([
             'api.auth'           => ApiAuth::class,
@@ -97,10 +110,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //  Custom Rendering Logic
         $exceptions->render(function (Throwable $exception, Request $request) {
 
-            // Handle API Errors
+            // Handle API Errors. Laravel has already reported (logged) the reportable ones.
             if ($request->is('api/*')) {
-                Log::error('API Error: '.$exception->getMessage(), $exception->getTrace());
-
                 if ($exception instanceof AbstractHttpException) {
                     return $exception->getResponse();
                 }

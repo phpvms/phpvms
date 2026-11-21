@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Exceptions\CronInvalid;
+use App\Features\Setup\Actions\RunSetup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Context;
 
 class MaintenanceController extends Controller
 {
@@ -21,8 +23,14 @@ class MaintenanceController extends Controller
             throw new CronInvalid();
         }
 
-        // Run Laravel's scheduler
-        $exitCode = Artisan::call('schedule:run');
+        // Run Laravel's scheduler; setup-run skips itself here (RunSetup::WEB_CRON).
+        Context::addHidden(RunSetup::WEB_CRON, true);
+
+        try {
+            $exitCode = Artisan::call('schedule:run');
+        } finally {
+            Context::forgetHidden(RunSetup::WEB_CRON);
+        }
 
         // Capture scheduler output
         $output = trim(Artisan::output());

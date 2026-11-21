@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Features\Setup\Actions\RunSetup;
+use App\Features\Setup\Contracts\Step;
+use App\Features\Setup\Enums\SetupStep;
+use App\Features\Setup\Support\SetupLock;
+use App\Features\Setup\Support\SetupRunState;
+use App\Features\Setup\Support\StepContext;
+use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\System\Installer;
 use App\Models\User;
-use App\Services\Installer\MigrationService;
-use App\Services\Installer\StreamedCommandsService;
 use Livewire\Livewire;
 
 /**
@@ -16,14 +21,39 @@ use Livewire\Livewire;
  * canAccess() from hydrateCanAuthorizeAccess(), which is what these pin down.
  */
 beforeEach(function (): void {
-    // Neither method may ever reach the shell: a regression here would run
-    // `migrate` and `db:seed` against the development database.
-    $this->partialMock(MigrationService::class, function ($mock): void {
-        $mock->shouldNotReceive('runAllMigrationsWithStreaming');
-    });
-    $this->partialMock(StreamedCommandsService::class, function ($mock): void {
-        $mock->shouldNotReceive('streamArtisanCommand');
-    });
+    // No engine step may ever run: a regression here would migrate and seed
+    // the database from a replayed request.
+    $this->ran = new ArrayObject();
+    $steps = array_map(fn (SetupStep $case): Step => new readonly class($case, $this->ran) implements Step
+    {
+        public function __construct(private SetupStep $case, private ArrayObject $ran) {}
+
+        public function step(): SetupStep
+        {
+            return $this->case;
+        }
+
+        public function applies(StepContext $ctx): bool
+        {
+            return true;
+        }
+
+        public function run(StepContext $ctx): void
+        {
+            $this->ran->append($this->case);
+        }
+    }, SetupStep::cases());
+
+    app()->bind(RunSetup::class, fn (): RunSetup => new RunSetup(
+        app(SetupRunState::class),
+        app(SetupLock::class),
+        $steps,
+        app(UpgradeCompleted::class),
+    ));
+});
+
+afterEach(function (): void {
+    expect($this->ran->getArrayCopy())->toBe([]);
 });
 
 it('refuses a replayed save once the first user exists', function (): void {

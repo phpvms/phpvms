@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Dto\SimBriefOfp;
 
 use App\Support\Casts\CarbonImmutableOrFalseCast;
+use App\Support\Casts\EmptyNodeAsNullCast;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Dto;
@@ -49,8 +50,10 @@ final class SimBriefOfpAlternate extends Dto
         #[WithCast(CarbonImmutableOrFalseCast::class)]
         public false|CarbonImmutable $metar_time,
         public string $metar_category,
-        public int $metar_visibility,
-        public int $metar_ceiling,
+        #[WithCast(EmptyNodeAsNullCast::class)]
+        public ?int $metar_visibility,
+        #[WithCast(EmptyNodeAsNullCast::class)]
+        public ?int $metar_ceiling,
         public string $taf,
         #[WithCast(CarbonImmutableOrFalseCast::class)]
         public false|CarbonImmutable $taf_time,

@@ -6,6 +6,7 @@ use App\Contracts\Addons\AddonServiceProvider;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Features\Addons\Support\BootCache;
 use App\Filament\Pages\Backups;
+use App\Http\Middleware\UpgradeRequired;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Navigation\NavigationGroup;
@@ -15,6 +16,7 @@ use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\View\PanelsRenderHook;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
 class AdminPanelProvider extends BasePanelProvider
@@ -23,11 +25,16 @@ class AdminPanelProvider extends BasePanelProvider
     {
         $panel = $this->applyConsoleChrome($panel)
             ->default()
+            ->middleware([UpgradeRequired::class])
             ->id('admin')
             ->path('admin')
             // Every banner gets a trail, plain pages included: Filament builds
             // it from the page's navigation group ("Settings › Theme").
             ->breadcrumbs(hasNavigationHierarchy: true)
+            ->renderHook(
+                PanelsRenderHook::CONTENT_START,
+                fn (): string => view('filament.shared.schedule-paused')->render(),
+            )
             ->colors(fn (): array => [
                 'primary' => app(Branding::class)->brandPalette(),
             ])

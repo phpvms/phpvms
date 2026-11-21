@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\AddonManager\Filament\Pages;
 
 use App\Enums\NavigationGroup;
+use App\Features\Addons\Actions\RunAddonSetup;
 use App\Features\Addons\AddonDeleteOutcome;
 use App\Features\Addons\AddonRegistry;
 use App\Features\Addons\Services\AddonDiscoveryService;
@@ -818,7 +819,17 @@ class Addons extends Page implements HasTable
                 && $this->canInstall($record) === $inMenu)
             ->action(function (array $record) use ($enable): void {
                 $registry = app(AddonRegistry::class);
-                $enable ? $registry->enable($record['installed_key']) : $registry->disable($record['installed_key']);
+
+                try {
+                    $enable ? $registry->enable($record['installed_key']) : $registry->disable($record['installed_key']);
+                } catch (Throwable $throwable) {
+                    report($throwable);
+                    Notification::make()
+                        ->title($enable ? __('addon-manager::addons.enable_failed') : __('addon-manager::addons.disable_failed'))
+                        ->body($throwable->getMessage())
+                        ->danger()
+                        ->send();
+                }
 
                 // No redirect: the cards re-render reactively.
                 $this->refreshEntries();
@@ -1033,12 +1044,34 @@ class Addons extends Page implements HasTable
                 /** @var TemporaryUploadedFile $file */
                 $file = $data['zip'];
 
+                $registry = app(AddonRegistry::class);
+
                 try {
-                    app(AddonRegistry::class)->install(new ZipSource($file->getRealPath()));
-                    Notification::make()->title(__('addon-manager::addons.addon_installed'))->success()->send();
+                    $addon = $registry->install(new ZipSource($file->getRealPath()));
                 } catch (Throwable $throwable) {
                     Notification::make()->title(__('addon-manager::addons.install_failed'))->body($throwable->getMessage())->danger()->send();
+
+                    return;
                 }
+
+                try {
+                    app(RunAddonSetup::class)->handle($addon);
+                } catch (Throwable $throwable) {
+                    report($throwable);
+
+                    // Installed but off, so code that needs the missing schema never loads.
+                    try {
+                        $registry->disable($addon->getName());
+                    } catch (Throwable $disableFailure) {
+                        report($disableFailure);
+                    }
+
+                    Notification::make()->title(__('addon-manager::addons.install_failed'))->body($throwable->getMessage())->danger()->send();
+
+                    return;
+                }
+
+                Notification::make()->title(__('addon-manager::addons.addon_installed'))->success()->send();
             });
     }
 

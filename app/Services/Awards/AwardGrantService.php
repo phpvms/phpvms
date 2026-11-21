@@ -37,7 +37,7 @@ class AwardGrantService
         try {
             UserAward::create($w);
         } catch (Exception $exception) {
-            Log::error('Error saving award: '.$exception->getMessage(), $exception->getTrace());
+            Log::error('Error saving award: '.$exception->getMessage(), ['exception' => $exception]);
 
             return false;
         }

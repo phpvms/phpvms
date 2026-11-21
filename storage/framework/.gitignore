@@ -7,3 +7,8 @@ events.scanned.php
 routes.scanned.php
 down
 installed
+phpvms-update.json
+phpvms-update.lock
+phpvms-post-upgrade.lock
+update-7.0-completed
+phpvms-update.json.*.tmp
