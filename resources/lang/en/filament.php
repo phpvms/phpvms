@@ -280,6 +280,8 @@ return [
     'theme'                                     => 'Theme',
     'theme_current'                             => 'Active theme',
     'theme_current_hint'                        => 'The theme pilots and visitors see on the site. Themes installed as add-ons appear here once enabled.',
+    'theme_deprecated'                          => 'This theme uses deprecated 7.x features',
+    'theme_deprecated_body'                     => 'It still works, but these will be removed in a later release: :items. Upgrade the theme, or ask its author for an 8.x version.',
     'theme_preview'                             => 'Theme preview',
     'theme_preview_light'                       => 'Light',
     'theme_preview_dark'                        => 'Dark',

@@ -1,26 +1,12 @@
 @php
     $livewire = $getLivewire();
     $run = $livewire->run();
+    $waiting = $run?->status === \App\Features\Setup\Enums\RunStatus::Requested;
 @endphp
 
 <div class="space-y-4">
-    @if ($livewire->screen() === 'done')
-        <x-filament::section>
-            <div class="space-y-4">
-                <p>{{ __('installer.updater.done') }}</p>
-                {{-- Full load: wire:navigate into another panel leaves its Alpine components half-initialised. --}}
-                <x-filament::button tag="a" :href="$livewire->adminUrl()" :spa-mode="false">
-                    {{ __('installer.updater.go_to_admin') }}
-                </x-filament::button>
-            </div>
-        </x-filament::section>
-    @endif
-
-    @if ($run?->status === \App\Features\Setup\Enums\RunStatus::Requested)
-        <x-filament::section>
-            <p class="text-base font-semibold">{{ __('installer.updater.waiting_for_cron') }}</p>
-        </x-filament::section>
-    @endif
+    {{-- The done notice sits above the steps so the full log stays visible below it. --}}
+    @include('filament.system.updater.complete')
 
     @if ($livewire->screen() === 'failed')
         <x-filament::section>
@@ -43,7 +29,9 @@
     @endif
 
     <x-filament::section>
-        @if ($run?->progress)
+        @if ($waiting)
+            <p class="mb-3 text-sm">{{ __('installer.updater.waiting_for_cron') }}</p>
+        @elseif ($run?->progress)
             <p class="mb-3 text-sm">
                 {{ $run->progress['done'] }} / {{ $run->progress['total'] }}
                 @if ($run->progress['item'])
@@ -62,7 +50,7 @@
                         'text-danger-600' => $status === \App\Features\Setup\Enums\StepStatus::Failed,
                         'text-primary-600' => $status === \App\Features\Setup\Enums\StepStatus::Running,
                         'text-gray-500' => in_array($status, [\App\Features\Setup\Enums\StepStatus::Pending, \App\Features\Setup\Enums\StepStatus::Skipped], true),
-                    ])>{{ $status->value }}</span>
+                    ])>{{ $waiting && $loop->first ? __('installer.updater.waiting') : $status->value }}</span>
                 </li>
             @endforeach
         </ul>

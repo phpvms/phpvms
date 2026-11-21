@@ -32,7 +32,7 @@ final class SimBriefOfpApiParams extends Dto
         public string $manualpayload,
         public string $manualzfw,
         public int $taxifuel,
-        public int $minfob,
+        public float $minfob,
         public string $minfob_units,
         public int $minfod,
         public string $minfod_units,

@@ -67,7 +67,9 @@ return [
         'log'               => 'Log',
         'done'              => 'The update is complete.',
         'go_to_admin'       => 'Go to admin',
-        'waiting_for_cron'  => 'Waiting for next cron run',
+        'theme_deprecated'  => 'Your theme, :theme, still uses 7.x features that are deprecated: :items. They work for now, but will be removed in a later release. Upgrade the theme, or ask its author for an 8.x version.',
+        'waiting_for_cron'  => 'Waiting for cron',
+        'waiting'           => 'waiting',
         'system_updates'    => 'System updates',
         'admin_warning'     => 'This applies pending database updates. Back up your database and files first. The site is in maintenance mode while the update runs.',
         'steps'             => [
@@ -96,6 +98,8 @@ return [
     'post_upgrade' => [
         'tasks' => [
             'pirep_events_backfill' => 'Migrating PIREP Logs',
+            'simbrief_ofps'         => 'Migrating SimBrief OFPs',
+            'theme_deprecations'    => 'Checking the theme',
         ],
     ],
 ];

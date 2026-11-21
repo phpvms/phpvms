@@ -46,6 +46,16 @@ return new class() extends Migration
                 foreach ($ranks as $rank) {
                     $image = (string) $rank->image_url;
 
+                    // A 7.x web-root path (image/rank.jpg) isn't on the disk, and it still renders as is.
+                    if (!$disk->exists($image) && !preg_match('#^https?://#i', $image)) {
+                        Log::info('rank_images_to_assets: rank image kept as a site path', [
+                            'rank'  => $rank->id,
+                            'image' => $image,
+                        ]);
+
+                        continue;
+                    }
+
                     // Never fail the upgrade over one badge. An unsupported
                     // file, or a value that is neither a hosted file nor an
                     // http(s) URL, leaves that rank's column untouched, so it

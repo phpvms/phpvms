@@ -11,17 +11,24 @@ return new class() extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->string('simbrief_username')->nullable()->after('ivao_id');
         });
 
-        Schema::table('simbrief', function (Blueprint $table) {
-            $table->dropColumn(['acars_xml', 'ofp_xml']);
-
+        Schema::table('simbrief', function (Blueprint $table): void {
             $table->string('ofp_json_path')
                 ->nullable()
                 ->after('aircraft_id');
         });
+
+        // The 7.x XML stays for the simbrief_ofps post-upgrade task; 8.x never writes it.
+        foreach (['acars_xml', 'ofp_xml'] as $column) {
+            if (Schema::hasColumn('simbrief', $column)) {
+                Schema::table('simbrief', function (Blueprint $table) use ($column): void {
+                    $table->longText($column)->nullable()->change();
+                });
+            }
+        }
     }
 
     /**

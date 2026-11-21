@@ -5,8 +5,8 @@ namespace App\Providers\Filament;
 use App\Contracts\Addons\AddonServiceProvider;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Features\Addons\Support\BootCache;
-use App\Filament\Auth\AdminLogin;
 use App\Filament\Pages\Backups;
+use App\Http\Middleware\UpgradeRequired;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Navigation\NavigationGroup;
@@ -24,7 +24,7 @@ class AdminPanelProvider extends BasePanelProvider
     {
         $panel = $this->applyConsoleChrome($panel)
             ->default()
-            ->login(AdminLogin::class)
+            ->middleware([UpgradeRequired::class])
             ->id('admin')
             ->path('admin')
             // Every banner gets a trail, plain pages included: Filament builds

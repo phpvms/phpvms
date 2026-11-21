@@ -22,6 +22,7 @@ use App\Services\CronService;
 use App\Services\KvpService;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event as EventFacade;
 
@@ -140,6 +141,64 @@ test('cron-* events do not run while the panel is blocked', function (): void {
     app(SetupRunState::class)->clear();
 
     expect(scheduledEvent('cron-five-minutes')->filtersPass(app()))->toBeTrue();
+});
+
+test('every scheduled task waits out an update, add-on ones included', function (): void {
+    // Production consoles raise CommandStarting; test runs leave it off.
+    app(ConsoleKernel::class)->rerouteSymfonyCommandEvents();
+    app()->instance(MigrationPaths::class, new class() extends MigrationPaths
+    {
+        public function pendingSchema(): array
+        {
+            return [];
+        }
+
+        public function pendingData(): array
+        {
+            return [];
+        }
+    });
+    $ran = new ArrayObject();
+    $steps = array_map(fn (SetupStep $s): Step => cronTaskStep($s, $ran), SetupStep::cases());
+    app()->bind(RunSetup::class, fn (): RunSetup => new RunSetup(
+        app(SetupRunState::class),
+        app(SetupLock::class),
+        $steps,
+        app(UpgradeCompleted::class),
+    ));
+    $addonRuns = new ArrayObject();
+    app(Schedule::class)->call(static fn (): null => $addonRuns->append(now()->format('H:i')))->name('addon-task')->everyMinute();
+    EventFacade::fake([CronFiveMinute::class]);
+
+    // The update runs in this tick; nothing else due in it fires, even after it ends.
+    $this->travelTo(Carbon::parse('2026-11-01 00:00:00', 'UTC'));
+    app(SetupRunState::class)->request('cli', false);
+    Artisan::call('schedule:run');
+
+    expect(app(SetupRunState::class)->read()->status)->toBe(RunStatus::Done)
+        ->and($addonRuns->getArrayCopy())->toBe([]);
+    EventFacade::assertNotDispatched(CronFiveMinute::class);
+
+    $this->travelTo(Carbon::parse('2026-11-01 00:05:00', 'UTC'));
+    Artisan::call('schedule:run');
+
+    expect($addonRuns->getArrayCopy())->toBe(['00:05']);
+    EventFacade::assertDispatched(CronFiveMinute::class);
+});
+
+test('a failed update keeps scheduled tasks paused until it is retried', function (): void {
+    // Production consoles raise CommandStarting; test runs leave it off.
+    app(ConsoleKernel::class)->rerouteSymfonyCommandEvents();
+    $addonRuns = new ArrayObject();
+    app(Schedule::class)->call(static fn (): null => $addonRuns->append(true))->name('addon-task')->everyMinute()->evenInMaintenanceMode();
+    $state = app(SetupRunState::class);
+    $state->request('cli', false);
+    $state->markRunning();
+    $state->finished(RunStatus::Failed, 'boom');
+
+    Artisan::call('schedule:run');
+
+    expect($addonRuns->count())->toBe(0);
 });
 
 test('a failing pending-work check skips cron-* events but the heartbeat still runs', function (): void {

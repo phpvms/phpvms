@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Features\Setup\Enums\RunStatus;
 use App\Features\Setup\Enums\SetupStep;
+use App\Features\Setup\PostUpgrade\ScanThemeForDeprecations;
 use App\Features\Setup\Support\MigrationPaths;
 use App\Features\Setup\Support\SetupRunState;
 use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\System\Updater;
 use App\Services\CronService;
+use Igaster\LaravelTheme\Theme as ThemeDefinition;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
@@ -79,6 +81,22 @@ test('start writes a requested run', function (): void {
         ->and($run?->fresh)->toBeFalse();
 });
 
+test('a started run says it is waiting for cron until cron picks it up', function (): void {
+    app(CronService::class)->updateLastRunTime();
+
+    $component = Livewire::test(Updater::class)
+        ->set('confirmed', true)
+        ->call('start')
+        ->assertSee(__('installer.updater.waiting_for_cron'));
+
+    expect(app(SetupRunState::class)->read()?->logTail)->toBe(['==> '.__('installer.updater.waiting_for_cron')]);
+
+    app(SetupRunState::class)->markRunning();
+    unset($component->instance()->run);
+
+    $component->call('$refresh')->assertDontSee(__('installer.updater.waiting_for_cron').'</p>', false);
+});
+
 test('no Start while the cron heartbeat is stale', function (): void {
     $component = Livewire::test(Updater::class)
         ->assertSee(app(CronService::class)->getCronExecString())
@@ -139,6 +157,25 @@ test('a page that watched the run shows the done screen after it finishes', func
         ->assertSee(updaterPage($component)->adminUrl());
 
     expect(updaterPage($component)->screen())->toBe('done');
+});
+
+test('the completed screen warns when the post-upgrade scan found deprecated theme features', function (): void {
+    new ThemeDefinition('legacy-7x', null, '/tests/fixtures/themes/legacy-7x');
+    updateSetting('general.theme', 'legacy-7x');
+    $state = app(SetupRunState::class);
+    $state->request('web', false);
+    $state->markRunning();
+
+    $component = Livewire::test(Updater::class);
+
+    app(ScanThemeForDeprecations::class)->run();
+    $state->finished(RunStatus::Done);
+    app(UpgradeCompleted::class)->write();
+
+    $component->call('$refresh')
+        ->assertSee(__('installer.updater.theme_deprecated', ['theme' => 'legacy-7x', 'items' => '$moduleSvc, @ability']), false);
+
+    expect(app(ScanThemeForDeprecations::class)->pending())->toBeFalse();
 });
 
 test('after the completion file exists, a failed run still shows progress and Retry but no Start', function (): void {

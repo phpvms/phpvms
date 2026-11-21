@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 use App\Features\Setup\Support\MigrationPaths;
 use App\Features\Setup\Support\UpgradeCompleted;
+use App\Filament\Auth\AdminLogin;
 use App\Filament\Pages\SystemUpdates;
 use App\Http\Data\BrandingData;
 use App\Http\Middleware\UpdatePending;
+use App\Http\Middleware\UpgradeRequired;
 use App\Models\User;
 use App\Support\Branding;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
 
 function adminPendingWork(array $pending): void
 {
@@ -33,7 +36,7 @@ function adminPendingWork(array $pending): void
 
 beforeEach(function (): void {
     // TestCase turns the gate off suite-wide; this file covers it.
-    $this->withMiddleware(UpdatePending::class);
+    $this->withMiddleware([UpdatePending::class, UpgradeRequired::class]);
     adminPendingWork(['2026_01_01_000000_pending']);
 });
 
@@ -82,6 +85,39 @@ test('an admin is sent to /system/upgrade before the upgrade is completed', func
 
     $this->get('/admin')->assertRedirect('/system/upgrade');
 });
+
+test('a guest is sent from the admin login to /system/upgrade before the upgrade is completed', function (): void {
+    $this->get('/admin/login')->assertRedirect('/system/upgrade');
+});
+
+test('a session that survived the deploy is sent to /system/upgrade, before any roles lookup', function (): void {
+    $this->actingAs(User::factory()->create());
+    Schema::rename('model_has_roles', 'model_has_roles_v7');
+
+    try {
+        $this->get('/admin')->assertRedirect('/system/upgrade');
+        $this->post('/admin/logout')->assertRedirect('/system/upgrade');
+    } finally {
+        Schema::rename('model_has_roles_v7', 'model_has_roles');
+    }
+})->skip(skipOnMysql(), 'Renaming a table is DDL, which MySQL commits outside the test transaction.');
+
+test('submitting the admin login before the upgrade goes to /system/upgrade, before any roles lookup', function (): void {
+    $user = User::factory()->create(['password' => bcrypt('secret')]);
+    Schema::rename('model_has_roles', 'model_has_roles_v7');
+
+    try {
+        Livewire::test(AdminLogin::class)
+            ->set('data.email', $user->email)
+            ->set('data.password', 'secret')
+            ->call('authenticate')
+            ->assertRedirect('/system/upgrade');
+    } finally {
+        Schema::rename('model_has_roles_v7', 'model_has_roles');
+    }
+
+    $this->assertGuest();
+})->skip(skipOnMysql(), 'Renaming a table is DDL, which MySQL commits outside the test transaction.');
 
 test('a guest reaches the admin login after the upgrade, or when nothing is pending', function (): void {
     app(UpgradeCompleted::class)->write();

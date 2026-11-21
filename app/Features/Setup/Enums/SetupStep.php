@@ -14,12 +14,12 @@ enum SetupStep: string
     case Innodb = 'innodb';
     case CacheTables = 'cache_tables';
     case LinkAddons = 'link_addons';
+    case StorageLink = 'storage_link';
     case Migrate = 'migrate';
     case Seed = 'seed';
+    case PassportKeys = 'passport_keys';
     case DataMigrate = 'data_migrate';
     case DataTasks = 'data_tasks';
-    case PassportKeys = 'passport_keys';
-    case StorageLink = 'storage_link';
     case Marker = 'marker';
     case AddonCache = 'addon_cache';
     case Optimize = 'optimize';

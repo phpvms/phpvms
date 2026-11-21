@@ -3,6 +3,7 @@
 namespace App\Support\Dto\SimBriefOfp;
 
 use App\Support\Casts\CarbonImmutableOrFalseCast;
+use App\Support\Casts\EmptyNodeAsNullCast;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -37,8 +38,10 @@ final class SimBriefOfpEtopsSuitableAirport extends Dto
         #[WithCast(CarbonImmutableOrFalseCast::class)]
         public false|CarbonImmutable $metar_time,
         public string $metar_category,
-        public int $metar_visibility,
-        public int $metar_ceiling,
+        #[WithCast(EmptyNodeAsNullCast::class)]
+        public ?int $metar_visibility,
+        #[WithCast(EmptyNodeAsNullCast::class)]
+        public ?int $metar_ceiling,
         public string $taf,
         #[WithCast(CarbonImmutableOrFalseCast::class)]
         public false|CarbonImmutable $taf_time,

@@ -9,6 +9,7 @@ use App\Features\Setup\Actions\RunSetup;
 use App\Features\Setup\Enums\RunStatus;
 use App\Features\Setup\Enums\SetupStep;
 use App\Features\Setup\Enums\StepStatus;
+use App\Features\Setup\PostUpgrade\ScanThemeForDeprecations;
 use App\Features\Setup\Support\CronHealth;
 use App\Features\Setup\Support\RunSnapshot;
 use App\Features\Setup\Support\SetupRunState;
@@ -103,6 +104,15 @@ class Updater extends Page
         return null;
     }
 
+    /**
+     * @return array{theme: string, found: list<string>}|null
+     */
+    #[Computed]
+    public function themeScan(): ?array
+    {
+        return app(ScanThemeForDeprecations::class)->result();
+    }
+
     #[Computed]
     public function adminUrl(): string
     {
@@ -165,7 +175,12 @@ class Updater extends Page
     {
         if (!app(RunSetup::class)->request('web', fresh: false)) {
             Notification::make()->title(__('installer.update_in_progress'))->warning()->send();
+
+            return;
         }
+
+        // The web page only queues the run; cron picks it up.
+        app(SetupRunState::class)->appendLog('==> '.__('installer.updater.waiting_for_cron'));
     }
 
     /**
