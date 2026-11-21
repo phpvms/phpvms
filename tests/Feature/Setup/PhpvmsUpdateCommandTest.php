@@ -118,6 +118,41 @@ test('exits 1 when another process holds the lock past --wait', function (): voi
     expect($ran)->toHaveCount(0);
 });
 
+test('a caller waiting on the lock does not redo work the lock holder finished', function (): void {
+    $ran = new ArrayObject();
+    bindUpdateCommandEngine($ran);
+    $lock = app(SetupLock::class);
+    $lock->acquire();
+    // Pending on the first check; by the next, the other process has finished and let go.
+    app()->instance(MigrationPaths::class, new class($lock) extends MigrationPaths
+    {
+        private int $calls = 0;
+
+        public function __construct(private readonly SetupLock $lock) {}
+
+        public function pendingSchema(): array
+        {
+            if (++$this->calls === 1) {
+                return ['2026_01_01_000000_pending'];
+            }
+
+            $this->lock->release();
+
+            return [];
+        }
+
+        public function pendingData(): array
+        {
+            return [];
+        }
+    });
+
+    $this->artisan('phpvms:update', ['--wait' => 5])->assertExitCode(0);
+
+    expect($ran)->toHaveCount(0)
+        ->and(app(SetupRunState::class)->read())->toBeNull();
+});
+
 test('records and runs a new run when work is pending', function (): void {
     $ran = new ArrayObject();
     bindUpdateCommandEngine($ran);

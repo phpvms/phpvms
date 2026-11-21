@@ -52,6 +52,16 @@ test('converts a 7.x OFP into the JSON file 8.x reads and keeps the XML', functi
         ->and(app(RunPostUpgradeTasks::class)->status(ConvertSimBriefOfps::KEY))->toBe(PostUpgradeStatus::Done);
 });
 
+test('converts a 2020 OFP that predates fields 8.x requires', function (): void {
+    legacySimbriefRow('1585313544_AAAAAAAAAA', readDataFile('simbrief/briefing.xml'));
+
+    app(RunPostUpgradeTasks::class)->handle();
+
+    $simbrief = SimBrief::findOrFail('1585313544_AAAAAAAAAA');
+    expect($simbrief->ofp_json_path)->toBe('simbrief/1585313544_AAAAAAAAAA.json')
+        ->and($simbrief->ofp->params->units)->toBe('lbs');
+});
+
 test('skips an OFP that will not convert in the same run and converts the rest', function (): void {
     app()->bind(ConvertSimBriefOfps::class, fn (): ConvertSimBriefOfps => new ConvertSimBriefOfps(app(PostUpgradeTaskState::class), new SimBriefXmlToJson(), chunkSize: 2));
     legacySimbriefRow('a', legacyOfpXml());
@@ -70,7 +80,7 @@ test('skips an OFP that will not convert in the same run and converts the rest',
 
 test('an OFP 8.x could not read is skipped, not linked', function (): void {
     $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
-    unset($ofp['general']);
+    $ofp['params']['units'] = ['unit' => 'kgs'];
     legacySimbriefRow('nogeneral', simbriefOfpXml($ofp));
 
     app(RunPostUpgradeTasks::class)->handle();

@@ -68,6 +68,20 @@ final class PauseScheduleDuringSetup
         }
     }
 
+    /**
+     * A site brought back up by hand after a failure has been taken over; its tasks run again.
+     */
+    public static function failedRunTakenOver(?RunSnapshot $run = null): bool
+    {
+        try {
+            $run ??= app(SetupRunState::class)->read();
+        } catch (Throwable) {
+            return false;
+        }
+
+        return $run?->status === RunStatus::Failed && !app()->isDownForMaintenance();
+    }
+
     private static function recordPause(): void
     {
         try {
@@ -103,9 +117,8 @@ final class PauseScheduleDuringSetup
             return true;
         }
 
-        // A site brought back up by hand after a failure has been taken over; let its tasks run.
         if ($run->status === RunStatus::Failed) {
-            return app()->isDownForMaintenance();
+            return !self::failedRunTakenOver($run);
         }
 
         return $run->finishedAt !== null

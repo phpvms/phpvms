@@ -46,7 +46,7 @@ class PhpvmsUpdate extends Command
             return self::SUCCESS;
         }
 
-        $outcome = $this->runWaiting($update, $pending->freshInstall, (int) $this->option('wait'));
+        $outcome = $this->runWaiting($detect, $update, $pending->freshInstall, (int) $this->option('wait'));
 
         // Another process may have finished the run; check before calling the database current.
         if ($outcome === RunOutcome::NothingRequested && $this->detect($detect, (int) $this->option('db-timeout'))?->isCurrent() !== true) {
@@ -75,7 +75,7 @@ class PhpvmsUpdate extends Command
     /**
      * Request and run, retrying every second while another process holds the lock.
      */
-    private function runWaiting(RunSetup $update, bool $fresh, int $wait): RunOutcome
+    private function runWaiting(DetectPendingWork $detect, RunSetup $update, bool $fresh, int $wait): RunOutcome
     {
         $deadline = time() + $wait;
 
@@ -89,6 +89,11 @@ class PhpvmsUpdate extends Command
             }
 
             sleep(1);
+
+            // The process that held the lock may have finished the work; a new request would redo every step.
+            if ($this->detect($detect, (int) $this->option('db-timeout'))?->isCurrent() === true) {
+                return RunOutcome::NothingRequested;
+            }
         }
     }
 

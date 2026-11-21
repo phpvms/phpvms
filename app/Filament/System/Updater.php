@@ -11,6 +11,7 @@ use App\Features\Setup\Enums\SetupStep;
 use App\Features\Setup\Enums\StepStatus;
 use App\Features\Setup\PostUpgrade\ScanThemeForDeprecations;
 use App\Features\Setup\Support\CronHealth;
+use App\Features\Setup\Support\RunLog;
 use App\Features\Setup\Support\RunSnapshot;
 use App\Features\Setup\Support\SetupRunState;
 use App\Features\Setup\Support\UpgradeCompleted;
@@ -59,6 +60,23 @@ class Updater extends Page
     public function run(): ?RunSnapshot
     {
         return app(SetupRunState::class)->read();
+    }
+
+    /**
+     * The whole run from its log file; the state file only keeps the last lines.
+     */
+    #[Computed]
+    public function log(): string
+    {
+        $run = $this->run();
+
+        if (!$run instanceof RunSnapshot) {
+            return '';
+        }
+
+        $full = RunLog::for($run->id)->read();
+
+        return $full !== '' ? $full : implode("\n", $run->logTail);
     }
 
     #[Computed]

@@ -214,6 +214,20 @@ test('a failed update pauses scheduled tasks only while the site is down', funct
     // Production consoles raise CommandStarting; test runs leave it off.
     app(ConsoleKernel::class)->rerouteSymfonyCommandEvents();
     config(['app.maintenance.driver' => 'file']);
+    app()->instance(MigrationPaths::class, new class() extends MigrationPaths
+    {
+        public function pendingSchema(): array
+        {
+            return [];
+        }
+
+        public function pendingData(): array
+        {
+            return [];
+        }
+    });
+    EventFacade::fake([CronFiveMinute::class]);
+    $this->travelTo(Carbon::parse('2026-11-01 00:00:00', 'UTC'));
     $addonRuns = new ArrayObject();
     app(Schedule::class)->call(static fn (): null => $addonRuns->append(true))->name('addon-task')->everyMinute()->evenInMaintenanceMode();
     $state = app(SetupRunState::class);
@@ -229,6 +243,7 @@ test('a failed update pauses scheduled tasks only while the site is down', funct
     Artisan::call('up');
     Artisan::call('schedule:run');
     expect($addonRuns->count())->toBe(1);
+    EventFacade::assertDispatched(CronFiveMinute::class);
 });
 
 test('the admin warns when scheduled tasks stay paused, and stops once the state file is removed', function (): void {

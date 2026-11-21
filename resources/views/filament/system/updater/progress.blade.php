@@ -72,7 +72,7 @@
             <pre
                 x-ref="log"
                 x-on:scroll="stick = $el.scrollTop + $el.clientHeight >= $el.scrollHeight - 8"
-                class="max-h-96 overflow-auto rounded-lg bg-gray-950 p-3 text-xs text-gray-100">{{ implode("\n", $run?->logTail ?? []) }}</pre>
+                class="max-h-96 overflow-auto rounded-lg bg-gray-950 p-3 text-xs text-gray-100">{{ $livewire->log() }}</pre>
             <x-filament::button size="sm" color="gray" x-on:click="navigator.clipboard.writeText($refs.log.innerText)">
                 {{ __('installer.updater.copy') }}
             </x-filament::button>

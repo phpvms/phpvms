@@ -92,7 +92,8 @@ final class SimBriefXmlToJson
             libxml_use_internal_errors($previous);
         }
 
-        if (!$root instanceof SimpleXMLElement || $root->getName() !== 'OFP') {
+        // acars flight plans carry a trimmed OFP under a `<VMSAcars>` root.
+        if (!$root instanceof SimpleXMLElement || !in_array($root->getName(), ['OFP', 'VMSAcars'], true)) {
             throw new RuntimeException('Not a SimBrief OFP: '.($error === false ? 'no <OFP> root' : trim($error->message)));
         }
 

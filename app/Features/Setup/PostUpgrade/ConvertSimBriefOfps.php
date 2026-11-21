@@ -173,7 +173,7 @@ final readonly class ConvertSimBriefOfps implements PostUpgradeTask, SkipsFailin
     private function convertRow(stdClass $row, array &$data): void
     {
         try {
-            $ofp = $this->converter->convert((string) $row->ofp_xml);
+            $ofp = new SimBriefOfpDefaults()->fill($this->converter->convert((string) $row->ofp_xml));
             // 8.x reads the file through this DTO; a file it cannot parse would break the pages that show it.
             SimBriefOfp::from($ofp);
             $json = json_encode($ofp, JSON_THROW_ON_ERROR);

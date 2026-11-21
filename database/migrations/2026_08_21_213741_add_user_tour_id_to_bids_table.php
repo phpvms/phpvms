@@ -22,12 +22,21 @@ return new class() extends Migration
         $hasIndex = $hasColumn && Schema::hasIndex('bids', ['user_tour_id']);
         $hasForeign = $hasColumn && collect(Schema::getForeignKeys('bids'))->contains(fn (array $fk): bool => $fk['columns'] === ['user_tour_id']);
 
-        Schema::table('bids', function (Blueprint $table) use ($hasColumn, $hasIndex, $hasForeign): void {
+        // v7 `bids` carries the server default collation; the FK needs `user_tours`.`id`'s.
+        $parent = $this->columnCollation('user_tours', 'id');
+
+        // A column an earlier build added in the wrong collation would fail the FK on every retry.
+        if ($hasColumn && !$hasForeign && $parent !== null && $this->columnCollation('bids', 'user_tour_id') !== $parent) {
+            Schema::table('bids', function (Blueprint $table) use ($parent): void {
+                $table->string('user_tour_id', 36)->nullable()->charset($parent[0])->collation($parent[1])->change();
+            });
+        }
+
+        Schema::table('bids', function (Blueprint $table) use ($hasColumn, $hasIndex, $hasForeign, $parent): void {
             if (!$hasColumn) {
                 $column = $table->string('user_tour_id', 36)->nullable()->after('aircraft_id');
 
-                // v7 `bids` carries the server default collation; the FK needs `user_tours`.`id`'s.
-                if (($parent = $this->parentCollation('user_tours', 'id')) !== null) {
+                if ($parent !== null) {
                     $column->charset($parent[0])->collation($parent[1]);
                 }
             }
@@ -51,7 +60,7 @@ return new class() extends Migration
     }
 
     /** @return array{string, string}|null */
-    private function parentCollation(string $table, string $column): ?array
+    private function columnCollation(string $table, string $column): ?array
     {
         $connection = Schema::getConnection();
 

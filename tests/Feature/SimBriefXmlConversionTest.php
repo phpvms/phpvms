@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Features\Setup\PostUpgrade\SimBriefOfpDefaults;
 use App\Features\Setup\PostUpgrade\SimBriefXmlToJson;
 use App\Support\Dto\SimBriefOfp\SimBriefOfp;
+use App\Support\Dto\SimBriefOfp\SimBriefOfpNavlog;
 use Illuminate\Support\Arr;
 
 function simbriefJsonFixture(): array
@@ -47,15 +49,27 @@ it('converts the 7.x fixture XML into the v2 fields 8.x and acars read', functio
         ->and(array_column($converted['files']['file'], 'name'))->toHaveCount(count($xml->files->file))
         ->and($converted['files']['pdf']['link'])->toBe($json['files']['pdf']['link']);
 
-    // The 2020 XML predates fields 8.x requires: the JSON fixture fills those, the XML's sections override it.
-    $sections = ['params', 'general', 'origin', 'destination', 'alternate', 'navlog', 'times', 'fuel', 'weights', 'text', 'files', 'fms_downloads', 'images'];
-    $ofp = SimBriefOfp::from(array_replace_recursive($json, Arr::only($converted, $sections)));
+    // The 2020 XML predates fields 8.x requires; the defaults fill them.
+    $ofp = SimBriefOfp::from(new SimBriefOfpDefaults()->fill($converted));
 
     expect($ofp->params->units)->toBe('lbs')
         ->and($ofp->times->est_time_enroute)->toBe($converted['times']['est_time_enroute'])
         ->and($ofp->general->dx_rmk)->toBe($converted['general']['dx_rmk'])
         ->and($ofp->fuel->plan_ramp)->toBe((int) $xml->fuel->plan_ramp)
         ->and($ofp->weights->payload)->toBe((int) $xml->weights->payload);
+});
+
+it('reads the trimmed OFP inside an acars flight plan', function (): void {
+    $xml = '<?xml version="1.0"?><VMSAcars Type="FlightPlan" version="1.0" generated="1795298643">'
+        .'<params><time_generated>1795298643</time_generated><units>kgs</units></params>'
+        .'<origin><icao_code>KJFK</icao_code></origin>'
+        .'<navlog><fix><ident>HAPIE</ident><pos_lat>40.5</pos_lat></fix><fix><ident>YAHOO</ident><pos_lat>41.2</pos_lat></fix></navlog>'
+        .'</VMSAcars>';
+
+    $ofp = SimBriefOfp::from(new SimBriefOfpDefaults()->fill(new SimBriefXmlToJson()->convert($xml)));
+
+    expect($ofp->origin->icao_code)->toBe('KJFK')
+        ->and(array_map(fn (SimBriefOfpNavlog $fix): string => $fix->ident, $ofp->navlog))->toBe(['HAPIE', 'YAHOO']);
 });
 
 it('refuses XML that is not a SimBrief OFP', function (string $xml): void {

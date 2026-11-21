@@ -52,7 +52,9 @@ class DevInstall extends Command
             '--force' => true,
         ]);
         // DatabaseSeeder no longer runs data migrations.
-        $this->call('migrate:data', ['--force' => true]);
+        if ($this->call('migrate-data', ['--force' => true]) !== self::SUCCESS) {
+            return self::FAILURE;
+        }
 
         $this->components->info('Developer installation completed successfully!');
 

@@ -6,6 +6,7 @@ use App\Features\Setup\Enums\RunStatus;
 use App\Features\Setup\Enums\SetupStep;
 use App\Features\Setup\PostUpgrade\ScanThemeForDeprecations;
 use App\Features\Setup\Support\MigrationPaths;
+use App\Features\Setup\Support\RunLog;
 use App\Features\Setup\Support\SetupRunState;
 use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\System\Updater;
@@ -95,6 +96,24 @@ test('a started run says it is waiting for cron until cron picks it up', functio
     unset($component->instance()->run);
 
     $component->call('$refresh')->assertDontSee(__('installer.updater.waiting_for_cron').'</p>', false);
+});
+
+test('the log shows the whole run, not only the lines the state file keeps', function (): void {
+    $state = app(SetupRunState::class);
+    $state->request('web', false);
+    $state->markRunning();
+
+    $log = RunLog::for($state->read()->id);
+
+    foreach (range(1, 250) as $i) {
+        $line = sprintf('line %03d', $i);
+        $log->write($line);
+        $state->appendLog($line);
+    }
+
+    Livewire::test(Updater::class)
+        ->assertSee('line 001')
+        ->assertSee('line 250');
 });
 
 test('no Start while the cron heartbeat is stale', function (): void {

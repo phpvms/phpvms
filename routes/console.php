@@ -11,6 +11,7 @@ use App\Events\CronThirtyMinute;
 use App\Events\CronWeekly;
 use App\Features\Setup\Actions\DetectPendingWork;
 use App\Features\Setup\Actions\RunSetup;
+use App\Features\Setup\Support\PauseScheduleDuringSetup;
 use App\Services\CronService;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Schedule;
@@ -37,7 +38,7 @@ Schedule::call(static fn () => app(RunSetup::class)->handle())
 $panelNotBlocked = static function (): bool {
     // A throwing filter would abort the whole schedule:run; when in doubt, skip.
     try {
-        return !app(DetectPendingWork::class)->handle()->blocksPanel();
+        return !app(DetectPendingWork::class)->handle()->blocksCron(PauseScheduleDuringSetup::failedRunTakenOver());
     } catch (Throwable) {
         return false;
     }

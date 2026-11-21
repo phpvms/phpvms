@@ -23,4 +23,9 @@ final readonly class RunLog
         File::ensureDirectoryExists(dirname($this->path));
         File::append($this->path, $line.PHP_EOL);
     }
+
+    public function read(): string
+    {
+        return File::exists($this->path) ? rtrim(File::get($this->path)) : '';
+    }
 }

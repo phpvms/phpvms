@@ -28,11 +28,23 @@ final readonly class PendingWork
      */
     public function blocksPanel(): bool
     {
+        return $this->schemaBehind() || $this->runUnfinished;
+    }
+
+    /**
+     * Whether core cron events must wait. A failed run an operator brought back up no longer holds them.
+     */
+    public function blocksCron(bool $failedRunTakenOver): bool
+    {
+        return $failedRunTakenOver ? $this->schemaBehind() : $this->blocksPanel();
+    }
+
+    private function schemaBehind(): bool
+    {
         return $this->freshInstall
             || $this->pendingMigrations !== []
             || $this->pendingDataMigrations !== []
-            || $this->pendingCoreSeeds
-            || $this->runUnfinished;
+            || $this->pendingCoreSeeds;
     }
 
     public function isCurrent(): bool
