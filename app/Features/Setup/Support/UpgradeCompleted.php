@@ -14,6 +14,9 @@ use Throwable;
  */
 final readonly class UpgradeCompleted
 {
+    // Also written at the end of the run, so a lost file can be told apart from a run still going.
+    public const string KVP_KEY = 'setup.upgrade_completed';
+
     public function __construct(private string $path, private bool $databaseSignal = true) {}
 
     public static function defaultPath(): string
@@ -28,7 +31,7 @@ final readonly class UpgradeCompleted
         }
 
         // A lost file on an 8.x database must not reopen the guest Start path; rewrite it.
-        if (!$this->databaseSignal || !$this->hasV8Schema()) {
+        if (!$this->databaseSignal || !$this->recordedInDatabase()) {
             return false;
         }
 
@@ -43,15 +46,20 @@ final readonly class UpgradeCompleted
 
     public function write(): void
     {
+        $at = now()->toIso8601String();
+
+        if ($this->databaseSignal) {
+            DB::table('kvp')->updateOrInsert(['key' => self::KVP_KEY], ['value' => $at]);
+        }
+
         File::ensureDirectoryExists(dirname($this->path));
-        File::put($this->path, now()->toIso8601String());
+        File::put($this->path, $at);
     }
 
-    private function hasV8Schema(): bool
+    private function recordedInDatabase(): bool
     {
         try {
-            return Schema::hasTable('migrations')
-                && DB::table('migrations')->where('migration', '2026_06_04_000001_create_addons_table')->exists();
+            return Schema::hasTable('kvp') && DB::table('kvp')->where('key', self::KVP_KEY)->exists();
         } catch (Throwable) {
             return false;
         }

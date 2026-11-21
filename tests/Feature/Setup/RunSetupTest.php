@@ -147,7 +147,8 @@ test('resumes a running run at the first step not done', function (): void {
     $outcome = runSetupEngine($this, $steps)->handle();
 
     expect($outcome)->toBe(RunOutcome::Ran)
-        ->and($this->ran->getArrayCopy())->toBe([SetupStep::Preflight, SetupStep::MaintenanceDown, ...array_slice(SetupStep::cases(), 3)]);
+        // Innodb is re-checked too: a database restored from the backup is MyISAM again.
+        ->and($this->ran->getArrayCopy())->toBe([SetupStep::Preflight, SetupStep::MaintenanceDown, SetupStep::Innodb, ...array_slice(SetupStep::cases(), 3)]);
 });
 
 test('returns Busy and runs nothing while another process holds the lock', function (): void {
@@ -251,7 +252,7 @@ test('a completion file that cannot be written fails the run instead of finishin
         ->and($this->completed->exists())->toBeFalse();
 });
 
-test('preflight and maintenance_down re-run on resume even when recorded done', function (): void {
+test('preflight, maintenance_down and innodb re-run on resume even when recorded done', function (): void {
     $this->state->request('cli', false);
     $this->state->markRunning();
 
@@ -264,7 +265,7 @@ test('preflight and maintenance_down re-run on resume even when recorded done', 
     $outcome = runSetupEngine($this, $steps)->handle();
 
     expect($outcome)->toBe(RunOutcome::Ran)
-        ->and($this->ran->getArrayCopy())->toBe([SetupStep::Preflight, SetupStep::MaintenanceDown]);
+        ->and($this->ran->getArrayCopy())->toBe([SetupStep::Preflight, SetupStep::MaintenanceDown, SetupStep::Innodb]);
 });
 
 test('a failed query stores the database error without the SQL or its bindings', function (): void {

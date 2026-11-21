@@ -21,8 +21,7 @@ final class PreventRequestsDuringSetup extends PreventRequestsDuringMaintenance
      */
     protected function inExceptArray($request): bool
     {
-        // api/cron/* is the secret-checked web cron, which must keep running setup while down.
-        if (parent::inExceptArray($request) || $request->is('livewire-*/livewire*.js', 'api/cron/*', ...self::SETUP_ROUTES)) {
+        if (parent::inExceptArray($request) || $request->is('livewire-*/livewire*.js', ...self::SETUP_ROUTES)) {
             return true;
         }
 

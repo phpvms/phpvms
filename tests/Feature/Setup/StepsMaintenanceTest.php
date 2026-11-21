@@ -80,12 +80,6 @@ test('while down, /system/upgrade and the Livewire script answer and /admin retu
         ->and($this->get('/admin')->getStatusCode())->toBe(503);
 });
 
-test('while down, the web cron route is not blocked', function (): void {
-    Artisan::call('down');
-
-    expect($this->get('/api/cron/not-the-secret')->getStatusCode())->not->toBe(503);
-});
-
 test('while down, Livewire updates from the setup pages are exempt, whatever the component', function (): void {
     Artisan::call('down');
 

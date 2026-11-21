@@ -23,8 +23,9 @@ enum SetupStep: string
     case Marker = 'marker';
     case AddonCache = 'addon_cache';
     case Optimize = 'optimize';
-    case OctaneReload = 'octane_reload';
     case MaintenanceUp = 'maintenance_up';
+    // After maintenance_up: workers it boots must not see a run in progress and keep the array cache.
+    case OctaneReload = 'octane_reload';
 
     public function label(): string
     {

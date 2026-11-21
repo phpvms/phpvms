@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Features\Setup\Support;
 
 use App\Features\Setup\Enums\RunStatus;
+use App\Services\KvpService;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Console\Scheduling\Event as ScheduledEvent;
 use Illuminate\Console\Scheduling\Schedule;
@@ -21,6 +22,9 @@ final class PauseScheduleDuringSetup
 {
     // These keep running: the heartbeat lets Start through, setup-run is the update.
     private const array RUNS_DURING_SETUP = ['update-last-run-time', 'setup-run'];
+
+    // When the pause began, for the admin warning; empty while tasks run.
+    public const string PAUSED_SINCE = 'schedule_paused_since';
 
     private static ?Carbon $tickStartedAt = null;
 
@@ -45,7 +49,41 @@ final class PauseScheduleDuringSetup
                 self::$gated[$scheduled] = true;
                 $scheduled->skip(static fn (): bool => self::paused());
             }
+
+            self::recordPause();
         });
+    }
+
+    /**
+     * When the schedule has been paused since, or null while it runs.
+     */
+    public static function pausedSince(): ?Carbon
+    {
+        try {
+            $since = app(KvpService::class)->get(self::PAUSED_SINCE);
+
+            return is_string($since) && $since !== '' ? Carbon::parse($since) : null;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private static function recordPause(): void
+    {
+        try {
+            $kvp = app(KvpService::class);
+            $since = $kvp->get(self::PAUSED_SINCE);
+
+            if (self::paused()) {
+                if (!is_string($since) || $since === '') {
+                    $kvp->save(self::PAUSED_SINCE, Carbon::now()->toIso8601String());
+                }
+            } elseif (is_string($since) && $since !== '') {
+                $kvp->save(self::PAUSED_SINCE, '');
+            }
+        } catch (Throwable) {
+            // Tracking only feeds a warning; it must never stop the tick.
+        }
     }
 
     private static function paused(): bool
@@ -61,8 +99,13 @@ final class PauseScheduleDuringSetup
             return false;
         }
 
-        if (in_array($run->status, [RunStatus::Requested, RunStatus::Running, RunStatus::Failed], true)) {
+        if (in_array($run->status, [RunStatus::Requested, RunStatus::Running], true)) {
             return true;
+        }
+
+        // A site brought back up by hand after a failure has been taken over; let its tasks run.
+        if ($run->status === RunStatus::Failed) {
+            return app()->isDownForMaintenance();
         }
 
         return $run->finishedAt !== null

@@ -173,14 +173,10 @@ class Updater extends Page
 
     private function request(): void
     {
-        if (!app(RunSetup::class)->request('web', fresh: false)) {
-            Notification::make()->title(__('installer.update_in_progress'))->warning()->send();
-
-            return;
-        }
-
         // The web page only queues the run; cron picks it up.
-        app(SetupRunState::class)->appendLog('==> '.__('installer.updater.waiting_for_cron'));
+        if (!app(RunSetup::class)->request('web', fresh: false, log: '==> '.__('installer.updater.waiting_for_cron'))) {
+            Notification::make()->title(__('installer.update_in_progress'))->warning()->send();
+        }
     }
 
     /**

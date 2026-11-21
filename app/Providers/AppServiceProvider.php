@@ -422,6 +422,7 @@ class AppServiceProvider extends ServiceProvider
         // The cache store may be missing mid-setup, yet schedule:run and Livewire need one.
         // Skipped while a config cache is built, so the swap is never baked in.
         if (SetupCache::active() && !SetupCache::$buildingConfig && !$this->app->runningConsoleCommand('config:cache', 'optimize')) {
+            SetupCache::$realStore = config('cache.default');
             config(['cache.default' => 'array']);
         }
 

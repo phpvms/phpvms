@@ -17,6 +17,7 @@ beforeEach(function (): void {
 
 afterEach(function (): void {
     SetupCache::$buildingConfig = false;
+    SetupCache::$realStore = null;
     @unlink(UpgradeCompleted::defaultPath());
     @unlink(storage_path('framework/down'));
     @unlink(SetupRunState::defaultPath());
@@ -34,6 +35,20 @@ test('the cache store is the array store until the upgrade completes', function 
     new AppServiceProvider(app())->register();
 
     expect(config('cache.default'))->toBe('array');
+});
+
+test('the swapped-out store is remembered so setup can still clear it', function (): void {
+    new AppServiceProvider(app())->register();
+
+    expect(SetupCache::$realStore)->toBe('database');
+});
+
+test('once the run has brought the site up, workers it reloads use the real store before the upgrade completes', function (): void {
+    file_put_contents(SetupRunState::defaultPath(), json_encode(['status' => 'running', 'steps' => ['maintenance_up' => ['status' => 'done']]]));
+
+    new AppServiceProvider(app())->register();
+
+    expect(config('cache.default'))->toBe('database');
 });
 
 test('the cache store is kept once the upgrade has completed', function (): void {

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration
@@ -13,8 +14,14 @@ return new class() extends Migration
      */
     public function up(): void
     {
+        // MySQL adds the indexes and foreign keys after CREATE TABLE, so an empty table
+        // is a create that was cut short: start it over. One with rows is complete.
         if (Schema::hasTable('pirep_archive')) {
-            return;
+            if (DB::table('pirep_archive')->exists()) {
+                return;
+            }
+
+            Schema::drop('pirep_archive');
         }
 
         Schema::create('pirep_archive', function (Blueprint $table): void {

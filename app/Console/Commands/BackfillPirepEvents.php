@@ -9,6 +9,7 @@ use App\Features\Setup\Enums\PostUpgradeOutcome;
 use App\Features\Setup\Enums\PostUpgradeStatus;
 use App\Features\Setup\PostUpgrade\BackfillPirepEvents as BackfillTask;
 use App\Models\Acars;
+use App\Models\PirepEvent;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -107,7 +108,8 @@ class BackfillPirepEvents extends Command
             return $this->skipPurge();
         }
 
-        $purged = Acars::query()->ofType(AcarsType::LOG)->delete();
+        // Only rows with a copy: a skipped row's acars LOG is its only record.
+        $purged = Acars::query()->ofType(AcarsType::LOG)->whereIn('id', PirepEvent::query()->select('id'))->delete();
         $this->components->info(sprintf('Purged %d acars LOG row(s).', $purged));
 
         return self::SUCCESS;

@@ -20,10 +20,12 @@ use App\Features\Setup\Support\StepContext;
 use App\Features\Setup\Support\UpgradeCompleted;
 use App\Services\CronService;
 use App\Services\KvpService;
+use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event as EventFacade;
 
 function cronTaskStep(SetupStep $which, ArrayObject $ran): Step
@@ -96,6 +98,28 @@ test('a requested run is picked up by schedule:run', function (): void {
 
     expect(app(SetupRunState::class)->read()->status)->toBe(RunStatus::Done)
         ->and($ran->count())->toBe(count(SetupStep::cases()));
+});
+
+test('the web cron leaves a requested run to the CLI cron', function (): void {
+    $ran = new ArrayObject();
+    $steps = array_map(fn (SetupStep $s): Step => cronTaskStep($s, $ran), SetupStep::cases());
+    app()->bind(RunSetup::class, fn (): RunSetup => new RunSetup(
+        app(SetupRunState::class),
+        app(SetupLock::class),
+        $steps,
+        app(UpgradeCompleted::class),
+    ));
+    app(SetupRunState::class)->request('cli', false);
+    updateSetting('cron.random_id', 'web-cron-id');
+
+    $this->get('/api/cron/web-cron-id')->assertOk();
+
+    expect(app(SetupRunState::class)->read()->status)->toBe(RunStatus::Requested)
+        ->and($ran->count())->toBe(0);
+
+    Artisan::call('schedule:run');
+
+    expect(app(SetupRunState::class)->read()->status)->toBe(RunStatus::Done);
 });
 
 test('a run killed mid-step resumes on the next schedule:run', function (): void {
@@ -186,19 +210,52 @@ test('every scheduled task waits out an update, add-on ones included', function 
     EventFacade::assertDispatched(CronFiveMinute::class);
 });
 
-test('a failed update keeps scheduled tasks paused until it is retried', function (): void {
+test('a failed update pauses scheduled tasks only while the site is down', function (): void {
     // Production consoles raise CommandStarting; test runs leave it off.
     app(ConsoleKernel::class)->rerouteSymfonyCommandEvents();
+    config(['app.maintenance.driver' => 'file']);
     $addonRuns = new ArrayObject();
     app(Schedule::class)->call(static fn (): null => $addonRuns->append(true))->name('addon-task')->everyMinute()->evenInMaintenanceMode();
     $state = app(SetupRunState::class);
     $state->request('cli', false);
     $state->markRunning();
     $state->finished(RunStatus::Failed, 'boom');
+    Artisan::call('down');
 
     Artisan::call('schedule:run');
-
     expect($addonRuns->count())->toBe(0);
+
+    // The admin fixed the site by hand and brought it up.
+    Artisan::call('up');
+    Artisan::call('schedule:run');
+    expect($addonRuns->count())->toBe(1);
+});
+
+test('the admin warns when scheduled tasks stay paused, and stops once the state file is removed', function (): void {
+    // Production consoles raise CommandStarting; test runs leave it off.
+    app(ConsoleKernel::class)->rerouteSymfonyCommandEvents();
+    $state = app(SetupRunState::class);
+    $state->request('cli', false);
+    $state->markRunning();
+    // setup-run skips, so the run stays unfinished.
+    Context::addHidden(RunSetup::WEB_CRON, true);
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->actingAs(createAdminUser());
+    $warning = __('installer.updater.schedule_paused', ['since' => '', 'file' => '']);
+    $warning = substr($warning, 0, (int) strpos($warning, ' because'));
+
+    $this->travelTo(Carbon::parse('2026-11-01 00:00:00', 'UTC'));
+    Artisan::call('schedule:run');
+    $this->get('/admin')->assertDontSee($warning);
+
+    $this->travelTo(Carbon::parse('2026-11-01 01:00:00', 'UTC'));
+    Artisan::call('schedule:run');
+    $this->get('/admin')->assertSee($warning);
+
+    $state->clear();
+    Artisan::call('schedule:run');
+    $this->get('/admin')->assertDontSee($warning);
+    Context::forgetHidden(RunSetup::WEB_CRON);
 });
 
 test('a failing pending-work check skips cron-* events but the heartbeat still runs', function (): void {

@@ -70,6 +70,7 @@ return [
         'theme_deprecated'  => 'Your theme, :theme, still uses 7.x features that are deprecated: :items. They work for now, but will be removed in a later release. Upgrade the theme, or ask its author for an 8.x version.',
         'waiting_for_cron'  => 'Waiting for cron',
         'waiting'           => 'waiting',
+        'schedule_paused'   => 'Scheduled tasks have not run since :since because an update run is unfinished. If you fixed the site by hand, delete :file to start them again.',
         'system_updates'    => 'System updates',
         'admin_warning'     => 'This applies pending database updates. Back up your database and files first. The site is in maintenance mode while the update runs.',
         'steps'             => [

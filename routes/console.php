@@ -12,6 +12,7 @@ use App\Events\CronWeekly;
 use App\Features\Setup\Actions\DetectPendingWork;
 use App\Features\Setup\Actions\RunSetup;
 use App\Services\CronService;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Schedule;
 
 // Registered first so a failing filter below cannot starve them.
@@ -25,8 +26,10 @@ Schedule::call(static function (): void {
 
 // No withoutOverlapping(): its cache mutex needs cache_locks (absent on v7)
 // and a killed process leaves it held for a day. The run's flock serialises.
+// Not from the web cron: a web request's time limit would stop a migration halfway.
 Schedule::call(static fn () => app(RunSetup::class)->handle())
     ->name('setup-run')
+    ->skip(static fn (): bool => (bool) Context::getHidden(RunSetup::WEB_CRON))
     ->everyMinute()
     ->evenInMaintenanceMode();
 

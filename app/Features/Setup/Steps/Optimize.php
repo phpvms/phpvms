@@ -10,6 +10,7 @@ use App\Features\Setup\Support\SetupCache;
 use App\Features\Setup\Support\StepContext;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Facade;
 use RuntimeException;
 
@@ -34,6 +35,11 @@ final class Optimize implements Step
 
         try {
             $this->call('optimize:clear');
+
+            // optimize:clear only flushed the array store this process uses; the site's own keeps 7.x entries.
+            if (SetupCache::$realStore !== null) {
+                Cache::store(SetupCache::$realStore)->flush();
+            }
 
             // Not `optimize`: it would re-run addons:cache, which the addon_cache step just did.
             foreach (['config:cache', 'route:cache', 'view:cache', 'event:cache'] as $command) {

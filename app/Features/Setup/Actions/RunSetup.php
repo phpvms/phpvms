@@ -36,17 +36,25 @@ final readonly class RunSetup
         private UpgradeCompleted $completed,
     ) {}
 
+    // Hidden context the web cron sets, so the scheduler leaves setup to the CLI cron.
+    public const string WEB_CRON = 'phpvms.web_cron';
+
     /**
      * Record a run request. False when another process holds the lock.
      */
-    public function request(string $by, bool $fresh): bool
+    public function request(string $by, bool $fresh, ?string $log = null): bool
     {
         if (!$this->lock->acquire(0)) {
             return false;
         }
 
+        // The log line is written under the lock too, so it cannot overwrite a tick that has started.
         try {
             $this->state->request($by, $fresh);
+
+            if ($log !== null) {
+                $this->state->appendLog($log);
+            }
         } finally {
             $this->lock->release();
         }
@@ -122,7 +130,8 @@ final readonly class RunSetup
 
         foreach (SetupStep::cases() as $case) {
             // Re-checked every time: an operator may have brought the site up before a retry.
-            $always = in_array($case, [SetupStep::Preflight, SetupStep::MaintenanceDown, SetupStep::CacheTables, SetupStep::MaintenanceUp], true);
+            // Innodb too: a database restored from the backup before a retry is MyISAM again.
+            $always = in_array($case, [SetupStep::Preflight, SetupStep::MaintenanceDown, SetupStep::Innodb, SetupStep::CacheTables, SetupStep::MaintenanceUp], true);
 
             if (!$always && ($snapshot->steps[$case->value]['status'] ?? StepStatus::Pending) === StepStatus::Done) {
                 continue;
