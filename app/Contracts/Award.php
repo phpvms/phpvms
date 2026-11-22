@@ -72,10 +72,7 @@ abstract class Award
         try {
             $award->save();
         } catch (Exception $exception) {
-            Log::error(
-                'Error saving award: '.$exception->getMessage(),
-                $exception->getTrace()
-            );
+            Log::error('Error saving award: '.$exception->getMessage(), ['exception' => $exception]);
 
             return false;
         }

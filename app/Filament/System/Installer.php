@@ -2,20 +2,20 @@
 
 namespace App\Filament\System;
 
-use App\Features\Addons\Support\AddonCacheRefresher;
+use App\Features\Setup\Actions\DetectPendingWork;
+use App\Features\Setup\Actions\RunSetup;
+use App\Features\Setup\Enums\RunOutcome;
+use App\Features\Setup\Support\Requirements;
+use App\Features\Setup\Support\SetupRunState;
+use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\AirlineService;
-use App\Services\Installer\InstallerService;
-use App\Services\Installer\MigrationService;
-use App\Services\Installer\RequirementsService;
-use App\Services\Installer\StreamedCommandsService;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\InstallMarker;
 use App\Support\Utils;
-use Database\Seeders\DatabaseSeeder;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -131,7 +131,7 @@ class Installer extends Page
 
         if ($this->requirementsMet()) {
             try {
-                $this->shouldAutoMigrate = app(InstallerService::class)->isUpgradePending();
+                $this->shouldAutoMigrate = app(DetectPendingWork::class)->handle()->blocksPanel();
             } catch (Throwable) {
                 $this->shouldAutoMigrate = true;
             }
@@ -171,7 +171,7 @@ class Installer extends Page
     private function migrationsPending(): bool
     {
         try {
-            return count(app(MigrationService::class)->migrationsAvailable()) > 0;
+            return app(DetectPendingWork::class)->handle()->pendingMigrations !== [];
         } catch (Throwable) {
             return false;
         }
@@ -286,7 +286,7 @@ class Installer extends Page
             return $this->cachedRequirementsData;
         }
 
-        $reqSvc = app(RequirementsService::class);
+        $reqSvc = app(Requirements::class);
 
         $php_version = $reqSvc->checkPHPVersion();
         $extensions = $reqSvc->checkExtensions();
@@ -362,50 +362,23 @@ class Installer extends Page
             to: $this->stream
         );
 
-        // Before migrating: the migration paths of the bundled addons go through their links.
-        if (!app(InstallerService::class)->linkBundledAddons()) {
-            $message = __('installer.bundled_link_failed').PHP_EOL;
+        // Requirements ran in their own step, and the first-user step writes the
+        // marker. The engine's data_migrate step runs the data migrations.
+        $outcome = app(RunSetup::class)->requestAndRun('installer', true, function (string $line) use (&$output): void {
+            $output .= $line.PHP_EOL;
+            $this->stream(content: $line.PHP_EOL, to: $this->stream);
+        });
+
+        if ($outcome !== RunOutcome::Ran) {
+            // The failing step has already streamed its message.
+            $message = $outcome === RunOutcome::Busy
+                ? __('installer.update_in_progress').PHP_EOL
+                : __('installer.failed').': '.app(SetupRunState::class)->read()?->error.PHP_EOL;
             $output .= $message;
             $this->stream(content: $message, to: $this->stream);
+
+            return $this->migrationOutput = $output;
         }
-
-        app(MigrationService::class)
-            ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output): void {
-                $output .= $buffer;
-                $this->stream(content: $buffer, to: $this->stream);
-            });
-
-        app(StreamedCommandsService::class)->streamArtisanCommand(
-            ['db:seed', '--force', '--class='.DatabaseSeeder::class],
-            function (string $buffer) use (&$output): void {
-                $output .= $buffer;
-                $this->stream(content: $buffer, to: $this->stream);
-            }
-        );
-
-        // Generate Passport's OAuth2 signing keys if they aren't already
-        // provided (env) or present on disk, so the API works out of the box.
-        //
-        // Runs in-process, after streaming has begun. An uncaught throw here would
-        // try to render an error response after output was already flushed, which
-        // fatals with "headers already sent". Contain it: stream the failure and
-        // let the install finish — the keys can be regenerated later if needed.
-        try {
-            app(InstallerService::class)->ensurePassportKeys();
-        } catch (Throwable $throwable) {
-            Log::error('Passport key generation failed during install', ['exception' => $throwable]);
-            $message = __('installer.passport_keys_failed').PHP_EOL;
-            $output .= $message;
-            $this->stream(content: $message, to: $this->stream);
-        }
-
-        if (!app(InstallerService::class)->linkStorage()) {
-            $message = __('installer.storage_link_failed').PHP_EOL;
-            $output .= $message;
-            $this->stream(content: $message, to: $this->stream);
-        }
-
-        app(AddonCacheRefresher::class)->refresh();
 
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(
@@ -430,7 +403,8 @@ class Installer extends Page
         // Only hand the step over to the countdown once there is genuinely
         // nothing left to run — otherwise it would advance into the step's own
         // validation, which halts on pending migrations.
-        if (count(app(MigrationService::class)->migrationsAvailable()) === 0) {
+        $pending = app(DetectPendingWork::class)->handle();
+        if ($pending->pendingMigrations === [] && !$pending->runUnfinished) {
             $this->dispatch(
                 'installer-migrations-complete',
                 seconds: self::AUTO_ADVANCE_SECONDS
@@ -486,9 +460,20 @@ class Installer extends Page
      */
     public function save(): void
     {
+        if (app(DetectPendingWork::class)->handle()->runUnfinished) {
+            Notification::make()
+                ->title(__('installer.migrations_not_completed', ['count' => count(app(DetectPendingWork::class)->handle()->pendingMigrations)]))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
         $this->validate();
         $this->airlineAndUserSetup();
         app(InstallMarker::class)->write();
+        // A new site has nothing to update, so /system/upgrade stays closed.
+        app(UpgradeCompleted::class)->write();
 
         flash()->success(__('installer.install_completed'));
 
@@ -621,7 +606,7 @@ class Installer extends Page
                 })
                 ->afterValidation(function (): void {
                     try {
-                        if (app(InstallerService::class)->isUpgradePending()) {
+                        if (app(DetectPendingWork::class)->handle()->blocksPanel()) {
                             $this->runMigrations();
                         }
                     } catch (Throwable $throwable) {
@@ -647,14 +632,14 @@ class Installer extends Page
                     ]),
             ])
             ->afterValidation(function (): void {
-                if ($this->migrationsPending()) {
+                if ($this->migrationsPending() || app(DetectPendingWork::class)->handle()->runUnfinished) {
                     Notification::make()
                         ->title(
                             __(
                                 'installer.migrations_not_completed',
                                 [
                                     'count' => count(
-                                        app(MigrationService::class)->migrationsAvailable()
+                                        app(DetectPendingWork::class)->handle()->pendingMigrations
                                     ),
                                 ]
                             )

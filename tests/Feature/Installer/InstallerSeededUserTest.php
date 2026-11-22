@@ -2,14 +2,17 @@
 
 declare(strict_types=1);
 
-use App\Features\Addons\Support\AddonCacheRefresher;
+use App\Features\Setup\Actions\RunSetup;
+use App\Features\Setup\Contracts\Step;
+use App\Features\Setup\Enums\SetupStep;
+use App\Features\Setup\Support\MigrationPaths;
+use App\Features\Setup\Support\SetupLock;
+use App\Features\Setup\Support\SetupRunState;
+use App\Features\Setup\Support\StepContext;
+use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\System\Installer;
 use App\Models\User;
-use App\Services\Installer\InstallerService;
-use App\Services\Installer\MigrationService;
-use App\Services\Installer\StreamedCommandsService;
 use Livewire\Livewire;
-use Mockery\MockInterface;
 
 /**
  * Seed data can create users (the demo environment ships an admin). The
@@ -17,35 +20,50 @@ use Mockery\MockInterface;
  * notice and hand over to the login page instead of advancing to a user/airline
  * step whose submit would be refused.
  *
- * Every service that shells out is mocked: the subprocess would otherwise run
- * `migrate` and `db:seed` against the development database.
+ * The engine runs fake steps: the real ones would migrate and seed in-request.
  */
 function mockInstallRun(bool $seedCreatesUser): void
 {
-    test()->mock(InstallerService::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('isUpgradePending')->andReturnTrue();
-        $mock->shouldReceive('ensurePassportKeys');
-        $mock->shouldReceive('linkStorage')->andReturnTrue();
-        $mock->shouldReceive('linkBundledAddons')->andReturnTrue();
-    });
+    $seed = new readonly class($seedCreatesUser) implements Step
+    {
+        public function __construct(private bool $seedCreatesUser) {}
 
-    test()->mock(MigrationService::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('migrationsAvailable')->andReturn([]);
-        $mock->shouldReceive('runAllMigrationsWithStreaming')->andReturn(0);
-    });
+        public function step(): SetupStep
+        {
+            return SetupStep::Seed;
+        }
 
-    test()->mock(StreamedCommandsService::class, function (MockInterface $mock) use ($seedCreatesUser): void {
-        $mock->shouldReceive('streamArtisanCommand')->andReturnUsing(function () use ($seedCreatesUser): int {
-            if ($seedCreatesUser) {
+        public function applies(StepContext $ctx): bool
+        {
+            return true;
+        }
+
+        public function run(StepContext $ctx): void
+        {
+            if ($this->seedCreatesUser) {
                 User::factory()->create();
             }
+        }
+    };
 
-            return 0;
-        });
-    });
+    app()->bind(RunSetup::class, fn (): RunSetup => new RunSetup(
+        app(SetupRunState::class),
+        app(SetupLock::class),
+        [$seed],
+        app(UpgradeCompleted::class),
+    ));
 
-    test()->mock(AddonCacheRefresher::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('refresh');
+    app()->instance(MigrationPaths::class, new class() extends MigrationPaths
+    {
+        public function pendingSchema(): array
+        {
+            return [];
+        }
+
+        public function pendingData(): array
+        {
+            return [];
+        }
     });
 }
 

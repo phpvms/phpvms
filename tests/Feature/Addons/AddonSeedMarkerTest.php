@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Features\Addons\Actions\RunAddonSetup;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\AddonSeedMarkers;
 use App\Models\Addon;
 use App\Models\Kvp;
-use App\Services\Installer\SeederService;
 use Illuminate\Support\Facades\File;
 
 function rekeyAddonSeedMarkersMigration(): object
@@ -13,7 +15,7 @@ function rekeyAddonSeedMarkersMigration(): object
 }
 
 /**
- * Create a fixture addon with a seeder directory, so seedAddons() has
+ * Create a fixture addon with a seeder directory, so RunAddonSetup has
  * something to run and mark. Mirrors AddonSeederTest's fixture.
  */
 function makeSeedableAddon(array $attributes): Addon
@@ -61,7 +63,9 @@ it('keys the seed marker on registry_id when present', function (): void {
         'version'     => '1.1.0',
     ]);
 
-    app(SeederService::class)->seedAddons();
+    foreach (app(AddonRegistry::class)->enabled() as $addon) {
+        app(RunAddonSetup::class)->handle($addon);
+    }
 
     expect(Kvp::where('key', 'addon_seeded:phpvms-acars:1.1.0')->exists())->toBeTrue();
 });
@@ -73,7 +77,9 @@ it('keys an unversioned addon on :base', function (): void {
         'version'     => null,
     ]);
 
-    app(SeederService::class)->seedAddons();
+    foreach (app(AddonRegistry::class)->enabled() as $addon) {
+        app(RunAddonSetup::class)->handle($addon);
+    }
 
     expect(Kvp::where('key', 'addon_seeded:phpvms-sample:base')->exists())->toBeTrue();
 });
@@ -91,12 +97,13 @@ it('does not collide two addons with different registry_ids', function (): void 
         'version'     => null,
     ]);
 
-    $seederSvc = app(SeederService::class);
-    $seederSvc->seedAddons();
+    foreach (app(AddonRegistry::class)->enabled() as $addon) {
+        app(RunAddonSetup::class)->handle($addon);
+    }
 
     expect(Kvp::where('key', 'addon_seeded:phpvms-awards:base')->exists())->toBeTrue()
         ->and(Kvp::where('key', 'addon_seeded:phpvms-sample:base')->exists())->toBeTrue()
-        ->and($seederSvc->addonSeedsPending())->toBeFalse();
+        ->and(app(AddonSeedMarkers::class)->pending())->toBeFalse();
 });
 
 it('clears every version of an addon marker on uninstall', function (): void {
@@ -110,7 +117,7 @@ it('clears every version of an addon marker on uninstall', function (): void {
     Kvp::create(['key' => 'addon_seeded:phpvms-acars:1.1.0', 'value' => 'x']);
     Kvp::create(['key' => 'addon_seeded:phpvms-other:1.0.0', 'value' => 'x']);
 
-    app(SeederService::class)->clearAddonSeedMarkers($addon);
+    app(AddonSeedMarkers::class)->clear($addon);
 
     expect(Kvp::where('key', 'like', 'addon_seeded:phpvms-acars:%')->exists())->toBeFalse()
         ->and(Kvp::where('key', 'addon_seeded:phpvms-other:1.0.0')->exists())->toBeTrue();
@@ -133,7 +140,7 @@ it('slugifies the identity so the key carries no LIKE metacharacters', function 
     // delimiter, so it must not collapse onto the same identity.
     Kvp::create(['key' => 'addon_seeded:modulessample:1.0.0', 'value' => 'x']);
 
-    app(SeederService::class)->clearAddonSeedMarkers($addon);
+    app(AddonSeedMarkers::class)->clear($addon);
 
     expect(Kvp::where('key', 'addon_seeded:modules-sample:1.0.0')->exists())->toBeFalse()
         ->and(Kvp::where('key', 'addon_seeded:modulessample:1.0.0')->exists())->toBeTrue();

@@ -20,6 +20,17 @@ it('parses an OFP whose FIR NOTAM has no icao_name', function (): void {
         ->and($parsed->notams[0]->notam_id)->toBe($ofp['notams'][0]['notam_id']);
 });
 
+it('parses a station with no METAR visibility or ceiling', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['origin']['metar_visibility'] = '';
+    $ofp['origin']['metar_ceiling'] = [];
+
+    $origin = SimBriefOfp::from($ofp)->origin;
+
+    expect($origin->metar_visibility)->toBeNull()
+        ->and($origin->metar_ceiling)->toBeNull();
+});
+
 it('keeps the decimals of the average passenger and bag weights', function (): void {
     $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
     $ofp['weights']['pax_weight'] = '85.729';
@@ -29,6 +40,13 @@ it('keeps the decimals of the average passenger and bag weights', function (): v
 
     expect($weights->pax_weight)->toBe(85.729)
         ->and($weights->bag_weight)->toBe(24.948);
+});
+
+it('keeps the decimals of a minimum fuel on board given in thousands', function (): void {
+    $ofp = json_decode(readDataFile('simbrief/briefing.json'), true, flags: JSON_THROW_ON_ERROR);
+    $ofp['api_params']['minfob'] = '2.7';
+
+    expect(SimBriefOfp::from($ofp)->api_params->minfob)->toBe(2.7);
 });
 
 it('parses an ATIS that SimBrief sends without an issue time', function (): void {

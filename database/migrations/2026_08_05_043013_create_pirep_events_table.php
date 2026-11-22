@@ -2,23 +2,33 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration
 {
     public function up(): void
     {
+        // MySQL adds the indexes and foreign keys after CREATE TABLE, so an empty table
+        // is a create that was cut short: start it over. One with rows is complete.
         if (Schema::hasTable('pirep_events')) {
-            return;
+            if (DB::table('pirep_events')->exists()) {
+                return;
+            }
+
+            Schema::drop('pirep_events');
         }
 
         Schema::create('pirep_events', function (Blueprint $table): void {
-            $table->collation = 'utf8mb4_unicode_ci';
-            $table->charset = 'utf8mb4';
-
             $table->string('id', 36)->primary();
             $table->string('pirep_id', 36)->index();
-            $table->string('acars_id', 36)->nullable();
+            $acarsId = $table->string('acars_id', 36)->nullable();
+
+            // Only the FK column takes `acars`.`id`'s collation; the table keeps utf8mb4.
+            if (($parent = $this->parentCollation('acars', 'id')) !== null) {
+                $acarsId->charset($parent[0])->collation($parent[1]);
+            }
+
             $table->string('client_event_id')->nullable();
             $table->string('type')->nullable()->index();
             $table->string('category')->index();
@@ -43,5 +53,29 @@ return new class() extends Migration
     public function down(): void
     {
         Schema::dropIfExists('pirep_events');
+    }
+
+    /**
+     * The parent key's charset and collation: v7 sites never pinned one, and
+     * MySQL rejects an FK across mismatched collations. Null off MySQL/MariaDB.
+     *
+     * @return array{string, string}|null
+     */
+    private function parentCollation(string $table, string $column): ?array
+    {
+        $connection = Schema::getConnection();
+
+        if (!in_array($connection->getDriverName(), ['mysql', 'mariadb'], true)) {
+            return null;
+        }
+
+        $row = $connection->selectOne(
+            'select CHARACTER_SET_NAME as charset, COLLATION_NAME as collation
+            from information_schema.COLUMNS
+            where TABLE_SCHEMA = ? and TABLE_NAME = ? and COLUMN_NAME = ?',
+            [$connection->getDatabaseName(), $connection->getTablePrefix().$table, $column]
+        );
+
+        return $row?->collation !== null ? [$row->charset, $row->collation] : null;
     }
 };

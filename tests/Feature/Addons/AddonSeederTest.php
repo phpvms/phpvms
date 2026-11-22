@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Features\Addons\Actions\RunAddonSetup;
+use App\Features\Addons\AddonRegistry;
+use App\Features\Addons\Support\AddonSeedMarkers;
 use App\Models\Addon;
 use App\Models\Kvp;
-use App\Services\Installer\SeederService;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -36,7 +38,7 @@ beforeEach(function (): void {
         }
         PHP);
 
-    $this->seederSvc = app(SeederService::class);
+    $this->markers = app(AddonSeedMarkers::class);
 });
 
 afterEach(function (): void {
@@ -60,23 +62,25 @@ function makeFixtureAddon(string $path): Addon
 it('reports an enabled addon with an unseeded seeder as pending', function (): void {
     makeFixtureAddon($this->addonPath);
 
-    expect($this->seederSvc->addonSeedsPending())->toBeTrue();
+    expect($this->markers->pending())->toBeTrue();
 });
 
 it('runs addon seeders by file path and records a seed marker', function (): void {
     makeFixtureAddon($this->addonPath);
 
-    $this->seederSvc->seedAddons();
+    foreach (app(AddonRegistry::class)->enabled() as $addon) {
+        app(RunAddonSetup::class)->handle($addon);
+    }
 
     expect(Kvp::where('key', 'fixture_addon_proof')->exists())->toBeTrue()
         ->and(Kvp::where('key', 'addon_seeded:acme-fixture-addon:1.0.0')->exists())->toBeTrue()
-        ->and($this->seederSvc->addonSeedsPending())->toBeFalse();
+        ->and($this->markers->pending())->toBeFalse();
 });
 
 it('does not flag a disabled addon as pending', function (): void {
     makeFixtureAddon($this->addonPath)->update(['enabled' => false]);
 
-    expect($this->seederSvc->addonSeedsPending())->toBeFalse();
+    expect($this->markers->pending())->toBeFalse();
 });
 
 it('ignores enabled addons that ship no seeder directory', function (): void {
@@ -86,22 +90,12 @@ it('ignores enabled addons that ship no seeder directory', function (): void {
         'enabled' => true,
     ]);
 
-    expect($this->seederSvc->addonSeedsPending())->toBeFalse();
-});
-
-it('surfaces addon seed state through seedsPending()', function (): void {
-    makeFixtureAddon($this->addonPath);
-
-    expect($this->seederSvc->seedsPending())->toBeTrue();
-
-    $this->seederSvc->seedAddons();
-
-    expect($this->seederSvc->seedsPending())->toBeFalse();
+    expect($this->markers->pending())->toBeFalse();
 });
 
 it('logs the underlying exception message when an addon seeder throws, and still seeds the next addon', function (): void {
     // Use a dedicated addon path/class rather than the beforeEach fixture:
-    // runSeederFile() checks class_exists($class, false) before requiring the
+    // RunAddonSetup checks class_exists($class, false) before requiring the
     // file, so re-declaring FixtureAddonDatabaseSeeder here would be shadowed
     // by the non-throwing class definition an earlier test already loaded into
     // this PHP process.
@@ -140,7 +134,9 @@ it('logs the underlying exception message when an addon seeder throws, and still
 
     Log::spy();
 
-    $this->seederSvc->seedAddons();
+    foreach (app(AddonRegistry::class)->enabled() as $addon) {
+        app(RunAddonSetup::class)->handle($addon);
+    }
 
     Log::shouldHaveReceived('error')
         ->once()

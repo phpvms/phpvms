@@ -56,6 +56,17 @@ FROM serversideup/php:8.5-frankenphp-v5.0.2
 ARG WWWUSER=1000
 ARG WWWGROUP=1000
 
+# phpvms:update (25-run-phpvms-update.sh) migrates, seeds and rebuilds the caches in one run. It runs
+# before serversideup's 50-laravel-automations.sh, which with AUTORUN_ENABLED=true would run a plain
+# `migrate` and `optimize` after it. Turn those off, and the per-cache automations that still run
+# when OPTIMIZE is false.
+ENV AUTORUN_LARAVEL_MIGRATION=false
+ENV AUTORUN_LARAVEL_OPTIMIZE=false
+ENV AUTORUN_LARAVEL_CONFIG_CACHE=false
+ENV AUTORUN_LARAVEL_ROUTE_CACHE=false
+ENV AUTORUN_LARAVEL_VIEW_CACHE=false
+ENV AUTORUN_LARAVEL_EVENT_CACHE=false
+
 # Switch to root so we can do root things
 USER root
 
@@ -72,7 +83,8 @@ RUN apt-get update; \
         mariadb-client
 
 COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
-COPY --chmod=755 ./resources/docker/run-phpvms-links.sh /etc/entrypoint.d/25-run-phpvms-links.sh
+COPY --chmod=755 ./resources/docker/run-phpvms-update.sh /etc/entrypoint.d/25-run-phpvms-update.sh
+COPY --chmod=755 ./resources/docker/healthcheck-phpvms /usr/local/bin/healthcheck-phpvms
 
 # Deal with permissions
 RUN usermod -ou $WWWUSER www-data \

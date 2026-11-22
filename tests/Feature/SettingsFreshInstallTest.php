@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\Installer\MigrationService;
+use App\Features\Setup\Support\MigrationPaths;
 use App\Support\Settings\SettingDefinition;
 use App\Support\Settings\SettingsRegistry;
 use Illuminate\Support\Facades\Artisan;
@@ -20,7 +20,7 @@ it('reads every setting as its default on a fresh install, plus what the data mi
     Artisan::call('migrate-data', [
         '--force'    => true,
         '--realpath' => true,
-        '--path'     => app(MigrationService::class)->getMigrationPaths('migrations_data'),
+        '--path'     => app(MigrationPaths::class)->data(),
     ]);
     reloadSettings();
 

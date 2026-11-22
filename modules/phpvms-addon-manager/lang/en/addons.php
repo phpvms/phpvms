@@ -108,6 +108,8 @@ return [
     'verified_download'      => 'The download is verified by registry signature and sha256.',
     'addon_installed'        => 'Addon installed',
     'install_failed'         => 'Install failed',
+    'enable_failed'          => 'Enable failed',
+    'disable_failed'         => 'Disable failed',
     'install_queued'         => 'Install queued',
     'install_running_bg'     => 'The install is running in the background.',
     'queued'                 => 'Queued…',

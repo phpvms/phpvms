@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Features\Themes\Actions\FindDeprecatedThemeUsage;
 use App\Features\Themes\ColorSchemeCss;
 use App\Features\Themes\ThemeFields;
 use App\Features\Themes\ThemeOptions;
@@ -18,6 +19,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -69,6 +71,13 @@ class Theme extends Page
      * fields.
      */
     public string $schemeCss = '';
+
+    /**
+     * Per request: the scan reads every view of the theme.
+     *
+     * @var array<string, list<string>>
+     */
+    private array $deprecatedUsageByTheme = [];
 
     /**
      * @return array<int, Ability>
@@ -133,6 +142,13 @@ class Theme extends Page
                             $this->fillOptions($state);
                         }
                     }),
+
+                Callout::make(__('filament.theme_deprecated'))
+                    ->warning()
+                    ->description(fn (Get $get): string => __('filament.theme_deprecated_body', [
+                        'items' => implode(', ', $this->deprecatedUsage((string) $get('theme'))),
+                    ]))
+                    ->visible(fn (Get $get): bool => $this->deprecatedUsage((string) $get('theme')) !== []),
 
                 Section::make(__('filament.theme_customize'))
                     ->id('customize')
@@ -338,6 +354,14 @@ class Theme extends Page
         } catch (Halt) {
             return;
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function deprecatedUsage(string $theme): array
+    {
+        return $this->deprecatedUsageByTheme[$theme] ??= app(FindDeprecatedThemeUsage::class)($theme);
     }
 
     /**
