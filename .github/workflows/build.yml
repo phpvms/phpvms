@@ -75,6 +75,10 @@ jobs:
       - name: Compile assets
         run: pnpm run build
 
+      # The safelist tests build the admin CSS, which imports Filament from vendor/.
+      - name: Run JS tests (vitest)
+        run: pnpm test
+
       # Fails the build (and prints the new size) if the tailwind-safelist
       # partial's isolated (`source(none)`) brotli size exceeds the recorded
       # budget — see openspec/changes/tailwind-utility-safelist/design.md D5.

@@ -26,8 +26,9 @@ export function createInfiniteSelect(
   const { getPage, placeholder, initial, onChange, resolveLabel, onError } = opts;
   const options = initial ? [{ value: String(initial.value), label: initial.label }] : [];
 
-  let generation = 0;
-  let loadingMore = false;
+  let destroyed = false;
+  let inInput = false;
+  let nextLoadFromInput = false;
 
   let tom: any = new TomSelect(el, {
     plugins: ["virtual_scroll"],
@@ -48,29 +49,8 @@ export function createInfiniteSelect(
     load(this: any, query: string, callback: (options?: InfiniteSelectOption[]) => void) {
       const self = this;
       const page = self.getUrl(query);
-
-      if (page === 1) {
-        generation++;
-      }
-
-      const gen = generation;
-
-      if (page > 1) {
-        loadingMore = true;
-      }
-
-      const isStale = () => gen !== generation || query !== self.lastValue;
-
-      // Finish a load whose result is not passed through the real callback.
-      const settle = () => {
-        if (loadingMore) {
-          // The virtual_scroll plugin is in append mode: an empty
-          // callback appends nothing and resets its loading_more flag.
-          loadingMore = false;
-          self.loadCallback([]);
-          return;
-        }
-
+      // For a load that never reaches the plugin's callback.
+      const settleLoad = () => {
         self.loading = Math.max(self.loading - 1, 0);
 
         if (self.loading === 0) {
@@ -80,64 +60,92 @@ export function createInfiniteSelect(
         }
       };
 
+      const fromInput = nextLoadFromInput;
+      nextLoadFromInput = false;
+
+      // Typing back to a query already on screen must not replace page 1
+      // with its queued page 2.
+      if (fromInput && page > 1) {
+        self.setNextUrl(query, page);
+        settleLoad();
+
+        // Nothing else re-renders, so the loading spinner would linger.
+        self.refreshOptions(false);
+        return;
+      }
+
       getPage(query, page)
         .then((response) => {
-          if (isStale()) {
-            delete self.loadedSearches[query];
-            settle();
+          if (destroyed) {
             return;
           }
 
-          if (page === 1) {
-            // Results replace, never append, even if the plugin's
-            // loading_more flag is stuck true.
+          // The plugin's append mode can be stuck on from a dropped scroll
+          // load; page 1 must still replace. Stale ones are discarded below.
+          if (page === 1 && query === self.lastValue) {
             self.clearOptions((_option: unknown, value: string) => self.items.includes(value));
           }
 
+          // Before the callback: it may request the next page at once, and a
+          // discarded response resets this cursor itself.
           if (response.hasMore) {
             self.setNextUrl(query, page + 1);
           }
 
-          loadingMore = false;
           callback(response.options);
-
-          // A page that does not overflow the dropdown can never be
-          // scrolled, so virtual_scroll never loads the next one.
-          // Nudge its scroll listener until the list overflows.
-          requestAnimationFrame(() => {
-            const content = self.dropdown_content;
-
-            if (
-              self.isOpen &&
-              content &&
-              content.scrollHeight <= content.clientHeight &&
-              content.querySelector(".loading-more-results")
-            ) {
-              content.dispatchEvent(new Event("scroll"));
-            }
-          });
         })
         .catch((error) => {
-          const stale = isStale();
+          if (destroyed) {
+            return;
+          }
 
-          delete self.loadedSearches[query];
+          if (query !== self.lastValue) {
+            // The plugin discards a response for a query that was left.
+            callback([]);
+            return;
+          }
 
-          if (page > 1 && !stale) {
-            // Let the next scroll retry the same page.
+          if (page > 1) {
+            // An empty append settles the plugin; re-queue after it, or its
+            // post-callback check would retry the failed page in a loop.
+            callback([]);
             self.setNextUrl(query, page);
+            self.refreshOptions(false);
+          } else {
+            // The plugin's callback would snapshot an empty preload, so
+            // settle by hand and drop the previous query's rows.
+            settleLoad();
+            self.clearOptions((_option: unknown, value: string) => self.items.includes(value));
+
+            if (query === "") {
+              // Let refocusing retry the preload.
+              self.wrapper.classList.remove("preloaded");
+            }
           }
 
-          settle();
-
-          if (!stale) {
-            onError?.(error);
-          }
+          onError?.(error);
         });
     },
     onChange(value: string) {
       onChange(value === "" ? null : value);
     },
   } as any);
+
+  // Tell input-driven loads from scroll-driven ones: only the input path
+  // calls load() from inside _onInput.
+  tom.hook("before", "_onInput", () => {
+    inInput = true;
+  });
+  tom.hook("after", "_onInput", () => {
+    inInput = false;
+  });
+  // Only a load that will run may set the flag, or a refused call could
+  // clear it while an input-driven load is still debounced.
+  tom.hook("before", "load", (value: string) => {
+    if (tom.canLoad(value)) {
+      nextLoadFromInput = inInput;
+    }
+  });
 
   return {
     setValue(value) {
@@ -171,6 +179,7 @@ export function createInfiniteSelect(
       }
     },
     destroy() {
+      destroyed = true;
       tom?.destroy();
       tom = null;
     },
