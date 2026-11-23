@@ -33,18 +33,18 @@ class Dates
     }
 
     /**
-     * Get the list of months, given a start date
+     * Get the list of months, given a start date with overflow protection
      */
     public static function getMonthsList(Carbon $start_date): array
     {
         $months = [];
         $now = date('Y-m');
-        $last_month = $start_date;
+        $last_month = $start_date->copy()->startOfMonth();
 
         do {
             $last_value = $last_month->format('Y-m');
             $months[$last_value] = $last_month->format('Y F');
-            $last_month = $last_month->addMonth();
+            $last_month = $last_month->addMonthNoOverflow();
         } while ($last_value !== $now);
 
         return $months;
