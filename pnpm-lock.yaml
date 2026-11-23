@@ -25,7 +25,7 @@ importers:
         version: 1.21.1(debug@4.4.3)
       bootstrap:
         specifier: ~4.6.2
-        version: 4.6.2(jquery@3.7.1)(popper.js@1.16.1)
+        version: 4.6.2(jquery@3.8.0)(popper.js@1.16.1)
       chart.js:
         specifier: ^4.5.1
         version: 4.6.1
@@ -46,7 +46,7 @@ importers:
         version: 4.4.0
       jquery:
         specifier: ^3.7.1
-        version: 3.7.1
+        version: 3.8.0
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -1885,8 +1885,8 @@ packages:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
 
-  jquery@3.7.1:
-    resolution: {integrity: sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==}
+  jquery@3.8.0:
+    resolution: {integrity: sha512-AOYt0viqPysMUTq45O8gF9DuOnBT3Il/8WtM/TT8z/2QeGsZ70ImwSJtNFxznn2R71v8yIgaEunOGo82OY/f0g==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -3548,9 +3548,9 @@ snapshots:
 
   boolbase@1.0.0: {}
 
-  bootstrap@4.6.2(jquery@3.7.1)(popper.js@1.16.1):
+  bootstrap@4.6.2(jquery@3.8.0)(popper.js@1.16.1):
     dependencies:
-      jquery: 3.7.1
+      jquery: 3.8.0
       popper.js: 1.16.1
 
   browserslist@4.29.4:
@@ -4028,7 +4028,7 @@ snapshots:
 
   jiti@2.7.0: {}
 
-  jquery@3.7.1: {}
+  jquery@3.8.0: {}
 
   js-tokens@4.0.0: {}
 
