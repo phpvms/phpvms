@@ -109,6 +109,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read PirepPosition|null $position
  * @property-read float $progress_percent
  * @property-read bool $read_only
+ * @property-read bool $fields_writable
  * @property-read SimBrief|null $simbrief
  * @property-read Collection<int, JournalTransaction> $transactions
  * @property-read int|null $transactions_count
@@ -299,6 +300,17 @@ class Pirep extends Model
     ];
 
     /*
+     * The ACARS API can only change a PIREP's custom fields in these states,
+     * that is until the PIREP is filed. Values set at filing, by the client
+     * or by server code, then stay as they are while the PIREP is reviewed.
+     */
+    public static $fields_writable_states = [
+        PirepState::IN_PROGRESS,
+        PirepState::PAUSED,
+        PirepState::DRAFT,
+    ];
+
+    /*
      * If a PIREP is in one of these states, it can't be cancelled
      */
     public static $cancel_states = [
@@ -370,6 +382,18 @@ class Pirep extends Model
     /**
      * Return if this PIREP can be edited or not
      */
+    /**
+     * Whether the ACARS API can still change the PIREP's custom fields
+     */
+    public function fieldsWritable(): Attribute
+    {
+        return Attribute::make(get: fn ($_, $attrs): bool => \in_array(
+            $this->state,
+            static::$fields_writable_states,
+            true
+        ));
+    }
+
     public function readOnly(): Attribute
     {
         return Attribute::make(get: fn ($_, $attrs): bool => \in_array(
