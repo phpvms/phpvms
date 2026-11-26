@@ -48,7 +48,7 @@ jobs:
         run: composer install --dev --no-interaction --no-scripts --verbose
 
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -213,7 +213,7 @@ jobs:
           composer install --dev --no-interaction --no-scripts --verbose
 
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -330,7 +330,7 @@ jobs:
         run: curl -fsSL https://deb.nodesource.com/setup_22.x | bash && apt install -y nodejs
 
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
