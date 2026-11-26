@@ -8,7 +8,9 @@ use App\Enums\FareType;
 use App\Models\Fare;
 use App\Models\Kvp;
 use App\Models\Rank;
+use App\Models\SimBriefAirframe;
 use App\Models\Typerating;
+use App\Services\SimBriefService;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Database\Seeder;
@@ -31,9 +33,10 @@ class BaseDataSeeder extends Seeder
     public function groups(): array
     {
         return [
-            'ranks'        => $this->createInitialRanks(...),
-            'fares'        => $this->createInitialFares(...),
-            'type ratings' => $this->createInitialTypeRatings(...),
+            'ranks'              => $this->createInitialRanks(...),
+            'fares'              => $this->createInitialFares(...),
+            'type ratings'       => $this->createInitialTypeRatings(...),
+            'simbrief airframes' => $this->createInitialSimBriefAirframes(...),
         ];
     }
 
@@ -76,6 +79,19 @@ class BaseDataSeeder extends Seeder
         }
 
         $this->setSeeded('typeratings');
+    }
+
+    public function createInitialSimBriefAirframes(): void
+    {
+        if ($this->isSeeded('simbrief_airframes') || SimBriefAirframe::query()->exists()) {
+            return;
+        }
+
+        // The airframe table is otherwise empty until the weekly SimBrief cron runs.
+        $data = json_decode((string) file_get_contents(database_path('seeders/data/simbrief_airframes.json')), true);
+        app(SimBriefService::class)->importAircraftAndAirframes($data);
+
+        $this->setSeeded('simbrief_airframes');
     }
 
     public function createInitialFares(): void

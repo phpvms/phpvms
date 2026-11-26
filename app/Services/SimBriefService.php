@@ -211,39 +211,47 @@ class SimBriefService extends Service
 
         if ($sbdata->ok()) {
             Log::debug('SimBrief | Aircraft and Airframe data obtained');
-            $json = $sbdata->json();
-
-            // Update Or Create Aircraft Entries
-            foreach ($json as $ac) {
-                Log::debug('SimBrief | Importing Aircraft : '.$ac['aircraft_icao'].' '.$ac['aircraft_name']);
-
-                foreach ($ac['airframes'] as $af) {
-                    Log::debug('SimBrief | Importing Airframe : '.$af['airframe_name'].' '.$af['airframe_comments']);
-                    SimBriefAirframe::updateOrCreate([
-                        'icao' => $af['airframe_icao'],
-                        'name' => $af['airframe_comments'],
-                    ], [
-                        'icao'        => $af['airframe_icao'],
-                        'name'        => $af['airframe_comments'],
-                        'airframe_id' => ($af['airframe_id'] != false) ? $af['pilot_id'].'_'.$af['airframe_id'] : null,
-                        'source'      => AirframeSource::SIMBRIEF,
-                        'details'     => json_encode($af),
-                        'options'     => json_encode($af['airframe_options']),
-                    ]);
-                }
-
-                unset($ac['airframes']);
-
-                SimBriefAircraft::updateOrCreate([
-                    'icao' => $ac['aircraft_icao'],
-                ], [
-                    'icao'    => $ac['aircraft_icao'],
-                    'name'    => $ac['aircraft_name'],
-                    'details' => json_encode($ac),
-                ]);
-            }
+            $this->importAircraftAndAirframes($sbdata->json());
         } else {
             Log::error('SimBrief | An Error Occured while trying to get aircraft and airframe data!');
+        }
+    }
+
+    /**
+     * Insert or update aircraft and airframes from a SimBrief airframes feed
+     *
+     * @param array<int|string, array<string, mixed>> $json
+     */
+    public function importAircraftAndAirframes(array $json): void
+    {
+        // Update Or Create Aircraft Entries
+        foreach ($json as $ac) {
+            Log::debug('SimBrief | Importing Aircraft : '.$ac['aircraft_icao'].' '.$ac['aircraft_name']);
+
+            foreach ($ac['airframes'] as $af) {
+                Log::debug('SimBrief | Importing Airframe : '.$af['airframe_name'].' '.$af['airframe_comments']);
+                SimBriefAirframe::updateOrCreate([
+                    'icao' => $af['airframe_icao'],
+                    'name' => $af['airframe_comments'],
+                ], [
+                    'icao'        => $af['airframe_icao'],
+                    'name'        => $af['airframe_comments'],
+                    'airframe_id' => ($af['airframe_id'] != false) ? $af['pilot_id'].'_'.$af['airframe_id'] : null,
+                    'source'      => AirframeSource::SIMBRIEF,
+                    'details'     => json_encode($af),
+                    'options'     => json_encode($af['airframe_options']),
+                ]);
+            }
+
+            unset($ac['airframes']);
+
+            SimBriefAircraft::updateOrCreate([
+                'icao' => $ac['aircraft_icao'],
+            ], [
+                'icao'    => $ac['aircraft_icao'],
+                'name'    => $ac['aircraft_name'],
+                'details' => json_encode($ac),
+            ]);
         }
     }
 
