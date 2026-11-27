@@ -15,7 +15,6 @@ use App\Filament\Widgets\RecentActionWidget;
 use App\Filament\Widgets\ReportsFiledStatWidget;
 use App\Filament\Widgets\TailsAvailableStatWidget;
 use App\Filament\Widgets\VersionWidget;
-use App\Http\Middleware\UpdatePending;
 use App\Models\Permission;
 use App\Models\Pirep;
 use App\Models\User;
@@ -73,7 +72,6 @@ function addableWidgetTypes(): array
 
 test('admin dashboard renders the welcome heading and the new widgets', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser(['name' => 'Jordan Rivera']);
     $pendingPirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
@@ -135,7 +133,6 @@ test('admin dashboard renders the welcome heading and the new widgets', function
 
 test('admin dashboard saves and resets the current users package layout', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);
@@ -182,7 +179,6 @@ test('admin dashboard saves and resets the current users package layout', functi
 
 test('admin dashboard upgrades the legacy stats strip without resetting other widgets', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);
@@ -239,7 +235,6 @@ test('admin dashboard upgrades the legacy stats strip without resetting other wi
 
 test('deleteDashboardWidget removes the widget row and leaves the rest untouched', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);
@@ -257,7 +252,6 @@ test('deleteDashboardWidget removes the widget row and leaves the rest untouched
 
 test('deleteDashboardWidget does not delete a widget belonging to another users dashboard', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $other = createAdminUser();
@@ -278,7 +272,6 @@ test('deleteDashboardWidget does not delete a widget belonging to another users 
 
 test('deleteDashboardWidget ignores a client-set currentDashboardId', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $other = createAdminUser();
@@ -301,7 +294,6 @@ test('deleteDashboardWidget ignores a client-set currentDashboardId', function (
 
 test('deleteDashboardWidget refuses to touch a locked dashboard', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);
@@ -319,7 +311,6 @@ test('deleteDashboardWidget refuses to touch a locked dashboard', function (): v
 
 test('deleteDashboardWidget and addDashboardWidget are forbidden without edit rights', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
     Filament::setCurrentPanel('admin');
 
     $viewer = User::factory()->create();
@@ -351,7 +342,6 @@ test('deleteDashboardWidget and addDashboardWidget are forbidden without edit ri
 
 test('addDashboardWidget refuses to touch a locked dashboard', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
     Filament::setCurrentPanel('admin');
 
     $admin = createAdminUser();
@@ -371,7 +361,6 @@ test('addDashboardWidget refuses to touch a locked dashboard', function (): void
 
 test('deleteDashboardWidget is a no-op for a non-existent id', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);
@@ -387,7 +376,6 @@ test('deleteDashboardWidget is a no-op for a non-existent id', function (): void
 
 test('addDashboardWidget creates a row using the widget classes own default size', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);
@@ -417,7 +405,6 @@ test('addDashboardWidget creates a row using the widget classes own default size
 
 test('addDashboardWidget options exclude widgets already on the dashboard', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);
@@ -451,7 +438,6 @@ test('addDashboardWidget options exclude widgets already on the dashboard', func
 
 test('addDashboardWidget offers no submit button once every widget is placed', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $admin = createAdminUser();
     $this->actingAs($admin);

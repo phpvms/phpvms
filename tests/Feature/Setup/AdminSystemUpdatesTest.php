@@ -7,8 +7,9 @@ use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\Auth\AdminLogin;
 use App\Filament\Pages\SystemUpdates;
 use App\Http\Data\BrandingData;
-use App\Http\Middleware\UpdatePending;
-use App\Http\Middleware\UpgradeRequired;
+use App\Http\Middleware\EnsureDatabaseCurrent;
+use App\Http\Middleware\EnsureUpdateApplied;
+use App\Http\Middleware\UseFileSessionWhileFresh;
 use App\Models\User;
 use App\Support\Branding;
 use Database\Seeders\RolesPermissionsSeeder;
@@ -36,7 +37,7 @@ function adminPendingWork(array $pending): void
 
 beforeEach(function (): void {
     // TestCase turns the gate off suite-wide; this file covers it.
-    $this->withMiddleware([UpdatePending::class, UpgradeRequired::class]);
+    $this->withMiddleware([EnsureDatabaseCurrent::class, EnsureUpdateApplied::class, UseFileSessionWhileFresh::class]);
     adminPendingWork(['2026_01_01_000000_pending']);
 });
 
@@ -69,14 +70,14 @@ test('branding falls back to the default colour when the assets table is missing
         ->and($branding->getBranding()->hasLogo)->toBeTrue();
 })->skip(skipOnMysql(), 'Renaming a table is DDL, which MySQL commits outside the test transaction.');
 
-test('an admin is sent to system/updates while work is pending after the upgrade', function (): void {
+test('an admin is sent to system/update while work is pending after the upgrade', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     app(UpgradeCompleted::class)->write();
 
     $this->actingAs(createAdminUser());
 
     $this->get('/admin')->assertRedirect(SystemUpdates::getUrl());
-    $this->get('/admin/system/updates')->assertOk();
+    $this->get('/admin/system/update')->assertOk();
 });
 
 test('an admin is sent to /system/upgrade before the upgrade is completed', function (): void {
@@ -87,6 +88,9 @@ test('an admin is sent to /system/upgrade before the upgrade is completed', func
 });
 
 test('a guest is sent from the admin login to /system/upgrade before the upgrade is completed', function (): void {
+    // A site without users is a fresh install, not a v7 site.
+    User::factory()->create();
+
     $this->get('/admin/login')->assertRedirect('/system/upgrade');
 });
 
@@ -120,6 +124,7 @@ test('submitting the admin login before the upgrade goes to /system/upgrade, bef
 })->skip(skipOnMysql(), 'Renaming a table is DDL, which MySQL commits outside the test transaction.');
 
 test('a guest reaches the admin login after the upgrade, or when nothing is pending', function (): void {
+    User::factory()->create();
     app(UpgradeCompleted::class)->write();
     $this->get('/admin/login')->assertOk();
 
@@ -127,11 +132,11 @@ test('a guest reaches the admin login after the upgrade, or when nothing is pend
     $this->get('/admin/login')->assertOk();
 });
 
-test('a non-admin gets 403 on system/updates', function (): void {
+test('a non-admin gets 403 on system/update', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     app(UpgradeCompleted::class)->write();
 
     $this->actingAs(User::factory()->create());
 
-    $this->get('/admin/system/updates')->assertForbidden();
+    $this->get('/admin/system/update')->assertForbidden();
 });

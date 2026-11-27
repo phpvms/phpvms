@@ -8,7 +8,9 @@ use App\Features\Setup\Contracts\Step;
 use App\Features\Setup\Enums\RunOutcome;
 use App\Features\Setup\Enums\RunStatus;
 use App\Features\Setup\Enums\SetupStep;
+use App\Features\Setup\Enums\StepOutcome;
 use App\Features\Setup\Enums\StepStatus;
+use App\Features\Setup\Support\CachedPendingWork;
 use App\Features\Setup\Support\RunLog;
 use App\Features\Setup\Support\RunSnapshot;
 use App\Features\Setup\Support\SetupLock;
@@ -34,7 +36,17 @@ final readonly class RunSetup
         private SetupLock $lock,
         private iterable $steps,
         private UpgradeCompleted $completed,
-    ) {}
+        ?Closure $webUnderOctane = null,
+    ) {
+        // Octane sets $_SERVER['LARAVEL_OCTANE'] in its workers only; the octane.enabled config defaults to true everywhere.
+        $this->webUnderOctane = $webUnderOctane ?? static fn (): bool => !app()->runningInConsole() && ($_SERVER['LARAVEL_OCTANE'] ?? false) !== false;
+    }
+
+    /** @var Closure(): bool */
+    private Closure $webUnderOctane;
+
+    // Re-run on every pass, not only the first.
+    private const array ALWAYS = [SetupStep::Preflight, SetupStep::MaintenanceDown, SetupStep::Innodb, SetupStep::CacheTables, SetupStep::MaintenanceUp];
 
     // Hidden context the web cron sets, so the scheduler leaves setup to the CLI cron.
     public const string WEB_CRON = 'phpvms.web_cron';
@@ -51,6 +63,7 @@ final readonly class RunSetup
         // The log line is written under the lock too, so it cannot overwrite a tick that has started.
         try {
             $this->state->request($by, $fresh);
+            $this->forgetPendingVerdict();
 
             if ($log !== null) {
                 $this->state->appendLog($log);
@@ -75,6 +88,7 @@ final readonly class RunSetup
 
         try {
             $this->state->request($by, $fresh);
+            $this->forgetPendingVerdict();
 
             return $this->run($echo);
         } finally {
@@ -99,6 +113,91 @@ final readonly class RunSetup
     }
 
     /**
+     * Run only the next step that needs running, so a web request can drive a run one step at a time.
+     * Steps that run on every pass (preflight, maintenance, innodb, cache tables) run once per pass, in order.
+     *
+     * @param (Closure(string): void)|null $echo
+     */
+    public function runNextStep(?Closure $echo = null): StepOutcome
+    {
+        if (!$this->lock->acquire(0)) {
+            return StepOutcome::Busy;
+        }
+
+        try {
+            return $this->nextStep($echo);
+        } finally {
+            $this->lock->release();
+        }
+    }
+
+    /**
+     * @param (Closure(string): void)|null $echo
+     */
+    private function nextStep(?Closure $echo): StepOutcome
+    {
+        $snapshot = $this->state->read();
+
+        if (!$snapshot instanceof RunSnapshot || !in_array($snapshot->status, [RunStatus::Requested, RunStatus::Running], true)) {
+            return StepOutcome::NothingRequested;
+        }
+
+        // The migrate step alone can outlast a web request's time limit.
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+
+        // A new pass decides its always-run and skipped steps again; a Running run carries on where it stopped.
+        if ($snapshot->status === RunStatus::Requested) {
+            $this->state->beginPass(self::ALWAYS);
+            $snapshot = $this->state->read() ?? $snapshot;
+        }
+
+        [$ctx, $line, $bound] = $this->prepare($snapshot, $echo);
+
+        if ($snapshot->status === RunStatus::Requested) {
+            $this->state->markRunning();
+        }
+
+        foreach (SetupStep::cases() as $case) {
+            $status = $snapshot->steps[$case->value]['status'] ?? StepStatus::Pending;
+
+            if (in_array($status, [StepStatus::Done, StepStatus::Skipped], true)) {
+                continue;
+            }
+
+            // A web request cannot reload Octane; cron does it in the console.
+            if ($case === SetupStep::OctaneReload && ($this->webUnderOctane)()) {
+                return StepOutcome::WaitingForCron;
+            }
+
+            $outcome = $this->runStep($case, $bound[$case->value] ?? null, $ctx, $line);
+
+            if ($outcome === false) {
+                return StepOutcome::Failed;
+            }
+
+            // A skipped step costs nothing, so the call goes on to one that really runs.
+            if ($outcome === true) {
+                break;
+            }
+        }
+
+        if ($this->hasUnhandledStep()) {
+            return StepOutcome::StepRan;
+        }
+
+        return $this->complete($line) === RunOutcome::Ran ? StepOutcome::Finished : StepOutcome::Failed;
+    }
+
+    private function hasUnhandledStep(): bool
+    {
+        $snapshot = $this->state->read();
+
+        return array_any(SetupStep::cases(), fn (SetupStep $case): bool => !in_array($snapshot?->steps[$case->value]['status'] ?? StepStatus::Pending, [StepStatus::Done, StepStatus::Skipped], true));
+    }
+
+    /**
      * @param (Closure(string): void)|null $echo
      */
     private function run(?Closure $echo): RunOutcome
@@ -109,6 +208,31 @@ final readonly class RunSetup
             return RunOutcome::NothingRequested;
         }
 
+        [$ctx, $line, $bound] = $this->prepare($snapshot, $echo);
+
+        $this->state->markRunning();
+
+        foreach (SetupStep::cases() as $case) {
+            // Re-checked every time: an operator may have brought the site up before a retry.
+            // Innodb too: a database restored from the backup before a retry is MyISAM again.
+            if (!in_array($case, self::ALWAYS, true) && ($snapshot->steps[$case->value]['status'] ?? StepStatus::Pending) === StepStatus::Done) {
+                continue;
+            }
+
+            if ($this->runStep($case, $bound[$case->value] ?? null, $ctx, $line) === false) {
+                return RunOutcome::Failed;
+            }
+        }
+
+        return $this->complete($line);
+    }
+
+    /**
+     * @param  (Closure(string): void)|null                                   $echo
+     * @return array{StepContext, Closure(string): void, array<string, Step>}
+     */
+    private function prepare(RunSnapshot $snapshot, ?Closure $echo): array
+    {
         $log = RunLog::for($snapshot->id);
         $line = function (string $line) use ($log, $echo): void {
             $log->write($line);
@@ -126,56 +250,71 @@ final readonly class RunSetup
             $bound[$step->step()->value] = $step;
         }
 
-        $this->state->markRunning();
+        return [$ctx, $line, $bound];
+    }
 
-        foreach (SetupStep::cases() as $case) {
-            // Re-checked every time: an operator may have brought the site up before a retry.
-            // Innodb too: a database restored from the backup before a retry is MyISAM again.
-            $always = in_array($case, [SetupStep::Preflight, SetupStep::MaintenanceDown, SetupStep::Innodb, SetupStep::CacheTables, SetupStep::MaintenanceUp], true);
+    /**
+     * True when the step ran, null when it was skipped, false when it failed (the run is then Failed).
+     *
+     * @param Closure(string): void $line
+     */
+    private function runStep(SetupStep $case, ?Step $step, StepContext $ctx, Closure $line): ?bool
+    {
+        try {
+            // applies() probes the database, so a throw there fails the step too.
+            if (!$step instanceof Step || !$step->applies($ctx)) {
+                $this->state->stepSkipped($case);
 
-            if (!$always && ($snapshot->steps[$case->value]['status'] ?? StepStatus::Pending) === StepStatus::Done) {
-                continue;
+                return null;
             }
 
-            $step = $bound[$case->value] ?? null;
+            $this->state->stepStarted($case);
+            $line('==> '.$case->value);
+            $step->run($ctx);
+        } catch (Throwable $throwable) {
+            $error = $this->publicMessage($throwable);
+            $line('Failed: '.$error);
+            $this->state->stepFailed($case, $error);
+            $this->finish(RunStatus::Failed);
 
-            try {
-                // applies() probes the database, so a throw there fails the step too.
-                if ($step === null || !$step->applies($ctx)) {
-                    $this->state->stepSkipped($case);
-
-                    continue;
-                }
-
-                $this->state->stepStarted($case);
-                $line('==> '.$case->value);
-                $step->run($ctx);
-            } catch (Throwable $throwable) {
-                $error = $this->publicMessage($throwable);
-                $line('Failed: '.$error);
-                $this->state->stepFailed($case, $error);
-                $this->state->finished(RunStatus::Failed);
-
-                return RunOutcome::Failed;
-            }
-
-            $this->state->stepDone($case);
+            return false;
         }
 
+        $this->state->stepDone($case);
+
+        return true;
+    }
+
+    /**
+     * @param Closure(string): void $line
+     */
+    private function complete(Closure $line): RunOutcome
+    {
         // Written first: a Done run without the file would leave /system/upgrade open.
         try {
             $this->completed->write();
         } catch (Throwable $throwable) {
             $error = $this->publicMessage($throwable);
             $line('Failed: '.$error);
-            $this->state->finished(RunStatus::Failed, $error);
+            $this->finish(RunStatus::Failed, $error);
 
             return RunOutcome::Failed;
         }
 
-        $this->state->finished(RunStatus::Done);
+        $this->finish(RunStatus::Done);
 
         return RunOutcome::Ran;
+    }
+
+    private function finish(RunStatus $status, ?string $error = null): void
+    {
+        $this->state->finished($status, $error);
+        $this->forgetPendingVerdict();
+    }
+
+    private function forgetPendingVerdict(): void
+    {
+        app(CachedPendingWork::class)->forget();
     }
 
     /**

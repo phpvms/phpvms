@@ -3,7 +3,6 @@
 use App\Exceptions\AutosaveFailed;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Resources\Airlines\Pages\EditAirline;
-use App\Http\Middleware\UpdatePending;
 use App\Models\Airline;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Forms\Components\TextInput;
@@ -118,7 +117,6 @@ test('autosave is refused when the page disallows it', function (): void {
 
 test('the airline edit page mounts with logo autosave wired', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
     $this->actingAs(createAdminUser());
 
     $airline = Airline::factory()->create();

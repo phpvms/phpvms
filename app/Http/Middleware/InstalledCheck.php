@@ -7,6 +7,7 @@ use App\Exceptions\SiteUnavailable;
 use App\Models\User;
 use App\Support\InstallMarker;
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -31,7 +32,8 @@ class InstalledCheck implements Middleware
     {
         // If we're in the installer, skip this
         // Also skip if this is a livewire update (might be called from the system)
-        if ($request->is('system*') || $request->is('livewire-*/update')) {
+        // The web cron finishes setup runs, so it must answer before the first user exists
+        if ($request->is('system*', 'api/cron/*') || $request->is('livewire-*/update')) {
             return $next($request);
         }
 
@@ -45,15 +47,19 @@ class InstalledCheck implements Middleware
         } catch (Throwable $throwable) {
             report($throwable);
 
-            return SiteUnavailable::response();
+            return $this->isApi($request) ? $this->apiError(__('errors.database_unreachable.title'), __('errors.database_unreachable.message')) : SiteUnavailable::response();
         }
 
         if (!$isSetUp) {
+            if ($this->isApi($request)) {
+                return $this->apiError(__('errors.not_installed.title'), __('errors.not_installed.message'));
+            }
+
             return response()->view('system.errors.database_error', [
                 'title'   => __('errors.not_installed.title'),
                 'message' => __('errors.not_installed.message'),
                 'link'    => [
-                    'url'  => '/system/install',
+                    'url'  => '/admin',
                     'text' => __('errors.not_installed.link'),
                 ],
             ], 503);
@@ -65,5 +71,20 @@ class InstalledCheck implements Middleware
         }
 
         return $next($request);
+    }
+
+    private function isApi(Request $request): bool
+    {
+        return $request->is('api/*');
+    }
+
+    private function apiError(string $title, string $message): JsonResponse
+    {
+        return response()->json([
+            'title'   => $title,
+            'details' => $message,
+            'status'  => 503,
+            'error'   => ['status' => 503, 'message' => $message],
+        ], 503, ['content-type' => 'application/problem+json']);
     }
 }

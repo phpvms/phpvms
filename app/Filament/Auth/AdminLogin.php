@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Auth;
 
-use App\Http\Middleware\UpgradeRequired;
+use App\Http\Middleware\EnsureDatabaseCurrent;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login;
 use Filament\Forms\Components\TextInput;
@@ -50,7 +50,7 @@ class AdminLogin extends Login
     // The submit goes to /livewire/update, outside the panel middleware.
     private function upgradeRedirect(): ?string
     {
-        $response = app(UpgradeRequired::class)->handle(request(), static fn (): null => null);
+        $response = app(EnsureDatabaseCurrent::class)->handle(request(), static fn (): null => null);
 
         return $response instanceof RedirectResponse ? $response->getTargetUrl() : null;
     }

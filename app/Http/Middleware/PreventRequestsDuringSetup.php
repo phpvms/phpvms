@@ -9,19 +9,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Keeps the update page reachable while setup has the site down.
+ * Keeps the setup and admin panels reachable while setup has the site down.
  */
 final class PreventRequestsDuringSetup extends PreventRequestsDuringMaintenance
 {
-    // The setup panel's routes, which stay up while down, along with Livewire updates from their pages.
-    private const array SETUP_ROUTES = ['system', 'system/*'];
+    // The setup and admin panels, which stay up while down, along with Livewire updates from their pages.
+    // Panel auth still decides who gets in.
+    private const array SETUP_ROUTES = ['system', 'system/*', 'admin', 'admin/*'];
+
+    // Plain web routes under admin/ that are not panel pages; they stay down like the public site.
+    private const array NOT_PANEL_ROUTES = ['admin/route-forge/api/*', 'admin/pages/*/preview'];
 
     /**
      * @param Request $request
      */
     protected function inExceptArray($request): bool
     {
-        if (parent::inExceptArray($request) || $request->is('livewire-*/livewire*.js', ...self::SETUP_ROUTES)) {
+        if (parent::inExceptArray($request) || $request->is('livewire-*/livewire*.js') || $this->isSetupPath($request->path())) {
             return true;
         }
 
@@ -45,11 +49,16 @@ final class PreventRequestsDuringSetup extends PreventRequestsDuringMaintenance
                 : null;
             $path = is_array($snapshot) ? ($snapshot['memo']['path'] ?? null) : null;
 
-            if (!is_string($path) || !Str::is(self::SETUP_ROUTES, trim($path, '/'))) {
+            if (!is_string($path) || !$this->isSetupPath(trim($path, '/'))) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private function isSetupPath(string $path): bool
+    {
+        return Str::is(self::SETUP_ROUTES, $path) && !Str::is(self::NOT_PANEL_ROUTES, $path);
     }
 }

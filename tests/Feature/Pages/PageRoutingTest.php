@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\PageType;
+use App\Http\Middleware\InstalledCheck;
 use App\Models\Page;
 use App\Models\User;
 use App\Services\PageService;
@@ -35,6 +36,7 @@ it('serves a page that claims the root', function (): void {
 });
 
 it('lets the not-set-up page win over a page claiming the root', function (): void {
+    $this->withMiddleware(InstalledCheck::class);
     Page::factory()->published()->claiming('/')->create();
 
     // No users at all: the site is not set up, and that outranks any content.

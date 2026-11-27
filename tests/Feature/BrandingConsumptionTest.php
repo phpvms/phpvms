@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\UpdatePending;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Branding;
@@ -30,7 +29,6 @@ function actAsAdmin(): User
 }
 
 beforeEach(function (): void {
-    $this->withoutMiddleware(UpdatePending::class);
     fakeAssetDisks();
 });
 
@@ -53,9 +51,7 @@ describe('admin panel, with branding configured', function (): void {
 
     it('shows the airline logo and name in the sidebar brand block and switcher', function (): void {
         get('/admin')
-            ->assertOk()
-            ->assertSee('Acme Air')
-            ->assertSee($this->logo->url(), escape: false);
+            ->assertOk()->assertSee('Acme Air')->assertSeeHtml($this->logo->url());
     });
 });
 
@@ -81,9 +77,7 @@ describe('admin panel, with nothing configured', function (): void {
     });
 
     it('renders the bundled logo in the sidebar brand block', function (): void {
-        get('/admin')
-            ->assertOk()
-            ->assertSee(asset('assets/img/logo_blue.svg'), escape: false);
+        get('/admin')->assertOk()->assertSeeHtml(asset('assets/img/logo_blue.svg'));
     });
 });
 

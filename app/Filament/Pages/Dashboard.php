@@ -17,7 +17,6 @@ use App\Filament\Widgets\RecentActionWidget;
 use App\Filament\Widgets\ReportsFiledStatWidget;
 use App\Filament\Widgets\TailsAvailableStatWidget;
 use App\Filament\Widgets\VersionWidget;
-use App\Http\Middleware\UpdatePending;
 use App\Models\User;
 use BackedEnum;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
@@ -50,8 +49,6 @@ class Dashboard extends DynamicDashboard
 
     /** Separate from the Reports hub's key: the two selections are unrelated. */
     private const string SESSION_KEY = 'dashboard_filters';
-
-    protected static string|array $routeMiddleware = [UpdatePending::class];
 
     protected static string|BackedEnum|null $navigationIcon = Phosphor::GaugeLight;
 

@@ -108,6 +108,27 @@ final readonly class SetupRunState
         });
     }
 
+    /**
+     * Start of a step-at-a-time pass: steps that run every pass, and skipped ones, are decided again.
+     *
+     * @param list<SetupStep> $always
+     */
+    public function beginPass(array $always): void
+    {
+        $this->change(function (array $data) use ($always): array {
+            foreach ($data['steps'] as $key => $step) {
+                $rerun = $step['status'] === StepStatus::Skipped->value
+                    || ($step['status'] === StepStatus::Done->value && in_array(SetupStep::tryFrom($key), $always, true));
+
+                if ($rerun) {
+                    $data['steps'][$key] = $this->pendingStep();
+                }
+            }
+
+            return $data;
+        });
+    }
+
     public function stepStarted(SetupStep $step): void
     {
         $this->changeStep($step, StepStatus::Running, start: true);

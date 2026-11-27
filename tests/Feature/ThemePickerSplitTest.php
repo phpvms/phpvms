@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\UpdatePending;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Support\Colors\Color;
@@ -19,7 +18,6 @@ use function Pest\Laravel\get;
  * requirement makes.
  */
 beforeEach(function (): void {
-    $this->withoutMiddleware(UpdatePending::class);
 
     $role = Role::create(['name' => Role::superAdminName(), 'guard_name' => 'web']);
     $user = User::factory()->create();
