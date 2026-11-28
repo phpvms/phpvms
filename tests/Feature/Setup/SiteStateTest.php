@@ -13,8 +13,10 @@ use App\Features\Setup\Support\SetupRunState;
 use App\Features\Setup\Support\UpgradeCompleted;
 use App\Models\User;
 use App\Support\InstallMarker;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {
     $this->dir = sys_get_temp_dir().'/phpvms-site-state-'.uniqid();
@@ -51,7 +53,7 @@ afterEach(function (): void {
 function resolveSiteState(object $test): SiteState
 {
     $detect = new DetectPendingWork($test->paths, app(CoreSeeds::class), $test->state);
-    $cache = new CachedPendingWork($detect, $test->paths, app(CoreSeeds::class), $test->state, $test->dir.'/pending.json');
+    $cache = new CachedPendingWork($detect, $test->dir.'/pending.json');
 
     return new ResolveSiteState($test->state, $test->completed, $test->marker, $cache)->handle();
 }
@@ -107,14 +109,51 @@ test('a completed marker with an unfinished run is still Install', function (): 
 
 test('a site whose only user is soft deleted is not fresh', function (): void {
     User::factory()->create()->delete();
+    $this->paths->pending = ['2026_01_01_000000_a'];
 
     expect(resolveSiteState($this))->toBe(SiteState::V7Upgrade);
 });
 
-test('users without a completed marker are a V7Upgrade', function (): void {
+test('users without a completed marker and with pending work are a V7Upgrade', function (): void {
     User::factory()->create();
+    $this->paths->pending = ['2026_01_01_000000_a'];
 
     expect(resolveSiteState($this))->toBe(SiteState::V7Upgrade);
+});
+
+test('users without a completed marker and nothing pending are current, not a dead-end upgrade', function (): void {
+    User::factory()->create();
+
+    expect(resolveSiteState($this))->toBe(SiteState::Current);
+});
+
+test('a trusted marker and a completed file skip the user and run-state lookups', function (): void {
+    app()->instance('env', 'production');
+    $this->marker->write();
+    $this->completed->write();
+
+    $queries = 0;
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        $queries += str_contains($query->sql, '"users"') ? 1 : 0;
+    });
+
+    // No users: FirstUser on the slow path.
+    expect(resolveSiteState($this))->toBe(SiteState::Current)
+        ->and($queries)->toBe(0);
+
+    $this->paths->pending = ['2026_01_01_000000_a'];
+    File::delete($this->dir.'/pending.json');
+
+    expect(resolveSiteState($this))->toBe(SiteState::UpdatePending);
+});
+
+test('the fast path needs a trusted marker', function (): void {
+    $this->marker->write();
+    $this->completed->write();
+    $this->state->request('installer', true);
+
+    // Testing is a verified environment, so the marker is advisory and the lookups still run.
+    expect(resolveSiteState($this))->toBe(SiteState::Install);
 });
 
 test('a demo install that seeded users and then failed is Install, not V7Upgrade', function (): void {

@@ -10,16 +10,13 @@ use App\Exceptions\Unauthenticated;
 use App\Http\Middleware\ApiAuth;
 use App\Http\Middleware\CheckApiScope;
 use App\Http\Middleware\DisableActivityLoggingByDefault;
-use App\Http\Middleware\EnsureDatabaseCurrent;
-use App\Http\Middleware\EnsureSiteSetUp;
 use App\Http\Middleware\InstalledCheck;
 use App\Http\Middleware\PreventRequestsDuringSetup;
 use App\Http\Middleware\RespectAlternateVerbs;
 use App\Http\Middleware\SetActiveLanguage;
 use App\Http\Middleware\SetActiveTheme;
-use App\Http\Middleware\UseFileSessionWhileFresh;
+use App\Http\Middleware\SetupGate;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -61,21 +58,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToGroup('web', RespectAlternateVerbs::class);
         $middleware->prependToGroup('api', RespectAlternateVerbs::class);
 
-        // Before any StartSession, panel or web group (Livewire updates), while the database is fresh.
-        $middleware->prepend(UseFileSessionWhileFresh::class);
+        // Before any StartSession, panel or web group (Livewire updates): file sessions while the database is fresh, admin routing by site state.
+        $middleware->prepend(SetupGate::class);
 
         // Public API routes answer "not installed" before setup too.
         $middleware->appendToGroup('api', InstalledCheck::class);
 
         $middleware->appendToGroup('web', [
             InstalledCheck::class,
-            EnsureSiteSetUp::class,
             SetActiveTheme::class,
             SetActiveLanguage::class,
         ]);
-
-        // Ahead of panel auth, whose access check reads roles tables a 7.x database lacks.
-        $middleware->prependToPriorityList(AuthenticatesRequests::class, EnsureDatabaseCurrent::class);
 
         // Keeps the update page reachable while setup has the site down.
         $middleware->replace(PreventRequestsDuringMaintenance::class, PreventRequestsDuringSetup::class);

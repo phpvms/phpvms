@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Features\Setup\Actions\CreateFirstUser as CreateFirstUserAction;
 use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\Setup\CreateFirstUser;
-use App\Http\Middleware\EnsureDatabaseCurrent;
+use App\Http\Middleware\SetupGate;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\SettingService;
@@ -130,7 +130,7 @@ test('a failed settings write rolls the user back and leaves setup marked comple
 });
 
 test('a replayed first-user snapshot is sent to the installer when the site is back to a fresh state', function (): void {
-    $this->withMiddleware(EnsureDatabaseCurrent::class);
+    $this->withMiddleware(SetupGate::class);
 
     $page = $this->get('/admin/first-user')->assertOk();
     preg_match('/wire:snapshot="([^"]+)"/', $page->getContent(), $match);

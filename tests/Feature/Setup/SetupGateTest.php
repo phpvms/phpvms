@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Filament\Pages\SetupWizard;
-use App\Http\Middleware\EnsureSetupComplete;
-use App\Http\Middleware\EnsureUpdateApplied;
+use App\Http\Middleware\AdminGate;
+use App\Http\Middleware\InstalledCheck;
 use App\Models\Page;
 use App\Models\User;
 use App\Providers\Filament\BasePanelProvider;
@@ -16,6 +16,8 @@ use Livewire\Livewire;
 use Livewire\Mechanisms\HandleComponents\Checksum;
 
 beforeEach(function (): void {
+    // TestCase turns these off suite-wide; this file covers them.
+    $this->withMiddleware([AdminGate::class, InstalledCheck::class]);
     $this->seed(RolesPermissionsSeeder::class);
     Filament::setCurrentPanel('admin');
 });
@@ -166,5 +168,5 @@ it('gates every console panel, not only the admin one', function (): void {
 
     // A module panel cannot be routed in tests without a module on disk, so this checks the shared chrome they all use.
     expect($provider->panel(Panel::make())->getAuthMiddleware())
-        ->toContain(Authenticate::class, EnsureUpdateApplied::class, EnsureSetupComplete::class);
+        ->toContain(Authenticate::class, AdminGate::class);
 });

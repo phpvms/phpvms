@@ -11,6 +11,7 @@ use App\Models\Asset;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 /**
  * Owns airline-supplied branding — name, logo, favicon, banner and brand
@@ -105,8 +106,15 @@ final class Branding
                     return BrandingData::from($cached);
                 }
 
-                // A v7 schema has no assets table; not cached so real branding shows after migrate.
-                if (!Schema::hasTable('assets')) {
+                // A v7 schema has no assets table, and an unreachable database (the installer's first page) has no
+                // tables at all; neither is cached so real branding shows once the database is ready.
+                try {
+                    $hasAssets = Schema::hasTable('assets');
+                } catch (Throwable) {
+                    $hasAssets = false;
+                }
+
+                if (!$hasAssets) {
                     return $this->withoutAssets();
                 }
 

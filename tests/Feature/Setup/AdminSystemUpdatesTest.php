@@ -7,9 +7,8 @@ use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\Auth\AdminLogin;
 use App\Filament\Pages\SystemUpdates;
 use App\Http\Data\BrandingData;
-use App\Http\Middleware\EnsureDatabaseCurrent;
-use App\Http\Middleware\EnsureUpdateApplied;
-use App\Http\Middleware\UseFileSessionWhileFresh;
+use App\Http\Middleware\AdminGate;
+use App\Http\Middleware\SetupGate;
 use App\Models\User;
 use App\Support\Branding;
 use Database\Seeders\RolesPermissionsSeeder;
@@ -37,7 +36,7 @@ function adminPendingWork(array $pending): void
 
 beforeEach(function (): void {
     // TestCase turns the gate off suite-wide; this file covers it.
-    $this->withMiddleware([EnsureDatabaseCurrent::class, EnsureUpdateApplied::class, UseFileSessionWhileFresh::class]);
+    $this->withMiddleware([SetupGate::class, AdminGate::class]);
     adminPendingWork(['2026_01_01_000000_pending']);
 });
 

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
+use App\Features\Setup\Enums\SiteState;
 use App\Features\Setup\Support\LivewireUpdate;
+use App\Features\Setup\Support\RequestSiteState;
 use App\Filament\Pages\SetupWizard;
 use App\Filament\Pages\SystemUpdates;
 use App\Filament\Setup\CreateFirstUser;
@@ -17,11 +19,12 @@ use Illuminate\Http\Request;
 use Throwable;
 
 /**
- * Sends an admin to the setup wizard until setup is complete. Registered after
- * Filament's auth and as Livewire persistent middleware, so updates from a page
+ * Sends a logged-in admin to the update page while core setup work is pending, then to the
+ * setup wizard until setup is complete. Guests still get the login page, so nothing is queued for them.
+ * Registered after Filament's auth and as Livewire persistent middleware, so updates from a page
  * that was already open are gated too.
  */
-class EnsureSetupComplete implements Middleware
+class AdminGate implements Middleware
 {
     /**
      * Livewire components that stay reachable while setup is incomplete.
@@ -35,9 +38,13 @@ class EnsureSetupComplete implements Middleware
         SystemUpdates::class,
     ];
 
+    public function __construct(private readonly RequestSiteState $state) {}
+
     public function handle(Request $request, Closure $next)
     {
-        if (setting('general.setup_completed', true)) {
+        $updatePending = $this->state->of($request) === SiteState::UpdatePending;
+
+        if (!$updatePending && setting('general.setup_completed', true)) {
             return $next($request);
         }
 
@@ -47,11 +54,17 @@ class EnsureSetupComplete implements Middleware
             return $next($request);
         }
 
-        if (self::isExempt($request)) {
-            return $next($request);
+        $panel = Filament::getPanel('admin');
+
+        if ($updatePending && !$request->routeIs(SystemUpdates::getRouteName($panel), $panel->generateRouteName('auth.logout'))) {
+            return redirect(SystemUpdates::getUrl(panel: 'admin'));
         }
 
-        return redirect(SetupWizard::getUrl(panel: 'admin'));
+        if (!setting('general.setup_completed', true) && !self::isExempt($request)) {
+            return redirect(SetupWizard::getUrl(panel: 'admin'));
+        }
+
+        return $next($request);
     }
 
     public static function isExempt(Request $request): bool

@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Features\Setup\Actions\DetectPendingWork;
-use App\Features\Setup\Enums\RunStatus;
 use App\Features\Setup\Support\CachedPendingWork;
 use App\Features\Setup\Support\CoreSeeds;
 use App\Features\Setup\Support\MigrationPaths;
 use App\Features\Setup\Support\SetupRunState;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function (): void {
     $this->dir = sys_get_temp_dir().'/phpvms-pending-cache-'.uniqid();
@@ -37,7 +37,7 @@ beforeEach(function (): void {
             return [];
         }
     };
-    $this->cache = new CachedPendingWork(new DetectPendingWork($this->paths, app(CoreSeeds::class), $this->state), $this->paths, app(CoreSeeds::class), $this->state, $this->dir.'/pending.json');
+    $this->cache = new CachedPendingWork(new DetectPendingWork($this->paths, app(CoreSeeds::class), $this->state), $this->dir.'/pending.json');
 });
 
 afterEach(function (): void {
@@ -46,15 +46,33 @@ afterEach(function (): void {
     @rmdir($this->dir);
 });
 
-test('returns the cached verdict until a migration file list changes', function (): void {
+test('returns the cached verdict until the TTL passes', function (): void {
     $this->paths->pending = ['2026_01_01_000000_a'];
     expect($this->cache->handle()->pendingMigrations)->toBe(['2026_01_01_000000_a']);
 
     $this->paths->pending = [];
+    touch($this->dir.'/migrations/2026_02_02_000000_b.php');
     expect($this->cache->handle()->pendingMigrations)->toBe(['2026_01_01_000000_a']);
 
-    touch($this->dir.'/migrations/2026_02_02_000000_b.php');
+    $this->travel(61)->seconds();
     expect($this->cache->handle()->pendingMigrations)->toBe([]);
+});
+
+test('a warm cache runs no settings query and does not touch the migrator', function (): void {
+    $this->paths->pending = ['2026_01_01_000000_a'];
+    $this->cache->handle();
+
+    $spy = Mockery::spy(app('migrator'));
+    app()->instance('migrator', $spy);
+    $queries = [];
+    DB::listen(function ($query) use (&$queries): void {
+        $queries[] = $query->sql;
+    });
+
+    $this->cache->handle();
+
+    expect(array_filter($queries, fn (string $sql): bool => str_contains($sql, 'settings')))->toBe([]);
+    $spy->shouldNotHaveReceived('getMigrationFiles');
 });
 
 test('keeps the full verdict through the cache', function (): void {
@@ -95,19 +113,14 @@ test('a verdict older than the TTL is recomputed', function (): void {
     expect($this->cache->handle()->pendingMigrations)->toBe([]);
 });
 
-test('a change in the run state misses the cache', function (): void {
+test('a run state change is picked up through forget inside the TTL', function (): void {
     $this->paths->pending = ['2026_01_01_000000_a'];
     $this->cache->handle();
     $this->paths->pending = [];
 
-    expect($this->cache->handle()->pendingMigrations)->toBe(['2026_01_01_000000_a']);
-
     $this->state->request('installer', false);
-
-    expect($this->cache->handle()->pendingMigrations)->toBe([]);
-
-    $this->paths->pending = ['2026_01_01_000000_a'];
-    $this->state->finished(RunStatus::Done);
-
     expect($this->cache->handle()->pendingMigrations)->toBe(['2026_01_01_000000_a']);
+
+    $this->cache->forget();
+    expect($this->cache->handle()->pendingMigrations)->toBe([]);
 });

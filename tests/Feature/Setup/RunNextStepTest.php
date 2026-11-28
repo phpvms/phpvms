@@ -11,8 +11,6 @@ use App\Features\Setup\Enums\SetupStep;
 use App\Features\Setup\Enums\StepOutcome;
 use App\Features\Setup\Enums\StepStatus;
 use App\Features\Setup\Support\CachedPendingWork;
-use App\Features\Setup\Support\CoreSeeds;
-use App\Features\Setup\Support\MigrationPaths;
 use App\Features\Setup\Support\SetupLock;
 use App\Features\Setup\Support\SetupRunState;
 use App\Features\Setup\Support\StepContext;
@@ -25,7 +23,7 @@ beforeEach(function (): void {
     $this->lockPath = $this->dir.'/run.lock';
     $this->completed = new UpgradeCompleted($this->dir.'/completed', databaseSignal: false);
     $this->ran = new ArrayObject();
-    $this->cache = new CachedPendingWork(app(DetectPendingWork::class), app(MigrationPaths::class), app(CoreSeeds::class), app(SetupRunState::class), $this->dir.'/pending.json');
+    $this->cache = new CachedPendingWork(app(DetectPendingWork::class), $this->dir.'/pending.json');
     app()->instance(CachedPendingWork::class, $this->cache);
 });
 

@@ -18,7 +18,7 @@ final class PreventRequestsDuringSetup extends PreventRequestsDuringMaintenance
     private const array SETUP_ROUTES = ['system', 'system/*', 'admin', 'admin/*'];
 
     // Plain web routes under admin/ that are not panel pages; they stay down like the public site.
-    private const array NOT_PANEL_ROUTES = ['admin/route-forge/api/*', 'admin/pages/*/preview'];
+    public const array NOT_PANEL_ROUTES = ['admin/route-forge/api/*', 'admin/pages/*/preview'];
 
     /**
      * @param Request $request

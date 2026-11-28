@@ -24,9 +24,17 @@ final readonly class UpgradeCompleted
         return storage_path('framework/update-7.0-completed');
     }
 
+    /**
+     * The marker file alone, without the database fallback.
+     */
+    public function fileExists(): bool
+    {
+        return is_file($this->path);
+    }
+
     public function exists(): bool
     {
-        if (is_file($this->path)) {
+        if ($this->fileExists()) {
             return true;
         }
 

@@ -31,6 +31,11 @@ final readonly class ResolveSiteState
     public function handle(): SiteState
     {
         try {
+            // An installed, fully upgraded site needs no user or run-state lookups; only pending work can change its state.
+            if ($this->marker->isTrusted() && $this->completed->fileExists()) {
+                return $this->pending->handle()->blocksPanel() ? SiteState::UpdatePending : SiteState::Current;
+            }
+
             $hasUsers = Schema::hasTable('users') && User::withTrashed()->exists();
             $run = $this->run();
             $completed = $this->completed->exists();
@@ -47,11 +52,14 @@ final readonly class ResolveSiteState
                 return SiteState::Install;
             }
 
+            $blocked = $this->pending->handle()->blocksPanel();
+
+            // Nothing pending and no marker: the upgrader would refuse and never write it, so the site is current.
             if (!$completed) {
-                return SiteState::V7Upgrade;
+                return $blocked ? SiteState::V7Upgrade : SiteState::Current;
             }
 
-            return $this->pending->handle()->blocksPanel() ? SiteState::UpdatePending : SiteState::Current;
+            return $blocked ? SiteState::UpdatePending : SiteState::Current;
         } catch (Throwable $throwable) {
             // Not only a lost connection: a bug here would otherwise read as "no database".
             if (!SiteUnavailable::causedBy($throwable)) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Exceptions\SiteUnavailable;
 use App\Filament\Setup\WebInstaller;
 use App\Http\Middleware\InstalledCheck;
+use App\Http\Middleware\SetupGate;
 use App\Models\User;
 use App\Support\InstallMarker;
 use Illuminate\Database\Events\QueryExecuted;
@@ -50,6 +51,8 @@ it('answers 503 instead of redirecting when there are no users', function (): vo
 });
 
 it('answers 503 on an admin panel page when the database is unreachable', function (): void {
+    $this->withMiddleware(SetupGate::class);
+    app(InstallMarker::class)->write();
     $original = config('database.default');
 
     config([
@@ -215,4 +218,16 @@ it('lets the API through once a user exists', function (): void {
     User::factory()->create();
 
     expect($this->getJson('/api/airports/hubs')->status())->not->toBe(503);
+});
+
+it('answers 503 behind a trusted marker while setup is incomplete', function (): void {
+    app(InstallMarker::class)->write();
+    app()->instance('env', 'production');
+    updateSetting('general.setup_completed', false);
+
+    $this->get('/login')->assertStatus(503);
+
+    updateSetting('general.setup_completed', true);
+
+    expect($this->get('/login')->status())->not->toBe(503);
 });

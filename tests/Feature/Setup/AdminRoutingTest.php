@@ -9,10 +9,9 @@ use App\Features\Setup\Support\MigrationPaths;
 use App\Features\Setup\Support\SetupRunState;
 use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\Pages\SystemUpdates;
-use App\Http\Middleware\EnsureDatabaseCurrent;
-use App\Http\Middleware\EnsureUpdateApplied;
+use App\Http\Middleware\AdminGate;
 use App\Http\Middleware\InstalledCheck;
-use App\Http\Middleware\UseFileSessionWhileFresh;
+use App\Http\Middleware\SetupGate;
 use App\Models\User;
 use App\Support\InstallMarker;
 use Database\Seeders\RolesPermissionsSeeder;
@@ -23,7 +22,7 @@ use Livewire\Mechanisms\HandleRequests\EndpointResolver;
 
 beforeEach(function (): void {
     // TestCase turns these off suite-wide; this file covers them.
-    $this->withMiddleware([EnsureDatabaseCurrent::class, EnsureUpdateApplied::class, UseFileSessionWhileFresh::class]);
+    $this->withMiddleware([SetupGate::class, AdminGate::class]);
 
     $this->dir = sys_get_temp_dir().'/phpvms-admin-routing-'.uniqid();
     mkdir($this->dir);
@@ -47,7 +46,7 @@ beforeEach(function (): void {
     $detect = new DetectPendingWork($this->paths, app(CoreSeeds::class), $this->runState);
     $this->instance(SetupRunState::class, $this->runState);
     $this->instance(UpgradeCompleted::class, $this->completed);
-    $this->instance(CachedPendingWork::class, new CachedPendingWork($detect, $this->paths, app(CoreSeeds::class), $this->runState, $this->dir.'/pending.json'));
+    $this->instance(CachedPendingWork::class, new CachedPendingWork($detect, $this->dir.'/pending.json'));
 
     $this->defaultConnection = config('database.default');
     DB::table('users')->delete();
@@ -88,6 +87,7 @@ test('a fresh site with a finished run serves the first user form through the fu
 
 test('a v7 site is sent to the upgrader', function (string $path): void {
     User::factory()->create();
+    $this->paths->pending = ['2026_01_01_000000_pending'];
 
     $this->get($path)->assertRedirect('/system/upgrade');
 })->with('panel entry points');
@@ -240,4 +240,10 @@ test('an installed site keeps its configured session driver', function (): void 
     $this->postJson(EndpointResolver::updatePath(), ['components' => []]);
 
     expect(config('session.driver'))->toBe('array');
+});
+
+test('the plain web routes under admin/ are not routed to the installer on a fresh site', function (): void {
+    $response = $this->postJson('/admin/route-forge/api/lint');
+
+    expect($response->isRedirect())->toBeFalse();
 });

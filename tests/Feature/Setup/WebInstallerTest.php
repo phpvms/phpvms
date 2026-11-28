@@ -19,7 +19,7 @@ use App\Features\Setup\Support\StepContext;
 use App\Features\Setup\Support\UpgradeCompleted;
 use App\Filament\Setup\CreateFirstUser;
 use App\Filament\Setup\WebInstaller;
-use App\Http\Middleware\EnsureDatabaseCurrent;
+use App\Http\Middleware\SetupGate;
 use App\Models\User;
 use App\Services\CronService;
 use Filament\Facades\Filament;
@@ -95,7 +95,7 @@ function installerCurrentSite(object $test): void
         }
     };
     $detect = new DetectPendingWork($paths, app(CoreSeeds::class), app(SetupRunState::class));
-    app()->instance(CachedPendingWork::class, new CachedPendingWork($detect, $paths, app(CoreSeeds::class), app(SetupRunState::class), $test->dir.'/pending.json'));
+    app()->instance(CachedPendingWork::class, new CachedPendingWork($detect, $test->dir.'/pending.json'));
 }
 
 function installerPage(Testable $component): WebInstaller
@@ -281,6 +281,43 @@ test('retry is refused once the site has users', function (): void {
         ->and(app(SetupRunState::class)->read()?->status)->toBe(RunStatus::Failed);
 });
 
+test('retryRun cannot be called from the page', function (): void {
+    installerEngine($this, [installerFakeStep(SetupStep::Migrate, $this->ran, fn (): bool => true)]);
+    $component = installerDrain(Livewire::test(WebInstaller::class));
+
+    User::factory()->create();
+    $this->completed->write();
+    $this->ran->exchangeArray([]);
+
+    expect(fn () => $component->call('retryRun'))->toThrow(Exception::class);
+
+    expect($this->ran->getArrayCopy())->toBe([])
+        ->and(app(SetupRunState::class)->read()?->status)->toBe(RunStatus::Failed);
+});
+
+test('an unreachable database opens the installer and the run fails at a step', function (): void {
+    $this->withMiddleware(SetupGate::class);
+    $default = config('database.default');
+    config(['database.connections.broken' => ['driver' => 'sqlite', 'database' => '/nonexistent/phpvms.sqlite', 'prefix' => '']]);
+    config(['database.default' => 'broken']);
+    DB::purge('broken');
+
+    try {
+        installerEngine($this, [installerFakeStep(SetupStep::Preflight, $this->ran, fn (): bool => true)]);
+
+        $this->get('/admin/install')->assertOk();
+
+        $component = Livewire::test(WebInstaller::class);
+        installerDrain($component);
+
+        expect(installerPage($component)->screen())->toBe('failed')
+            ->and(app(SetupRunState::class)->read()?->fresh)->toBeTrue();
+    } finally {
+        config(['database.default' => $default]);
+        DB::purge('broken');
+    }
+});
+
 test('a seed that creates a user ends the run without offering the first-user form', function (): void {
     $seed = new readonly class($this->ran) implements Step
     {
@@ -314,7 +351,7 @@ test('a seed that creates a user ends the run without offering the first-user fo
 });
 
 test('a replayed installer snapshot is sent to the upgrader once the site has users', function (): void {
-    $this->withMiddleware(EnsureDatabaseCurrent::class);
+    $this->withMiddleware(SetupGate::class);
 
     $page = $this->get('/admin/install')->assertOk();
     preg_match('/wire:snapshot="([^"]+)"/', $page->getContent(), $match);

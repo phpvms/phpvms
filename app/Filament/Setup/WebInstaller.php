@@ -28,7 +28,7 @@ use Throwable;
 class WebInstaller extends SimplePage
 {
     use ShowsSetupRun {
-        retry as retryRun;
+        retry as protected retryRun;
     }
 
     protected static ?string $slug = 'install';
@@ -129,7 +129,14 @@ class WebInstaller extends SimplePage
 
     private function requestRun(): void
     {
-        app(RunSetup::class)->request('installer', fresh: app(DetectPendingWork::class)->handle()->freshInstall);
+        try {
+            $fresh = app(DetectPendingWork::class)->handle()->freshInstall;
+        } catch (Throwable) {
+            // An unreachable database reads as a fresh one; the run's first steps then fail where the operator can see it.
+            $fresh = true;
+        }
+
+        app(RunSetup::class)->request('installer', fresh: $fresh);
     }
 
     private function currentStatus(): ?RunStatus

@@ -48,10 +48,9 @@ use App\Features\Setup\Support\UpgradeCompleted;
 use App\Features\Themes\Support\ThemeViewFinder;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
-use App\Http\Middleware\EnsureDatabaseCurrent;
-use App\Http\Middleware\EnsureSetupComplete;
-use App\Http\Middleware\EnsureSiteSetUp;
-use App\Http\Middleware\EnsureUpdateApplied;
+use App\Http\Middleware\AdminGate;
+use App\Http\Middleware\InstalledCheck;
+use App\Http\Middleware\SetupGate;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\Filament\ActivityPolicy;
@@ -143,7 +142,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         // Gates must also hold for Livewire updates from a page opened before setup was reset.
-        Livewire::addPersistentMiddleware([EnsureDatabaseCurrent::class, EnsureUpdateApplied::class, EnsureSetupComplete::class, EnsureSiteSetUp::class]);
+        Livewire::addPersistentMiddleware([SetupGate::class, AdminGate::class, InstalledCheck::class]);
 
         // Global Filament component defaults. Registered here rather than in a
         // panel's bootUsing() because provider boot writes to the base
