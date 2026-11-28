@@ -10,8 +10,8 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 /**
@@ -98,9 +98,8 @@ it('shows the rule errors under the fields', function (): void {
 });
 
 it('stores an uploaded avatar through UpdateProfile', function (): void {
-    $target = public_path('uploads/avatars/'.$this->pilot->ident.'.png');
-    File::ensureDirectoryExists(dirname($target));
-    File::delete($target);
+    $disk = Storage::fake(config('filesystems.public_files'));
+    $target = 'avatars/'.$this->pilot->ident.'.png';
 
     Livewire::test(ProfileEdit::class)
         ->set('form.avatar', UploadedFile::fake()->image('me.png', 200, 200))
@@ -108,12 +107,8 @@ it('stores an uploaded avatar through UpdateProfile', function (): void {
         ->assertHasNoErrors()
         ->assertSet('form.avatar', null);
 
-    try {
-        expect($this->pilot->refresh()->getRawOriginal('avatar'))->toBe('avatars/'.$this->pilot->ident.'.png')
-            ->and(File::exists($target))->toBeTrue();
-    } finally {
-        File::delete($target);
-    }
+    expect($this->pilot->refresh()->getRawOriginal('avatar'))->toBe('avatars/'.$this->pilot->ident.'.png')
+        ->and($disk->exists($target))->toBeTrue();
 })->skip(!extension_loaded('gd'), 'GD is not available');
 
 it('rejects an avatar that is not a jpeg or png when saving', function (): void {
@@ -177,11 +172,10 @@ it('refuses a guest', function (): void {
     Livewire::test(ProfileEdit::class)->assertForbidden();
 });
 
-it('deletes the previous avatar from public uploads when a new one is stored', function (): void {
-    $target = public_path('uploads/avatars/'.$this->pilot->ident.'.png');
-    $previous = public_path('uploads/avatars/'.$this->pilot->ident.'.jpg');
-    File::ensureDirectoryExists(dirname($previous));
-    File::put($previous, 'old');
+it('deletes the previous avatar from the public files disk when a new one is stored', function (): void {
+    $disk = Storage::fake(config('filesystems.public_files'));
+    $previous = 'avatars/'.$this->pilot->ident.'.jpg';
+    $disk->put($previous, 'old');
     $this->pilot->forceFill(['avatar' => 'avatars/'.$this->pilot->ident.'.jpg'])->save();
 
     Livewire::test(ProfileEdit::class)
@@ -189,31 +183,22 @@ it('deletes the previous avatar from public uploads when a new one is stored', f
         ->call('save')
         ->assertHasNoErrors();
 
-    try {
-        expect(File::exists($previous))->toBeFalse();
-    } finally {
-        File::delete([$previous, $target]);
-    }
+    expect($disk->exists($previous))->toBeFalse();
 })->skip(!extension_loaded('gd'), 'GD is not available');
 
-it('writes a resized avatar to public uploads with the real image manager', function (): void {
-    $target = public_path('uploads/avatars/'.$this->pilot->ident.'.png');
-    File::ensureDirectoryExists(dirname($target));
-    File::delete($target);
+it('writes a resized avatar to the public files disk with the real image manager', function (): void {
+    $disk = Storage::fake(config('filesystems.public_files'));
+    $target = 'avatars/'.$this->pilot->ident.'.png';
 
     Livewire::test(ProfileEdit::class)
         ->set('form.avatar', UploadedFile::fake()->image('me.png', 400, 300))
         ->call('save')
         ->assertHasNoErrors();
 
-    try {
-        expect(File::exists($target))->toBeTrue();
-        [$width, $height] = getimagesize($target);
-        expect($width)->toBe((int) config('phpvms.avatar.width'))
-            ->and($height)->toBe((int) config('phpvms.avatar.height'));
-    } finally {
-        File::delete($target);
-    }
+    expect($disk->exists($target))->toBeTrue();
+    [$width, $height] = getimagesize($disk->path($target));
+    expect($width)->toBe((int) config('phpvms.avatar.width'))
+        ->and($height)->toBe((int) config('phpvms.avatar.height'));
 })->skip(!extension_loaded('gd'), 'GD is not available');
 
 it('starts from the saved custom field values', function (): void {

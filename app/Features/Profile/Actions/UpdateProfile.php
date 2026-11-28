@@ -9,9 +9,9 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Intervention\Image\ImageManager;
 
@@ -102,16 +102,17 @@ final readonly class UpdateProfile
 
     private function storeAvatar(User $user, UploadedFile $avatar): void
     {
-        // The `avatar` accessor wraps the stored path in a File model, so read the
-        // raw path. Avatars are written under public/uploads, not a Storage disk,
-        // so delete from there; the controller used to delete nothing.
+        // Avatars live on the public_files disk, where the `avatar` accessor's File
+        // model builds their URL. The accessor wraps the path, so read the raw one.
+        $disk = Storage::disk(config('filesystems.public_files'));
+
         $previous = $user->getRawOriginal('avatar');
         if (is_string($previous) && $previous !== '') {
-            File::delete(public_path('uploads/'.$previous));
+            $disk->delete($previous);
         }
 
-        $file_name = $user->ident.'.'.$avatar->getClientOriginalExtension();
-        $path = 'avatars/'.$file_name;
+        $extension = $avatar->getClientOriginalExtension();
+        $path = 'avatars/'.$user->ident.'.'.$extension;
 
         // Create the avatar, resizing it and keeping the aspect ratio.
         // https://stackoverflow.com/a/26892028
@@ -124,8 +125,8 @@ final readonly class UpdateProfile
         });
 
         $canvas->insert($image);
-        Log::info('Uploading avatar into folder '.public_path('uploads/avatars'));
-        $canvas->save(public_path('uploads/avatars/'.$file_name));
+        Log::info('Uploading avatar to '.$path);
+        $disk->put($path, (string) $canvas->encode(strtolower($extension)), 'public');
 
         $user->setAttribute('avatar', $path);
     }
