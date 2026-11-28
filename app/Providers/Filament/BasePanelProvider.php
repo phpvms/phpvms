@@ -9,6 +9,8 @@ use App\Filament\GlobalSearch\CommandPaletteSearchProvider;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
+use App\Http\Middleware\AdminGate;
+use App\Http\Middleware\SetupGate;
 use App\Livewire\Filament\CommandPalette;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\PhosphorIcons;
@@ -48,6 +50,9 @@ abstract class BasePanelProvider extends FilamentPanelProvider
         return $panel
             ->login(AdminLogin::class)
             ->middleware([
+                // Before the session and auth: a fresh or 7.x database has no tables they read.
+                // Also global; listed here so Livewire replays it for a snapshot's panel page.
+                SetupGate::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -60,6 +65,8 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                // After Authenticate, so the user is known; it redirects to admin-panel pages.
+                AdminGate::class,
             ])
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('14.75rem')

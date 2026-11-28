@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
 use App\Enums\UserState;
+use App\Models\Page;
 use App\Models\User;
 use App\Services\PageService;
 use Illuminate\Http\RedirectResponse;
@@ -30,12 +31,12 @@ class HomeController extends Controller
         } catch (PDOException $pdoException) {
             Log::emergency($pdoException);
 
-            return redirect('system/install');
+            return redirect('/admin');
         }
 
         // No users
         if ($users->isEmpty()) {
-            return redirect('system/install');
+            return redirect('/admin');
         }
 
         // Deliberately after both install redirects: an unreachable database or
@@ -46,7 +47,7 @@ class HomeController extends Controller
         // A non-public page claiming the root falls through for guests rather
         // than throwing. Locking anonymous visitors out of the site root would
         // be a worse failure than showing them the stock home page.
-        if ($page && ($page->public || Auth::check())) {
+        if ($page instanceof Page && ($page->public || Auth::check())) {
             return view('pages.index', ['page' => $page]);
         }
 

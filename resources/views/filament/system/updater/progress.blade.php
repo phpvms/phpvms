@@ -1,7 +1,9 @@
 @php
     $livewire = $getLivewire();
     $run = $livewire->run();
-    $waiting = $run?->status === \App\Features\Setup\Enums\RunStatus::Requested;
+    // The web installer drives its own run, so a queued run is not waiting for cron there.
+    $waiting = $run?->status === \App\Features\Setup\Enums\RunStatus::Requested
+        && ! $livewire instanceof \App\Filament\Setup\WebInstaller;
 @endphp
 
 <div class="space-y-4">

@@ -12,3 +12,5 @@ phpvms-update.lock
 phpvms-post-upgrade.lock
 update-7.0-completed
 phpvms-update.json.*.tmp
+phpvms-pending.json
+phpvms-pending.json.*.tmp

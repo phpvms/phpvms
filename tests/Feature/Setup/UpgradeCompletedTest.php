@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Features\Setup\Support\UpgradeCompleted;
-use App\Http\Middleware\UpdatePending;
+use App\Http\Middleware\SetupGate;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Facades\DB;
 
@@ -31,7 +31,7 @@ test('the panel middleware rewrites a lost completion file even when nothing is 
     $path = sys_get_temp_dir().'/phpvms-upgrade-completed-'.uniqid();
     DB::table('kvp')->insert(['key' => UpgradeCompleted::KVP_KEY, 'value' => now()->toIso8601String()]);
     app()->instance(UpgradeCompleted::class, new UpgradeCompleted($path));
-    $this->withMiddleware(UpdatePending::class);
+    $this->withMiddleware(SetupGate::class);
     $this->seed(RolesPermissionsSeeder::class);
     $this->actingAs(createAdminUser());
 

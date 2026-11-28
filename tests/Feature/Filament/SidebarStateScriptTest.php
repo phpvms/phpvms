@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Filament\Pages\Dashboard;
-use App\Http\Middleware\UpdatePending;
 use Database\Seeders\RolesPermissionsSeeder;
 
 /**
@@ -15,7 +14,6 @@ use Database\Seeders\RolesPermissionsSeeder;
  */
 beforeEach(function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
     $this->actingAs(createAdminUser());
 });
 

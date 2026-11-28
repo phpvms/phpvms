@@ -39,6 +39,10 @@ final class GeneralSettings extends Settings
 
     public bool $auto_language_detection = false;
 
+    /** False from the first admin's creation until the setup wizard is saved; existing sites read true. */
+    #[SettingField(hidden: true)]
+    public bool $setup_completed = true;
+
     #[Override]
     public static function group(): string
     {

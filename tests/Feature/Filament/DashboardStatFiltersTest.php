@@ -7,7 +7,6 @@ use App\Filament\Widgets\DistanceStatWidget;
 use App\Filament\Widgets\PilotsFlyingStatWidget;
 use App\Filament\Widgets\PirepStateChart;
 use App\Filament\Widgets\ReportsFiledStatWidget;
-use App\Http\Middleware\UpdatePending;
 use App\Models\Airline;
 use App\Models\Pirep;
 use App\Models\PirepPosition;
@@ -173,7 +172,6 @@ test('pilots flying counts distinct pilots across several live flights', functio
 
 test('the dashboard header renders the period picker beside the layout actions', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $this->actingAs(createAdminUser());
 
@@ -197,7 +195,6 @@ test('the dashboard header renders the period picker beside the layout actions',
 
 test('choosing a quick range announces the resolved range to the widgets', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $this->actingAs(createAdminUser());
 
@@ -215,7 +212,6 @@ test('choosing a quick range announces the resolved range to the widgets', funct
 
 test('an absolute range wins over the quick ranges', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $this->actingAs(createAdminUser());
 
@@ -247,7 +243,6 @@ test('a widget re-scopes itself when the dashboard announces a new period', func
 
 test('the period selection survives a return visit', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
 
     $this->actingAs(createAdminUser());
 

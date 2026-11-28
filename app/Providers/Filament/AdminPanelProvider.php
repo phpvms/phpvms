@@ -6,7 +6,8 @@ use App\Contracts\Addons\AddonServiceProvider;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Features\Addons\Support\BootCache;
 use App\Filament\Pages\Backups;
-use App\Http\Middleware\UpgradeRequired;
+use App\Filament\Setup\CreateFirstUser;
+use App\Filament\Setup\WebInstaller;
 use App\Support\Branding;
 use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Navigation\NavigationGroup;
@@ -17,6 +18,7 @@ use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Route;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
 class AdminPanelProvider extends BasePanelProvider
@@ -25,7 +27,11 @@ class AdminPanelProvider extends BasePanelProvider
     {
         $panel = $this->applyConsoleChrome($panel)
             ->default()
-            ->middleware([UpgradeRequired::class])
+            // Outside authMiddleware: there is no user while the site is fresh. SimplePage has no route helper.
+            ->routes(function (): void {
+                Route::get('/install', WebInstaller::class)->name('install');
+                Route::get('/first-user', CreateFirstUser::class)->name('first-user');
+            })
             ->id('admin')
             ->path('admin')
             // Every banner gets a trail, plain pages included: Filament builds

@@ -72,20 +72,24 @@ test('a test taking the site down leaves the real maintenance file alone', funct
         ->and(is_file($real))->toBe($wasDown);
 });
 
-test('while down, /system/upgrade and the Livewire script answer and /admin returns 503', function (): void {
+test('while down, /system/upgrade, /admin pages and the Livewire script answer and public pages return 503', function (): void {
     Artisan::call('down');
 
     expect($this->get('/system/upgrade')->getStatusCode())->not->toBe(503)
+        ->and($this->get('/admin/login')->getStatusCode())->not->toBe(503)
         ->and($this->get(EndpointResolver::scriptPath(minified: !config('app.debug')))->getStatusCode())->toBe(200)
-        ->and($this->get('/admin')->getStatusCode())->toBe(503);
+        ->and($this->get('/')->getStatusCode())->toBe(503)
+        ->and($this->get('/flights')->getStatusCode())->toBe(503);
 });
 
-test('while down, Livewire updates from the setup pages are exempt, whatever the component', function (): void {
+test('while down, Livewire updates from the admin and setup pages are exempt, whatever the component', function (): void {
     Artisan::call('down');
 
-    // The progress poll arrives batched with the toast and topbar, all rendered on the upgrade page.
+    // The progress poll arrives batched with the toast and topbar, all rendered on the same page.
     expect(livewireUpdate('system/upgrade', 'system/upgrade', 'system/upgrade')->getStatusCode())->not->toBe(503)
-        ->and(livewireUpdate('system/install')->getStatusCode())->not->toBe(503);
+        ->and(livewireUpdate('admin/install')->getStatusCode())->not->toBe(503)
+        ->and(livewireUpdate('admin/system/update')->getStatusCode())->not->toBe(503)
+        ->and(livewireUpdate('admin', 'admin/pireps')->getStatusCode())->not->toBe(503);
 });
 
 test('while down, the upgrade page can send back every component it rendered, in one batch', function (): void {
@@ -115,12 +119,12 @@ test('while down, the upgrade page can send back every component it rendered, in
         ->and(livewireUpdatePayload(['components' => $components])->getStatusCode())->not->toBe(503);
 });
 
-test('while down, a Livewire update from any other page returns 503', function (): void {
+test('while down, a Livewire update from a public page returns 503', function (): void {
     Artisan::call('down');
 
-    expect(livewireUpdate('admin')->getStatusCode())->toBe(503)
-        ->and(livewireUpdate('admin/system/updates')->getStatusCode())->toBe(503)
-        ->and(livewireUpdate('system/upgrade', 'admin/pireps')->getStatusCode())->toBe(503);
+    expect(livewireUpdate('flights')->getStatusCode())->toBe(503)
+        ->and(livewireUpdate('')->getStatusCode())->toBe(503)
+        ->and(livewireUpdate('system/upgrade', 'flights')->getStatusCode())->toBe(503);
 });
 
 test('while down, a malformed Livewire update returns 503', function (): void {

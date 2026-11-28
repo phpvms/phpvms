@@ -7,7 +7,6 @@ use App\Features\Assets\AssetService;
 use App\Filament\Resources\Airlines\Pages\CreateAirline;
 use App\Filament\Resources\Airlines\Pages\EditAirline;
 use App\Filament\Resources\Airlines\Schemas\AirlineForm;
-use App\Http\Middleware\UpdatePending;
 use App\Models\Airline;
 use App\Models\Asset;
 use Database\Seeders\RolesPermissionsSeeder;
@@ -19,7 +18,6 @@ use Livewire\Livewire;
 beforeEach(function (): void {
     fakeAssetDisks();
     $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
     $this->actingAs(createAdminUser());
 });
 

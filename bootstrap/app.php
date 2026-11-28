@@ -15,10 +15,8 @@ use App\Http\Middleware\PreventRequestsDuringSetup;
 use App\Http\Middleware\RespectAlternateVerbs;
 use App\Http\Middleware\SetActiveLanguage;
 use App\Http\Middleware\SetActiveTheme;
-use App\Http\Middleware\UpdatePending;
-use App\Http\Middleware\UpgradeRequired;
+use App\Http\Middleware\SetupGate;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -60,14 +58,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToGroup('web', RespectAlternateVerbs::class);
         $middleware->prependToGroup('api', RespectAlternateVerbs::class);
 
+        // Before any StartSession, panel or web group (Livewire updates): file sessions while the database is fresh, admin routing by site state.
+        $middleware->prepend(SetupGate::class);
+
+        // Public API routes answer "not installed" before setup too.
+        $middleware->appendToGroup('api', InstalledCheck::class);
+
         $middleware->appendToGroup('web', [
             InstalledCheck::class,
             SetActiveTheme::class,
             SetActiveLanguage::class,
         ]);
-
-        // Ahead of panel auth, whose access check reads roles tables a 7.x database lacks.
-        $middleware->prependToPriorityList(AuthenticatesRequests::class, UpgradeRequired::class);
 
         // Keeps the update page reachable while setup has the site down.
         $middleware->replace(PreventRequestsDuringMaintenance::class, PreventRequestsDuringSetup::class);
@@ -76,7 +77,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.auth'           => ApiAuth::class,
             'scope'              => CheckApiScope::class,
             'scopes'             => CheckApiScope::class,
-            'update_pending'     => UpdatePending::class,
             'role'               => RoleMiddleware::class,
             'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,

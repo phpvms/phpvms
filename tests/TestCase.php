@@ -14,8 +14,9 @@ use App\Features\Setup\Support\PostUpgradeTaskState;
 use App\Features\Setup\Support\SetupLock;
 use App\Features\Setup\Support\SetupRunState;
 use App\Features\Setup\Support\UpgradeCompleted;
-use App\Http\Middleware\UpdatePending;
-use App\Http\Middleware\UpgradeRequired;
+use App\Http\Middleware\AdminGate;
+use App\Http\Middleware\InstalledCheck;
+use App\Http\Middleware\SetupGate;
 use App\Services\SettingService;
 use App\Support\InstallMarker;
 use Illuminate\Foundation\Application;
@@ -211,7 +212,7 @@ abstract class TestCase extends BaseTestCase
 
         // The sqlite test DB never records data migrations, so the update gate
         // would redirect every admin request; tests that cover it opt back in.
-        $this->withoutMiddleware([UpdatePending::class, UpgradeRequired::class]);
+        $this->withoutMiddleware([SetupGate::class, AdminGate::class, InstalledCheck::class]);
 
         // Keep the install marker out of storage/framework: tests must neither
         // read a marker the host wrote nor leave one behind. One file per

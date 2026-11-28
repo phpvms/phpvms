@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Exceptions\SiteUnavailable;
-use App\Filament\System\Installer;
+use App\Filament\Setup\WebInstaller;
+use App\Http\Middleware\InstalledCheck;
+use App\Http\Middleware\SetupGate;
 use App\Models\User;
 use App\Support\InstallMarker;
 use Illuminate\Database\Events\QueryExecuted;
@@ -11,7 +13,10 @@ use Illuminate\Database\QueryException;
 use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Support\Facades\DB;
 
-use function Pest\Livewire\livewire;
+beforeEach(function (): void {
+    // TestCase turns this off suite-wide; this file covers it.
+    $this->withMiddleware(InstalledCheck::class);
+});
 
 it('answers 503 instead of redirecting when the database is unreachable', function (): void {
     // RefreshDatabase rolls back on the default connection at teardown, so the
@@ -46,6 +51,8 @@ it('answers 503 instead of redirecting when there are no users', function (): vo
 });
 
 it('answers 503 on an admin panel page when the database is unreachable', function (): void {
+    $this->withMiddleware(SetupGate::class);
+    app(InstallMarker::class)->write();
     $original = config('database.default');
 
     config([
@@ -143,13 +150,6 @@ it('writes the marker for a site installed before it existed', function (): void
     expect($marker->exists())->toBeTrue();
 });
 
-it('closes the installer on a trusted marker without asking the database', function (): void {
-    app(InstallMarker::class)->write();
-    app()->instance('env', 'production');
-
-    expect(Installer::canAccess())->toBeFalse();
-});
-
 it('keeps the installer closed during an outage behind an advisory marker', function (): void {
     app(InstallMarker::class)->write();
     app()->instance('env', 'local');
@@ -169,7 +169,7 @@ it('keeps the installer closed during an outage behind an advisory marker', func
     DB::purge();
 
     try {
-        $closed = !Installer::canAccess();
+        $closed = !WebInstaller::canAccess();
     } finally {
         config(['database.default' => $original]);
         DB::purge('unreachable');
@@ -178,21 +178,19 @@ it('keeps the installer closed during an outage behind an advisory marker', func
     expect($closed)->toBeTrue();
 });
 
-it('refuses installer actions once a user exists, even on a page opened before', function (): void {
-    $component = livewire(Installer::class)->assertOk();
-
-    User::factory()->create();
-
-    $component->call('runMigrations')->assertForbidden();
-
-    $this->get('/system/install')->assertRedirect('/');
+it('links the not-set-up page to the admin panel', function (): void {
+    $this->get('/')->assertStatus(503)->assertSee('href="/admin"', false);
 });
 
-it('sends the installer home during an outage on a trusted marker', function (): void {
-    app(InstallMarker::class)->write();
-    app()->instance('env', 'production');
+it('answers the API with JSON 503 before setup', function (): void {
+    $this->getJson('/api/airports/hubs')
+        ->assertStatus(503)
+        ->assertJsonPath('error.status', 503);
+});
 
+it('answers the API with JSON 503 when the database is unreachable', function (): void {
     $original = config('database.default');
+
     config([
         'database.connections.unreachable' => [
             'driver'   => 'pgsql',
@@ -207,11 +205,29 @@ it('sends the installer home during an outage on a trusted marker', function ():
     DB::purge();
 
     try {
-        $response = $this->get('/system/install');
+        $response = $this->getJson('/api/airports/hubs');
     } finally {
         config(['database.default' => $original]);
         DB::purge('unreachable');
     }
 
-    $response->assertRedirect('/');
+    $response->assertStatus(503)->assertJsonPath('error.status', 503);
+});
+
+it('lets the API through once a user exists', function (): void {
+    User::factory()->create();
+
+    expect($this->getJson('/api/airports/hubs')->status())->not->toBe(503);
+});
+
+it('answers 503 behind a trusted marker while setup is incomplete', function (): void {
+    app(InstallMarker::class)->write();
+    app()->instance('env', 'production');
+    updateSetting('general.setup_completed', false);
+
+    $this->get('/login')->assertStatus(503);
+
+    updateSetting('general.setup_completed', true);
+
+    expect($this->get('/login')->status())->not->toBe(503);
 });
