@@ -12,7 +12,7 @@ _.php = {
 [tools]
 # static-php.dev prebuilt binaries (unix) stop at 8.5.8
 php = [
-    { version = "8.5.12", os = ["unix"] },
+    { version = "8.5.8", os = ["unix"] },
     { version = "8.5.12", os = ["windows"] },
 ]
 
